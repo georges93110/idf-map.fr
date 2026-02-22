@@ -24,8 +24,47 @@
         done = true;
         root.setAttribute("data-app-ready", "1");
       }
-      window.__setAppReady = function __setAppReady() {
-        requestAnimationFrame(() => requestAnimationFrame(reveal));
+      window.__setAppReady = function __setAppReady(options) {
+        const cfg = options && typeof options === "object" ? options : {};
+        const minFrames = Math.max(4, Number(cfg.minFrames) || 8);
+        const stableFrames = Math.max(2, Number(cfg.stableFrames) || 3);
+        const maxFrames = Math.max(minFrames + stableFrames, Number(cfg.maxFrames) || 28);
+        let frameCount = 0;
+        let stableCount = 0;
+        let previousKey = "";
+        const step = () => {
+          frameCount += 1;
+          let layoutKey = "";
+          const body = document.body;
+          if (body) {
+            const rect = body.getBoundingClientRect();
+            layoutKey = [
+              Math.round(rect.width),
+              Math.round(rect.height),
+              document.documentElement.scrollWidth,
+              document.documentElement.scrollHeight
+            ].join("x");
+          }
+          stableCount = layoutKey && layoutKey === previousKey ? stableCount + 1 : 0;
+          previousKey = layoutKey;
+          const enoughFrames = frameCount >= minFrames;
+          const visuallyStable = stableCount >= stableFrames;
+          const frameBudgetExceeded = frameCount >= maxFrames;
+          if ((!enoughFrames || !visuallyStable) && !frameBudgetExceeded) {
+            requestAnimationFrame(step);
+            return;
+          }
+          reveal();
+        };
+        const start = () => requestAnimationFrame(step);
+        if (document.fonts && document.fonts.ready) {
+          Promise.race([
+            document.fonts.ready.catch(() => {}),
+            new Promise((resolve) => setTimeout(resolve, 1200))
+          ]).finally(start);
+          return;
+        }
+        start();
       };
       window.addEventListener("pageshow", reveal, { once: true });
       window.setTimeout(reveal, 7000);
