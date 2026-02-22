@@ -364,14 +364,14 @@
     });
   }
   function getCurrentPageNavEntry() {
-    const currentPage = getCurrentPageName();
+    const currentPage = canonicalPageName(location.pathname);
     const entries = [];
     getNavTree().forEach((group) => {
       if (group && typeof group === "object") collectNavEntries(group.items, entries);
     });
     for (const entry of entries) {
       const page = normalizeHrefToPageName(entry.href);
-      if (page && page === currentPage) return entry;
+      if (page && canonicalPageName(page) === currentPage) return entry;
     }
     return null;
   }
@@ -432,11 +432,16 @@
     if (path.startsWith("/")) path = path.slice(1);
     return path || "index.html";
   }
+  function canonicalPageName(value) {
+    let page = normalizePath(value);
+    if (page.endsWith(".html")) page = page.slice(0, -5);
+    return page || "index";
+  }
   function getCurrentPageName() {
     return normalizePath(location.pathname);
   }
   function shouldShowSharedBackground() {
-    return getCurrentPageName() !== "map";
+    return canonicalPageName(location.pathname) !== "map";
   }
   function readOpacityValue(raw, fallback) {
     const n = Number.parseFloat(String(raw ?? "").trim());
@@ -468,7 +473,7 @@
     }
   }
   function shouldShowSharedFooter() {
-    return getCurrentPageName() !== "map";
+    return canonicalPageName(location.pathname) !== "map";
   }
   function ensureSharedFooter() {
     if (!document.body) return null;
@@ -551,7 +556,7 @@
     }
     link.setAttribute("role", "menuitem");
     link.textContent = navLabel(item);
-    const active = !disabled && normalized === currentPage;
+    const active = !disabled && canonicalPageName(normalized) === canonicalPageName(currentPage);
     if (active) {
       link.classList.add("is-active");
       link.setAttribute("aria-current", "page");
@@ -561,7 +566,7 @@
   function renderSiteNav() {
     const nav = document.getElementById("siteNavLinks");
     if (!nav) return;
-    const currentPage = getCurrentPageName();
+    const currentPage = canonicalPageName(location.pathname);
     nav.innerHTML = "";
     nav.setAttribute("aria-label", t("nav_label"));
     const topEntries = [];
@@ -802,8 +807,9 @@
       try { url = new URL(link.href, location.href); } catch { return; }
       if (url.origin !== location.origin) return;
       const samePath = normalizePath(url.pathname) === normalizePath(location.pathname);
+      const sameCanonicalPath = canonicalPageName(url.pathname) === canonicalPageName(location.pathname);
       const sameSearch = url.search === location.search;
-      if (samePath && sameSearch) return;
+      if ((samePath || sameCanonicalPath) && sameSearch) return;
       startPageTransition();
     }, true);
     document.addEventListener("click", (event) => {
@@ -861,4 +867,3 @@
   };
   init();
 })();
-
