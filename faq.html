@@ -347,7 +347,7 @@
           : t("faq_page_title", shortTitle);
         const titleEl = document.getElementById("faqTitle");
         if (titleEl) titleEl.textContent = fullTitle;
-        document.title = fullTitle;
+        document.title = `IDF Map | ${fullTitle}`;
       }
       render();
       new MutationObserver(render).observe(document.documentElement, {
