@@ -1,1 +1,908 @@
-🚧 Site en construction
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Île-de-France Map</title>
+  <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
+  <style>
+    :root {
+      --home-surface-1: #121212;
+      --home-surface-2: #171717;
+      --home-border: #2f2f2f;
+      --home-text: #ececec;
+      --home-muted: #c9c9c9;
+      --home-manual-width: 450px;
+    }
+
+    .home-wrap {
+      min-height: 100vh;
+      box-sizing: border-box;
+      padding: calc(var(--sitebar-height, 52px) + 14px) 14px 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .home-shell {
+      width: fit-content;
+      max-width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1120px) 0px;
+      justify-content: center;
+      align-items: start;
+      gap: 0;
+      color: var(--home-text);
+      font-family: "Inter", "Segoe UI", sans-serif;
+      transition: grid-template-columns 240ms ease, gap 240ms ease;
+    }
+
+    .home-shell.is-manual-open {
+      grid-template-columns: minmax(0, 1120px) var(--home-manual-width);
+      gap: 16px;
+    }
+
+    .home-main {
+      display: grid;
+      gap: 16px;
+      min-width: 0;
+      width: min(1120px, 100%);
+    }
+
+    .home-hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--home-border);
+      border-radius: 14px;
+      min-height: 300px;
+      background: #171717;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url("images/image1.webp");
+      background-size: cover;
+      background-position: center center;
+      filter: saturate(0.95) contrast(1.02) brightness(0.62);
+      transform: scale(1.03);
+      z-index: 0;
+    }
+
+    .home-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(90deg, rgba(10, 10, 10, 0.92) 0%, rgba(10, 10, 10, 0.82) 36%, rgba(10, 10, 10, 0.35) 63%, rgba(10, 10, 10, 0.14) 100%),
+        linear-gradient(180deg, rgba(10, 10, 10, 0.28), rgba(10, 10, 10, 0.6));
+      pointer-events: none;
+    }
+
+    .home-hero-content {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      align-content: center;
+      gap: 14px;
+      padding: 24px 26px;
+      width: min(760px, 100%);
+      margin: 0 auto;
+      justify-items: start;
+      text-align: left;
+    }
+
+    .home-hero-heading {
+      display: grid;
+      gap: 14px;
+      justify-items: center;
+      text-align: center;
+      width: 100%;
+    }
+
+    .home-version-pill {
+      margin: 0 auto;
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #313131;
+      border-radius: 999px;
+      background: #1d1d1d;
+      color: #ececec;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      padding: 8px 12px;
+    }
+
+    .home-version-pill svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+      flex: 0 0 auto;
+    }
+
+    .home-title {
+      margin: 0;
+      font-size: clamp(42px, 6.8vw, 54px);
+      line-height: 0.98;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      text-shadow: 0 6px 28px rgba(0, 0, 0, 0.45);
+      text-align: center;
+    }
+
+    .home-title-logo {
+      display: block;
+      width: min(200px, 84vw);
+      height: auto;
+      filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.45));
+    }
+
+    .home-cta-stack {
+      display: grid;
+      gap: 8px;
+      width: min(680px, 100%);
+      justify-self: center;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .home-cta {
+      min-height: 44px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      color: #ececec;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: clamp(13px, 1.45vw, 15px);
+      font-weight: 700;
+      padding: 0 14px;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .home-cta svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .home-cta:hover {
+      transform: translateY(-1px);
+    }
+
+    .home-cta-auto {
+      min-height: 54px;
+      width: min(350px, 100%);
+      font-size: clamp(15px, 1.7vw, 19px);
+      background: linear-gradient(145deg, #2f8c5a, #1f6440);
+      border-color: #58ca8b;
+      color: #f4fff8;
+    }
+    .home-cta-auto svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .home-cta-auto:hover {
+      background: linear-gradient(145deg, #3ca86c, #297b4f);
+      border-color: #77e5a8;
+      box-shadow: 0 12px 24px rgba(18, 67, 43, 0.52);
+    }
+
+    .home-manual-link {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      width: fit-content;
+      color: #d3efdc;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+      text-decoration-color: rgba(211, 239, 220, 0.85);
+      padding: 0 2px;
+    }
+
+    .home-manual-link:hover {
+      color: #ecfff2;
+      text-decoration-color: rgba(236, 255, 242, 1);
+    }
+
+    .home-manual-link:focus-visible {
+      outline: 2px solid rgba(119, 229, 168, 0.8);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    .home-mini-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .home-cta-small {
+      min-height: 36px;
+      padding: 0 12px;
+      font-size: 13px;
+      border-radius: 9px;
+    }
+    .home-cta-small svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .home-cta-map {
+      background: linear-gradient(145deg, #235870, #1a4256);
+      border-color: #4a8ba9;
+      color: #ecf7ff;
+    }
+
+    .home-cta-map:hover {
+      background: linear-gradient(145deg, #2f6f8e, #24586f);
+      border-color: #75acc4;
+      box-shadow: 0 10px 20px rgba(4, 31, 45, 0.5);
+    }
+
+    .home-cta-discord {
+      background: linear-gradient(145deg, #3f4f8a, #2d3965);
+      border-color: #6b7bc0;
+      color: #f1f4ff;
+    }
+
+    .home-cta-discord:hover {
+      background: linear-gradient(145deg, #4e61a5, #39497d);
+      border-color: #8c9ddb;
+      box-shadow: 0 10px 20px rgba(18, 24, 54, 0.52);
+    }
+    .home-cta-discord .site-icon-discord{
+      fill: currentColor;
+      stroke: none;
+    }
+    .home-cta-discord .site-icon-discord path{
+      fill: currentColor !important;
+      stroke: none !important;
+    }
+
+    .home-manual-column {
+      width: 100%;
+      max-width: var(--home-manual-width);
+      opacity: 0;
+      pointer-events: none;
+      min-width: 0;
+      overflow: hidden;
+      transition: opacity 180ms ease;
+    }
+
+    .home-shell.is-manual-open .home-manual-column {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .home-manual-panel {
+      position: relative;
+      border: 0 solid var(--home-border);
+      border-radius: 14px;
+      background: linear-gradient(170deg, rgba(20, 20, 20, 0.95), rgba(14, 14, 14, 0.95));
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.32);
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: #6f6f6f #1b1b1b;
+      opacity: 0;
+      transform: translateX(16px);
+      pointer-events: none;
+      transition: max-height 220ms ease, padding 220ms ease, border-width 220ms ease, opacity 220ms ease, transform 220ms ease;
+    }
+
+    .home-manual-panel::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .home-manual-panel::-webkit-scrollbar-track {
+      background: #1b1b1b;
+      border-radius: 8px;
+    }
+
+    .home-manual-panel::-webkit-scrollbar-thumb {
+      background: #6f6f6f;
+      border-radius: 8px;
+      border: 2px solid #1b1b1b;
+    }
+
+    .home-manual-panel::-webkit-scrollbar-thumb:hover {
+      background: #9a9a9a;
+    }
+
+    .home-shell.is-manual-open .home-manual-panel {
+      border-width: 1px;
+      padding: 14px;
+      max-height: calc(100vh - var(--sitebar-height, 52px) - 54px);
+      overflow: auto;
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .home-manual-title {
+      margin: 0 34px 10px 0;
+      font-size: 18px;
+      line-height: 1.2;
+      color: #ffffff;
+    }
+
+    .home-manual-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      background: #1a1a1a;
+      color: #f0f0f0;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+    }
+
+    .home-manual-close:hover {
+      background: #232323;
+      border-color: #525252;
+      transform: translateY(-1px);
+    }
+
+    .home-manual-close:focus-visible {
+      outline: 2px solid rgba(119, 229, 168, 0.85);
+      outline-offset: 2px;
+    }
+
+    .home-manual-group {
+      border-top: 1px solid #2a2a2a;
+      padding-top: 10px;
+      margin-top: 10px;
+      display: grid;
+      gap: 7px;
+    }
+
+    .home-manual-group:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .home-manual-group h3 {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #d9d9d9;
+    }
+
+    .home-manual-list {
+      margin: 0;
+      padding-left: 17px;
+      color: #d0d0d0;
+      line-height: 1.45;
+      display: grid;
+      gap: 4px;
+      font-size: 13px;
+    }
+
+    .home-manual-link-inline {
+      color: #dff0e6;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-thickness: 1px;
+      text-decoration-color: rgba(223, 240, 230, 0.75);
+    }
+
+    .home-manual-link-inline:hover {
+      color: #ffffff;
+      text-decoration-color: rgba(255, 255, 255, 1);
+    }
+
+    .home-manual-video-embed {
+      border: 1px solid #2f2f2f;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #0d0d0d;
+      width: min(100%, 340px);
+      margin: 0 auto;
+    }
+
+    .home-manual-video-embed iframe {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+    }
+
+    .home-panel {
+      border: 1px solid var(--home-border);
+      border-radius: 12px;
+      background: linear-gradient(170deg, #171717, #141414);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.32);
+      padding: 22px 26px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .home-panel-title {
+      margin: 0;
+      color: #ffffff;
+      font-size: clamp(32px, 5vw, 46px);
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+
+    .home-panel-divider {
+      height: 1px;
+      width: 100%;
+      background: linear-gradient(90deg, rgba(200, 200, 200, 0.24), rgba(200, 200, 200, 0.05));
+    }
+
+    .home-highlights {
+      display: grid;
+      gap: 18px;
+    }
+
+    .home-highlight {
+      display: grid;
+      gap: 5px;
+    }
+
+    .home-highlight h3 {
+      margin: 0;
+      font-size: 25px;
+      font-weight: 800;
+      color: #d9d9d9;
+      line-height: 1;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .home-highlight p {
+      margin: 0;
+      color: var(--home-muted);
+      line-height: 1.6;
+      font-size: clamp(15px, 1.6vw, 17px);
+      max-width: 88ch;
+    }
+
+    @media (min-width: 901px) {
+      .home-shell,
+      .home-shell.is-manual-open {
+        grid-template-columns: minmax(0, 1120px);
+        gap: 0;
+      }
+
+      .home-manual-column {
+        position: fixed;
+        right: 14px;
+        top: calc(var(--sitebar-height, 52px) + 14px);
+        width: min(var(--home-manual-width), calc(100vw - 28px));
+        max-width: var(--home-manual-width);
+        opacity: 1;
+        overflow: visible;
+        pointer-events: none;
+        z-index: 30;
+      }
+
+      .home-shell.is-manual-open .home-manual-column {
+        pointer-events: auto;
+      }
+
+      .home-manual-panel {
+        border-width: 1px;
+        padding: 14px;
+        max-height: calc(100vh - var(--sitebar-height, 52px) - 28px);
+        overflow: auto;
+        opacity: 0;
+        transform: translateX(calc(100% + 18px));
+        pointer-events: none;
+        transition: opacity 220ms ease, transform 220ms ease;
+      }
+
+      .home-shell.is-manual-open .home-manual-panel {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .home-shell,
+      .home-shell.is-manual-open {
+        width: 100%;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .home-manual-column {
+        width: 100%;
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .home-manual-panel {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        border-width: 0;
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+
+      .home-shell.is-manual-open .home-manual-panel {
+        max-height: 900px;
+        padding: 14px;
+        border-width: 1px;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .home-mini-actions {
+        width: 100%;
+      }
+
+      .home-cta-small {
+        flex: 1 1 calc(50% - 4px);
+      }
+
+      .home-panel {
+        padding: 18px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .home-wrap {
+        padding: calc(var(--sitebar-height, 52px) + 10px) 10px 14px;
+      }
+
+      .home-hero {
+        min-height: 320px;
+      }
+
+      .home-hero-content {
+        padding: 16px;
+        gap: 12px;
+      }
+
+      .home-title {
+        font-size: clamp(34px, 11vw, 42px);
+      }
+
+      .home-panel-title {
+        font-size: clamp(28px, 8.4vw, 36px);
+      }
+
+      .home-highlight h3 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body data-bg-opacity="0.28" data-bg-overlay-top="0.72" data-bg-overlay-bottom="0.9">
+  <main class="home-wrap">
+    <section class="home-shell" id="homeShell">
+      <div class="home-main">
+        <section class="home-hero" aria-labelledby="homeHeroTitle">
+          <div class="home-hero-content">
+            <div class="home-hero-heading">
+              <h1 class="home-title" id="homeHeroTitle">
+                <img class="home-title-logo" src="./images/idf_logo_new.png" alt="IDF Map."/>
+              </h1>
+            </div>
+
+            <div class="home-cta-stack">
+              <a
+                id="homeAutoDownloadBtn"
+                class="home-cta home-cta-auto"
+                href="#"
+                data-offsite-key="download"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 3v11"></path>
+                  <path d="M8 10l4 4 4-4"></path>
+                  <path d="M5 20h14"></path>
+                </svg>
+                <span data-i18n="download_button">Telecharger</span>
+              </a>
+
+              <button
+                type="button"
+                class="home-manual-link"
+                id="homeManualToggleBtn"
+                aria-expanded="false"
+                aria-controls="homeManualPanel"
+              >
+                <span data-i18n="downloads_manual_title">Telechargement manuel</span>
+              </button>
+
+              <div class="home-mini-actions">
+                <a class="home-cta home-cta-small home-cta-map" id="homeMapBtn" href="map.html">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 4l6-2 6 2v16l-6-2-6 2-6-2V4l6 2z"></path>
+                    <path d="M9 6v14"></path>
+                    <path d="M15 4v14"></path>
+                  </svg>
+                  <span data-i18n="home_btn_interactive_map">Carte interactive</span>
+                </a>
+
+                <a
+                  id="homeDiscordBtn"
+                  class="home-cta home-cta-small home-cta-discord"
+                  href="#"
+                  data-offsite-key="discord"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg class="site-icon-discord" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M18.59 5.88997C17.36 5.31997 16.05 4.89997 14.67 4.65997C14.5 4.95997 14.3 5.36997 14.17 5.69997C12.71 5.47997 11.26 5.47997 9.83001 5.69997C9.69001 5.36997 9.49001 4.95997 9.32001 4.65997C7.94001 4.89997 6.63001 5.31997 5.40001 5.88997C2.92001 9.62997 2.25001 13.28 2.58001 16.87C4.23001 18.1 5.82001 18.84 7.39001 19.33C7.78001 18.8 8.12001 18.23 8.42001 17.64C7.85001 17.43 7.31001 17.16 6.80001 16.85C6.94001 16.75 7.07001 16.64 7.20001 16.54C10.33 18 13.72 18 16.81 16.54C16.94 16.65 17.07 16.75 17.21 16.85C16.7 17.16 16.15 17.42 15.59 17.64C15.89 18.23 16.23 18.8 16.62 19.33C18.19 18.84 19.79 18.1 21.43 16.87C21.82 12.7 20.76 9.08997 18.61 5.88997H18.59ZM8.84001 14.67C7.90001 14.67 7.13001 13.8 7.13001 12.73C7.13001 11.66 7.88001 10.79 8.84001 10.79C9.80001 10.79 10.56 11.66 10.55 12.73C10.55 13.79 9.80001 14.67 8.84001 14.67ZM15.15 14.67C14.21 14.67 13.44 13.8 13.44 12.73C13.44 11.66 14.19 10.79 15.15 10.79C16.11 10.79 16.87 11.66 16.86 12.73C16.86 13.79 16.11 14.67 15.15 14.67Z" fill="#000000"></path>
+                  </svg>
+                  <span data-i18n="home_btn_discord">Discord</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="home-panel" aria-labelledby="homePanelTitle">
+          <div class="home-highlights">
+            <article class="home-highlight">
+              <p data-i18n="home_intro_p1">Ce projet est une recréation de la région parisienne pour Euro Truck Simulator 2, inspirée de la réalité de l’Île-de-France.</p>
+            </article>
+            <article class="home-highlight">
+              <p data-i18n="home_intro_p2">La map est conçue à une échelle 1:1, avec l'objectif d’offrir une expérience de conduite réaliste et immersive. Certains ajustements ont été réalisés pour améliorer la jouabilité, la fluidité et l’adaptation aux contraintes du jeu.</p>
+            </article>
+            <article class="home-highlight">
+              <p data-i18n="home_intro_p3">Ce projet s’adresse aux joueurs souhaitant explorer une version réaliste de la région parisienne dans ETS 2, que ce soit pour le transport de marchandises ou de passagers, la découverte ou l’immersion.</p>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <aside class="home-manual-column" aria-live="polite">
+        <section class="home-manual-panel" id="homeManualPanel">
+          <button type="button" class="home-manual-close" id="homeManualCloseBtn" aria-label="Fermer le tutoriel" title="Fermer">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h2 class="home-manual-title" data-i18n="downloads_manual_tutorial_title">Tutoriel d'installation manuelle</h2>
+
+          <section class="home-manual-group">
+            <h3 data-i18n="guide_install_prereq_title">PRÉREQUIS</h3>
+            <ul class="home-manual-list">
+              <li data-i18n="guide_install_prereq_1">Vous devez posséder les DLC requis et la bonne version du jeu.</li>
+              <li>
+                <a class="home-manual-link-inline" id="homeSteamDlcLink" href="#" target="_blank" rel="noopener noreferrer" data-i18n="guide_install_prereq_2">Accéder à la page Steam des DLC</a>
+              </li>
+              <li>
+                <a class="home-manual-link-inline" id="homeManualDepsLink" href="#" data-offsite-key="download" target="_blank" rel="noopener noreferrer" data-i18n="guide_install_prereq_3_link">Voir les DLC requis</a>
+                <span data-i18n="guide_install_prereq_3_note">(Voir dans l'onglet "Dependencies")</span>
+              </li>
+            </ul>
+          </section>
+
+          <section class="home-manual-group">
+            <h3 data-i18n="guide_install_config_title">RÉGLAGE IMPORTANT</h3>
+            <ul class="home-manual-list">
+              <li data-i18n="guide_install_config_1">Accédez à Documents\Euro Truck Simulator 2 et ouvrez le fichier config.cfg</li>
+              <li data-i18n="guide_install_config_2">Recherchez la ligne où se trouve uset r_buffer_page_size</li>
+              <li data-i18n="guide_install_config_3">Modifiez la valeur de uset r_buffer_page_size de 10 à 30</li>
+              <li data-i18n="guide_install_config_4">Enregistrez et fermez le fichier</li>
+            </ul>
+          </section>
+
+          <section class="home-manual-group">
+            <h3 data-i18n="guide_install_map_title">INSTALLATION DE LA MAP</h3>
+            <ul class="home-manual-list">
+              <li>
+                <a class="home-manual-link-inline" id="homeManualMapDownloadLink" href="#" data-offsite-key="download" target="_blank" rel="noopener noreferrer" data-i18n="guide_install_map_1">Téléchargez la map ici</a>
+              </li>
+              <li data-i18n="guide_install_map_2">Placez le fichier .scs dans Documents\Euro Truck Simulator 2\mod</li>
+            </ul>
+          </section>
+
+          <section class="home-manual-group">
+            <h3 data-i18n="guide_install_launch_title">LANCEMENT DU JEU</h3>
+            <ul class="home-manual-list">
+              <li data-i18n="guide_install_launch_1">Lancez le jeu et créez une nouvelle carrière</li>
+              <li data-i18n="guide_install_launch_2">Ajoutez le mod de la map tout en haut de votre liste de mods activés et enregistrez</li>
+              <li data-i18n="guide_install_launch_3">Sélectionnez le module de carte idf.mbd dans l'onglet de création de profil</li>
+              <li data-i18n="guide_install_launch_4">Créez le profil et jouez !</li>
+            </ul>
+          </section>
+
+          <section class="home-manual-group" id="homeManualVideoGroup">
+            <h3 data-i18n="guide_install_video">Voir la vidéo d'installation</h3>
+            <div class="home-manual-video-embed">
+              <iframe
+                id="homeManualVideoFrame"
+                src="about:blank"
+                title="Tutoriel d'installation manuelle"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </section>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="config/translations.js"></script>
+  <script src="config/config.js"></script>
+  <script src="config/site-nav.js"></script>
+  <script src="config/shared-header.js"></script>
+  <script>
+    (function initHomePage() {
+      const homeShell = document.getElementById("homeShell");
+      const homeAutoDownloadBtn = document.getElementById("homeAutoDownloadBtn");
+      const homeManualToggleBtn = document.getElementById("homeManualToggleBtn");
+      const homeManualDepsLink = document.getElementById("homeManualDepsLink");
+      const homeManualMapDownloadLink = document.getElementById("homeManualMapDownloadLink");
+      const homeSteamDlcLink = document.getElementById("homeSteamDlcLink");
+      const homeManualVideoGroup = document.getElementById("homeManualVideoGroup");
+      const homeManualVideoFrame = document.getElementById("homeManualVideoFrame");
+      const homeDiscordBtn = document.getElementById("homeDiscordBtn");
+      const homeManualCloseBtn = document.getElementById("homeManualCloseBtn");
+
+      function lang() {
+        return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
+      }
+
+      function t(key, fallback) {
+        const i18n = window.I18N || {};
+        const code = lang();
+        const fromLang = i18n[code] && i18n[code][key];
+        if (typeof fromLang === "string" && fromLang) return fromLang;
+        const fromFr = i18n.fr && i18n.fr[key];
+        if (typeof fromFr === "string" && fromFr) return fromFr;
+        return fallback;
+      }
+
+      function applyOffsiteHref(anchor) {
+        if (!anchor) return;
+        const key = String(anchor.getAttribute("data-offsite-key") || "").trim();
+        if (!key) return;
+        const offsite = window.SITE_OFFSITE_LINKS && typeof window.SITE_OFFSITE_LINKS === "object"
+          ? window.SITE_OFFSITE_LINKS
+          : {};
+        const href = String(offsite[key] || "").trim();
+        if (!href) return;
+        anchor.setAttribute("href", href);
+      }
+
+      function siteLinks() {
+        const links = window.SITE_LINKS;
+        return links && typeof links === "object" ? links : {};
+      }
+
+      function applyTexts() {
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = String(el.getAttribute("data-i18n") || "").trim();
+          if (!key) return;
+          el.textContent = t(key, el.textContent);
+        });
+      }
+
+      function resetManualVideo() {
+        if (!homeManualVideoFrame) return;
+        const initialSrc = homeManualVideoFrame.dataset.initialSrc
+          || String(homeManualVideoFrame.getAttribute("src") || "").trim();
+        if (!initialSrc) return;
+        if (!homeManualVideoFrame.dataset.initialSrc) {
+          homeManualVideoFrame.dataset.initialSrc = initialSrc;
+        }
+        homeManualVideoFrame.setAttribute("src", "about:blank");
+        window.setTimeout(() => {
+          homeManualVideoFrame.setAttribute("src", initialSrc);
+        }, 0);
+      }
+
+      function setManualPanelOpen(open) {
+        if (!homeShell || !homeManualToggleBtn) return;
+        const wasOpen = homeShell.classList.contains("is-manual-open");
+        homeManualVideoFrame.contentWindow?.postMessage(
+          '{"event":"command","func":"stopVideo","args":""}',
+          "*"
+        );
+        homeShell.classList.toggle("is-manual-open", !!open);
+        homeManualToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
+      function bindEvents() {
+        if (homeManualToggleBtn && homeManualToggleBtn.dataset.bound !== "1") {
+          homeManualToggleBtn.dataset.bound = "1";
+          homeManualToggleBtn.addEventListener("click", () => {
+            const isOpen = homeShell && homeShell.classList.contains("is-manual-open");
+            setManualPanelOpen(!isOpen);
+          });
+        }
+        if (homeManualCloseBtn && homeManualCloseBtn.dataset.bound !== "1") {
+          homeManualCloseBtn.dataset.bound = "1";
+          homeManualCloseBtn.addEventListener("click", () => setManualPanelOpen(false));
+        }
+        if (!document.body.dataset.homeManualEscBound) {
+          document.body.dataset.homeManualEscBound = "1";
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") setManualPanelOpen(false);
+          });
+        }
+      }
+
+      function render() {
+        const links = siteLinks();
+        const guide = links.guide && typeof links.guide === "object" ? links.guide : {};
+        applyOffsiteHref(homeAutoDownloadBtn);
+        applyOffsiteHref(homeManualDepsLink);
+        applyOffsiteHref(homeManualMapDownloadLink);
+        applyOffsiteHref(homeDiscordBtn);
+        if (homeSteamDlcLink) {
+          const href = String(guide.steam_dlc || "").trim();
+          if (href) homeSteamDlcLink.href = href;
+        }
+        if (homeManualVideoFrame) {
+          const videoSrc = String(guide.manual_video_embed || homeManualVideoFrame.getAttribute("src") || "").trim();
+          if (videoSrc) {
+            homeManualVideoFrame.setAttribute("src", videoSrc);
+            homeManualVideoFrame.dataset.initialSrc = videoSrc;
+          }
+        }
+        applyTexts();
+        if (homeManualVideoGroup) {
+          const showVideo = lang() === "fr";
+          homeManualVideoGroup.hidden = !showVideo;
+          homeManualVideoGroup.style.display = showVideo ? "" : "none";
+          homeManualVideoGroup.setAttribute("aria-hidden", showVideo ? "false" : "true");
+        }
+        bindEvents();
+      }
+
+      render();
+
+      new MutationObserver(render).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["lang"]
+      });
+    })();
+  </script>
+</body>
+</html>

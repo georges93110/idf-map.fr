@@ -1,0 +1,8 @@
+<city>
+
+	<ticket uid="1" name="unité" price="2" probability="90" upsell="10"/>
+	<ticket uid="2" name="journée" price="21" probability="5" upsell="3"/>
+	<ticket uid="3" name="semaine" price="31" probability="4" upsell="5"/>
+	<ticket uid="4" name="mois" price="86" probability="1" upsell="20"/>
+
+</city>

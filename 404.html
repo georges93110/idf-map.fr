@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="robots" content="noindex"/>
+  <title>404 - Page introuvable</title>
+  <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
+  <style>
+    .not-found-wrap{
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:calc(var(--sitebar-height, 52px) + 28px) 16px 24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .not-found-card{
+      width:min(760px, 100%);
+      border:1px solid #2f2f2f;
+      border-radius:14px;
+      background:#171717;
+      color:#ececec;
+      padding:22px;
+      box-shadow:0 16px 46px rgba(0,0,0,.42);
+    }
+    .not-found-code{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#b0b0b0;
+      font-weight:700;
+    }
+    .not-found-title{
+      margin:8px 0 6px;
+      font-size:30px;
+      line-height:1.1;
+      font-weight:800;
+      color:#fff;
+    }
+    .not-found-text{
+      margin:0;
+      color:#c8c8c8;
+      font-size:15px;
+      line-height:1.5;
+    }
+    .not-found-actions{
+      margin-top:16px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .not-found-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:0 14px;
+      border-radius:10px;
+      border:1px solid #383838;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:700;
+      color:#ececec;
+      background:#1f1f1f;
+    }
+    .not-found-btn:hover{
+      background:#292929;
+      border-color:#474747;
+    }
+    .not-found-btn.primary{
+      background:#303030;
+      border-color:#4a4a4a;
+      color:#fff;
+    }
+  </style>
+</head>
+<body data-bg-opacity="0.26" data-bg-overlay-top="0.72" data-bg-overlay-bottom="0.9">
+  <main class="not-found-wrap">
+    <section class="not-found-card" aria-labelledby="nfTitle">
+      <p class="not-found-code">Error 404</p>
+      <h1 class="not-found-title" id="nfTitle">Page introuvable</h1>
+      <p class="not-found-text" id="nfText">La page demandée n'existe pas ou l'URL est incorrecte.</p>
+      <div class="not-found-actions">
+        <a class="not-found-btn primary" id="nfHomeBtn" href="./">Retour a l'accueil</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="config/translations.js"></script>
+  <script src="config/config.js"></script>
+  <script src="config/site-nav.js"></script>
+  <script src="config/shared-header.js"></script>
+  <script>
+    (function init404Copy() {
+      function currentLang() {
+        return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
+      }
+      function t(key, fallback) {
+        const i18n = window.I18N || {};
+        const lang = currentLang();
+        const fromLang = i18n[lang] && i18n[lang][key];
+        if (typeof fromLang === "string" && fromLang) return fromLang;
+        const fromFr = i18n.fr && i18n.fr[key];
+        if (typeof fromFr === "string" && fromFr) return fromFr;
+        return fallback;
+      }
+      function render() {
+        const codeEl = document.querySelector(".not-found-code");
+        const titleEl = document.getElementById("nfTitle");
+        const textEl = document.getElementById("nfText");
+        const homeBtn = document.getElementById("nfHomeBtn");
+        if (codeEl) codeEl.textContent = t("not_found_code", "404");
+        if (titleEl) titleEl.textContent = t("not_found_title", "Page introuvable");
+        if (textEl) textEl.textContent = t("not_found_text", "La page demandée n'existe pas ou l'URL est incorrecte.");
+        if (homeBtn) {
+          homeBtn.textContent = t("not_found_home", "Retour a l'accueil");
+        }
+        document.title = "IDF Map | " + t("not_found_code", "404") + " - " + t("not_found_title", "Page introuvable");
+      }
+      render();
+      new MutationObserver(render).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["lang"]
+      });
+    })();
+  </script>
+</body>
+</html>

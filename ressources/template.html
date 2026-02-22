@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Template</title>
+  <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
+</head>
+<body data-bg-opacity="0.28" data-bg-overlay-top="0.72" data-bg-overlay-bottom="0.9">
+  <script src="config/translations.js"></script>
+  <script src="config/offsite-links.js"></script>
+  <script src="config/site-nav.js"></script>
+  <script src="config/shared-header.js"></script>
+  <script>
+    (function initTemplatePage() {
+      function lang() {
+        return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
+      }
+      function t(key, fallback) {
+        const i18n = window.I18N || {};
+        const code = lang();
+        const fromLang = i18n[code] && i18n[code][key];
+        if (typeof fromLang === "string" && fromLang) return fromLang;
+        const fromFr = i18n.fr && i18n.fr[key];
+        if (typeof fromFr === "string" && fromFr) return fromFr;
+        return fallback;
+      }
+      function render() {
+        document.title = t("template_page_title", t("nav_page_test", "Template"));
+      }
+      render();
+      new MutationObserver(render).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["lang"]
+      });
+    })();
+  </script>
+</body>
+</html>

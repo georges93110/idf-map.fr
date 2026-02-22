@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>FAQ</title>
+  <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
+  <style>
+    :root{
+      --faq-surface:#171717;
+      --faq-surface-soft:#141414;
+      --faq-border:#2f2f2f;
+      --faq-border-soft:#2a2a2a;
+      --faq-text:#ececec;
+      --faq-muted:#c9c9c9;
+      --faq-link:#f4f4f4;
+    }
+
+    .faq-wrap{
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:calc(var(--sitebar-height, 52px) + 18px) 16px calc(var(--shared-footer-height, 24px) + 22px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .faq-card{
+      width:min(1040px, 100%);
+      border:1px solid var(--faq-border);
+      border-radius:16px;
+      background:var(--faq-surface);
+      color:var(--faq-text);
+      box-shadow:0 22px 48px rgba(0,0,0,.42);
+      padding:18px;
+      display:grid;
+      gap:14px;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+
+    .faq-title{
+      margin:0;
+      font-size:clamp(22px, 3.4vw, 30px);
+      line-height:1.14;
+      color:#fff;
+      letter-spacing:-.02em;
+    }
+
+    .faq-list{
+      display:grid;
+      gap:12px;
+      counter-reset:faqCount;
+      grid-template-columns:1fr;
+    }
+
+    .faq-item{
+      border:1px solid var(--faq-border-soft);
+      border-radius:12px;
+      background:var(--faq-surface-soft);
+      padding:16px 16px 14px 56px;
+      display:grid;
+      gap:8px;
+      position:relative;
+      min-height:120px;
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+    .faq-item::before{
+      counter-increment:faqCount;
+      content:counter(faqCount);
+      position:absolute;
+      left:14px;
+      top:13px;
+      width:26px;
+      height:26px;
+      border-radius:999px;
+      border:1px solid #3a3a3a;
+      background:#1d1d1d;
+      color:#f1f1f1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+    }
+    .faq-item:hover,
+    .faq-item:focus-within{
+      border-color:#4a4a4a;
+      box-shadow:0 8px 20px rgba(0,0,0,.3);
+    }
+
+    .faq-question{
+      margin:0;
+      color:#f5f5f5;
+      font-size:16px;
+      font-weight:800;
+      line-height:1.34;
+    }
+    .faq-answer{
+      margin:0;
+      color:var(--faq-muted);
+      line-height:1.6;
+      font-size:14px;
+    }
+
+    .faq-inline-link{
+      margin-left:10px;
+      display:inline-flex;
+      align-items:center;
+      color:var(--faq-link);
+      text-decoration:underline;
+      text-underline-offset:3px;
+      text-decoration-thickness:1px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .faq-inline-link:hover{
+      color:#fff;
+    }
+    .faq-inline-link:focus-visible{
+      outline:2px solid #fff;
+      outline-offset:2px;
+      border-radius:4px;
+    }
+
+    @media (min-width:1024px){
+      .faq-list{
+        grid-template-columns:repeat(12, minmax(0, 1fr));
+        gap:14px;
+      }
+      .faq-item{
+        grid-column:span 6;
+      }
+      .faq-item:nth-child(3),
+      .faq-item:nth-child(6){
+        grid-column:1 / -1;
+      }
+    }
+
+    @media (max-width:880px){
+      .faq-wrap{
+        align-items:flex-start;
+        padding:calc(var(--sitebar-height, 52px) + 12px) 10px calc(var(--shared-footer-height, 24px) + 12px);
+      }
+      .faq-card{
+        border-radius:12px;
+        padding:14px;
+      }
+      .faq-item{
+        padding:12px 12px 12px 46px;
+        min-height:0;
+      }
+      .faq-item::before{
+        left:11px;
+        top:10px;
+        width:23px;
+        height:23px;
+        font-size:11px;
+      }
+      .faq-question{
+        font-size:15px;
+      }
+      .faq-answer{
+        font-size:13.5px;
+      }
+      .faq-inline-link{
+        margin-left:0;
+        margin-top:6px;
+        width:fit-content;
+      }
+    }
+
+    @media (max-width:480px){
+      .faq-wrap{
+        padding:calc(var(--sitebar-height, 52px) + 8px) 8px calc(var(--shared-footer-height, 24px) + 10px);
+      }
+      .faq-card{
+        padding:12px;
+      }
+      .faq-title{
+        font-size:21px;
+      }
+      .faq-question{
+        font-size:14px;
+      }
+      .faq-answer{
+        font-size:13px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .faq-item{
+        transition:none;
+      }
+    }
+  </style>
+</head>
+<body data-bg-opacity="0.24" data-bg-overlay-top="0.74" data-bg-overlay-bottom="0.92">
+  <main class="faq-wrap">
+    <section class="faq-card" aria-labelledby="faqTitle">
+      <h1 class="faq-title" id="faqTitle" data-i18n="faq_page_title">FAQ</h1>
+      <div class="faq-list">
+        <article class="faq-item">
+          <h2 class="faq-question" data-i18n="faq_q_coverage">Toute l'Île-de-France est représentée ?</h2>
+          <p class="faq-answer" data-i18n="faq_a_coverage">Non, la map ne couvre pas encore toute l'Île-de-France. La reproduction d'une région aussi grande demande énormément de temps et de travail afin de conserver un bon niveau de détail. Le projet avance progressivement, avec l'objectif d'ajouter un maximum de zones au fur et à mesure du développement.</p>
+        </article>
+
+        <article class="faq-item">
+          <h2 class="faq-question" data-i18n="faq_q_next_update">Dans combien de temps arrive la prochaine mise à jour ?</h2>
+          <p class="faq-answer" data-i18n="faq_a_next_update">Aucune date n'est annoncée à l'avance. Le développement se fait sur notre temps personnel, donc le rythme dépend des disponibilités. Nous privilégions un travail soigné plutôt que des délais fixes, afin de garantir des mises à jour stables.</p>
+        </article>
+
+        <article class="faq-item">
+          <h2 class="faq-question" data-i18n="faq_q_why_dlc">Pourquoi les DLC sont nécessaires ?</h2>
+          <p class="faq-answer" data-i18n="faq_a_why_dlc">Les DLC sont indispensables car la carte utilise de nombreux éléments issus de ces contenus additionnels (bâtiments, intersections, textures, etc.). Sans eux, la map serait très incomplète, avec près de 90 % des objets manquants et un niveau de détail considérablement réduit.</p>
+        </article>
+
+        <article class="faq-item">
+          <h2 class="faq-question" data-i18n="faq_q_future_zones">Quelles sont les futures zones qui seront réalisées ?</h2>
+          <p class="faq-answer" data-i18n="faq_a_future_zones">Les zones sont développées en priorité en fonction des votes dans le salon sondage du Discord. Le département ayant obtenu le plus de votes sera réalisé en priorité.</p>
+        </article>
+
+        <article class="faq-item">
+          <h2 class="faq-question" data-i18n="faq_q_contribute">Est-ce que je peux aider pour la map ?</h2>
+          <p class="faq-answer" data-i18n="faq_a_contribute">Oui, les contributions sont toujours appréciées. Si vous souhaitez apporter votre aide, contactez @georges93 sur Discord afin de voir comment vous pouvez contribuer efficacement au projet.</p>
+        </article>
+
+        <article class="faq-item">
+          <h2 class="faq-question" data-i18n="faq_q_install_help">J'ai besoin d'aide pour l'installation / j'ai un problème</h2>
+          <p class="faq-answer">
+            <span data-i18n="faq_a_install_help">En cas de difficulté technique ou de souci lors de l'installation, rejoignez le serveur Discord pour obtenir de l'aide et échanger avec la communauté.</span>
+            <a
+              id="faqDiscordLink"
+              class="faq-inline-link"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-i18n="faq_join_discord_link"
+            >Rejoindre le Discord</a>
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="config/translations.js"></script>
+  <script src="config/config.js"></script>
+  <script src="config/site-nav.js"></script>
+  <script src="config/shared-header.js"></script>
+  <script>
+    (function initFaqPage() {
+      function lang() {
+        return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
+      }
+      function t(key, fallback) {
+        const i18n = window.I18N || {};
+        const code = lang();
+        const fromLang = i18n[code] && i18n[code][key];
+        if (typeof fromLang === "string" && fromLang) return fromLang;
+        const fromFr = i18n.fr && i18n.fr[key];
+        if (typeof fromFr === "string" && fromFr) return fromFr;
+        return fallback;
+      }
+      function render() {
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          if (!key) return;
+          el.textContent = t(key, el.textContent);
+        });
+        const offsite = window.SITE_OFFSITE_LINKS && typeof window.SITE_OFFSITE_LINKS === "object"
+          ? window.SITE_OFFSITE_LINKS
+          : {};
+        const discordHref = String(offsite.discord || "").trim();
+        const discordLink = document.getElementById("faqDiscordLink");
+        if (discordLink && discordHref) discordLink.href = discordHref;
+        const shortTitle = t("nav_faq", "FAQ");
+        const longTitle = t("faq_page_title_long", t("faq_page_title", shortTitle));
+        const isFaqAcronym = String(shortTitle).trim().toUpperCase() === "FAQ";
+        const fullTitle = isFaqAcronym && longTitle && longTitle !== shortTitle
+          ? `${shortTitle} | ${longTitle}`
+          : t("faq_page_title", shortTitle);
+        const titleEl = document.getElementById("faqTitle");
+        if (titleEl) titleEl.textContent = fullTitle;
+        document.title = fullTitle;
+      }
+      render();
+      new MutationObserver(render).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["lang"]
+      });
+    })();
+  </script>
+</body>
+</html>

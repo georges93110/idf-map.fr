@@ -1,0 +1,1302 @@
+<lines map_type="other">
+
+	<line uid="0" number="24" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="24: Gare de Lyon - Maison de la RATP > Centre Commercial">
+
+					<busstop uid="47" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="48" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="49" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="50" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="51" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="79" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="25" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="24: Centre Commercial > Gare de Lyon">
+					<busstop uid="46" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="26" passengersMin="0" passengersMax="50" coefOn="25" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="45" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="52" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="53" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="54" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="55" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="56" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="57" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+	</line>
+
+	<line uid="1" number="63" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="63: Trocadero > Porte de la Muette - Octave Feuillet">
+
+					<busstop uid="58" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="59" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="60" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="61" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="62" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="63" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="63: Porte de la Muette - Octave Feuillet > Trocadero">
+
+					<busstop uid="64" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="65" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="66" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="67" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="68" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="69" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+	</line>
+
+	<line uid="2" number="109" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="109: Terroirs de France > Centre Commercial">
+
+					<busstop uid="44" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="25" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="109: Centre Commercial > Terroirs de France">
+					<busstop uid="46" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="26" passengersMin="0" passengersMax="50" coefOn="25" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="80" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+	</line>
+
+	<line uid="3" number="112" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="112: Château de Vincennes > Plaine de la Faluère">
+
+					<busstop uid="87" passengersMin="0" passengersMax="20" coefOn="100" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="88" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="89" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="90" passengersMin="0" passengersMax="10" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="91" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="112: Plaine de la Faluère > Château de Vincennes">
+
+					<busstop uid="92" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="93" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="94" passengersMin="0" passengersMax="10" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="95" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="87" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+	</line>
+
+	<line uid="4" number="114" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="114: Plateau d'Avron - Pl. de Stalingrad > Le Raincy - Villemomble - Montfermeil RER">
+
+					<busstop uid="84" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="8" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="9" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="10" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="11" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="12" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="22" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="114: Le Raincy - Villemomble - Montfermeil RER > Plateau d'Avron - Pl. de Stalingrad">
+					<busstop uid="21" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="13" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="14" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="76" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="77" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="78" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="7" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="3" name="114: Plateau d'Avron - Pl. de Stalingrad > Villemomble - Les Coquetiers">
+
+					<busstop uid="84" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="8" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="9" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="10" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="11" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="12" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="22" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="15" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="16" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="17" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="4" name="114: Villemomble - Les Coquetiers > Plateau d'Avron - Pl. de Stalingrad">
+			        <busstop uid="17" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="18" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="19" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="20" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="21" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="13" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="14" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="76" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="77" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="78" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="7" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+	</line>
+
+	<line uid="5" number="121" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="121: Château de Villemomble > Bois-Perrier Nord">
+
+					<busstop uid="38" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="39" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="82" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="40" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="86" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="42" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="121: Bois-Perrier Nord > Château de Villemomble">
+
+					<busstop uid="31" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="85" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="33" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="81" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="35" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="37" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+	</line>
+
+	<line uid="6" number="124" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="124: Nanteuil > Gare de Rosny-sous-Bois">
+
+					<busstop uid="96" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="97" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="3" nextStopPrice="0"/>
+					<busstop uid="98" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+	</line>
+
+	<line uid="7" number="221" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="221: Château de Villemomble > Bagnolet - Gallieni">
+
+					<busstop uid="43" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="39" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="82" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="40" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="42" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="70" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="71" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="11" nextStopPrice="0"/>
+					<busstop uid="73" passengersMin="0" passengersMax="0" coefOn="100" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="221: Bagnolet - Gallieni > Château de Villemomble">
+					
+					<busstop uid="73" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="11" nextStopPrice="0"/>
+					<busstop uid="83" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="72" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="31" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="33" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="81" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="35" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="36" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+	</line>
+
+	<line uid="8" number="351" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="351: Pyrénées – Docteur Netter > Gallieni">
+
+					<busstop uid="126" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="127" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="128" passengersMin="0" passengersMax="10" coefOn="50" nextStopTime="6" nextStopPrice="0"/>
+					<busstop uid="129" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="130" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="351: Gallieni > Pyrénées – Docteur Netter">
+
+					<busstop uid="130" passengersMin="0" passengersMax="50" coefOn="90" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="131" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="6" nextStopPrice="0"/>
+					<busstop uid="132" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="133" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="134" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="3" name="351: Échangeur de Bagnolet > Pyrénées – Docteur Netter">
+
+					<busstop uid="137" passengersMin="0" passengersMax="50" coefOn="90" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="133" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="134" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+	</line>
+
+	<line uid="9" number="Titus 1" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="Titus 1: Nanteuil Z.I. > Gare de Rosny-sous-Bois">
+
+					<busstop uid="100" passengersMin="0" passengersMax="25" coefOn="75" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="97" passengersMin="0" passengersMax="25" coefOn="75" nextStopTime="3" nextStopPrice="0"/>
+					<busstop uid="99" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+	</line>
+
+	<line uid="10" number="N11" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="N11: Pyrénées – Docteur Netter > Château de Vincennes">
+
+					<busstop uid="126" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="127" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="153" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="154" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="155" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="156" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="135" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="136" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="N11: Château de Vincennes > Pyrénées – Docteur Netter">
+
+					<busstop uid="136" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="157" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="158" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="159" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="160" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="133" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="134" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+	</line>
+
+	<line uid="11" number="N23" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="N23: Château de Villemomble > Rosny 2 Nord">
+
+					<busstop uid="43" passengersMin="0" passengersMax="10" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="39" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="82" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="40" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="86" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="42" passengersMin="0" passengersMax="10" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="70" passengersMin="0" passengersMax="10" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="71" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="N23: Rosny 2 Nord > Château de Villemomble">
+
+					<busstop uid="83" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="72" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="31" passengersMin="0" passengersMax="10" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="85" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="33" passengersMin="0" passengersMax="10" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="81" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="35" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="36" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+	</line>
+
+	<line uid="12" number="FLIXBUS" adultCoef="75" reducedRate="15" city="false">
+
+			<route uid="1" name="FLIXBUS: Paris Bercy > Disneyland Paris">
+
+					<busstop uid="3" passengersMin="0" passengersMax="30" coefOn="100" nextStopTime="20" nextStopPrice="30"/>
+					<busstop uid="6" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="FLIXBUS: Disneyland Paris > Paris Bercy">
+					<busstop uid="6" passengersMin="0" passengersMax="30" coefOn="100" nextStopTime="10" nextStopPrice="30"/>
+					<busstop uid="3" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+	</line>
+
+	<line uid="13" number="Scolaire" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Ferme Pédagogique de Rosny-sous-Bois">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="5" nextStopPrice="0"/>
+				<busstop uid="109" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="2" name="Scolaire: Ferme Pédagogique de Rosny-sous-Bois > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="109" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="5" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="3" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Piscine de Villemomble">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="13" nextStopPrice="0"/>
+				<busstop uid="110" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="4" name="Scolaire: Piscine de Villemomble > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="110" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="13" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="5" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Disneyland Paris">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="45" nextStopPrice="0"/>
+				<busstop uid="111" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="6" name="Scolaire: Disneyland Paris > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="111" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="45" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="7" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Hippodrome Paris-Vincennes">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="27" nextStopPrice="0"/>
+				<busstop uid="113" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="8" name="Scolaire: Hippodrome Paris-Vincennes > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="113" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="27" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="9" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Parc Floral de Paris">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="29" nextStopPrice="0"/>
+				<busstop uid="115" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="10" name="Scolaire: Parc Floral de Paris > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="115" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="29" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="11" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Château de Vincennes">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="33" nextStopPrice="0"/>
+				<busstop uid="116" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="12" name="Scolaire: Château de Vincennes > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="116" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="33" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="13" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > La Foire du Trône">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="31" nextStopPrice="0"/>
+				<busstop uid="117" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="14" name="Scolaire: La Foire du Trône > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="117" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="31" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="15" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Place de la Bastille">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="31" nextStopPrice="0"/>
+				<busstop uid="118" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="16" name="Scolaire: Place de la Bastille > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="118" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="31" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="17" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Place du Trocadéro">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="41" nextStopPrice="0"/>
+				<busstop uid="119" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="18" name="Scolaire: Place du Trocadéro > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="119" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="41" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="19" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Pont d'Iéna">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="43" nextStopPrice="0"/>
+				<busstop uid="120" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="20" name="Scolaire: Pont d'Iéna > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="120" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="43" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="21" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Tour Eiffel">
+				<busstop uid="101" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="45" nextStopPrice="0"/>
+				<busstop uid="121" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="22" name="Scolaire: Tour Eiffel > Ecole primaire Edouard Herriot (Neuilly-Plaisance)">
+				<busstop uid="121" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="45" nextStopPrice="0"/>
+				<busstop uid="101" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="23" name="Scolaire: Lycée Blaise Pascal (Villemomble) > Disneyland Paris">
+				<busstop uid="102" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="43" nextStopPrice="0"/>
+				<busstop uid="111" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="24" name="Scolaire: Disneyland Paris > Lycée Blaise Pascal (Villemomble)">
+				<busstop uid="111" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="43" nextStopPrice="0"/>
+				<busstop uid="102" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="25" name="Scolaire: Lycée Blaise Pascal (Villemomble) > Hippodrome Paris-Vincennes">
+				<busstop uid="102" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="25" nextStopPrice="0"/>
+				<busstop uid="113" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="26" name="Scolaire: Hippodrome Paris-Vincennes > Lycée Blaise Pascal (Villemomble)">
+				<busstop uid="113" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="25" nextStopPrice="0"/>
+				<busstop uid="102" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="27" name="Scolaire: Lycée Blaise Pascal (Villemomble) > Parc Floral de Paris">
+				<busstop uid="102" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="27" nextStopPrice="0"/>
+				<busstop uid="115" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="28" name="Scolaire: Parc Floral de Paris > Lycée Blaise Pascal (Villemomble)">
+				<busstop uid="115" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="27" nextStopPrice="0"/>
+				<busstop uid="102" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="29" name="Scolaire: Lycée Blaise Pascal (Villemomble) > Château de Vincennes">
+				<busstop uid="102" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="31" nextStopPrice="0"/>
+				<busstop uid="116" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="30" name="Scolaire: Château de Vincennes > Lycée Blaise Pascal (Villemomble)">
+				<busstop uid="116" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="31" nextStopPrice="0"/>
+				<busstop uid="102" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="31" name="Scolaire: Lycée Blaise Pascal (Villemomble) > La Foire du Trône">
+				<busstop uid="102" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="30" nextStopPrice="0"/>
+				<busstop uid="117" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="32" name="Scolaire: La Foire du Trône > Lycée Blaise Pascal (Villemomble)">
+				<busstop uid="117" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="30" nextStopPrice="0"/>
+				<busstop uid="102" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="33" name="Scolaire: Lycée Blaise Pascal (Villemomble) > Place de la Bastille">
+				<busstop uid="102" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="29" nextStopPrice="0"/>
+				<busstop uid="118" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="34" name="Scolaire: Place de la Bastille > Lycée Blaise Pascal (Villemomble)">
+				<busstop uid="118" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="29" nextStopPrice="0"/>
+				<busstop uid="102" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="35" name="Scolaire: Lycée Blaise Pascal (Villemomble) > Place du Trocadéro">
+				<busstop uid="102" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="39" nextStopPrice="0"/>
+				<busstop uid="119" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="36" name="Scolaire: Place du Trocadéro > Lycée Blaise Pascal (Villemomble)">
+				<busstop uid="119" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="39" nextStopPrice="0"/>
+				<busstop uid="102" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="37" name="Scolaire: Lycée Blaise Pascal (Villemomble) > Pont d'Iéna">
+				<busstop uid="102" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="41" nextStopPrice="0"/>
+				<busstop uid="120" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="38" name="Scolaire: Pont d'Iéna > Lycée Blaise Pascal (Villemomble)">
+				<busstop uid="120" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="41" nextStopPrice="0"/>
+				<busstop uid="102" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="39" name="Scolaire: Lycée Blaise Pascal (Villemomble) > Tour Eiffel">
+				<busstop uid="102" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="43" nextStopPrice="0"/>
+				<busstop uid="121" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="40" name="Scolaire: Tour Eiffel > Lycée Blaise Pascal (Villemomble)">
+				<busstop uid="121" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="43" nextStopPrice="0"/>
+				<busstop uid="102" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="41" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Ferme Pédagogique de Rosny-sous-Bois">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="19" nextStopPrice="0"/>
+				<busstop uid="109" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="42" name="Scolaire: Ferme Pédagogique de Rosny-sous-Bois > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="109" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="19" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="43" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Piscine de Villemomble">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="15" nextStopPrice="0"/>
+				<busstop uid="110" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="44" name="Scolaire: Piscine de Villemomble > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="110" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="15" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="45" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Disneyland Paris">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="48" nextStopPrice="0"/>
+				<busstop uid="111" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="46" name="Scolaire: Disneyland Paris > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="111" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="48" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="47" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Hippodrome Paris-Vincennes">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="31" nextStopPrice="0"/>
+				<busstop uid="113" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="48" name="Scolaire: Hippodrome Paris-Vincennes > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="113" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="31" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="49" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Parc Floral de Paris">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="33" nextStopPrice="0"/>
+				<busstop uid="115" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="50" name="Scolaire: Parc Floral de Paris > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="115" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="33" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="51" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Château de Vincennes">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="36" nextStopPrice="0"/>
+				<busstop uid="116" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="52" name="Scolaire: Château de Vincennes > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="116" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="36" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="53" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > La Foire du Trône">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="35" nextStopPrice="0"/>
+				<busstop uid="117" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="54" name="Scolaire: La Foire du Trône > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="117" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="35" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="55" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Place de la Bastille">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="35" nextStopPrice="0"/>
+				<busstop uid="118" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="56" name="Scolaire: Place de la Bastille > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="118" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="35" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="57" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Place du Trocadéro">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="44" nextStopPrice="0"/>
+				<busstop uid="119" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="58" name="Scolaire: Place du Trocadéro > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="119" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="44" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="59" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Pont d'Iéna">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="46" nextStopPrice="0"/>
+				<busstop uid="120" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="60" name="Scolaire: Pont d'Iéna > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="120" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="46" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="61" name="Scolaire: Ecole Maternelle Joseph Gallieni (Villemomble) > Tour Eiffel">
+				<busstop uid="103" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="48" nextStopPrice="0"/>
+				<busstop uid="121" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="62" name="Scolaire: Tour Eiffel > Ecole Maternelle Joseph Gallieni (Villemomble)">
+				<busstop uid="121" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="48" nextStopPrice="0"/>
+				<busstop uid="103" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="63" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Ferme Pédagogique de Rosny-sous-Bois">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="30" nextStopPrice="0"/>
+				<busstop uid="109" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="64" name="Scolaire: Ferme Pédagogique de Rosny-sous-Bois > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="109" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="30" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="65" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Disneyland Paris">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="36" nextStopPrice="0"/>
+				<busstop uid="111" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="66" name="Scolaire: Disneyland Paris > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="111" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="36" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="67" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Centre Aquanautique Camille Muffat (Rosny-sous-Bois)">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="9" nextStopPrice="0"/>
+				<busstop uid="112" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="68" name="Scolaire: Centre Aquanautique Camille Muffat (Rosny-sous-Bois) > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="112" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="9" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="69" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Hippodrome Paris-Vincennes">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="18" nextStopPrice="0"/>
+				<busstop uid="113" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="70" name="Scolaire: Hippodrome Paris-Vincennes > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="113" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="18" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="71" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Parc Floral de Paris">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="20" nextStopPrice="0"/>
+				<busstop uid="115" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="72" name="Scolaire: Parc Floral de Paris > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="115" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="20" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="73" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Château de Vincennes">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="24" nextStopPrice="0"/>
+				<busstop uid="116" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="74" name="Scolaire: Château de Vincennes > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="116" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="24" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="75" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > La Foire du Trône">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="22" nextStopPrice="0"/>
+				<busstop uid="117" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="76" name="Scolaire: La Foire du Trône > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="117" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="22" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="77" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Place de la Bastille">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="22" nextStopPrice="0"/>
+				<busstop uid="118" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="78" name="Scolaire: Place de la Bastille > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="118" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="22" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="79" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Place du Trocadéro">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="34" nextStopPrice="0"/>
+				<busstop uid="119" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="80" name="Scolaire: Place du Trocadéro > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="119" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="34" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="81" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Pont d'Iéna">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="36" nextStopPrice="0"/>
+				<busstop uid="120" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="82" name="Scolaire: Pont d'Iéna > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="120" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="36" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="83" name="Scolaire: Ecole Elémentaire du Centre (Rosny-sous-Bois) > Tour Eiffel">
+				<busstop uid="104" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="38" nextStopPrice="0"/>
+				<busstop uid="121" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="84" name="Scolaire: Tour Eiffel > Ecole Elémentaire du Centre (Rosny-sous-Bois)">
+				<busstop uid="121" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="38" nextStopPrice="0"/>
+				<busstop uid="104" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="85" name="Scolaire: Collège Saint-Exupery (Vincennes) > Disneyland Paris">
+				<busstop uid="105" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="35" nextStopPrice="0"/>
+				<busstop uid="111" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="86" name="Scolaire: Disneyland Paris > Collège Saint-Exupery (Vincennes)">
+				<busstop uid="111" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="35" nextStopPrice="0"/>
+				<busstop uid="105" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="87" name="Scolaire: Collège Saint-Exupery (Vincennes) > Hippodrome Paris-Vincennes">
+				<busstop uid="105" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="8" nextStopPrice="0"/>
+				<busstop uid="113" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="88" name="Scolaire: Hippodrome Paris-Vincennes > Collège Saint-Exupery (Vincennes)">
+				<busstop uid="113" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="8" nextStopPrice="0"/>
+				<busstop uid="105" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="89" name="Scolaire: Collège Saint-Exupery (Vincennes) > Stade Léo Lagrange (Paris 12e)">
+				<busstop uid="105" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="4" nextStopPrice="0"/>
+				<busstop uid="114" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="90" name="Scolaire: Stade Léo Lagrange (Paris 12e) > Collège Saint-Exupery (Vincennes)">
+				<busstop uid="114" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="4" nextStopPrice="0"/>
+				<busstop uid="105" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="91" name="Scolaire: Collège Saint-Exupery (Vincennes) > Parc Floral de Paris">
+				<busstop uid="105" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="4" nextStopPrice="0"/>
+				<busstop uid="115" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="92" name="Scolaire: Parc Floral de Paris > Collège Saint-Exupery (Vincennes)">
+				<busstop uid="115" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="4" nextStopPrice="0"/>
+				<busstop uid="105" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="93" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > Tour Eiffel">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="32" nextStopPrice="0"/>
+				<busstop uid="121" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="94" name="Scolaire: Tour Eiffel > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="121" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="32" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="95" name="Scolaire: Collège Saint-Exupery (Vincennes) > La Foire du Trône">
+				<busstop uid="105" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="14" nextStopPrice="0"/>
+				<busstop uid="117" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="96" name="Scolaire: La Foire du Trône > Collège Saint-Exupery (Vincennes)">
+				<busstop uid="117" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="14" nextStopPrice="0"/>
+				<busstop uid="105" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="97" name="Scolaire: Collège Saint-Exupery (Vincennes) > Place de la Bastille">
+				<busstop uid="105" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="14" nextStopPrice="0"/>
+				<busstop uid="118" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="98" name="Scolaire: Place de la Bastille > Collège Saint-Exupery (Vincennes)">
+				<busstop uid="118" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="14" nextStopPrice="0"/>
+				<busstop uid="105" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="99" name="Scolaire: Collège Saint-Exupery (Vincennes) > Place du Trocadéro">
+				<busstop uid="105" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="26" nextStopPrice="0"/>
+				<busstop uid="119" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="100" name="Scolaire: Place du Trocadéro > Collège Saint-Exupery (Vincennes)">
+				<busstop uid="119" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="26" nextStopPrice="0"/>
+				<busstop uid="105" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="101" name="Scolaire: Collège Saint-Exupery (Vincennes) > Pont d'Iéna">
+				<busstop uid="105" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="28" nextStopPrice="0"/>
+				<busstop uid="120" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="102" name="Scolaire: Pont d'Iéna > Collège Saint-Exupery (Vincennes)">
+				<busstop uid="120" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="28" nextStopPrice="0"/>
+				<busstop uid="105" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="103" name="Scolaire: Collège Saint-Exupery (Vincennes) > Tour Eiffel">
+				<busstop uid="105" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="30" nextStopPrice="0"/>
+				<busstop uid="121" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="104" name="Scolaire: Tour Eiffel > Collège Saint-Exupery (Vincennes)">
+				<busstop uid="121" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="30" nextStopPrice="0"/>
+				<busstop uid="105" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="105" name="Scolaire: École maternelle publique le Vau (Paris 20e) > Disneyland Paris">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="34" nextStopPrice="0"/>
+				<busstop uid="111" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="106" name="Scolaire: Disneyland Paris > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="111" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="34" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="107" name="Scolaire: École maternelle publique le Vau (Paris 20e) > Hippodrome Paris-Vincennes">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="13" nextStopPrice="0"/>
+				<busstop uid="113" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="108" name="Scolaire: Hippodrome Paris-Vincennes > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="113" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="13" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="109" name="Scolaire: École maternelle publique le Vau (Paris 20e) > Stade Léo Lagrange (Paris 12e)">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="15" nextStopPrice="0"/>
+				<busstop uid="114" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="110" name="Scolaire: Stade Léo Lagrange (Paris 12e) > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="114" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="15" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="111" name="Scolaire: École maternelle publique le Vau (Paris 20e) > Parc Floral de Paris">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="15" nextStopPrice="0"/>
+				<busstop uid="115" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="112" name="Scolaire: Parc Floral de Paris > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="115" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="15" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="113" name="Scolaire: École maternelle publique le Vau (Paris 20e) > Château de Vincennes">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="14" nextStopPrice="0"/>
+				<busstop uid="116" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="114" name="Scolaire: Château de Vincennes > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="116" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="14" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="115" name="Scolaire: École maternelle publique le Vau (Paris 20e) > La Foire du Trône">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="11" nextStopPrice="0"/>
+				<busstop uid="117" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="116" name="Scolaire: La Foire du Trône > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="117" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="11" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="117" name="Scolaire: École maternelle publique le Vau (Paris 20e) > Place de la Bastille">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="10" nextStopPrice="0"/>
+				<busstop uid="118" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="118" name="Scolaire: Place de la Bastille > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="118" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="10" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="119" name="Scolaire: École maternelle publique le Vau (Paris 20e) > Place du Trocadéro">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="21" nextStopPrice="0"/>
+				<busstop uid="119" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="120" name="Scolaire: Place du Trocadéro > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="119" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="21" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="121" name="Scolaire: École maternelle publique le Vau (Paris 20e) > Pont d'Iéna">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="23" nextStopPrice="0"/>
+				<busstop uid="120" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="122" name="Scolaire: Pont d'Iéna > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="120" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="23" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="123" name="Scolaire: École maternelle publique le Vau (Paris 20e) > Tour Eiffel">
+				<busstop uid="106" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="25" nextStopPrice="0"/>
+				<busstop uid="121" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="124" name="Scolaire: Tour Eiffel > École maternelle publique le Vau (Paris 20e)">
+				<busstop uid="121" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="25" nextStopPrice="0"/>
+				<busstop uid="106" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="125" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > Disneyland Paris">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="34" nextStopPrice="0"/>
+				<busstop uid="111" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="126" name="Scolaire: Disneyland Paris > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="111" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="34" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="127" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > Hippodrome Paris-Vincennes">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="13" nextStopPrice="0"/>
+				<busstop uid="113" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="128" name="Scolaire: Hippodrome Paris-Vincennes > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="113" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="13" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="129" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > Stade Léo Lagrange (Paris 12e)">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="17" nextStopPrice="0"/>
+				<busstop uid="114" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="130" name="Scolaire: Stade Léo Lagrange (Paris 12e) > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="114" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="17" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="131" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > Parc Floral de Paris">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="17" nextStopPrice="0"/>
+				<busstop uid="115" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="132" name="Scolaire: Parc Floral de Paris > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="115" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="17" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="133" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > Château de Vincennes">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="14" nextStopPrice="0"/>
+				<busstop uid="116" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="134" name="Scolaire: Château de Vincennes > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="116" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="14" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="135" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > La Foire du Trône">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="12" nextStopPrice="0"/>
+				<busstop uid="117" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="136" name="Scolaire: La Foire du Trône > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="117" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="12" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="137" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > Place de la Bastille">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="10" nextStopPrice="0"/>
+				<busstop uid="118" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="138" name="Scolaire: Place de la Bastille > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="118" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="10" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="139" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > Place du Trocadéro">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="21" nextStopPrice="0"/>
+				<busstop uid="119" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="140" name="Scolaire: Place du Trocadéro > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="119" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="21" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="141" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > Pont d'Iéna">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="23" nextStopPrice="0"/>
+				<busstop uid="120" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="142" name="Scolaire: Pont d'Iéna > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="120" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="23" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="143" name="Scolaire: Cité Scolaire Maurice Ravel (Paris 20e) > Tour Eiffel">
+				<busstop uid="107" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="25" nextStopPrice="0"/>
+				<busstop uid="121" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="144" name="Scolaire: Tour Eiffel > Cité Scolaire Maurice Ravel (Paris 20e)">
+				<busstop uid="121" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="25" nextStopPrice="0"/>
+				<busstop uid="107" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="145" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > Disneyland Paris">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="41" nextStopPrice="0"/>
+				<busstop uid="111" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="146" name="Scolaire: Disneyland Paris > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="111" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="41" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="147" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > Hippodrome Paris-Vincennes">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="22" nextStopPrice="0"/>
+				<busstop uid="113" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="148" name="Scolaire: Hippodrome Paris-Vincennes > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="113" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="22" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="149" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > Stade Léo Lagrange (Paris 12e)">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="24" nextStopPrice="0"/>
+				<busstop uid="114" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="150" name="Scolaire: Stade Léo Lagrange (Paris 12e) > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="114" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="24" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="151" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > Parc Floral de Paris">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="24" nextStopPrice="0"/>
+				<busstop uid="115" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="152" name="Scolaire: Parc Floral de Paris > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="115" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="24" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="153" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > Château de Vincennes">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="25" nextStopPrice="0"/>
+				<busstop uid="116" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="154" name="Scolaire: Château de Vincennes > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="116" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="25" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="155" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > La Foire du Trône">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="19" nextStopPrice="0"/>
+				<busstop uid="117" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="156" name="Scolaire: La Foire du Trône > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="117" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="19" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="157" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > Place de la Bastille">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="10" nextStopPrice="0"/>
+				<busstop uid="118" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="158" name="Scolaire: Place de la Bastille > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="118" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="10" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="159" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > Place du Trocadéro">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="28" nextStopPrice="0"/>
+				<busstop uid="119" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="160" name="Scolaire: Place du Trocadéro > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="119" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="28" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="161" name="Scolaire: École maternelle publique Lachambeaudie (Paris 12e) > Pont d'Iéna">
+				<busstop uid="108" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="30" nextStopPrice="0"/>
+				<busstop uid="120" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="162" name="Scolaire: Pont d'Iéna > École maternelle publique Lachambeaudie (Paris 12e)">
+				<busstop uid="120" passengersMin="0" passengersMax="35" coefOn="95" nextStopTime="30" nextStopPrice="0"/>
+				<busstop uid="108" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+	</line>
+
+	<line uid="14" number="Fictive" adultCoef="75" reducedRate="15" city="true">
+
+			<route uid="1" name="Autocar: Marché International de Rungis > Le Raincy - Villemomble - Montfermeil RER">
+
+					<busstop uid="2" passengersMin="0" passengersMax="30" coefOn="100" nextStopTime="10" nextStopPrice="0"/>
+					<busstop uid="28" passengersMin="0" passengersMax="30" coefOn="75" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="1" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="2" name="Autocar: Le Raincy - Villemomble - Montfermeil RER > Marché International de Rungis">
+					<busstop uid="1" passengersMin="0" passengersMax="30" coefOn="100" nextStopTime="10" nextStopPrice="0"/>
+					<busstop uid="28" passengersMin="0" passengersMax="30" coefOn="75" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="2" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+			</route>
+
+			<route uid="3" name="Autocar: Château de Vincennes > Bastille">
+
+					<busstop uid="23" passengersMin="0" passengersMax="30" coefOn="100" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="25" passengersMin="0" passengersMax="30" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="26" passengersMin="0" passengersMax="30" coefOn="25" nextStopTime="3" nextStopPrice="0"/>
+					<busstop uid="27" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="4" name="Autocar: Bastille > Château de Vincennes">
+
+					<busstop uid="27" passengersMin="0" passengersMax="30" coefOn="100" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="25" passengersMin="0" passengersMax="30" coefOn="75" nextStopTime="3" nextStopPrice="0"/>
+					<busstop uid="24" passengersMin="0" passengersMax="30" coefOn="50" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="23" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="5" name="Autocar: Château de Vincennes > Tour Eiffel">
+
+					<busstop uid="23" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="30" nextStopPrice="0"/>
+					<busstop uid="74" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="75" passengersMin="0" passengersMax="0" coefOn="100" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="6" name="Autocar: Tour Eiffel > Château de Vincennes">
+
+					<busstop uid="75" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="6" nextStopPrice="0"/>
+					<busstop uid="74" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="30" nextStopPrice="0"/>
+					<busstop uid="23" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="7" name="Autocar: Tour Eiffel > Disneyland Paris">
+
+					<busstop uid="122" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="123" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="27" nextStopPrice="0"/>
+					<busstop uid="124" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="40" nextStopPrice="0"/>
+					<busstop uid="125" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="8" name="Autocar: Disneyland Paris > Tour Eiffel">
+
+					<busstop uid="161" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="34" nextStopPrice="0"/>
+					<busstop uid="162" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="28" nextStopPrice="0"/>
+					<busstop uid="163" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="164" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="9" name="Express 75: Échangeur de Bagnolet > Varsovie">
+
+					<busstop uid="138" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="139" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="140" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="6" nextStopPrice="0"/>
+					<busstop uid="141" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="6" nextStopPrice="0"/>
+					<busstop uid="142" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="17" nextStopPrice="0"/>
+					<busstop uid="143" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="144" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="10" name="Express 75: Varsovie > Échangeur de Bagnolet">
+
+					<busstop uid="145" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="146" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="4" nextStopPrice="0"/>								<busstop uid="147" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="23" nextStopPrice="0"/>
+					<busstop uid="138" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="11" name="Express 77: Collégien - Lamirault > Disneyland Paris">
+
+					<busstop uid="148" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="7" nextStopPrice="0"/>
+					<busstop uid="149" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="15" nextStopPrice="0"/>
+					<busstop uid="150" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="12" name="Express 77: Disneyland Paris > Collégien - Lamirault">
+
+					<busstop uid="151" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="15" nextStopPrice="0"/>
+					<busstop uid="152" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="13" name="Express 93: Gare de Rosny-sous-Bois > Edouard Vaillant">
+
+					<busstop uid="165" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="166" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="167" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="168" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="169" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="170" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="171" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="6" nextStopPrice="0"/>
+					<busstop uid="172" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="173" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="10" nextStopPrice="0"/>
+					<busstop uid="174" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="175" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="10" nextStopPrice="0"/>
+					<busstop uid="176" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="16" nextStopPrice="0"/>
+					<busstop uid="177" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="178" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="179" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="14" name="Express 93: Edouard Vaillant > Gare du Raincy Villemomble Montfermeil - RER">
+
+					<busstop uid="190" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="191" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="192" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="13" nextStopPrice="0"/>
+					<busstop uid="193" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="194" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="195" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="196" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="4" nextStopPrice="0"/>
+					<busstop uid="197" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="10" nextStopPrice="0"/>
+					<busstop uid="198" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="199" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="5" nextStopPrice="0"/>
+					<busstop uid="202" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="15" name="Express 94: Saint-Simon > Rungis">
+
+					<busstop uid="180" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="181" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="182" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="14" nextStopPrice="0"/>
+					<busstop uid="183" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="20" nextStopPrice="0"/>
+					<busstop uid="184" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+
+			<route uid="16" name="Express 94: Rungis > Saint-Simon">
+
+					<busstop uid="185" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="20" nextStopPrice="0"/>
+					<busstop uid="186" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="12" nextStopPrice="0"/>
+					<busstop uid="187" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="2" nextStopPrice="0"/>
+					<busstop uid="188" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="189" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+
+			</route>
+	</line>
+
+</lines>

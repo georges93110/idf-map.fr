@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Mentions legales</title>
+  <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
+  <style>
+    .legal-wrap{
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:calc(var(--sitebar-height, 52px) + 28px) 16px 24px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+    }
+    .legal-card{
+      width:min(860px, 100%);
+      border:1px solid #2f2f2f;
+      border-radius:14px;
+      background:#171717;
+      color:#ececec;
+      box-shadow:0 16px 42px rgba(0,0,0,.42);
+      padding:18px;
+    }
+    .legal-title{
+      margin:0 0 10px;
+      font-size:28px;
+      line-height:1.15;
+      color:#fff;
+    }
+    .legal-section-title{
+      margin:16px 0 8px;
+      font-size:18px;
+      line-height:1.25;
+      color:#f4f4f4;
+    }
+    .legal-text{
+      margin:0 0 4px;
+      color:#c9c9c9;
+      line-height:1.6;
+    }
+    .legal-sep{
+      border:0;
+      border-top:1px solid #2f2f2f;
+      margin:14px 0;
+    }
+    .legal-link{
+      color:#ececec;
+      text-decoration:none;
+      border-bottom:1px solid rgba(236,236,236,.35);
+    }
+    .legal-link:hover{
+      border-bottom-color:rgba(236,236,236,.7);
+    }
+  </style>
+</head>
+<body data-bg-opacity="0.22" data-bg-overlay-top="0.74" data-bg-overlay-bottom="0.92">
+  <main class="legal-wrap">
+    <section class="legal-card" aria-labelledby="legalTitle">
+      <h1 class="legal-title" id="legalTitle" data-i18n="legal_page_title">Mentions legales</h1>
+      <hr class="legal-sep" aria-hidden="true"/>
+
+      <h2 class="legal-section-title" data-i18n="legal_editor_heading">Editeur du site</h2>
+      <p class="legal-text">Georges93</p>
+      <p class="legal-text"><a class="legal-link" id="legalEmailLink" href="#">georges93110@gmail.com</a></p>
+
+      <hr class="legal-sep" aria-hidden="true"/>
+
+      <h2 class="legal-section-title" data-i18n="legal_hosting_heading">Hebergement</h2>
+      <p class="legal-text">GitHub, Inc.</p>
+      <p class="legal-text">88 Colin P Kelly Jr St</p>
+      <p class="legal-text">San Francisco, CA 94107</p>
+      <p class="legal-text" data-i18n="legal_hosting_country">Etats-Unis</p>
+      <p class="legal-text">
+        <span data-i18n="legal_hosting_site_label">Site</span>:
+        <a id="legalHostingLink" class="legal-link" href="#" target="_blank" rel="noopener noreferrer">pages.github.com</a>
+      </p>
+    </section>
+  </main>
+
+  <script src="config/translations.js"></script>
+  <script src="config/config.js"></script>
+  <script src="config/site-nav.js"></script>
+  <script src="config/shared-header.js"></script>
+  <script>
+    (function initLegalPage() {
+      function lang() {
+        return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
+      }
+      function t(key, fallback) {
+        const i18n = window.I18N || {};
+        const code = lang();
+        const fromLang = i18n[code] && i18n[code][key];
+        if (typeof fromLang === "string" && fromLang) return fromLang;
+        const fromFr = i18n.fr && i18n.fr[key];
+        if (typeof fromFr === "string" && fromFr) return fromFr;
+        return fallback;
+      }
+      function render() {
+        const links = window.SITE_LINKS && typeof window.SITE_LINKS === "object"
+          ? window.SITE_LINKS
+          : {};
+        const legal = links.legal && typeof links.legal === "object"
+          ? links.legal
+          : {};
+        const offsite = window.SITE_OFFSITE_LINKS && typeof window.SITE_OFFSITE_LINKS === "object"
+          ? window.SITE_OFFSITE_LINKS
+          : {};
+        const email = String(legal.email || "").trim();
+        const emailLink = document.getElementById("legalEmailLink");
+        if (emailLink && email) {
+          emailLink.href = `mailto:${email}`;
+          emailLink.textContent = email;
+        }
+        const hostingUrl = String(offsite.legal_hosting || "").trim();
+        const hostingLink = document.getElementById("legalHostingLink");
+        if (hostingLink) {
+          if (hostingUrl) {
+            hostingLink.href = hostingUrl;
+            hostingLink.textContent = hostingUrl;
+          } else {
+            hostingLink.href = "#";
+          }
+        }
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          if (!key) return;
+          el.textContent = t(key, el.textContent);
+        });
+      }
+      render();
+      new MutationObserver(render).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["lang"]
+      });
+    })();
+  </script>
+</body>
+</html>
