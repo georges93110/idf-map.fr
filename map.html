@@ -3,6 +3,33 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>
+    html[data-app-ready="0"] {
+      background:#000;
+    }
+    html[data-app-ready="0"] body {
+      opacity:0 !important;
+      visibility:hidden !important;
+      overflow:hidden !important;
+    }
+  </style>
+  <script>
+    (function setupAppReadyGate() {
+      const root = document.documentElement;
+      root.setAttribute("data-app-ready", "0");
+      let done = false;
+      function reveal() {
+        if (done) return;
+        done = true;
+        root.setAttribute("data-app-ready", "1");
+      }
+      window.__setAppReady = function __setAppReady() {
+        requestAnimationFrame(() => requestAnimationFrame(reveal));
+      };
+      window.addEventListener("pageshow", reveal, { once: true });
+      window.setTimeout(reveal, 7000);
+    })();
+  </script>
   <title>Map</title>
   <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8431,6 +8458,9 @@
         openSearchUI({ focus: true, refresh: true });
       }
     });
+  </script>
+  <script>
+    window.__setAppReady?.();
   </script>
 
   <script>
