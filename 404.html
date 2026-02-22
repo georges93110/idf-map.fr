@@ -213,7 +213,7 @@
         if (homeBtn) {
           homeBtn.textContent = t("not_found_home", "Retour a l'accueil");
         }
-        document.title = "IDF Map | " + t("not_found_code", "404") + " - " + t("not_found_title", "Page introuvable");
+        document.title = "IDF Map | " + t("not_found_code", "404")
       }
       render();
       new MutationObserver(render).observe(document.documentElement, {
