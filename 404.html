@@ -1,9 +1,39 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="robots" content="noindex"/>
+  <script>
+    (function set404BaseHref() {
+      function hasConfigAt(basePath) {
+        const base = String(basePath || "/");
+        try {
+          const xhr = new XMLHttpRequest();
+          xhr.open("GET", `${base}config/config.js`, false);
+          xhr.send();
+          return xhr.status >= 200 && xhr.status < 400;
+        } catch {
+          return false;
+        }
+      }
+      const segments = location.pathname.split("/").filter(Boolean);
+      const candidates = [];
+      if (segments.length) candidates.push(`/${segments[0]}/`);
+      candidates.push("/");
+      let resolvedBase = "/";
+      for (const candidate of candidates) {
+        if (hasConfigAt(candidate)) {
+          resolvedBase = candidate;
+          break;
+        }
+      }
+      window.__SITE_BASE__ = resolvedBase;
+      const baseEl = document.createElement("base");
+      baseEl.href = resolvedBase;
+      document.head.appendChild(baseEl);
+    })();
+  </script>
   <style>
     html[data-app-ready="0"] {
       background:#0b0b0b;
