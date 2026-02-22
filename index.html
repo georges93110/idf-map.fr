@@ -324,14 +324,29 @@
     }
 
     .home-cta-small {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       min-height: 36px;
       padding: 0 12px;
       font-size: 13px;
       border-radius: 9px;
+      line-height: 1;
+      text-align: center;
     }
     .home-cta-small svg {
       width: 17px;
       height: 17px;
+      flex: 0 0 17px;
+      display: block;
+      margin: 0;
+    }
+    .home-cta-small span {
+      display: inline-block;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
     }
 
     .home-cta-map {
@@ -357,6 +372,30 @@
       border-color: #8c9ddb;
       box-shadow: 0 10px 20px rgba(18, 24, 54, 0.52);
     }
+
+    .home-cta-faq {
+      background: linear-gradient(145deg, #7d5f28, #5d461d);
+      border-color: #b08944;
+      color: #fff6e7;
+    }
+
+    .home-cta-faq:hover {
+      background: linear-gradient(145deg, #947233, #6f5424);
+      border-color: #c79d58;
+      box-shadow: 0 10px 20px rgba(48, 34, 9, 0.5);
+    }
+
+    .home-cta-youtube {
+      background: linear-gradient(145deg, #c01a1a, #8d1212);
+      border-color: #ea4c4c;
+      color: #fff2f2;
+    }
+
+    .home-cta-youtube:hover {
+      background: linear-gradient(145deg, #d72626, #a51717);
+      border-color: #f46a6a;
+      box-shadow: 0 10px 20px rgba(66, 12, 12, 0.54);
+    }
     .home-cta-discord .site-icon-discord{
       fill: currentColor;
       stroke: none;
@@ -364,6 +403,11 @@
     .home-cta-discord .site-icon-discord path{
       fill: currentColor !important;
       stroke: none !important;
+    }
+
+    .home-cta-youtube .site-icon-youtube {
+      fill: currentColor;
+      stroke: none;
     }
 
     .home-manual-column {
@@ -742,6 +786,15 @@
                   <span data-i18n="home_btn_interactive_map">Carte interactive</span>
                 </a>
 
+                <a class="home-cta home-cta-small home-cta-faq" id="homeFaqBtn" href="faq">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M9.6 9.2a2.4 2.4 0 1 1 4.8 0c0 1.6-1.8 2.2-2.4 3"></path>
+                    <path d="M12 16.8h.01"></path>
+                  </svg>
+                  <span data-i18n="nav_faq">FAQ</span>
+                </a>
+
                 <a
                   id="homeDiscordBtn"
                   class="home-cta home-cta-small home-cta-discord"
@@ -754,6 +807,20 @@
                     <path d="M18.59 5.88997C17.36 5.31997 16.05 4.89997 14.67 4.65997C14.5 4.95997 14.3 5.36997 14.17 5.69997C12.71 5.47997 11.26 5.47997 9.83001 5.69997C9.69001 5.36997 9.49001 4.95997 9.32001 4.65997C7.94001 4.89997 6.63001 5.31997 5.40001 5.88997C2.92001 9.62997 2.25001 13.28 2.58001 16.87C4.23001 18.1 5.82001 18.84 7.39001 19.33C7.78001 18.8 8.12001 18.23 8.42001 17.64C7.85001 17.43 7.31001 17.16 6.80001 16.85C6.94001 16.75 7.07001 16.64 7.20001 16.54C10.33 18 13.72 18 16.81 16.54C16.94 16.65 17.07 16.75 17.21 16.85C16.7 17.16 16.15 17.42 15.59 17.64C15.89 18.23 16.23 18.8 16.62 19.33C18.19 18.84 19.79 18.1 21.43 16.87C21.82 12.7 20.76 9.08997 18.61 5.88997H18.59ZM8.84001 14.67C7.90001 14.67 7.13001 13.8 7.13001 12.73C7.13001 11.66 7.88001 10.79 8.84001 10.79C9.80001 10.79 10.56 11.66 10.55 12.73C10.55 13.79 9.80001 14.67 8.84001 14.67ZM15.15 14.67C14.21 14.67 13.44 13.8 13.44 12.73C13.44 11.66 14.19 10.79 15.15 10.79C16.11 10.79 16.87 11.66 16.86 12.73C16.86 13.79 16.11 14.67 15.15 14.67Z" fill="#000000"></path>
                   </svg>
                   <span data-i18n="home_btn_discord">Discord</span>
+                </a>
+
+                <a
+                  id="homeYoutubeBtn"
+                  class="home-cta home-cta-small home-cta-youtube"
+                  href="#"
+                  data-offsite-key="youtube"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg class="site-icon-youtube" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"></path>
+                  </svg>
+                  <span>YouTube</span>
                 </a>
               </div>
             </div>
@@ -859,7 +926,9 @@
       const homeSteamDlcLink = document.getElementById("homeSteamDlcLink");
       const homeManualVideoGroup = document.getElementById("homeManualVideoGroup");
       const homeManualVideoFrame = document.getElementById("homeManualVideoFrame");
+      const homeManualPanel = document.getElementById("homeManualPanel");
       const homeDiscordBtn = document.getElementById("homeDiscordBtn");
+      const homeYoutubeBtn = document.getElementById("homeYoutubeBtn");
       const homeManualCloseBtn = document.getElementById("homeManualCloseBtn");
 
       function lang() {
@@ -915,6 +984,21 @@
         }, 0);
       }
 
+      function isCompactLayout() {
+        return window.matchMedia("(max-width: 900px)").matches;
+      }
+
+      function scrollToManualPanel() {
+        if (!homeManualPanel) return;
+        const rootStyles = window.getComputedStyle(document.documentElement);
+        const sitebarHeight = Number.parseFloat(rootStyles.getPropertyValue("--sitebar-height")) || 52;
+        const targetTop = window.scrollY + homeManualPanel.getBoundingClientRect().top - sitebarHeight - 12;
+        window.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: "smooth"
+        });
+      }
+
       function setManualPanelOpen(open) {
         if (!homeShell || !homeManualToggleBtn) return;
         const wasOpen = homeShell.classList.contains("is-manual-open");
@@ -924,6 +1008,12 @@
         );
         homeShell.classList.toggle("is-manual-open", !!open);
         homeManualToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        if (open && !wasOpen && isCompactLayout()) {
+          requestAnimationFrame(() => {
+            scrollToManualPanel();
+            window.setTimeout(scrollToManualPanel, 230);
+          });
+        }
       }
 
       function bindEvents() {
@@ -953,6 +1043,7 @@
         applyOffsiteHref(homeManualDepsLink);
         applyOffsiteHref(homeManualMapDownloadLink);
         applyOffsiteHref(homeDiscordBtn);
+        applyOffsiteHref(homeYoutubeBtn);
         if (homeSteamDlcLink) {
           const href = String(guide.steam_dlc || "").trim();
           if (href) homeSteamDlcLink.href = href;

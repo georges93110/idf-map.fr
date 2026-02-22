@@ -9,9 +9,9 @@
         labelKey: "nav_group_maps",
         items: [
           { href: "./", labelKey: "nav_accueil" },
-          { href: "map", labelKey: "nav_carte_interactive" },
-          { href: "faq", labelKey: "nav_faq" },
-          { href: "mentions_legales", labelKey: "nav_mentions_legales", hidden: true },
+          { href: "map.html", labelKey: "nav_carte_interactive" },
+          { href: "faq.html", labelKey: "nav_faq" },
+          { href: "mentions_legales.html", labelKey: "nav_mentions_legales", hidden: true },
           { labelKey: "", items: [] }
         ]
       }

@@ -6,7 +6,8 @@
       patreon: "https://www.patreon.com/",
       dbus_world: "https://dbusworld.com/",
       legal_hosting: "https://pages.github.com",
-      panel_admin: "https://panel.idf-map.fr/"
+      panel_admin: "https://panel.idf-map.fr/",
+      youtube: "https://www.youtube.com/@idfmap93"
     },
     guide: {
       steam_dlc: "https://store.steampowered.com/dlc/227300/Euro_Truck_Simulator_2/",
