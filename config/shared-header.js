@@ -376,12 +376,22 @@
     return null;
   }
   function updateDocumentTitleFromNav() {
+    const fallbackTitle = "IDF Map";
     const entry = getCurrentPageNavEntry();
-    if (!entry) return;
+    if (!entry) {
+      document.title = fallbackTitle;
+      return;
+    }
     const key = String(entry.labelKey || "").trim();
-    if (!key) return;
+    if (!key) {
+      document.title = fallbackTitle;
+      return;
+    }
     const translated = t(key);
-    if (!translated || translated === key) return;
+    if (!translated || translated === key) {
+      document.title = fallbackTitle;
+      return;
+    }
     document.title = `IDF Map | ${translated}`;
   }
   function quickLinkLabel(item) {
@@ -434,6 +444,8 @@
   }
   function canonicalPageName(value) {
     let page = normalizePath(value);
+    const segments = page.split("/").filter(Boolean);
+    page = segments.length ? segments[segments.length - 1] : page;
     if (page.endsWith(".html")) page = page.slice(0, -5);
     return page || "index";
   }
