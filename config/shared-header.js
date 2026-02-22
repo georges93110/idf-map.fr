@@ -436,7 +436,7 @@
     return normalizePath(location.pathname);
   }
   function shouldShowSharedBackground() {
-    return getCurrentPageName() !== "map.html";
+    return getCurrentPageName() !== "map";
   }
   function readOpacityValue(raw, fallback) {
     const n = Number.parseFloat(String(raw ?? "").trim());
@@ -468,7 +468,7 @@
     }
   }
   function shouldShowSharedFooter() {
-    return getCurrentPageName() !== "map.html";
+    return getCurrentPageName() !== "map";
   }
   function ensureSharedFooter() {
     if (!document.body) return null;
