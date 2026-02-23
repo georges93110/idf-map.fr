@@ -5513,8 +5513,37 @@
       }
       return out;
     }
+    function shouldUseJsonDirectoryManifests(){
+      // Prod: idf-map.fr / github pages / tout hébergement statique sans listing
+      const host = String(location.hostname || "").toLowerCase();
+      if (host === "localhost" || host === "127.0.0.1") return false;
+
+      // si tu utilises un serveur local sur LAN, adapte si besoin :
+      // if (host.endsWith(".local")) return false;
+
+      return true;
+    }
     async function listDirectoryEntries(path){
       const dirPath = ensureTrailingSlash(String(path || ""));
+      // 1) En prod: on ne tente PAS le listing HTML (sinon 404 a chaque fois sur GitHub Pages)
+      if (shouldUseJsonDirectoryManifests()){
+        try {
+          const manifestUrl = joinEncodedPath(dirPath, "index.json");
+          const res = await fetch(manifestUrl, { cache: "no-store" });
+          if (!res.ok) return [];
+          const data = await res.json();
+
+          // accepte plusieurs formats pour etre tolerant
+          if (Array.isArray(data)) return data;
+          if (data && Array.isArray(data.entries)) return data.entries;
+
+          return [];
+        } catch {
+          return [];
+        }
+      }
+
+      // 2) En local/dev: on garde ton systeme d'origine (listing HTML)
       try {
         const res = await fetch(dirPath, { cache: "no-store" });
         if (!res.ok) return [];
@@ -5541,7 +5570,10 @@
         if (entry?.isDirectory) add(entry.name);
       });
 
-      // Some directory listings omit trailing "/" on folders.
+      // En prod (manifests): on considere isDirectory fiable -> pas de probes
+      if (shouldUseJsonDirectoryManifests()) return out;
+
+      // En local/dev: on garde tes probes d'origine
       const ambiguous = entries.filter((entry) => {
         if (!entry || entry.isDirectory) return false;
         const name = String(entry.name || "").trim();
@@ -6681,7 +6713,6 @@
           const groups = Array.isArray(status?.missingByFolder) ? status.missingByFolder : [];
           groups.forEach((group) => {
             const missingStops = Array.isArray(group?.missingStops) ? group.missingStops : [];
-            if (missingStops.length) console.log(missingStops);
           });
           clearLinePreviewAudioRouteState({ closePanel: false, stopPlayback: true });
         } else {
