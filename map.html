@@ -5570,7 +5570,13 @@
     async function listDirectoryEntries(path){
       const dirPath = ensureTrailingSlash(String(path || ""));
 
-      // 1) Ancien systeme: listing dossier (local/dev)
+      // En prod (GitHub Pages / hebergement statique), evite les fetch de dossiers
+      // qui generent des 404 visibles dans la console reseau.
+      if (shouldUseJsonDirectoryManifests()) {
+        return listDirectoryEntriesFromIndex(path);
+      }
+
+      // Ancien systeme: listing dossier (local/dev)
       try {
         const res = await fetch(dirPath, { cache: "no-store" });
         if (res.ok) {
@@ -5580,7 +5586,7 @@
         }
       } catch {}
 
-      // 2) Fallback: index JSON (prod/github pages ou si listing KO)
+      // Fallback index JSON si le listing local ne retourne rien
       return listDirectoryEntriesFromIndex(path);
     }
     async function listDirectorySubfolders(path){
