@@ -1,0 +1,107 @@
+{
+  "24": {
+    "Voix de Synthèse (Anciennes) [AnnoncesSonoresRATP-ov1bu]": {
+      "_files": [
+        "Baron le Roy",
+        "Bercy-Arena",
+        "Centre Commercial",
+        "Départ",
+        "Dijon-Lachambeaudie",
+        "Gare de Bercy",
+        "Gare de Lyon",
+        "Gare de Lyon - Maison de la RATP",
+        "Lachambeaudie",
+        "Ministère de l'Economie et des Finances",
+        "Pont National - Quai de Bercy",
+        "Terminus",
+        "Terroirs de France"
+      ]
+    }
+  },
+  "114": {
+    "Voix de Synthèse (Anciennes) [AnnoncesSonoresRATP-ov1bu]": {
+      "_files": [
+        "Alexander Fleming",
+        "Alexandre 1er",
+        "Allée de la Tour",
+        "Avenue de Rosny",
+        "Bel Air",
+        "Bellevue",
+        "Bords de Marne",
+        "Caves d'Avron",
+        "Charles Hildevert",
+        "Château de Villemomble",
+        "Château de Vincennes",
+        "Cimetière de Neuilly-Plaisance",
+        "Départ",
+        "Étienne Dolet",
+        "Faidherbe - Église",
+        "Gallieni - Le Raincy - Villemomble - Montfermeil RER",
+        "Général Leclerc",
+        "Georges Pompidou",
+        "Hoche",
+        "Hôtel des Coignard",
+        "Jean Jaurès - Victor Hugo",
+        "Kennedy - Renouillères",
+        "La Maltournée",
+        "Le Parc",
+        "Le Raincy - Villemomble - Montfermeil RER",
+        "Ledru-Rollin - Général de Gaulle",
+        "Lucien Berneux",
+        "Mairie de Neuilly-Plaisance",
+        "Mairie de Nogent-sur-Marne",
+        "Marceau",
+        "Marcel Dassault",
+        "Marcel Douret",
+        "Marché de Nogent-sur-Marne",
+        "Marius Gonin",
+        "Neuilly-Plaisance RER",
+        "Nogent-le-Perreux RER",
+        "Nogent-sur-Marne RER - Pierre Sémard",
+        "Parmentier",
+        "Place du Général Leclerc",
+        "Plateau d'Avron - Place de Stalingrad",
+        "Porte Jaune",
+        "Raspail RER",
+        "Rue de Beauté",
+        "Rue des Hersiers",
+        "Sous-Préfecture - Jules Ferry",
+        "Square Jean Mermoz",
+        "Terminus",
+        "Tremblay - Pépinière",
+        "Villemomble - Les Coquetiers"
+      ]
+    }
+  },
+  "351": {
+    "Voix de Synthèse (Anciennes) [AnnoncesSonoresRATP-ov1bu]": {
+      "_files": [
+        "Auguste Polissard",
+        "Départ",
+        "Édouard Vaillant",
+        "Gallieni",
+        "Général de Gaulle",
+        "Nation - Trone",
+        "Porte de Vincennes",
+        "Pyrénées – Docteur Netter",
+        "Terminus"
+      ]
+    }
+  },
+  "global": {
+    "1_RATP [GST_TC] {0.25}": {
+      "_files": [
+        "Avancez vers le fond",
+        "Bienvenue à bord",
+        "Montée par l’avant",
+        "Validez votre titre"
+      ]
+    },
+    "9_FLIXBUS [fantransports5245]": {
+      "_files": [
+        "Bienvenue (Anglais)",
+        "Bienvenue (Français)"
+      ]
+    }
+  }
+}
