@@ -5586,6 +5586,49 @@
         .replace(/\s+/g, " ")
         .trim();
     }
+    function escapeRegExp(value){
+      return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+    function getDbusFisFallbackStyleName(folderName, lineFolder){
+      const raw = String(folderName || "").trim();
+      if (!raw) return ".";
+      const line = String(lineFolder || "").trim();
+      if (!line) return raw;
+      const lineEscaped = escapeRegExp(line);
+      const trimmed = raw
+        .replace(new RegExp(`^${lineEscaped}\\s*(?:[/\\\\>|:_-]+\\s*|\\s+)`, "i"), "")
+        .trim();
+      return trimmed || raw;
+    }
+    function isDbusFisFlattenedLineFolderMatch(folderName, lineFolder){
+      const folderToken = normalizeAudioNameToken(folderName);
+      const lineToken = normalizeAudioNameToken(lineFolder);
+      if (!folderToken || !lineToken) return false;
+      if (folderToken === lineToken) return false;
+      return folderToken.startsWith(`${lineToken} `);
+    }
+    async function listDbusFisFallbackLineFolders(lineFolder){
+      const entries = await listDirectoryEntries(DBUS_FIS_ROOT);
+      const out = [];
+      const seen = new Set();
+      entries.forEach((entry) => {
+        const name = String(entry?.name || "").trim();
+        if (!name) return;
+        const isLikelyFolder = !!entry?.isDirectory || !/\.[a-z0-9]{1,8}$/i.test(name);
+        if (!isLikelyFolder) return;
+        if (!isDbusFisFlattenedLineFolderMatch(name, lineFolder)) return;
+        const path = ensureTrailingSlash(joinEncodedPath(DBUS_FIS_ROOT, name));
+        const key = path.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push({
+          name,
+          path,
+          styleName: getDbusFisFallbackStyleName(name, lineFolder)
+        });
+      });
+      return out;
+    }
     async function getDbusFisRootLineFolderTokens(){
       if (dbusFisRootLineFolderTokensPromise) return dbusFisRootLineFolderTokensPromise;
       dbusFisRootLineFolderTokensPromise = (async () => {
@@ -6476,7 +6519,7 @@
       const routeName = String(route?.name || "").trim();
       const requiredLabelsByToken = collectRequiredAudioTokenLabelsForRoute(route);
       const allRequiredStops = [...requiredLabelsByToken.values()];
-      const linePath = joinEncodedPath(DBUS_FIS_ROOT, lineFolder);
+      const linePath = ensureTrailingSlash(joinEncodedPath(DBUS_FIS_ROOT, lineFolder));
       if (!lineFolder) {
         return {
           ok: false,
@@ -6489,38 +6532,40 @@
           ]
         };
       }
-      const lineFolderExists = await hasDbusFisLineFolder(lineFolder);
-      if (!lineFolderExists) {
-        return {
-          ok: false,
-          href: "",
-          reason: "line_folder_missing_or_empty",
-          line: lineFolder,
-          route: routeName,
-          linePath,
-          missingByFolder: [
-            { folder: linePath, missingStops: allRequiredStops }
-          ]
-        };
-      }
       const requiredTokens = collectRequiredAudioTokensForRoute(route);
       const scanTargets = [];
       const seenScanTarget = new Set();
       const addScanTarget = (folderName, folderPath, files) => {
-        const key = String(folderPath || "").toLowerCase();
+        const normalizedFolderPath = ensureTrailingSlash(String(folderPath || ""));
+        const key = normalizedFolderPath.toLowerCase();
         if (!folderPath || seenScanTarget.has(key)) return;
         seenScanTarget.add(key);
-        scanTargets.push({ folderName, folderPath, files: Array.isArray(files) ? files : [] });
+        scanTargets.push({
+          folderName,
+          folderPath: normalizedFolderPath,
+          files: Array.isArray(files) ? files : []
+        });
       };
+      const scanLineRoot = async (rootPath, rootLabel = ".") => {
+        const rootFiles = await listDirectoryMp3BaseNames(rootPath);
+        if (rootFiles.length) addScanTarget(rootLabel, rootPath, rootFiles);
+        const subfolders = await listDirectorySubfolders(rootPath);
+        for (const subfolderName of subfolders) {
+          const folderPath = ensureTrailingSlash(joinEncodedPath(rootPath, subfolderName));
+          const files = await listDirectoryMp3BaseNames(folderPath);
+          if (files.length) addScanTarget(subfolderName, folderPath, files);
+        }
+      };
+      const missingCandidates = new Set([linePath]);
 
-      const rootFiles = await listDirectoryMp3BaseNames(linePath);
-      if (rootFiles.length) addScanTarget(".", linePath, rootFiles);
-
-      const subfolders = await listDirectorySubfolders(linePath);
-      for (const subfolderName of subfolders) {
-        const folderPath = joinEncodedPath(linePath, subfolderName);
-        const files = await listDirectoryMp3BaseNames(folderPath);
-        if (files.length) addScanTarget(subfolderName, folderPath, files);
+      await scanLineRoot(linePath, ".");
+      if (!scanTargets.length) {
+        const fallbackRoots = await listDbusFisFallbackLineFolders(lineFolder);
+        for (const fallbackRoot of fallbackRoots) {
+          const fallbackPath = ensureTrailingSlash(String(fallbackRoot?.path || ""));
+          if (fallbackPath) missingCandidates.add(fallbackPath);
+          await scanLineRoot(fallbackPath, String(fallbackRoot?.styleName || "."));
+        }
       }
 
       if (!scanTargets.length) {
@@ -6531,9 +6576,10 @@
           line: lineFolder,
           route: routeName,
           linePath,
-          missingByFolder: [
-            { folder: linePath, missingStops: allRequiredStops }
-          ]
+          missingByFolder: [...missingCandidates].map((folder) => ({
+            folder,
+            missingStops: allRequiredStops
+          }))
         };
       }
       const missingByFolder = [];
