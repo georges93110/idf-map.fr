@@ -376,7 +376,7 @@
     return null;
   }
   function updateDocumentTitleFromNav() {
-    const fallbackTitle = "IDF Map";
+    const fallbackTitle = "Île-de-France Map";
     const entry = getCurrentPageNavEntry();
     if (!entry) {
       document.title = fallbackTitle;
@@ -392,7 +392,7 @@
       document.title = fallbackTitle;
       return;
     }
-    document.title = `IDF Map | ${translated}`;
+    document.title = `Île-de-France Map | ${translated}`;
   }
   function quickLinkLabel(item) {
     const key = String(item?.labelKey || "").trim();

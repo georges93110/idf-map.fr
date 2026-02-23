@@ -1233,7 +1233,7 @@
     .leaflet-popup-tip{
       background:color-mix(in oklab,var(--panel) 92%, #000 8%);
       color:var(--text);
-      border:1px solid #1c2533;
+      border:1px solid #2e2e2e;
       box-shadow:0 12px 32px rgba(0,0,0,.55);
     }
 
@@ -1429,6 +1429,463 @@
     }
     .line-preview-link:hover{ background:rgba(28,28,28,.45); color:#f2f2f2; }
     .line-preview-link svg{ width:16px; height:16px; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .line-preview-audio-link{
+      position:relative;
+      overflow:hidden;
+    }
+    .line-preview-audio-link.is-route-missing::after{
+      content:"";
+      position:absolute;
+      left:4px;
+      right:4px;
+      top:50%;
+      height:2px;
+      background:currentColor;
+      border-radius:2px;
+      transform:translateY(-50%) rotate(-36deg);
+      opacity:.92;
+      pointer-events:none;
+    }
+    .line-preview-audio-panel{
+      position:fixed;
+      z-index:1350;
+      left:12px;
+      top:calc(var(--header-stack-h) + 10px);
+      width:min(560px, calc(100vw - 24px));
+      border:none;
+      border-radius:0;
+      background:transparent;
+      box-shadow:none;
+      color:var(--text);
+      display:none;
+      user-select:none;
+    }
+    .line-preview-audio-panel.is-extension-missing{
+      width:min(420px, calc(100vw - 24px));
+    }
+    .line-preview-audio-panel.is-open{display:block}
+    .line-preview-audio-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid #3a3a3a;
+      border-radius:12px;
+      background:linear-gradient(180deg, #141414 0%, #101010 100%);
+      box-shadow:0 12px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.03);
+      cursor:move;
+      touch-action:none;
+    }
+    .line-preview-audio-title-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+      flex:1 1 auto;
+    }
+    .line-preview-audio-title{
+      font-size:13px;
+      font-weight:700;
+      color:#d9d9d9;
+      flex:1 1 auto;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .line-preview-audio-exp-badge{
+      flex:0 0 auto;
+    }
+    .line-preview-audio-body{
+      padding:10px 0 0;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      background:transparent;
+    }
+    .line-preview-audio-main{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .line-preview-audio-card{
+      border:1px solid #3a3a3a;
+      outline:1px solid #1f1f1f;
+      border-radius:12px;
+      background:linear-gradient(180deg, #1c1c1c 0%, #131313 100%);
+      box-shadow:0 14px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.02);
+      padding:10px;
+    }
+    .line-preview-audio-route{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .line-preview-audio-section-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .line-preview-audio-section-title{
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+      color:#d8d8d8;
+      line-height:1.1;
+      padding:2px 0;
+      flex:1 1 auto;
+    }
+    .line-preview-audio-head-select{
+      margin-left:auto;
+      width:min(230px, 44vw);
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      align-items:flex-end;
+      min-width:130px;
+    }
+    .line-preview-audio-extension-missing{
+      border:1px solid #5a1f1f;
+      background:#2b1010;
+      border-radius:10px;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .line-preview-audio-extension-missing-title{
+      color:#ffd0d0;
+      font-size:14px;
+      font-weight:800;
+    }
+    .line-preview-audio-extension-missing-text{
+      color:#f2dada;
+      font-size:12px;
+      line-height:1.4;
+    }
+    .line-preview-audio-extension-missing-note{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .line-preview-audio-extension-missing-badge{
+      align-self:flex-start;
+      user-select:text;
+      -webkit-user-select:text;
+    }
+    .line-preview-audio-extension-supported{
+      color:#f2dada;
+      font-size:12px;
+      line-height:1.4;
+    }
+    .line-preview-audio-extension-supported-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .line-preview-audio-code-badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:20px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(0,0,0,.25);
+      color:#ffe6e6;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.02em;
+      box-sizing:border-box;
+      word-break:break-word;
+      user-select:text;
+      -webkit-user-select:text;
+    }
+    .line-preview-audio-extension-guide-title{
+      color:#ffdede;
+      font-size:12px;
+      font-weight:800;
+      margin-top:2px;
+    }
+    .line-preview-audio-extension-guide{
+      margin:0;
+      padding-left:18px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      color:#f2dada;
+      font-size:12px;
+      line-height:1.45;
+    }
+    .line-preview-audio-extension-guide li{
+      margin:0;
+    }
+    .line-preview-audio-extension-missing-links{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .line-preview-audio-extension-install-wrap{
+      margin:10px 0 24px;
+    }
+    .line-preview-audio-extension-link{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:34px;
+      border:1px solid #7a2f2f;
+      border-radius:10px;
+      background:#3a1515;
+      color:#ffe6e6;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:700;
+      padding:6px 10px;
+      box-sizing:border-box;
+    }
+    .line-preview-audio-extension-link:hover{
+      background:#4a1b1b;
+    }
+    .line-preview-audio-style{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .line-preview-audio-style-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      flex:1 1 auto;
+      min-width:0;
+    }
+    .line-preview-audio-style-label{
+      font-size:12px;
+      font-weight:700;
+      color:#c7c7c7;
+      min-width:78px;
+      white-space:nowrap;
+    }
+    .line-preview-audio-panel .line-preview-audio-head-select select,
+    .line-preview-audio-panel .line-preview-audio-style select,
+    .line-preview-audio-panel .line-preview-audio-global-head select{
+      flex:1 1 auto;
+      min-height:30px;
+      border:1px solid #151515;
+      border-radius:8px;
+      background:#030303 !important;
+      color:#ececec !important;
+      font-size:13px;
+      padding:4px 8px;
+      outline:none;
+      color-scheme:dark;
+      appearance:none;
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a9a9a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 8px center;
+      background-size:12px 12px;
+      padding-right:26px;
+      forced-color-adjust:none;
+      -webkit-text-fill-color:#ececec !important;
+    }
+    .line-preview-audio-panel .line-preview-audio-head-select select{
+      width:100%;
+      min-height:26px;
+      font-size:12px;
+      padding:3px 8px;
+      padding-right:26px;
+    }
+    .line-preview-audio-panel .line-preview-audio-head-select select:disabled,
+    .line-preview-audio-panel .line-preview-audio-style select:disabled,
+    .line-preview-audio-panel .line-preview-audio-global-head select:disabled{
+      opacity:1;
+      background:#030303 !important;
+      border-color:#151515 !important;
+      color:#6c6c6c !important;
+      -webkit-text-fill-color:#6c6c6c !important;
+      cursor:not-allowed;
+    }
+    .line-preview-audio-style-byline{
+      font-size:9px;
+      color:#8e8e8e;
+      line-height:1.25;
+      min-height:11px;
+      text-align:right;
+      align-self:flex-end;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .line-preview-audio-now{
+      min-height:54px;
+      display:flex;
+      align-items:center;
+      min-width:0;
+    }
+    .line-preview-audio-now-kicker{
+      font-size:11px;
+      font-weight:700;
+      color:#cfcfcf;
+      letter-spacing:.2px;
+      line-height:1.1;
+    }
+    .line-preview-audio-now-row{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+    }
+    .line-preview-audio-nav-btn{
+      min-width:34px;
+      width:34px;
+      height:46px;
+      padding:0;
+      font-size:20px;
+      font-weight:800;
+      line-height:1;
+      border-radius:8px;
+    }
+    .line-preview-audio-stop-sign{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      min-width:0;
+      min-height:46px;
+      border-radius:3px;
+      border:1px solid #0a1230;
+      background:
+        linear-gradient(180deg, #0d2f8b 100%, #0a2266 100%, #07184a 100%);
+      padding:6px 12px;
+      box-sizing:border-box;
+    }
+    .line-preview-audio-stop-sign-text{
+      display:block;
+      width:100%;
+      text-align:center;
+      color:#f4f7ff;
+      font-weight:800;
+      font-size:31px;
+      line-height:1;
+      letter-spacing:.3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-shadow:0 1px 2px rgba(0,0,0,.35);
+    }
+    .line-preview-audio-stop-empty{
+      color:#b9b9b9;
+      font-size:13px;
+    }
+    .line-preview-audio-actions{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:8px;
+    }
+    .line-preview-audio-global{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .line-preview-audio-global-head{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .line-preview-audio-global-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      flex:1 1 auto;
+      min-width:0;
+    }
+    .line-preview-audio-global-label{
+      font-size:12px;
+      font-weight:700;
+      color:#c7c7c7;
+      min-width:56px;
+      white-space:nowrap;
+    }
+    .line-preview-audio-global-byline{
+      font-size:9px;
+      color:#8e8e8e;
+      line-height:1.25;
+      min-height:11px;
+      text-align:right;
+      align-self:flex-end;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .line-preview-audio-panel .line-preview-audio-head-select select option,
+    .line-preview-audio-panel .line-preview-audio-head-select select optgroup,
+    .line-preview-audio-panel .line-preview-audio-style select option,
+    .line-preview-audio-panel .line-preview-audio-style select optgroup,
+    .line-preview-audio-panel .line-preview-audio-global-head select option,
+    .line-preview-audio-panel .line-preview-audio-global-head select optgroup{
+      background:#030303;
+      color:#ececec;
+    }
+    .line-preview-audio-panel .line-preview-audio-head-select select::-ms-expand{
+      display:none;
+    }
+    .line-preview-audio-global-buttons{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:8px;
+    }
+    .line-preview-audio-volume{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .line-preview-audio-volume-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .line-preview-audio-volume-label{
+      font-size:12px;
+      font-weight:700;
+      color:#c7c7c7;
+      min-width:52px;
+      white-space:nowrap;
+    }
+    .line-preview-audio-volume input[type="range"]{
+      flex:1 1 auto;
+      accent-color:#60a5fa;
+    }
+    .line-preview-audio-volume-stop{
+      flex:0 0 auto;
+      min-height:30px;
+      padding:6px 10px;
+      font-size:12px;
+      line-height:1;
+    }
+    .line-preview-audio-btn{
+      border:1px solid #1c1c1c;
+      border-radius:10px;
+      background:#050505;
+      color:#ececec;
+      min-height:34px;
+      padding:8px 10px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .line-preview-audio-btn:hover{
+      background:#101010;
+    }
+    .line-preview-audio-btn:disabled{
+      opacity:1;
+      background:#020202;
+      border-color:#151515;
+      color:#555;
+      box-shadow:none;
+      cursor:not-allowed;
+    }
     .line-preview{
       --lp-logo-h:36px;
       --lp-chip-ratio:2.25;
@@ -2416,6 +2873,13 @@
             <div class="line-preview-meta" id="lpRouteMeta">-</div>
           </div>
           <div class="line-preview-actions">
+            <a class="line-preview-link line-preview-audio-link" id="lpAudioLink" href="" target="_blank" rel="noopener" aria-label="Activer le système d'annonces sonores" title="Activer le système d'annonces sonores" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 5 6 9H2v6h4l5 4z"></path>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              </svg>
+            </a>
             <a class="line-preview-link" id="lpLink" href="" target="_blank" rel="noopener" hidden>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -2435,6 +2899,82 @@
       </div>
     </div>
   </div>
+  <div id="lpAudioPanel" class="line-preview-audio-panel" role="dialog" aria-hidden="true" aria-label="Système d'annonces sonores">
+    <div class="line-preview-audio-head" id="lpAudioPanelHead">
+      <div class="line-preview-audio-title-row">
+        <div class="line-preview-audio-title" id="lpAudioPanelTitle">Système d'annonces sonores</div>
+        <span class="lang-toggle-badge line-preview-audio-exp-badge">EXPERIMENTAL</span>
+      </div>
+      <button type="button" class="line-preview-close" id="lpAudioPanelClose" aria-label="Fermer">X</button>
+    </div>
+    <div class="line-preview-audio-body">
+      <div class="line-preview-audio-main" id="lpAudioMainContent">
+        <div class="line-preview-audio-route line-preview-audio-card" id="lpAudioRouteBlock">
+          <div class="line-preview-audio-section-head">
+            <div class="line-preview-audio-section-title">Annonces de Ligne</div>
+            <div class="line-preview-audio-style-wrap line-preview-audio-head-select">
+              <select id="lpAudioStyleSelect"></select>
+              <div class="line-preview-audio-style-byline" id="lpAudioStyleByline" hidden></div>
+            </div>
+          </div>
+          <div class="line-preview-audio-now-kicker">Prochain Arrêt :</div>
+          <div class="line-preview-audio-now-row">
+            <button type="button" class="line-preview-audio-btn line-preview-audio-nav-btn" id="lpAudioPrevBtn">&lt;</button>
+            <div class="line-preview-audio-now" id="lpAudioNowStop">-</div>
+            <button type="button" class="line-preview-audio-btn line-preview-audio-nav-btn" id="lpAudioNextBtn">&gt;</button>
+          </div>
+          <div class="line-preview-audio-actions">
+            <button type="button" class="line-preview-audio-btn" id="lpAudioCurrentBtn">Annonce Arrêt</button>
+            <button type="button" class="line-preview-audio-btn" id="lpAudioTerminusBtn">Annonce Destination</button>
+          </div>
+        </div>
+        <div class="line-preview-audio-global line-preview-audio-card" id="lpAudioGlobalBlock">
+          <div class="line-preview-audio-section-head">
+            <div class="line-preview-audio-section-title">Annonces Globales</div>
+            <div class="line-preview-audio-global-wrap line-preview-audio-head-select">
+              <select id="lpAudioGlobalFolderSelect"></select>
+              <div class="line-preview-audio-global-byline" id="lpAudioGlobalByline" hidden></div>
+            </div>
+          </div>
+          <div class="line-preview-audio-global-buttons" id="lpAudioGlobalButtons"></div>
+        </div>
+        <div class="line-preview-audio-volume line-preview-audio-card">
+          <div class="line-preview-audio-section-title">Volume</div>
+          <div class="line-preview-audio-volume-row">
+            <label class="line-preview-audio-volume-label" id="lpAudioVolumeLabel" for="lpAudioVolumeRange">Volume</label>
+            <input id="lpAudioVolumeRange" type="range" min="0" max="100" step="1" value="100" />
+            <button type="button" class="line-preview-audio-btn line-preview-audio-volume-stop" id="lpAudioStopBtn">Stop</button>
+          </div>
+        </div>
+      </div>
+      <div class="line-preview-audio-extension-missing" id="lpAudioExtensionMissing" hidden>
+        <div class="line-preview-audio-extension-missing-title" id="lpAudioExtMissingTitle">Extension non détectée</div>
+        <div class="line-preview-audio-extension-missing-text" id="lpAudioExtMissingText">Le système d'annonces sonores nécessite l'extension.</div>
+        <div class="line-preview-audio-extension-missing-note">
+          <span class="lang-toggle-badge line-preview-audio-extension-missing-badge">UNIQUEMENT COMPATIBLE CHROME</span>
+        </div>
+        <div class="line-preview-audio-extension-missing-links line-preview-audio-extension-install-wrap">
+          <a class="line-preview-audio-extension-link" id="lpAudioExtInstallLink" href="#" target="_blank" rel="noopener">Télécharger l'extension</a>
+        </div>
+        <div class="line-preview-audio-extension-guide-title">Guide d'Installation :</div>
+        <ol class="line-preview-audio-extension-guide">
+          <li>Décompressez le fichier <span class="line-preview-audio-code-badge">.zip</span> que vous avez téléchargé</li>
+          <li>Placez le dossier <span class="line-preview-audio-code-badge">idf_annonces_sonores_extension</span> dans un emplacement où vous serez sûr qu'il ne sera pas déplacé ou de le supprimé</li>
+          <li>Ouvrez la page <span class="line-preview-audio-code-badge">chrome://extensions/</span></li>
+          <li>Cliquez sur le bouton <span class="line-preview-audio-code-badge">Charger l’extension non empaquetée</span> en haut à gauche</li>
+          <li>Sélectionnez le dossier extrait <span class="line-preview-audio-code-badge">idf_annonces_sonores_extension</span>, ouvrez le et cliquez sur le bouton <span class="line-preview-audio-code-badge">Sélectionner un dossier</span></li>
+          <li>
+          Vous devez maintenant configurer vos raccourcis clavier. Rendez-vous sur 
+          <span class="line-preview-audio-code-badge">chrome://extensions/shortcuts</span> 
+          (aucun raccourci n’est défini par défaut).  
+          ATTENTION : pour chaque raccourci, veillez à sélectionner, à droite de l’icône crayon, l’option 
+          <span class="line-preview-audio-code-badge">Raccourcis globaux</span> dans le menu déroulant.
+          </li>
+          <li>Revenez ensuite ici et rechargez la page</li>
+        </ol>
+      </div>
+    </div>
+  </div>
 
   <div class="watermark">
     <img id="watermarkLogo" src="" alt="IDF Logo">
@@ -2450,32 +2990,32 @@
   <script>
 
   const LINE_STYLES = {
-    "24":         ["#ab5798", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-24/"],
-    "63":         ["#cdc74f", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-63/"],
-    "109":        ["#cdc74f", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-109/"],
-    "112":        ["#e69459", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-112/"],
-    "114":        ["#8cc299", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-114/"],
-    "121":        ["#d63e34", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-121/"],
-    "124":        ["#e6a4b2", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-124/"],
-    "210":        ["#fecd08", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-210/"],
-    "221":        ["#e7a5b3", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-221/"],
-    "303":        ["#99974a", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-303/"],
-    "325":        ["#9ad1dc", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-325/"],
-    "351":        ["#d7b152", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-351/"],
-    "FLIXBUS":    ["#a7d245", "#FFFFFF","https://www.flixbus.fr/"],
-    "N11":        ["#e9682a", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n11"],
-    "N23":        ["#d09835", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n23"],
-    "N33":        ["#e9682a", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n33"],
-    "Titus 1":    ["#e63b20", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/"],
-    "Titus 2":    ["#49713e", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/"],
-    "Fictives":   ["#cfcfcf", "#221f20",""],
-    "Autocar":    ["#cfcfcf", "#221f20",""],
-    "Scolaire":   ["#f0c748", "#221f20",""],
-    "Express":    ["#6fb2e1", "#FFFFFF",""],
-    "Express 75": ["#6fb2e1", "#FFFFFF",""],
-    "Express 77": ["#6fb2e1", "#FFFFFF",""],
-    "Express 93": ["#6fb2e1", "#FFFFFF",""],
-    "Express 94": ["#6fb2e1", "#FFFFFF",""],
+    "24":         ["#ab5798", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-24/","1"],
+    "63":         ["#cdc74f", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-63/","1"],
+    "109":        ["#cdc74f", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-109/","1"],
+    "112":        ["#e69459", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-112/","1"],
+    "114":        ["#8cc299", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-114/","1"],
+    "121":        ["#d63e34", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-121/","1"],
+    "124":        ["#e6a4b2", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-124/","1"],
+    "210":        ["#fecd08", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-210/","1"],
+    "221":        ["#e7a5b3", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-221/","1"],
+    "303":        ["#99974a", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-303/","1"],
+    "325":        ["#9ad1dc", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-325/","1"],
+    "351":        ["#d7b152", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-351/","1"],
+    "FLIXBUS":    ["#a7d245", "#FFFFFF","https://www.flixbus.fr/","9"],
+    "N11":        ["#e9682a", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n11","1,2"],
+    "N23":        ["#d09835", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n23","1,2"],
+    "N33":        ["#e9682a", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n33","1,2"],
+    "Titus 1":    ["#e63b20", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/","1"],
+    "Titus 2":    ["#49713e", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/","1"],
+    "Fictives":   ["#cfcfcf", "#221f20","","0"],
+    "Autocar":    ["#cfcfcf", "#221f20","","0"],
+    "Scolaire":   ["#f0c748", "#221f20","","0"],
+    "Express":    ["#6fb2e1", "#FFFFFF","","0"],
+    "Express 75": ["#6fb2e1", "#FFFFFF","","0"],
+    "Express 77": ["#6fb2e1", "#FFFFFF","","0"],
+    "Express 93": ["#6fb2e1", "#FFFFFF","","0"],
+    "Express 94": ["#6fb2e1", "#FFFFFF","","0"],
   };
 
   const I18N = window.I18N || {};
@@ -3257,6 +3797,78 @@
       $lpLink.setAttribute("aria-label", label);
       $lpLink.title = label;
     }
+    const $lpAudioLink = document.getElementById("lpAudioLink");
+    if ($lpAudioLink){
+      const label = t("audio_system_enable");
+      $lpAudioLink.setAttribute("aria-label", label);
+      $lpAudioLink.title = label;
+    }
+    const $lpAudioPanel = document.getElementById("lpAudioPanel");
+    if ($lpAudioPanel) $lpAudioPanel.setAttribute("aria-label", t("audio_panel_title"));
+    const $lpAudioPanelTitle = document.getElementById("lpAudioPanelTitle");
+    if ($lpAudioPanelTitle) $lpAudioPanelTitle.textContent = t("audio_panel_title");
+    const $lpAudioPanelClose = document.getElementById("lpAudioPanelClose");
+    if ($lpAudioPanelClose) {
+      $lpAudioPanelClose.setAttribute("aria-label", t("close"));
+      $lpAudioPanelClose.title = t("close");
+    }
+    const $lpAudioPrevBtn = document.getElementById("lpAudioPrevBtn");
+    if ($lpAudioPrevBtn) {
+      const label = t("audio_prev_stop");
+      $lpAudioPrevBtn.textContent = "<";
+      $lpAudioPrevBtn.setAttribute("aria-label", label);
+      $lpAudioPrevBtn.title = label;
+    }
+    const $lpAudioCurrentBtn = document.getElementById("lpAudioCurrentBtn");
+    if ($lpAudioCurrentBtn) {
+      const label = t("audio_current_stop");
+      $lpAudioCurrentBtn.textContent = label;
+      $lpAudioCurrentBtn.setAttribute("aria-label", label);
+      $lpAudioCurrentBtn.title = label;
+    }
+    const $lpAudioNextBtn = document.getElementById("lpAudioNextBtn");
+    if ($lpAudioNextBtn) {
+      const label = t("audio_next_stop");
+      $lpAudioNextBtn.textContent = ">";
+      $lpAudioNextBtn.setAttribute("aria-label", label);
+      $lpAudioNextBtn.title = label;
+    }
+    const $lpAudioTerminusBtn = document.getElementById("lpAudioTerminusBtn");
+    if ($lpAudioTerminusBtn) {
+      const label = t("audio_terminus_btn");
+      $lpAudioTerminusBtn.textContent = label;
+      $lpAudioTerminusBtn.setAttribute("aria-label", label);
+      $lpAudioTerminusBtn.title = label;
+    }
+    const $lpAudioStyleLabel = document.getElementById("lpAudioStyleLabel");
+    if ($lpAudioStyleLabel) $lpAudioStyleLabel.textContent = t("audio_voice_style");
+    const $lpAudioStyleSelect = document.getElementById("lpAudioStyleSelect");
+    if ($lpAudioStyleSelect) {
+      const label = t("audio_voice_style");
+      $lpAudioStyleSelect.setAttribute("aria-label", label);
+      $lpAudioStyleSelect.title = label;
+    }
+    const $lpAudioVolumeLabel = document.getElementById("lpAudioVolumeLabel");
+    if ($lpAudioVolumeLabel) $lpAudioVolumeLabel.textContent = t("audio_volume");
+    const $lpAudioVolumeRange = document.getElementById("lpAudioVolumeRange");
+    if ($lpAudioVolumeRange) {
+      const label = t("audio_volume");
+      $lpAudioVolumeRange.setAttribute("aria-label", label);
+      $lpAudioVolumeRange.title = label;
+    }
+    const $lpAudioStopBtn = document.getElementById("lpAudioStopBtn");
+    if ($lpAudioStopBtn) {
+      const label = t("audio_stop");
+      $lpAudioStopBtn.textContent = label;
+      $lpAudioStopBtn.setAttribute("aria-label", label);
+      $lpAudioStopBtn.title = label;
+    }
+    if (typeof updateLinePreviewAudioStyleSelect === "function") {
+      updateLinePreviewAudioStyleSelect();
+    }
+    if (typeof refreshLinePreviewAudioButtonVisibility === "function") {
+      refreshLinePreviewAudioButtonVisibility();
+    }
     const $dbusWorldLink = document.getElementById("dbusWorldLink");
     if ($dbusWorldLink){
       const offsite = window.SITE_OFFSITE_LINKS && typeof window.SITE_OFFSITE_LINKS === "object"
@@ -3707,7 +4319,7 @@
     dbusRoutePane.style.pointerEvents = "none";
     const dbusRouteMarkerPane = map.createPane("dbusRouteMarkerPane");
     dbusRouteMarkerPane.style.zIndex = "330";
-    dbusRouteMarkerPane.style.pointerEvents = "none";
+    dbusRouteMarkerPane.style.pointerEvents = "auto";
     const fullBounds=L.latLngBounds(map.unproject(L.point(0,heightPx),maxNativeZoom),map.unproject(L.point(widthPx,0),maxNativeZoom));
     const MARGIN=64;
     function innerBounds(m){const sw=L.point(0+m,heightPx-m),ne=L.point(widthPx-m,0+m);return L.latLngBounds(map.unproject(sw,maxNativeZoom),map.unproject(ne,maxNativeZoom));}
@@ -4800,10 +5412,19 @@
     function stopLineAnim(key) { const h = routeAnimHandles.get(key); if (h) { h.stop(); routeAnimHandles.delete(key); } }
 
     const dbusRoot = `${DBUS_BASE}/IDF MAP`;
+    const DBUS_FIS_ROOT = `${MAP_FILES_ROOT}/dbus_fis`;
+    const DBUS_FIS_GLOBAL_ROOT = `${DBUS_FIS_ROOT}/global`;
     const dbusLayers = L.layerGroup().addTo(map);
     const dbusStopsLayer = L.layerGroup().addTo(map);
     const dbusDepartLayers = L.layerGroup();
     const dbusRouteLayers = new Map();
+    let linePreviewAudioCheckToken = 0;
+    let dbusFisRootLineFolderTokensPromise = null;
+    const LINE_PREVIEW_AUDIO_STATE = { folderPath: "", stopNames: [], currentIndex: 0, enabled: false, volume: 1, voiceStyles: [], selectedVoiceIndex: 0 };
+    const LINE_PREVIEW_AUDIO_GLOBAL_STATE = { folders: [], selectedFolderPath: "", loadPromise: null, profile: "ratp", typeTokens: [] };
+    const LINE_PREVIEW_AUDIO_PLAYBACK = { token: 0, audio: null, isPlaying: false, lockNavigation: false, volumeMultiplier: 1 };
+    const LINE_PREVIEW_AUDIO_EXTENSION = { nonce: "", checked: false, detected: false, version: "" };
+    const LINE_PREVIEW_AUDIO_DRAG = { initialized: false };
     let currentSelectedKey = "";
     let currentSelectedLineUid = "";
     let dbusRoutesClosedByPanel = false;
@@ -4827,6 +5448,1215 @@
       const txt = await res.text();
       const parser = new DOMParser();
       return parser.parseFromString(txt, "text/xml");
+    }
+    function ensureTrailingSlash(path){
+      return /\/$/.test(String(path || "")) ? String(path) : `${String(path || "")}/`;
+    }
+    function encodePathSegment(segment){
+      const cleaned = String(segment || "").replace(/[\\/]+/g, " ").trim();
+      if (!cleaned) return "";
+      return encodeURIComponent(cleaned);
+    }
+    function joinEncodedPath(basePath, ...segments){
+      let out = String(basePath || "").replace(/\/+$/g, "");
+      segments.forEach((segment) => {
+        const encoded = encodePathSegment(segment);
+        if (!encoded) return;
+        out += `/${encoded}`;
+      });
+      return out;
+    }
+    function parseDirEntryFromHref(rawHref, baseUrl){
+      const href = String(rawHref || "").trim();
+      if (!href || href.startsWith("#") || href.startsWith("?")) return null;
+      let resolved;
+      try {
+        resolved = new URL(href, baseUrl);
+      } catch {
+        return null;
+      }
+      if (resolved.origin !== baseUrl.origin) return null;
+      const basePath = String(baseUrl.pathname || "");
+      const targetPath = String(resolved.pathname || "");
+      if (!targetPath.startsWith(basePath)) return null;
+      const isDirectory = /\/$/.test(href) || /\/$/.test(targetPath);
+      const rawName = targetPath.replace(/\/+$/g, "").split("/").pop() || "";
+      let name = rawName;
+      try { name = decodeURIComponent(rawName); } catch {}
+      name = String(name || "").trim();
+      if (!name || name === "." || name === "..") return null;
+      return { name, isDirectory };
+    }
+    function parseDirEntriesFromHtml(html, basePath){
+      const text = String(html || "");
+      const baseUrl = new URL(ensureTrailingSlash(basePath), location.href);
+      const out = [];
+      const seen = new Set();
+      const push = (entry) => {
+        if (!entry) return;
+        const key = `${entry.isDirectory ? "d" : "f"}:${entry.name.toLowerCase()}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push(entry);
+      };
+      try {
+        const doc = new DOMParser().parseFromString(text, "text/html");
+        doc.querySelectorAll("a[href]").forEach((anchor) => {
+          push(parseDirEntryFromHref(anchor.getAttribute("href"), baseUrl));
+        });
+      } catch {}
+      if (!out.length) {
+        const hrefMatches = text.matchAll(/href=["']([^"']+)["']/gi);
+        for (const match of hrefMatches) {
+          push(parseDirEntryFromHref(match[1], baseUrl));
+        }
+      }
+      return out;
+    }
+    async function listDirectoryEntries(path){
+      const dirPath = ensureTrailingSlash(String(path || ""));
+      try {
+        const res = await fetch(dirPath, { cache: "no-store" });
+        if (!res.ok) return [];
+        const html = await res.text();
+        return parseDirEntriesFromHtml(html, dirPath);
+      } catch {
+        return [];
+      }
+    }
+    async function listDirectorySubfolders(path){
+      const entries = await listDirectoryEntries(path);
+      const out = [];
+      const seen = new Set();
+      const add = (name) => {
+        const n = String(name || "").trim();
+        if (!n) return;
+        const key = n.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push(n);
+      };
+
+      entries.forEach((entry) => {
+        if (entry?.isDirectory) add(entry.name);
+      });
+
+      // Some directory listings omit trailing "/" on folders.
+      const ambiguous = entries.filter((entry) => {
+        if (!entry || entry.isDirectory) return false;
+        const name = String(entry.name || "").trim();
+        if (!name) return false;
+        return !/\.[a-z0-9]{1,8}$/i.test(name);
+      });
+
+      await Promise.all(ambiguous.map(async (entry) => {
+        const probePath = joinEncodedPath(path, entry.name);
+        const probeEntries = await listDirectoryEntries(probePath);
+        if (probeEntries.length > 0) add(entry.name);
+      }));
+
+      return out;
+    }
+    async function listDirectoryMp3BaseNames(path){
+      const entries = await listDirectoryEntries(path);
+      return entries
+        .filter((entry) => !entry.isDirectory && /\.mp3$/i.test(entry.name))
+        .map((entry) => entry.name.replace(/\.mp3$/i, ""));
+    }
+    function normalizeAudioNameToken(value){
+      return String(value || "")
+        .replace(/\.mp3$/i, "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/&/g, " et ")
+        .replace(/[’`´']/g, "")
+        .replace(/[‐‑‒–—−-]/g, " ")
+        .replace(/\u00A0/g, " ")
+        .replace(/[^a-z0-9\s]/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+    }
+    function getDbusFisLineFolderName(line, route){
+      const parsed = String(parseRouteName(route?.name || "").lineNumber || "").trim();
+      const fallback = String(getLineNumber(line, route) || line?.number || "").trim();
+      const raw = parsed || fallback;
+      return raw
+        .replace(/\s*\([^)]*\)\s*/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    async function getDbusFisRootLineFolderTokens(){
+      if (dbusFisRootLineFolderTokensPromise) return dbusFisRootLineFolderTokensPromise;
+      dbusFisRootLineFolderTokensPromise = (async () => {
+        const entries = await listDirectoryEntries(DBUS_FIS_ROOT);
+        const tokens = new Set();
+        entries.forEach((entry) => {
+          const name = String(entry?.name || "").trim();
+          if (!name) return;
+          const isLikelyFolder = !!entry?.isDirectory || !/\.[a-z0-9]{1,8}$/i.test(name);
+          if (!isLikelyFolder) return;
+          const token = normalizeAudioNameToken(name);
+          if (token) tokens.add(token);
+        });
+        return tokens;
+      })();
+      return dbusFisRootLineFolderTokensPromise;
+    }
+    async function hasDbusFisLineFolder(lineFolderName){
+      const token = normalizeAudioNameToken(lineFolderName);
+      if (!token) return false;
+      const known = await getDbusFisRootLineFolderTokens();
+      // If root listing is unavailable/empty, do not block downstream checks.
+      if (!known.size) return true;
+      return known.has(token);
+    }
+    function collectRequiredAudioTokensForRoute(route){
+      const required = new Set([
+        normalizeAudioNameToken("Départ"),
+        normalizeAudioNameToken("Terminus")
+      ]);
+      (route?.stops || []).forEach((stopRef) => {
+        const stopName = String(DBUS_STOPS.get(stopRef?.uid)?.name || "").trim();
+        if (!stopName) return;
+        const cleanStopName = stripProvisoire(stopName);
+        const token = normalizeAudioNameToken(cleanStopName || stopName);
+        if (token) required.add(token);
+      });
+      return required;
+    }
+    function collectRequiredAudioTokenLabelsForRoute(route){
+      const labelsByToken = new Map();
+      const pushLabel = (label) => {
+        const text = String(label || "").trim();
+        if (!text) return;
+        const token = normalizeAudioNameToken(text);
+        if (!token || labelsByToken.has(token)) return;
+        labelsByToken.set(token, text);
+      };
+      pushLabel("Départ");
+      pushLabel("Terminus");
+      (route?.stops || []).forEach((stopRef) => {
+        const stopName = String(DBUS_STOPS.get(stopRef?.uid)?.name || "").trim();
+        if (!stopName) return;
+        const cleanStopName = stripProvisoire(stopName);
+        pushLabel(cleanStopName || stopName);
+      });
+      return labelsByToken;
+    }
+    function collectRouteAudioStopNames(route){
+      const out = [];
+      const seen = new Set();
+      (route?.stops || []).forEach((stopRef) => {
+        const raw = String(DBUS_STOPS.get(stopRef?.uid)?.name || "").trim();
+        if (!raw) return;
+        const label = stripProvisoire(raw) || raw;
+        const key = normalizeAudioNameToken(label);
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        out.push(label);
+      });
+      return out;
+    }
+    function linePreviewAudioClipUrl(folderPath, clipName){
+      return joinEncodedPath(folderPath, `${String(clipName || "").trim()}.mp3`);
+    }
+    function getLinePreviewAudioPanel(){
+      return document.getElementById("lpAudioPanel");
+    }
+    function parseLinePreviewAudioStyleMeta(rawName){
+      const name = String(rawName || "").trim();
+      if (!name || name === ".") {
+        return { displayName: t("audio_voice_style_default"), voiceBy: "" };
+      }
+      const byParts = [];
+      name.replace(/\[([^\]]+)\]/g, (_match, group) => {
+        const text = String(group || "").trim();
+        if (text) byParts.push(text);
+        return _match;
+      });
+      const displayName = name
+        .replace(/\[[^\]]*\]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim() || t("audio_voice_style_default");
+      return { displayName, voiceBy: byParts.join(" / ") };
+    }
+    function getLinePreviewAudioExtensionLink(key){
+      const offsite = window.SITE_OFFSITE_LINKS && typeof window.SITE_OFFSITE_LINKS === "object"
+        ? window.SITE_OFFSITE_LINKS
+        : {};
+      const href = String(offsite[key] || "").trim();
+      return href || "#";
+    }
+    function updateLinePreviewAudioExtensionLinks(){
+      const installLink = document.getElementById("lpAudioExtInstallLink");
+      if (installLink) installLink.href = getLinePreviewAudioExtensionLink("extension_install");
+      const keysLink = document.getElementById("lpAudioExtKeysLink");
+      if (keysLink) keysLink.href = getLinePreviewAudioExtensionLink("extension_keys");
+    }
+    function updateLinePreviewAudioExtensionState(){
+      updateLinePreviewAudioExtensionLinks();
+      const panel = getLinePreviewAudioPanel();
+      const head = document.getElementById("lpAudioPanelHead");
+      const main = document.getElementById("lpAudioMainContent");
+      const missing = document.getElementById("lpAudioExtensionMissing");
+      if (!main || !missing) return;
+      const extensionMissing = !LINE_PREVIEW_AUDIO_EXTENSION.detected;
+      if (panel) panel.classList.toggle("is-extension-missing", extensionMissing);
+      if (head) head.style.display = "";
+      main.style.display = extensionMissing ? "none" : "";
+      missing.style.display = extensionMissing ? "flex" : "none";
+      if (extensionMissing) {
+        stopLinePreviewAudioPlayback();
+      }
+    }
+    function updateLinePreviewAudioRouteSectionVisibility(){
+      const routeBlock = document.getElementById("lpAudioRouteBlock");
+      if (!routeBlock) return;
+      routeBlock.style.display = LINE_PREVIEW_AUDIO_STATE.enabled ? "" : "none";
+    }
+    function linePreviewAudioStyleDisplayName(rawName){
+      return parseLinePreviewAudioStyleMeta(rawName).displayName;
+    }
+    function updateLinePreviewAudioStyleByline(style){
+      const byline = document.getElementById("lpAudioStyleByline");
+      if (!byline) return;
+      const voiceBy = parseLinePreviewAudioStyleMeta(style?.name || "").voiceBy;
+      if (!voiceBy) {
+        byline.textContent = "";
+        byline.hidden = true;
+        return;
+      }
+      byline.textContent = `Voix par ${voiceBy}`;
+      byline.hidden = false;
+    }
+    function updateLinePreviewAudioStyleSelect(){
+      const select = document.getElementById("lpAudioStyleSelect");
+      if (!select) return;
+      const styles = Array.isArray(LINE_PREVIEW_AUDIO_STATE.voiceStyles) ? LINE_PREVIEW_AUDIO_STATE.voiceStyles : [];
+      const prevPath = styles[LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex]?.path || "";
+      select.innerHTML = "";
+      if (!styles.length) {
+        select.disabled = true;
+        updateLinePreviewAudioStyleByline(null);
+        return;
+      }
+      styles.forEach((style, idx) => {
+        const option = document.createElement("option");
+        option.value = String(style?.path || "");
+        option.textContent = linePreviewAudioStyleDisplayName(style?.name);
+        option.dataset.styleIndex = String(idx);
+        select.appendChild(option);
+      });
+      let idx = LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex;
+      if (!Number.isFinite(idx) || idx < 0 || idx >= styles.length) idx = 0;
+      const targetPath = styles[idx]?.path || prevPath || styles[0]?.path || "";
+      const found = styles.findIndex(s => String(s?.path || "") === String(targetPath));
+      LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = found >= 0 ? found : 0;
+      select.value = String(styles[LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex]?.path || "");
+      updateLinePreviewAudioStyleByline(styles[LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex] || null);
+      const isPlaying = !!LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying;
+      select.disabled = isPlaying || styles.length <= 1;
+    }
+    function setLinePreviewAudioStyleByPath(path, { stopPlayback = true } = {}){
+      const styles = Array.isArray(LINE_PREVIEW_AUDIO_STATE.voiceStyles) ? LINE_PREVIEW_AUDIO_STATE.voiceStyles : [];
+      if (!styles.length) return;
+      const idx = styles.findIndex((style) => String(style?.path || "") === String(path || ""));
+      if (idx < 0) return;
+      LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = idx;
+      LINE_PREVIEW_AUDIO_STATE.folderPath = ensureTrailingSlash(String(styles[idx]?.path || ""));
+      if (stopPlayback) stopLinePreviewAudioPlayback();
+      updateLinePreviewAudioStyleSelect();
+      updateLinePreviewAudioButtonsState();
+    }
+    function linePreviewAudioGlobalFolderDisplayName(rawName){
+      const name = String(rawName || "").trim();
+      if (!name || name === ".") return "Global";
+      const withoutTypePrefix = name.replace(/^\s*\d+\s*_\s*/i, "");
+      return withoutTypePrefix
+        .replace(/\{[^}]*\}/g, " ")
+        .replace(/\[[^\]]*\]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim() || withoutTypePrefix || name;
+    }
+    function linePreviewAudioGlobalFolderHasTag(folder, tag){
+      const wanted = normalizeAudioNameToken(tag);
+      if (!wanted) return false;
+      const rawName = String(folder?.name || "").trim();
+      const displayName = linePreviewAudioGlobalFolderDisplayName(rawName);
+      const rawToken = normalizeAudioNameToken(rawName);
+      const displayToken = normalizeAudioNameToken(displayName);
+      return rawToken.includes(wanted) || displayToken.includes(wanted);
+    }
+    function getLinePreviewAudioProfileForLine(line, route){
+      const lineNumber = String(getLineNumber(line, route) || line?.number || "").trim();
+      const routeName = String(route?.name || "").trim();
+      const parsedLineNumber = String(parseRouteName(routeName || "").lineNumber || "").trim();
+      const isExpressLike = isExpress(line) || isExpressNumber(lineNumber) || /^express\b/i.test(routeName);
+      const isAutocarLike =
+        isAutocar(line) ||
+        /^autocar\b/i.test(routeName) ||
+        /^fict/i.test(routeName) ||
+        /^autocar\b/i.test(parsedLineNumber) ||
+        /^fict/i.test(parsedLineNumber);
+      const isScolaireLike =
+        getCategory(line) === "Scolaire" ||
+        /^scolaire\b/i.test(String(line?.number || "")) ||
+        /^scolaire\b/i.test(routeName) ||
+        /^scolaire\b/i.test(parsedLineNumber);
+      if (isAutocarLike) return "flixbus";
+      if (isExpressLike) return "ratp";
+      if (isScolaireLike) return "ratp";
+      if (isFlix(line)) return "flixbus";
+      return "ratp";
+    }
+    function isLinePreviewAudioAllowedForLine(line, route){
+      return true;
+    }
+    function getLinePreviewAudioGlobalProfileForLine(line, route){
+      return getLinePreviewAudioProfileForLine(line, route);
+    }
+    function parseLinePreviewAudioTypeTokens(raw){
+      return String(raw ?? "")
+        .split(",")
+        .map((part) => String(part || "").trim())
+        .filter((part) => /^[0-9]+$/.test(part));
+    }
+    function getLinePreviewAudioStyleEntryForLine(line, route){
+      const routeName = String(route?.name || "").trim();
+      const parsedLineNumber = String(parseRouteName(routeName || "").lineNumber || "").trim();
+      const lineNumber = String(getLineNumber(line, route) || line?.number || "").trim();
+      const category = String(getCategory(line) || "").trim();
+      const isExpressLike =
+        isExpress(line) ||
+        isExpressNumber(lineNumber) ||
+        /^express\b/i.test(routeName) ||
+        /^express\b/i.test(parsedLineNumber);
+      const isAutocarLike =
+        isAutocar(line) ||
+        /^autocar\b/i.test(routeName) ||
+        /^fict/i.test(routeName) ||
+        /^autocar\b/i.test(parsedLineNumber) ||
+        /^fict/i.test(parsedLineNumber);
+      const isScolaireLike =
+        category === "Scolaire" ||
+        /^scolaire\b/i.test(String(line?.number || "")) ||
+        /^scolaire\b/i.test(routeName) ||
+        /^scolaire\b/i.test(parsedLineNumber);
+      const candidates = [];
+      const addExpressCandidates = () => {
+        if (!isExpressLike) return;
+        const addFrom = (raw) => {
+          const text = String(raw || "").trim();
+          if (!text) return;
+          const match = /^express\b\s*([0-9a-z]+)/i.exec(text);
+          if (match && match[1]) {
+            candidates.push(`Express ${String(match[1]).trim()}`);
+          }
+        };
+        addFrom(parsedLineNumber);
+        addFrom(lineNumber);
+        addFrom(line?.number);
+        addFrom(routeName);
+        candidates.push("Express");
+      };
+      addExpressCandidates();
+      if (parsedLineNumber) candidates.push(parsedLineNumber);
+      if (lineNumber) candidates.push(lineNumber);
+      if (line?.number) candidates.push(line.number);
+      if (category) candidates.push(category);
+      if (category === "FlixBus") candidates.push("FLIXBUS");
+      if (isAutocarLike) candidates.push("Autocar");
+      if (isScolaireLike) candidates.push("Scolaire");
+      const seen = new Set();
+      for (const candidateRaw of candidates) {
+        const candidate = String(candidateRaw || "").trim();
+        if (!candidate) continue;
+        const key = candidate.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const entry = getLineStyleEntry(candidate);
+        if (entry) return entry;
+      }
+      return null;
+    }
+    function setLinePreviewAudioGlobalTypeTokensForLine(line, route){
+      const entry = getLinePreviewAudioStyleEntryForLine(line, route);
+      const rawTypes = entry?.[3];
+      LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens = parseLinePreviewAudioTypeTokens(rawTypes);
+      updateLinePreviewAudioGlobalFolderSelect();
+    }
+    function parseLinePreviewAudioGlobalClipMeta(rawClipName){
+      const raw = String(rawClipName || "").trim();
+      if (!raw) return { typeToken: "", label: "" };
+      const split = raw.match(/^([^_]+)_(.+)$/);
+      if (!split) return { typeToken: "", label: raw };
+      const prefix = String(split[1] || "").trim();
+      const label = String(split[2] || "").trim() || raw;
+      const tokenMatch = prefix.match(/^[0-9]+$/);
+      return {
+        typeToken: tokenMatch ? prefix : "",
+        label
+      };
+    }
+    function parseLinePreviewAudioGlobalFolderMeta(rawFolderName){
+      const raw = String(rawFolderName || "").trim();
+      if (!raw) return { typeToken: "", label: "" };
+      const parseVolumeMultiplier = (text) => {
+        const m = String(text || "").match(/\{([^}]+)\}/);
+        if (!m) return 1;
+        const normalized = String(m[1] || "").trim().replace(",", ".");
+        const parsed = Number.parseFloat(normalized);
+        if (!Number.isFinite(parsed)) return 1;
+        return Math.max(0, parsed);
+      };
+      const volumeMultiplier = parseVolumeMultiplier(raw);
+      const match = raw.match(/^\s*([0-9]+)\s*_\s*(.+)$/);
+      if (!match) {
+        return { typeToken: "", label: linePreviewAudioGlobalFolderDisplayName(raw), volumeMultiplier };
+      }
+      return {
+        typeToken: String(match[1] || "").trim(),
+        label: linePreviewAudioGlobalFolderDisplayName(String(match[2] || "").trim()),
+        volumeMultiplier
+      };
+    }
+    function setLinePreviewAudioGlobalProfileForLine(line, route){
+      const nextProfile = getLinePreviewAudioGlobalProfileForLine(line, route);
+      LINE_PREVIEW_AUDIO_GLOBAL_STATE.profile = nextProfile;
+      LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = "";
+      if (Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) && LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders.length) {
+        updateLinePreviewAudioGlobalFolderSelect();
+      }
+    }
+    function getPreferredGlobalFolderIndex(folders){
+      const list = Array.isArray(folders) ? folders : [];
+      if (!list.length) return -1;
+      const profile = String(LINE_PREVIEW_AUDIO_GLOBAL_STATE.profile || "ratp");
+      const findBy = (predicate) => list.findIndex((folder) => predicate(folder));
+      const findRatp = () => findBy((folder) => linePreviewAudioGlobalFolderHasTag(folder, "ratp"));
+      const findFlix = () => findBy((folder) =>
+        linePreviewAudioGlobalFolderHasTag(folder, "flixbus") ||
+        linePreviewAudioGlobalFolderHasTag(folder, "flix bus")
+      );
+      const findNeutral = () => findBy((folder) =>
+        !linePreviewAudioGlobalFolderHasTag(folder, "ratp") &&
+        !linePreviewAudioGlobalFolderHasTag(folder, "flixbus") &&
+        !linePreviewAudioGlobalFolderHasTag(folder, "flix bus")
+      );
+      if (profile === "flixbus") {
+        const flixIdx = findFlix();
+        if (flixIdx >= 0) return flixIdx;
+      } else if (profile === "neutral") {
+        const neutralIdx = findNeutral();
+        if (neutralIdx >= 0) return neutralIdx;
+      } else {
+        const ratpIdx = findRatp();
+        if (ratpIdx >= 0) return ratpIdx;
+      }
+      return 0;
+    }
+    function linePreviewAudioGlobalFolderMatchesProfile(folder, profileInput = ""){
+      const profile = String(profileInput || LINE_PREVIEW_AUDIO_GLOBAL_STATE.profile || "ratp");
+      const isRatp = linePreviewAudioGlobalFolderHasTag(folder, "ratp");
+      const isFlix = linePreviewAudioGlobalFolderHasTag(folder, "flixbus") || linePreviewAudioGlobalFolderHasTag(folder, "flix bus");
+      if (profile === "disabled") return false;
+      if (profile === "flixbus") return isFlix;
+      if (profile === "neutral") return !isRatp && !isFlix;
+      return isRatp;
+    }
+    function getLinePreviewAudioGlobalAvailableFolders(folders){
+      const list = Array.isArray(folders) ? folders : [];
+      const allowedTypes = new Set(
+        (Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens : [])
+          .map((t) => String(t || "").trim())
+          .filter(Boolean)
+      );
+      return list.filter((folder) => {
+        if (!linePreviewAudioGlobalFolderMatchesProfile(folder)) return false;
+        if (!allowedTypes.size) return true;
+        const meta = parseLinePreviewAudioGlobalFolderMeta(folder?.name);
+        if (!meta.typeToken) return true;
+        return allowedTypes.has(meta.typeToken);
+      });
+    }
+    function getLinePreviewAudioGlobalPlayableClips(folder){
+      const allowedTypes = new Set(
+        (Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens : [])
+          .map((t) => String(t || "").trim())
+          .filter(Boolean)
+      );
+      const folderType = parseLinePreviewAudioGlobalFolderMeta(folder?.name || "").typeToken;
+      const clipsRaw = Array.isArray(folder?.clips) ? folder.clips : [];
+      return clipsRaw.filter((clipName) => {
+        if (!allowedTypes.size) return true;
+        if (folderType) return allowedTypes.has(folderType);
+        const meta = parseLinePreviewAudioGlobalClipMeta(clipName);
+        if (!meta.typeToken) return true;
+        return allowedTypes.has(meta.typeToken);
+      });
+    }
+    function hasLinePreviewAudioGlobalPlayableClip(){
+      const allFolders = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
+      const folders = getLinePreviewAudioGlobalAvailableFolders(allFolders);
+      return folders.some((folder) => getLinePreviewAudioGlobalPlayableClips(folder).length > 0);
+    }
+    function updateLinePreviewAudioGlobalButtons(){
+      const wrap = document.getElementById("lpAudioGlobalButtons");
+      if (!wrap) return;
+      wrap.innerHTML = "";
+      const allFolders = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
+      const folders = getLinePreviewAudioGlobalAvailableFolders(allFolders);
+      const selectedPath = String(LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath || "");
+      const selected = folders.find((folder) => String(folder?.path || "") === selectedPath) || null;
+      const clips = getLinePreviewAudioGlobalPlayableClips(selected);
+      if (!clips.length) {
+        const empty = document.createElement("span");
+        empty.className = "line-preview-audio-stop-empty";
+        empty.textContent = "Aucun audio";
+        wrap.appendChild(empty);
+        return;
+      }
+      const isPlaying = !!LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying;
+      const folderMeta = parseLinePreviewAudioGlobalFolderMeta(selected?.name || "");
+      const folderVolumeMultiplier = Number.isFinite(Number(folderMeta?.volumeMultiplier))
+        ? Number(folderMeta.volumeMultiplier)
+        : 1;
+      clips.forEach((clipName) => {
+        const meta = parseLinePreviewAudioGlobalClipMeta(clipName);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "line-preview-audio-btn";
+        btn.textContent = meta.label || String(clipName || "").trim();
+        btn.disabled = isPlaying || !selectedPath;
+        btn.addEventListener("click", () => {
+          if (!selectedPath) return;
+          playLinePreviewAudioSequenceFromFolder(selectedPath, [clipName], {
+            advanceOnFinish: false,
+            lockNavigation: false,
+            volumeMultiplier: folderVolumeMultiplier
+          });
+        });
+        wrap.appendChild(btn);
+      });
+    }
+    function updateLinePreviewAudioGlobalByline(folder){
+      const byline = document.getElementById("lpAudioGlobalByline");
+      if (!byline) return;
+      const voiceBy = parseLinePreviewAudioStyleMeta(folder?.name || "").voiceBy;
+      if (!voiceBy) {
+        byline.textContent = "";
+        byline.hidden = true;
+        return;
+      }
+      byline.textContent = `Voix par ${voiceBy}`;
+      byline.hidden = false;
+    }
+    function updateLinePreviewAudioGlobalFolderSelect(){
+      const select = document.getElementById("lpAudioGlobalFolderSelect");
+      if (!select) return;
+      const allFolders = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
+      const folders = getLinePreviewAudioGlobalAvailableFolders(allFolders);
+      const previousPath = String(LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath || "");
+      select.innerHTML = "";
+      if (!folders.length) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Aucun dossier";
+        select.appendChild(option);
+        select.disabled = true;
+        LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = "";
+        updateLinePreviewAudioGlobalByline(null);
+        updateLinePreviewAudioGlobalButtons();
+        return;
+      }
+      folders.forEach((folder) => {
+        const option = document.createElement("option");
+        option.value = String(folder?.path || "");
+        option.textContent = linePreviewAudioGlobalFolderDisplayName(folder?.name);
+        select.appendChild(option);
+      });
+      const foundIndex = folders.findIndex((folder) => String(folder?.path || "") === previousPath);
+      const preferredIndex = getPreferredGlobalFolderIndex(folders);
+      const selectedIndex = foundIndex >= 0 ? foundIndex : (preferredIndex >= 0 ? preferredIndex : 0);
+      LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = String(folders[selectedIndex]?.path || "");
+      select.value = LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath;
+      select.disabled = !!LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying || folders.length <= 1;
+      updateLinePreviewAudioGlobalByline(folders[selectedIndex] || null);
+      updateLinePreviewAudioGlobalButtons();
+    }
+    function setLinePreviewAudioGlobalFolderByPath(path){
+      const allFolders = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
+      const folders = getLinePreviewAudioGlobalAvailableFolders(allFolders);
+      const found = folders.find((folder) => String(folder?.path || "") === String(path || ""));
+      LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = String(found?.path || "");
+      updateLinePreviewAudioGlobalFolderSelect();
+      updateLinePreviewAudioButtonsState();
+    }
+    async function loadLinePreviewAudioGlobalFolders(){
+      const folders = [];
+      const rootPath = ensureTrailingSlash(DBUS_FIS_GLOBAL_ROOT);
+      const rootClips = (await listDirectoryMp3BaseNames(rootPath))
+        .map((clip) => String(clip || "").trim())
+        .filter(Boolean);
+      if (rootClips.length) {
+        folders.push({ name: ".", path: rootPath, clips: rootClips });
+      }
+      const subfolders = await listDirectorySubfolders(rootPath);
+      for (const subName of subfolders) {
+        const folderPath = ensureTrailingSlash(joinEncodedPath(rootPath, subName));
+        const clips = (await listDirectoryMp3BaseNames(folderPath))
+          .map((clip) => String(clip || "").trim())
+          .filter(Boolean);
+        if (!clips.length) continue;
+        folders.push({ name: subName, path: folderPath, clips });
+      }
+      if (folders.length > 1) {
+        const first = folders[0]?.name === "." ? folders.shift() : null;
+        folders.sort((a, b) =>
+          linePreviewAudioGlobalFolderDisplayName(a?.name).localeCompare(
+            linePreviewAudioGlobalFolderDisplayName(b?.name),
+            LANG === "en" ? "en" : "fr",
+            { sensitivity: "base", numeric: true }
+          )
+        );
+        if (first) folders.unshift(first);
+      }
+      LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders = folders;
+      const currentPath = String(LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath || "");
+      const availableFolders = getLinePreviewAudioGlobalAvailableFolders(folders);
+      if (!availableFolders.some((folder) => String(folder?.path || "") === currentPath)) {
+        const preferredIndex = getPreferredGlobalFolderIndex(availableFolders);
+        const fallbackIndex = preferredIndex >= 0 ? preferredIndex : 0;
+        LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = String(availableFolders[fallbackIndex]?.path || "");
+      }
+      updateLinePreviewAudioGlobalFolderSelect();
+    }
+    function ensureLinePreviewAudioGlobalFoldersLoaded(){
+      if (LINE_PREVIEW_AUDIO_GLOBAL_STATE.loadPromise) return LINE_PREVIEW_AUDIO_GLOBAL_STATE.loadPromise;
+      LINE_PREVIEW_AUDIO_GLOBAL_STATE.loadPromise = loadLinePreviewAudioGlobalFolders()
+        .catch(() => {
+          LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders = [];
+          LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = "";
+          updateLinePreviewAudioGlobalFolderSelect();
+        })
+        .finally(() => {
+          LINE_PREVIEW_AUDIO_GLOBAL_STATE.loadPromise = null;
+        });
+      return LINE_PREVIEW_AUDIO_GLOBAL_STATE.loadPromise;
+    }
+    function isLinePreviewAudioPanelOpen(){
+      const panel = getLinePreviewAudioPanel();
+      if (!panel) return false;
+      return panel.classList.contains("is-open") && panel.style.display !== "none";
+    }
+    function getLinePreviewAudioVolume(){
+      const raw = Number(LINE_PREVIEW_AUDIO_STATE.volume);
+      if (!Number.isFinite(raw)) return 1;
+      return Math.max(0, Math.min(1, raw));
+    }
+    function setLinePreviewAudioVolume(volume){
+      const parsed = Number(volume);
+      const safe = Number.isFinite(parsed) ? parsed : 1;
+      const clamped = Math.max(0, Math.min(1, safe));
+      LINE_PREVIEW_AUDIO_STATE.volume = clamped;
+      const slider = document.getElementById("lpAudioVolumeRange");
+      if (slider) {
+        const sliderValue = String(Math.round(clamped * 100));
+        if (slider.value !== sliderValue) slider.value = sliderValue;
+      }
+      const active = LINE_PREVIEW_AUDIO_PLAYBACK.audio;
+      if (active) {
+        const mul = Number.isFinite(Number(LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier)) ? Number(LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier) : 1;
+        active.volume = Math.max(0, Math.min(1, clamped * mul));
+      }
+    }
+    function stopLinePreviewAudioPlayback(){
+      LINE_PREVIEW_AUDIO_PLAYBACK.token += 1;
+      const active = LINE_PREVIEW_AUDIO_PLAYBACK.audio;
+      if (active) {
+        try { active.pause(); } catch {}
+        try { active.src = ""; } catch {}
+      }
+      LINE_PREVIEW_AUDIO_PLAYBACK.audio = null;
+      LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying = false;
+      LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
+      LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier = 1;
+      updateLinePreviewAudioButtonsState();
+    }
+    function updateLinePreviewAudioNowLabel(){
+      const now = document.getElementById("lpAudioNowStop");
+      if (!now) return;
+      if (!LINE_PREVIEW_AUDIO_STATE.enabled || !LINE_PREVIEW_AUDIO_STATE.stopNames.length) {
+        now.innerHTML = `<span class="line-preview-audio-stop-empty">-</span>`;
+        return;
+      }
+      const idx = Math.max(0, Math.min(LINE_PREVIEW_AUDIO_STATE.stopNames.length - 1, LINE_PREVIEW_AUDIO_STATE.currentIndex || 0));
+      LINE_PREVIEW_AUDIO_STATE.currentIndex = idx;
+      const label = escapeHTML(translateStopName(LINE_PREVIEW_AUDIO_STATE.stopNames[idx]));
+      now.innerHTML = `
+        <div class="line-preview-audio-stop-sign">
+          <div class="line-preview-audio-stop-sign-text">${label}</div>
+        </div>
+      `;
+      fitLinePreviewAudioStopSignText();
+    }
+    function fitLinePreviewAudioStopSignText(){
+      const textEl = document.querySelector("#lpAudioNowStop .line-preview-audio-stop-sign-text");
+      const signEl = document.querySelector("#lpAudioNowStop .line-preview-audio-stop-sign");
+      if (!textEl || !signEl) return;
+      const maxSize = 31;
+      const minSize = 10;
+      const available = Math.max(40, signEl.clientWidth - 24);
+      textEl.style.fontSize = `${maxSize}px`;
+      if (textEl.scrollWidth <= available) return;
+      let size = maxSize;
+      while (size > minSize && textEl.scrollWidth > available) {
+        size -= 0.5;
+        textEl.style.fontSize = `${size}px`;
+      }
+    }
+    function updateLinePreviewAudioButtonsState(){
+      const panelCloseBtn = document.getElementById("lpAudioPanelClose");
+      const styleSelect = document.getElementById("lpAudioStyleSelect");
+      const globalFolderSelect = document.getElementById("lpAudioGlobalFolderSelect");
+      const globalButtons = document.querySelectorAll("#lpAudioGlobalButtons .line-preview-audio-btn");
+      const stopBtn = document.getElementById("lpAudioStopBtn");
+      const prevBtn = document.getElementById("lpAudioPrevBtn");
+      const currentBtn = document.getElementById("lpAudioCurrentBtn");
+      const nextBtn = document.getElementById("lpAudioNextBtn");
+      const terminusBtn = document.getElementById("lpAudioTerminusBtn");
+      const isPlaying = !!LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying;
+      const lockNavigation = !!LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation;
+      const hasStops = LINE_PREVIEW_AUDIO_STATE.enabled && LINE_PREVIEW_AUDIO_STATE.stopNames.length > 0;
+      const idx = Math.max(0, Math.min((LINE_PREVIEW_AUDIO_STATE.stopNames.length || 1) - 1, LINE_PREVIEW_AUDIO_STATE.currentIndex || 0));
+      const lastIndex = Math.max(0, (LINE_PREVIEW_AUDIO_STATE.stopNames.length || 1) - 1);
+      const isLastStop = hasStops && idx >= lastIndex;
+      if (panelCloseBtn) panelCloseBtn.disabled = false;
+      if (styleSelect) {
+        const styles = Array.isArray(LINE_PREVIEW_AUDIO_STATE.voiceStyles) ? LINE_PREVIEW_AUDIO_STATE.voiceStyles : [];
+        styleSelect.disabled = isPlaying || styles.length <= 1;
+      }
+      if (globalFolderSelect) {
+        const foldersAll = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
+        const folders = getLinePreviewAudioGlobalAvailableFolders(foldersAll);
+        globalFolderSelect.disabled = isPlaying || folders.length <= 1;
+      }
+      globalButtons.forEach((btn) => {
+        btn.disabled = isPlaying || !LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath;
+      });
+      if (stopBtn) stopBtn.disabled = !isPlaying;
+      if (prevBtn) prevBtn.disabled = !hasStops || idx <= 0 || (isPlaying && lockNavigation);
+      if (nextBtn) nextBtn.disabled = !hasStops || isLastStop || (isPlaying && lockNavigation);
+      if (isPlaying) {
+        if (currentBtn) currentBtn.disabled = true;
+        if (terminusBtn) terminusBtn.disabled = true;
+        return;
+      }
+      if (currentBtn) currentBtn.disabled = !hasStops || idx <= 0;
+      if (terminusBtn) terminusBtn.disabled = !hasStops || isLastStop;
+    }
+    function normalizeLinePreviewAudioPanelPosition(){
+      const panel = getLinePreviewAudioPanel();
+      if (!panel) return;
+      const margin = 8;
+      const rect = panel.getBoundingClientRect();
+      const width = Math.max(460, Math.min(window.innerWidth - margin * 2, rect.width || panel.offsetWidth || 560));
+      panel.style.width = `${Math.round(width)}px`;
+      const boundedRect = panel.getBoundingClientRect();
+      const maxLeft = Math.max(margin, window.innerWidth - boundedRect.width - margin);
+      const maxTop = Math.max(margin, window.innerHeight - boundedRect.height - margin);
+      const fallbackTop = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-stack-h")) || 0) + 10;
+      const currentLeft = Number.parseFloat(panel.style.left || "");
+      const currentTop = Number.parseFloat(panel.style.top || "");
+      const left = Number.isFinite(currentLeft) ? Math.max(margin, Math.min(maxLeft, currentLeft)) : margin;
+      const top = Number.isFinite(currentTop) ? Math.max(margin, Math.min(maxTop, currentTop)) : Math.max(margin, Math.min(maxTop, fallbackTop));
+      panel.style.left = `${Math.round(left)}px`;
+      panel.style.top = `${Math.round(top)}px`;
+      fitLinePreviewAudioStopSignText();
+    }
+    function closeLinePreviewAudioPanel({ stopPlayback = true } = {}){
+      const panel = getLinePreviewAudioPanel();
+      if (panel) {
+        panel.classList.remove("is-open");
+        panel.style.display = "none";
+        panel.setAttribute("aria-hidden", "true");
+      }
+      if (stopPlayback) stopLinePreviewAudioPlayback();
+    }
+    function bindLinePreviewAudioPanelDrag(){
+      if (LINE_PREVIEW_AUDIO_DRAG.initialized) return;
+      const panel = getLinePreviewAudioPanel();
+      const head = document.getElementById("lpAudioPanelHead");
+      if (!panel || !head) return;
+      const onStart = (event) => {
+        const panelRect = panel.getBoundingClientRect();
+        const offsetX = event.clientX - panelRect.left;
+        const offsetY = event.clientY - panelRect.top;
+        try { head.setPointerCapture(event.pointerId); } catch {}
+        const onMove = (e) => {
+          const margin = 8;
+          const maxLeft = Math.max(margin, window.innerWidth - panelRect.width - margin);
+          const maxTop = Math.max(margin, window.innerHeight - panelRect.height - margin);
+          const nextLeft = Math.max(margin, Math.min(maxLeft, e.clientX - offsetX));
+          const nextTop = Math.max(margin, Math.min(maxTop, e.clientY - offsetY));
+          panel.style.left = `${Math.round(nextLeft)}px`;
+          panel.style.top = `${Math.round(nextTop)}px`;
+        };
+        const onStop = () => {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onStop);
+          window.removeEventListener("pointercancel", onStop);
+        };
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onStop);
+        window.addEventListener("pointercancel", onStop);
+      };
+      head.addEventListener("pointerdown", onStart);
+      window.addEventListener("resize", normalizeLinePreviewAudioPanelPosition);
+      LINE_PREVIEW_AUDIO_DRAG.initialized = true;
+    }
+    function openLinePreviewAudioPanel(){
+      const panel = getLinePreviewAudioPanel();
+      if (!panel) return;
+      updateLinePreviewAudioExtensionState();
+      panel.style.display = "block";
+      panel.classList.add("is-open");
+      panel.setAttribute("aria-hidden", "false");
+      normalizeLinePreviewAudioPanelPosition();
+      {
+        const margin = 8;
+        const rect = panel.getBoundingClientRect();
+        const centeredLeft = Math.max(margin, Math.round((window.innerWidth - rect.width) / 2));
+        const centeredTop = Math.max(margin, Math.round((window.innerHeight - rect.height) / 2));
+        panel.style.left = `${centeredLeft}px`;
+        panel.style.top = `${centeredTop}px`;
+      }
+      updateLinePreviewAudioRouteSectionVisibility();
+      updateLinePreviewAudioNowLabel();
+      updateLinePreviewAudioButtonsState();
+      bindLinePreviewAudioPanelDrag();
+      ensureLinePreviewAudioGlobalFoldersLoaded();
+    }
+    function setLinePreviewAudioRouteState(route, audioStatus){
+      stopLinePreviewAudioPlayback();
+      const stylesRaw = Array.isArray(audioStatus?.styles) ? audioStatus.styles : [];
+      const normalizedStyles = stylesRaw.map((style) => {
+        const name = String(style?.name || "").trim();
+        const path = ensureTrailingSlash(String(style?.path || ""));
+        return { name, path };
+      }).filter((style) => !!style.path);
+      if (!normalizedStyles.length) {
+        const fallbackPath = ensureTrailingSlash(String(audioStatus?.href || ""));
+        if (fallbackPath) normalizedStyles.push({ name: ".", path: fallbackPath });
+      }
+      LINE_PREVIEW_AUDIO_STATE.voiceStyles = normalizedStyles;
+      LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = 0;
+      LINE_PREVIEW_AUDIO_STATE.folderPath = String(normalizedStyles[0]?.path || "");
+      LINE_PREVIEW_AUDIO_STATE.stopNames = collectRouteAudioStopNames(route);
+      LINE_PREVIEW_AUDIO_STATE.currentIndex = 0;
+      LINE_PREVIEW_AUDIO_STATE.enabled = !!LINE_PREVIEW_AUDIO_STATE.folderPath && LINE_PREVIEW_AUDIO_STATE.stopNames.length > 0;
+      updateLinePreviewAudioRouteSectionVisibility();
+      updateLinePreviewAudioStyleSelect();
+      updateLinePreviewAudioNowLabel();
+      updateLinePreviewAudioButtonsState();
+    }
+    function clearLinePreviewAudioRouteState({ closePanel = false, stopPlayback = true } = {}){
+      if (stopPlayback) stopLinePreviewAudioPlayback();
+      LINE_PREVIEW_AUDIO_STATE.folderPath = "";
+      LINE_PREVIEW_AUDIO_STATE.stopNames = [];
+      LINE_PREVIEW_AUDIO_STATE.currentIndex = 0;
+      LINE_PREVIEW_AUDIO_STATE.enabled = false;
+      LINE_PREVIEW_AUDIO_STATE.voiceStyles = [];
+      LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = 0;
+      updateLinePreviewAudioRouteSectionVisibility();
+      updateLinePreviewAudioStyleSelect();
+      updateLinePreviewAudioNowLabel();
+      updateLinePreviewAudioButtonsState();
+      if (closePanel) closeLinePreviewAudioPanel({ stopPlayback: false });
+    }
+    function playLinePreviewAudioClip(folderPath, clipName, token, volumeMultiplier = 1){
+      const url = linePreviewAudioClipUrl(folderPath, clipName);
+      return new Promise((resolve) => {
+        const audio = new Audio(url);
+        const baseVolume = getLinePreviewAudioVolume();
+        const mul = Number.isFinite(Number(volumeMultiplier)) ? Number(volumeMultiplier) : 1;
+        audio.volume = Math.max(0, Math.min(1, baseVolume * mul));
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          audio.onended = null;
+          audio.onerror = null;
+          audio.onpause = null;
+          if (LINE_PREVIEW_AUDIO_PLAYBACK.audio === audio) LINE_PREVIEW_AUDIO_PLAYBACK.audio = null;
+          resolve();
+        };
+        audio.onended = finish;
+        audio.onerror = finish;
+        audio.onpause = () => {
+          if (LINE_PREVIEW_AUDIO_PLAYBACK.token !== token) finish();
+        };
+        LINE_PREVIEW_AUDIO_PLAYBACK.audio = audio;
+        audio.play().then(() => {
+          if (LINE_PREVIEW_AUDIO_PLAYBACK.token !== token) {
+            try { audio.pause(); } catch {}
+            finish();
+          }
+        }).catch(finish);
+      });
+    }
+    async function playLinePreviewAudioSequenceFromFolder(folderPathInput, clips, { advanceOnFinish = false, lockNavigation = false, volumeMultiplier = 1 } = {}){
+      const folderPath = ensureTrailingSlash(String(folderPathInput || ""));
+      const sequence = (Array.isArray(clips) ? clips : [])
+        .map(item => String(item || "").trim())
+        .filter(Boolean);
+      if (!folderPath || !sequence.length) return;
+      stopLinePreviewAudioPlayback();
+      const token = LINE_PREVIEW_AUDIO_PLAYBACK.token;
+      const safeMul = Number.isFinite(Number(volumeMultiplier)) ? Number(volumeMultiplier) : 1;
+      LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying = true;
+      LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = !!lockNavigation;
+      LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier = Math.max(0, Math.min(1, safeMul));
+      updateLinePreviewAudioButtonsState();
+      for (const clip of sequence) {
+        if (token !== LINE_PREVIEW_AUDIO_PLAYBACK.token) {
+          LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying = false;
+          LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
+          updateLinePreviewAudioButtonsState();
+          return;
+        }
+        await playLinePreviewAudioClip(folderPath, clip, token, LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier);
+      }
+      if (token === LINE_PREVIEW_AUDIO_PLAYBACK.token) {
+        LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying = false;
+        LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
+        updateLinePreviewAudioButtonsState();
+        if (advanceOnFinish) {
+          const lastIndex = Math.max(0, (LINE_PREVIEW_AUDIO_STATE.stopNames.length || 1) - 1);
+          const currentIndex = Math.max(0, Math.min(lastIndex, LINE_PREVIEW_AUDIO_STATE.currentIndex || 0));
+          if (currentIndex < lastIndex) {
+            setLinePreviewAudioCurrentIndex(currentIndex + 1);
+          }
+        }
+      }
+    }
+    async function playLinePreviewAudioSequence(clips, options = {}){
+      return playLinePreviewAudioSequenceFromFolder(LINE_PREVIEW_AUDIO_STATE.folderPath, clips, options);
+    }
+    function setLinePreviewAudioCurrentIndex(index){
+      if (!LINE_PREVIEW_AUDIO_STATE.enabled || !LINE_PREVIEW_AUDIO_STATE.stopNames.length) return;
+      const lastIndex = LINE_PREVIEW_AUDIO_STATE.stopNames.length - 1;
+      LINE_PREVIEW_AUDIO_STATE.currentIndex = Math.max(0, Math.min(lastIndex, Number(index)));
+      updateLinePreviewAudioNowLabel();
+      updateLinePreviewAudioButtonsState();
+    }
+    function playLinePreviewCurrentStop(index, { advanceOnFinish = false } = {}){
+      if (!LINE_PREVIEW_AUDIO_STATE.enabled || !LINE_PREVIEW_AUDIO_STATE.stopNames.length) return;
+      setLinePreviewAudioCurrentIndex(index);
+      const nextIndex = LINE_PREVIEW_AUDIO_STATE.currentIndex;
+      const clips = [LINE_PREVIEW_AUDIO_STATE.stopNames[nextIndex]];
+      const lastIndex = LINE_PREVIEW_AUDIO_STATE.stopNames.length - 1;
+      if (nextIndex === lastIndex) clips.push("Terminus");
+      const shouldAdvance = !!advanceOnFinish && nextIndex < lastIndex;
+      playLinePreviewAudioSequence(clips, { advanceOnFinish: shouldAdvance, lockNavigation: true });
+    }
+    function playLinePreviewTerminusSequence(){
+      if (!LINE_PREVIEW_AUDIO_STATE.enabled || !LINE_PREVIEW_AUDIO_STATE.stopNames.length) return;
+      const lastIndex = LINE_PREVIEW_AUDIO_STATE.stopNames.length - 1;
+      if ((LINE_PREVIEW_AUDIO_STATE.currentIndex || 0) >= lastIndex) return;
+      const currentIndex = Math.max(0, Math.min(lastIndex, LINE_PREVIEW_AUDIO_STATE.currentIndex || 0));
+      const shouldAdvance = currentIndex === 0 && lastIndex > 0;
+      const shouldLockNavigation = currentIndex === 0;
+      const clips = ["Départ", LINE_PREVIEW_AUDIO_STATE.stopNames[lastIndex]];
+      playLinePreviewAudioSequence(clips, { advanceOnFinish: shouldAdvance, lockNavigation: shouldLockNavigation });
+    }
+    async function evaluateRouteAudioCoverage(line, route){
+      const lineFolder = getDbusFisLineFolderName(line, route);
+      const routeName = String(route?.name || "").trim();
+      const requiredLabelsByToken = collectRequiredAudioTokenLabelsForRoute(route);
+      const allRequiredStops = [...requiredLabelsByToken.values()];
+      const linePath = joinEncodedPath(DBUS_FIS_ROOT, lineFolder);
+      if (!lineFolder) {
+        return {
+          ok: false,
+          href: "",
+          reason: "line_folder_name_empty",
+          line: lineFolder,
+          route: routeName,
+          missingByFolder: [
+            { folder: "", missingStops: allRequiredStops }
+          ]
+        };
+      }
+      const lineFolderExists = await hasDbusFisLineFolder(lineFolder);
+      if (!lineFolderExists) {
+        return {
+          ok: false,
+          href: "",
+          reason: "line_folder_missing_or_empty",
+          line: lineFolder,
+          route: routeName,
+          linePath,
+          missingByFolder: [
+            { folder: linePath, missingStops: allRequiredStops }
+          ]
+        };
+      }
+      const requiredTokens = collectRequiredAudioTokensForRoute(route);
+      const scanTargets = [];
+      const seenScanTarget = new Set();
+      const addScanTarget = (folderName, folderPath, files) => {
+        const key = String(folderPath || "").toLowerCase();
+        if (!folderPath || seenScanTarget.has(key)) return;
+        seenScanTarget.add(key);
+        scanTargets.push({ folderName, folderPath, files: Array.isArray(files) ? files : [] });
+      };
+
+      const rootFiles = await listDirectoryMp3BaseNames(linePath);
+      if (rootFiles.length) addScanTarget(".", linePath, rootFiles);
+
+      const subfolders = await listDirectorySubfolders(linePath);
+      for (const subfolderName of subfolders) {
+        const folderPath = joinEncodedPath(linePath, subfolderName);
+        const files = await listDirectoryMp3BaseNames(folderPath);
+        if (files.length) addScanTarget(subfolderName, folderPath, files);
+      }
+
+      if (!scanTargets.length) {
+        return {
+          ok: false,
+          href: "",
+          reason: "line_folder_missing_or_empty",
+          line: lineFolder,
+          route: routeName,
+          linePath,
+          missingByFolder: [
+            { folder: linePath, missingStops: allRequiredStops }
+          ]
+        };
+      }
+      const missingByFolder = [];
+      const checks = await Promise.all(scanTargets.map(async (target) => {
+        const folderPath = target.folderPath;
+        const subfolderName = target.folderName;
+        const files = target.files;
+        const availableTokens = new Set(files.map(normalizeAudioNameToken).filter(Boolean));
+        const missingTokens = [...requiredTokens].filter((token) => !availableTokens.has(token));
+        const missingStops = missingTokens.map((token) => requiredLabelsByToken.get(token) || token);
+        const complete = missingTokens.length === 0;
+        if (!complete) {
+          const rec = {
+            line: lineFolder,
+            route: routeName,
+            folder: subfolderName,
+            missingStops
+          };
+          missingByFolder.push(rec);
+        }
+        return { complete, folderPath };
+      }));
+      const allComplete = checks.length > 0 && checks.every((entry) => entry.complete);
+      if (!allComplete) {
+        return {
+          ok: false,
+          href: "",
+          reason: "missing_stops_mp3",
+          line: lineFolder,
+          route: routeName,
+          missingByFolder
+        };
+      }
+      const styles = scanTargets.map((target) => ({
+        name: String(target?.folderName || "").trim() || ".",
+        path: ensureTrailingSlash(String(target?.folderPath || ""))
+      })).filter((style) => !!style.path);
+      const targetFolder = styles[0]?.path || ensureTrailingSlash(checks[0]?.folderPath || linePath);
+      return {
+        ok: true,
+        href: ensureTrailingSlash(targetFolder),
+        styles,
+        reason: "complete",
+        line: lineFolder,
+        route: routeName
+      };
+    }
+    function getRouteAudioCoverage(line, route){
+      return evaluateRouteAudioCoverage(line, route).catch(() => ({ ok: false, href: "" }));
+    }
+    function isLinePreviewAudioLanguageAllowed(){
+      return String(LANG || "").toLowerCase() === "fr";
+    }
+    function refreshLinePreviewAudioButtonVisibility({ closePanelOnHide = true } = {}){
+      const audioLink = document.getElementById("lpAudioLink");
+      if (!audioLink) return;
+      const hasAudioFeature = String(audioLink.dataset.audioAvailable || "") === "1";
+      const canShow = hasAudioFeature && isLinePreviewAudioLanguageAllowed();
+      audioLink.hidden = !canShow;
+      audioLink.style.display = canShow ? "" : "none";
+      if (canShow) audioLink.href = "#";
+      else audioLink.removeAttribute("href");
+      if (!canShow && closePanelOnHide) closeLinePreviewAudioPanel({ stopPlayback: true });
+    }
+    function setLinePreviewAudioButtonState({ visible = false, href = "", routeAudioReady = false } = {}){
+      const audioLink = document.getElementById("lpAudioLink");
+      if (!audioLink) return;
+      if (visible) {
+        audioLink.dataset.audioAvailable = "1";
+        audioLink.dataset.routeAudioReady = routeAudioReady ? "1" : "0";
+        audioLink.classList.toggle("is-route-missing", !routeAudioReady);
+        if (href) audioLink.dataset.audioFolder = String(href || "");
+        else delete audioLink.dataset.audioFolder;
+        refreshLinePreviewAudioButtonVisibility({ closePanelOnHide: false });
+        return;
+      }
+      delete audioLink.dataset.audioAvailable;
+      delete audioLink.dataset.routeAudioReady;
+      delete audioLink.dataset.audioFolder;
+      audioLink.classList.remove("is-route-missing");
+      refreshLinePreviewAudioButtonVisibility();
+    }
+    function updateLinePreviewAudioButton(line, route){
+      const token = ++linePreviewAudioCheckToken;
+      setLinePreviewAudioGlobalProfileForLine(line, route);
+      setLinePreviewAudioGlobalTypeTokensForLine(line, route);
+      setLinePreviewAudioButtonState({ visible: false, routeAudioReady: false });
+      clearLinePreviewAudioRouteState({ closePanel: false, stopPlayback: true });
+      const globalReadyPromise = Promise.resolve(ensureLinePreviewAudioGlobalFoldersLoaded())
+        .catch(() => {})
+        .then(() => hasLinePreviewAudioGlobalPlayableClip());
+      const routeCoveragePromise = isLinePreviewAudioAllowedForLine(line, route)
+        ? getRouteAudioCoverage(line, route)
+        : Promise.resolve({ ok: false, href: "", missingByFolder: [] });
+      Promise.all([globalReadyPromise, routeCoveragePromise]).then(([hasGlobalPlayable, status]) => {
+        if (token !== linePreviewAudioCheckToken) return;
+        const routeReady = !!(status?.ok && status?.href);
+        if (!routeReady) {
+          const groups = Array.isArray(status?.missingByFolder) ? status.missingByFolder : [];
+          groups.forEach((group) => {
+            const missingStops = Array.isArray(group?.missingStops) ? group.missingStops : [];
+            if (missingStops.length) console.log(missingStops);
+          });
+          clearLinePreviewAudioRouteState({ closePanel: false, stopPlayback: true });
+        } else {
+          setLinePreviewAudioRouteState(route, status);
+        }
+        const visible = !!hasGlobalPlayable || routeReady;
+        if (!visible) {
+          setLinePreviewAudioButtonState({ visible: false, routeAudioReady: false });
+          return;
+        }
+        setLinePreviewAudioButtonState({
+          visible: true,
+          href: routeReady ? status.href : "",
+          routeAudioReady: routeReady
+        });
+      }).catch(() => {
+        if (token !== linePreviewAudioCheckToken) return;
+        clearLinePreviewAudioRouteState({ closePanel: false, stopPlayback: true });
+        const hasGlobalPlayable = hasLinePreviewAudioGlobalPlayableClip();
+        setLinePreviewAudioButtonState({ visible: !!hasGlobalPlayable, routeAudioReady: false });
+      });
     }
 
     let DBUS_STOPS = new Map();
@@ -5660,7 +7490,7 @@
 
         const marker = L.marker(st.latlng, {
           pane: "dbusRouteMarkerPane",
-          interactive: false,
+          interactive: true,
           keyboard: false,
           bubblingMouseEvents: false,
           icon: L.divIcon({
@@ -5779,14 +7609,14 @@
       (bundle.stops || []).forEach(marker => {
         if (!marker) return;
         try {
-          marker.options.interactive = false;
+          marker.options.interactive = true;
           marker.options.keyboard = false;
           marker.options.bubblingMouseEvents = false;
           marker.options.pane = "dbusRouteMarkerPane";
         } catch {}
         try {
           const el = marker.getElement?.();
-          if (el) el.style.pointerEvents = "none";
+          if (el) el.style.pointerEvents = "auto";
         } catch {}
       });
     }
@@ -6011,6 +7841,7 @@
           lpLink.style.display = "none";
         }
       }
+      updateLinePreviewAudioButton(line, route);
 
       function applyNetworkBadgeToPreview(opts){
         badge.innerHTML = "";
@@ -6198,6 +8029,7 @@
       if (linePreviewStopsBox) {
         linePreviewStopsBox.classList.remove("can-scroll-up", "can-scroll-down");
       }
+      closeLinePreviewAudioPanel({ stopPlayback: true });
       clearActiveStop()
       updateUiOverlays();
     }
@@ -6212,6 +8044,55 @@
       renderSelectedChip();
       updateDbusModeUI();
     });
+    document.getElementById("lpAudioLink")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (isLinePreviewAudioPanelOpen()) {
+        closeLinePreviewAudioPanel({ stopPlayback: true });
+        return;
+      }
+      openLinePreviewAudioPanel();
+    });
+    document.getElementById("lpAudioPanelClose")?.addEventListener("click", () => {
+      closeLinePreviewAudioPanel({ stopPlayback: true });
+    });
+    document.getElementById("lpAudioPanelClose")?.addEventListener("pointerdown", (event) => {
+      event.stopPropagation();
+    });
+    document.getElementById("lpAudioPrevBtn")?.addEventListener("click", () => {
+      if (!LINE_PREVIEW_AUDIO_STATE.enabled) return;
+      setLinePreviewAudioCurrentIndex((LINE_PREVIEW_AUDIO_STATE.currentIndex || 0) - 1);
+    });
+    document.getElementById("lpAudioCurrentBtn")?.addEventListener("click", () => {
+      if (!LINE_PREVIEW_AUDIO_STATE.enabled) return;
+      playLinePreviewCurrentStop(LINE_PREVIEW_AUDIO_STATE.currentIndex || 0);
+    });
+    document.getElementById("lpAudioNextBtn")?.addEventListener("click", () => {
+      if (!LINE_PREVIEW_AUDIO_STATE.enabled) return;
+      setLinePreviewAudioCurrentIndex((LINE_PREVIEW_AUDIO_STATE.currentIndex || 0) + 1);
+    });
+    document.getElementById("lpAudioTerminusBtn")?.addEventListener("click", () => {
+      if (!LINE_PREVIEW_AUDIO_STATE.enabled) return;
+      playLinePreviewTerminusSequence();
+    });
+    document.getElementById("lpAudioVolumeRange")?.addEventListener("input", (event) => {
+      const value = Number(event?.target?.value);
+      if (!Number.isFinite(value)) return;
+      setLinePreviewAudioVolume(value / 100);
+    });
+    document.getElementById("lpAudioStopBtn")?.addEventListener("click", () => {
+      stopLinePreviewAudioPlayback();
+    });
+    document.getElementById("lpAudioStyleSelect")?.addEventListener("change", (event) => {
+      const nextPath = String(event?.target?.value || "");
+      if (!nextPath) return;
+      setLinePreviewAudioStyleByPath(nextPath, { stopPlayback: true });
+    });
+    document.getElementById("lpAudioGlobalFolderSelect")?.addEventListener("change", (event) => {
+      const nextPath = String(event?.target?.value || "");
+      setLinePreviewAudioGlobalFolderByPath(nextPath);
+    });
+    setLinePreviewAudioVolume(1);
+    ensureLinePreviewAudioGlobalFoldersLoaded();
 
     function openSettingsPanel() {
       closeSearchUI({ reset: true });
@@ -8533,8 +10414,141 @@
       document.body.innerHTML = html;
       throw new Error('Maintenance');
     }
-  </script>
 
+    LINE_PREVIEW_AUDIO_EXTENSION.nonce = "";
+    LINE_PREVIEW_AUDIO_EXTENSION.checked = false;
+    LINE_PREVIEW_AUDIO_EXTENSION.detected = false;
+    LINE_PREVIEW_AUDIO_EXTENSION.version = "";
+    LINE_PREVIEW_AUDIO_EXTENSION.lastSeenAt = 0;
+    LINE_PREVIEW_AUDIO_EXTENSION.pendingNonce = "";
+    updateLinePreviewAudioExtensionState();
+
+    let myExtHandshakeTimeoutId = 0;
+    const MYEXT_PING_TIMEOUT_MS = 900;
+
+    function generateMyExtNonce() {
+      if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
+        return globalThis.crypto.randomUUID();
+      }
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function markMyExtDetected(versionValue = "") {
+      LINE_PREVIEW_AUDIO_EXTENSION.checked = true;
+      LINE_PREVIEW_AUDIO_EXTENSION.detected = true;
+      LINE_PREVIEW_AUDIO_EXTENSION.version = String(versionValue || LINE_PREVIEW_AUDIO_EXTENSION.version || "");
+      LINE_PREVIEW_AUDIO_EXTENSION.lastSeenAt = Date.now();
+      updateLinePreviewAudioExtensionState();
+    }
+
+    function markMyExtMissing() {
+      LINE_PREVIEW_AUDIO_EXTENSION.checked = true;
+      LINE_PREVIEW_AUDIO_EXTENSION.detected = false;
+      updateLinePreviewAudioExtensionState();
+    }
+
+    function requestMyExtPing() {
+      const nonce = generateMyExtNonce();
+      LINE_PREVIEW_AUDIO_EXTENSION.nonce = nonce;
+      LINE_PREVIEW_AUDIO_EXTENSION.pendingNonce = nonce;
+      if (myExtHandshakeTimeoutId) {
+        clearTimeout(myExtHandshakeTimeoutId);
+        myExtHandshakeTimeoutId = 0;
+      }
+      window.postMessage({ type: "MYEXT_PING", nonce }, location.origin);
+      myExtHandshakeTimeoutId = setTimeout(() => {
+        if (LINE_PREVIEW_AUDIO_EXTENSION.pendingNonce !== nonce) return;
+        LINE_PREVIEW_AUDIO_EXTENSION.pendingNonce = "";
+        markMyExtMissing();
+      }, MYEXT_PING_TIMEOUT_MS);
+    }
+
+    const onMyExtHandshakeMessage = (event) => {
+      if (event.source !== window) return;
+      if (event.origin !== location.origin) return;
+      const data = event.data;
+      if (!data) return;
+      const isPong = data.type === "MYEXT_PONG";
+      const nonceOk = !data.nonce || data.nonce === LINE_PREVIEW_AUDIO_EXTENSION.nonce;
+      if (isPong && nonceOk) {
+        const wasDetected = !!LINE_PREVIEW_AUDIO_EXTENSION.detected;
+        LINE_PREVIEW_AUDIO_EXTENSION.pendingNonce = "";
+        if (myExtHandshakeTimeoutId) {
+          clearTimeout(myExtHandshakeTimeoutId);
+          myExtHandshakeTimeoutId = 0;
+        }
+        markMyExtDetected(data.version || "");
+        if (!wasDetected) console.log("Extension détectée", data.version);
+      }
+    };
+    window.addEventListener("message", onMyExtHandshakeMessage);
+    requestMyExtPing();
+
+    function isFisAudioPanelReady(action = "") {
+      const panel = document.getElementById("lpAudioPanel");
+      if (!panel) return false;
+      const panelOpen = panel.classList.contains("is-open")
+        && panel.style.display !== "none"
+        && panel.getAttribute("aria-hidden") !== "true";
+      if (!panelOpen) return false;
+      const normalizedAction = String(action || "").trim().toLowerCase();
+      const stops = Array.isArray(LINE_PREVIEW_AUDIO_STATE.stopNames) ? LINE_PREVIEW_AUDIO_STATE.stopNames : [];
+      const hasRouteAudio = !!LINE_PREVIEW_AUDIO_STATE.enabled && stops.length > 0;
+      const hasGlobalAudio = document.querySelector("#lpAudioGlobalButtons .line-preview-audio-btn") !== null;
+      if (/^key([1-4])$/.test(normalizedAction)) return hasRouteAudio;
+      if (/^key([5-9]|10)$/.test(normalizedAction)) return hasGlobalAudio;
+      return hasRouteAudio || hasGlobalAudio;
+    }
+
+    function triggerFisAudioButton(buttonId) {
+      const btn = document.getElementById(buttonId);
+      if (!btn || btn.disabled) return false;
+      btn.click();
+      return true;
+    }
+
+    function triggerFisGlobalAudioByIndex(index) {
+      const idx = Number(index);
+      if (!Number.isInteger(idx) || idx < 0) return false;
+      const buttons = Array.from(document.querySelectorAll("#lpAudioGlobalButtons .line-preview-audio-btn"));
+      if (!buttons.length || idx >= buttons.length) return false;
+      const btn = buttons[idx];
+      if (!btn || btn.disabled) return false;
+      btn.click();
+      return true;
+    }
+
+    window.addEventListener("message", (ev) => {
+      const data = ev.data;
+      if (!data || !data.__FIS_BRIDGE__) return;
+      if (!LINE_PREVIEW_AUDIO_EXTENSION.detected) {
+        markMyExtDetected(data.version || "bridge");
+        if (myExtHandshakeTimeoutId) {
+          clearTimeout(myExtHandshakeTimeoutId);
+          myExtHandshakeTimeoutId = 0;
+        }
+      }
+      const action = String(data.action || "").trim().toLowerCase();
+      if (!action) return;
+      if (!isFisAudioPanelReady(action)) return;
+      if (action === "key1") triggerFisAudioButton("lpAudioTerminusBtn");
+      if (action === "key2") triggerFisAudioButton("lpAudioPrevBtn");
+      if (action === "key3") {
+        const currentBtn = document.getElementById("lpAudioCurrentBtn");
+        if (!currentBtn || currentBtn.disabled) return;
+        playLinePreviewCurrentStop(LINE_PREVIEW_AUDIO_STATE.currentIndex || 0, { advanceOnFinish: true });
+        return;
+      }
+      if (action === "key4") triggerFisAudioButton("lpAudioNextBtn");
+      const keyMatch = /^key(\d+)$/.exec(action);
+      if (!keyMatch) return;
+      const keyNum = Number(keyMatch[1]);
+      if (!Number.isInteger(keyNum)) return;
+      if (keyNum >= 5 && keyNum <= 10) {
+        triggerFisGlobalAudioByIndex(keyNum - 5);
+      }
+    });
+    </script>
 </body>
 </html>
 

@@ -203,15 +203,12 @@
 
     @media (min-width:1024px){
       .faq-list{
-        grid-template-columns:repeat(12, minmax(0, 1fr));
+        grid-template-columns:repeat(2, minmax(0, 1fr));
         gap:14px;
+        align-items:stretch;
       }
-      .faq-item{
-        grid-column:span 6;
-      }
-      .faq-item:nth-child(3),
-      .faq-item:nth-child(6){
-        grid-column:1 / -1;
+      .faq-list > .faq-item{
+        grid-column:auto !important;
       }
     }
 
@@ -327,6 +324,27 @@
   <script src="config/shared-header.js"></script>
   <script>
     (function initFaqPage() {
+      function equalizeFaqItemsHeight() {
+        const items = Array.from(document.querySelectorAll(".faq-list > .faq-item"));
+        if (!items.length) return;
+        items.forEach((item) => {
+          item.style.minHeight = "";
+        });
+        if (!window.matchMedia("(min-width:1024px)").matches) return;
+        const tallest = items.reduce((max, item) => Math.max(max, item.offsetHeight || 0), 0);
+        if (!tallest) return;
+        items.forEach((item) => {
+          item.style.minHeight = `${tallest}px`;
+        });
+      }
+      let equalizeRafId = 0;
+      function scheduleEqualizeFaqItemsHeight() {
+        if (equalizeRafId) cancelAnimationFrame(equalizeRafId);
+        equalizeRafId = requestAnimationFrame(() => {
+          equalizeRafId = 0;
+          equalizeFaqItemsHeight();
+        });
+      }
       function lang() {
         return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
       }
@@ -359,13 +377,16 @@
           : t("faq_page_title", shortTitle);
         const titleEl = document.getElementById("faqTitle");
         if (titleEl) titleEl.textContent = fullTitle;
-        document.title = `IDF Map | ${fullTitle}`;
+        document.title = `Île-de-France Map | ${fullTitle}`;
+        scheduleEqualizeFaqItemsHeight();
       }
       render();
       new MutationObserver(render).observe(document.documentElement, {
         attributes: true,
         attributeFilter: ["lang"]
       });
+      window.addEventListener("resize", scheduleEqualizeFaqItemsHeight);
+      window.addEventListener("load", scheduleEqualizeFaqItemsHeight, { once: true });
     })();
   </script>
   <script>

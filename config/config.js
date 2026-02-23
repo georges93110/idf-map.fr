@@ -5,6 +5,8 @@
       discord: "https://discord.gg/5xDM99G67s",
       patreon: "https://www.patreon.com/",
       dbus_world: "https://dbusworld.com/",
+      extension_install: "./map_files/idf_extension.zip",
+      extension_keys: "chrome://extensions/shortcuts",
       legal_hosting: "https://pages.github.com",
       panel_admin: "https://panel.idf-map.fr/",
       youtube: "https://www.youtube.com/@idfmap93"
