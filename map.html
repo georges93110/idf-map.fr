@@ -5495,30 +5495,27 @@
     async function loadDbusFisIndex(){
       if (DBUS_FIS_INDEX) return DBUS_FIS_INDEX;
 
-      const res = await fetch("./map_files/dbus_fis_index.json", {
-        cache: "no-store"
-      });
-
-      if (!res.ok) {
-        console.warn("FIS index missing");
+      try {
+        const res = await fetch("./map_files/dbus_fis_index.json", {
+          cache: "no-store"
+        });
+        if (!res.ok) {
+          console.warn("FIS index missing");
+          DBUS_FIS_INDEX = {};
+          return DBUS_FIS_INDEX;
+        }
+        const data = await res.json();
+        DBUS_FIS_INDEX = (data && typeof data === "object") ? data : {};
+      } catch {
         DBUS_FIS_INDEX = {};
-        return DBUS_FIS_INDEX;
       }
-
-      DBUS_FIS_INDEX = await res.json();
       return DBUS_FIS_INDEX;
     }
-    function shouldUseJsonDirectoryManifests(){
-      // Prod: idf-map.fr / github pages / tout hébergement statique sans listing
-      const host = String(location.hostname || "").toLowerCase();
-      if (host === "localhost" || host === "127.0.0.1") return false;
-
-      // si tu utilises un serveur local sur LAN, adapte si besoin :
-      // if (host.endsWith(".local")) return false;
-
-      return true;
+    function decodePathSegmentSafe(value){
+      const raw = String(value || "");
+      try { return decodeURIComponent(raw); } catch { return raw; }
     }
-    async function listDirectoryEntries(path){
+    async function listDirectoryEntriesFromIndex(path){
       const index = await loadDbusFisIndex();
 
       // normalise le path
@@ -5535,17 +5532,19 @@
         }));
       }
 
-      const parts = clean.split("/");
+      const parts = clean.split("/").map(decodePathSegmentSafe).filter(Boolean);
       let node = index;
 
       for (const p of parts){
-        if (!node[p]) return [];
+        if (!node || typeof node !== "object" || !Object.prototype.hasOwnProperty.call(node, p)) return [];
         node = node[p];
       }
 
+      if (!node || typeof node !== "object") return [];
       const out = [];
 
       for (const k in node){
+        if (!Object.prototype.hasOwnProperty.call(node, k)) continue;
         if (k === "_files") continue;
         out.push({ name:k, isDirectory:true });
       }
@@ -5557,6 +5556,32 @@
       }
 
       return out;
+    }
+    function shouldUseJsonDirectoryManifests(){
+      // Prod: idf-map.fr / github pages / tout hébergement statique sans listing
+      const host = String(location.hostname || "").toLowerCase();
+      if (host === "localhost" || host === "127.0.0.1") return false;
+
+      // si tu utilises un serveur local sur LAN, adapte si besoin :
+      // if (host.endsWith(".local")) return false;
+
+      return true;
+    }
+    async function listDirectoryEntries(path){
+      const dirPath = ensureTrailingSlash(String(path || ""));
+
+      // 1) Ancien systeme: listing dossier (local/dev)
+      try {
+        const res = await fetch(dirPath, { cache: "no-store" });
+        if (res.ok) {
+          const html = await res.text();
+          const htmlEntries = parseDirEntriesFromHtml(html, dirPath);
+          if (htmlEntries.length) return htmlEntries;
+        }
+      } catch {}
+
+      // 2) Fallback: index JSON (prod/github pages ou si listing KO)
+      return listDirectoryEntriesFromIndex(path);
     }
     async function listDirectorySubfolders(path){
       const entries = await listDirectoryEntries(path);
