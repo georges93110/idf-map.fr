@@ -4144,29 +4144,7 @@
       }
     }
     function loadVersionsFromDirectorySync(root){
-      try {
-        const xhr = new XMLHttpRequest();
-        xhr.open("GET", `${root}/`, false);
-        xhr.send(null);
-        if (xhr.status < 200 || xhr.status >= 300) return [];
-        const html = String(xhr.responseText || "");
-        const versions = new Set();
-        const hrefMatches = html.matchAll(/href=["']([^"']+)["']/gi);
-        for (const match of hrefMatches) {
-          const href = String(match[1] || "").trim();
-          if (!href) continue;
-          const cleaned = href.replace(/^[./]+/, "").replace(/\/+$/, "");
-          if (parseVersion(cleaned)) versions.add(cleaned);
-        }
-        const textMatches = html.match(/\b\d+\.\d+\.\d+[a-z]\b/gi) || [];
-        textMatches.forEach((entry) => {
-          const parsed = parseVersion(entry);
-          if (parsed) versions.add(parsed.raw);
-        });
-        return [...versions];
-      } catch {
-        return [];
-      }
+      return [];
     }
     function selectLatestVersion(candidates){
       const parsed = [...new Set(candidates)]
@@ -4189,7 +4167,7 @@
     const forcedVersion = String(QS.get("version") || QS.get("v") || "").trim();
     const parsedForcedVersion = parseVersion(forcedVersion);
     const manifestVersions = loadVersionsFromManifestSync(MAP_FILES_ROOT);
-    const dirVersions = loadVersionsFromDirectorySync(MAP_FILES_ROOT);
+    const dirVersions = [];
     const AVAILABLE_MAP_VERSIONS = getSortedAvailableVersions([...manifestVersions, ...dirVersions]);
     const latestVersion = selectLatestVersion(AVAILABLE_MAP_VERSIONS);
     const SELECTED_VERSION = parsedForcedVersion ? parsedForcedVersion.raw : latestVersion;
@@ -5420,6 +5398,7 @@
     const dbusRouteLayers = new Map();
     let linePreviewAudioCheckToken = 0;
     let dbusFisRootLineFolderTokensPromise = null;
+    let DBUS_FIS_INDEX = null;
     const LINE_PREVIEW_AUDIO_STATE = { folderPath: "", stopNames: [], currentIndex: 0, enabled: false, volume: 1, voiceStyles: [], selectedVoiceIndex: 0 };
     const LINE_PREVIEW_AUDIO_GLOBAL_STATE = { folders: [], selectedFolderPath: "", loadPromise: null, profile: "ratp", typeTokens: [] };
     const LINE_PREVIEW_AUDIO_PLAYBACK = { token: 0, audio: null, isPlaying: false, lockNavigation: false, volumeMultiplier: 1 };
@@ -5513,6 +5492,22 @@
       }
       return out;
     }
+    async function loadDbusFisIndex(){
+      if (DBUS_FIS_INDEX) return DBUS_FIS_INDEX;
+
+      const res = await fetch("./map_files/dbus_fis_index.json", {
+        cache: "no-store"
+      });
+
+      if (!res.ok) {
+        console.warn("FIS index missing");
+        DBUS_FIS_INDEX = {};
+        return DBUS_FIS_INDEX;
+      }
+
+      DBUS_FIS_INDEX = await res.json();
+      return DBUS_FIS_INDEX;
+    }
     function shouldUseJsonDirectoryManifests(){
       // Prod: idf-map.fr / github pages / tout hébergement statique sans listing
       const host = String(location.hostname || "").toLowerCase();
@@ -5524,34 +5519,44 @@
       return true;
     }
     async function listDirectoryEntries(path){
-      const dirPath = ensureTrailingSlash(String(path || ""));
-      // 1) En prod: on ne tente PAS le listing HTML (sinon 404 a chaque fois sur GitHub Pages)
-      if (shouldUseJsonDirectoryManifests()){
-        try {
-          const manifestUrl = joinEncodedPath(dirPath, "index.json");
-          const res = await fetch(manifestUrl, { cache: "no-store" });
-          if (!res.ok) return [];
-          const data = await res.json();
+      const index = await loadDbusFisIndex();
 
-          // accepte plusieurs formats pour etre tolerant
-          if (Array.isArray(data)) return data;
-          if (data && Array.isArray(data.entries)) return data.entries;
+      // normalise le path
+      const clean = String(path || "")
+        .replace(/^\.?\//, "")
+        .replace(/^map_files\/dbus_fis\/?/, "")
+        .replace(/\/+$/, "");
 
-          return [];
-        } catch {
-          return [];
-        }
+      if (!clean) {
+        // root dbus_fis
+        return Object.keys(index).map(name => ({
+          name,
+          isDirectory:true
+        }));
       }
 
-      // 2) En local/dev: on garde ton systeme d'origine (listing HTML)
-      try {
-        const res = await fetch(dirPath, { cache: "no-store" });
-        if (!res.ok) return [];
-        const html = await res.text();
-        return parseDirEntriesFromHtml(html, dirPath);
-      } catch {
-        return [];
+      const parts = clean.split("/");
+      let node = index;
+
+      for (const p of parts){
+        if (!node[p]) return [];
+        node = node[p];
       }
+
+      const out = [];
+
+      for (const k in node){
+        if (k === "_files") continue;
+        out.push({ name:k, isDirectory:true });
+      }
+
+      if (Array.isArray(node._files)){
+        node._files.forEach(f=>{
+          out.push({ name:f + ".mp3", isDirectory:false });
+        });
+      }
+
+      return out;
     }
     async function listDirectorySubfolders(path){
       const entries = await listDirectoryEntries(path);
