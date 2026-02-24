@@ -271,6 +271,9 @@
     .home-cta-auto {
       min-height: 54px;
       width: min(350px, 100%);
+      gap: 12px;
+      position: relative;
+      justify-content: center;
       font-size: clamp(15px, 1.7vw, 19px);
       background: linear-gradient(145deg, #2f8c5a, #1f6440);
       border-color: #58ca8b;
@@ -279,6 +282,109 @@
     .home-cta-auto svg {
       width: 20px;
       height: 20px;
+    }
+    .home-cta-auto .site-icon-windows {
+      fill: currentColor;
+      stroke: none;
+    }
+    .home-cta-auto .home-cta-icon-pack {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(8, 31, 19, 0.28);
+      border: 1px solid rgba(198, 247, 219, 0.28);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      flex: 0 0 auto;
+    }
+    .home-cta-auto .home-cta-icon-sep {
+      width: 1px;
+      height: 14px;
+      background: rgba(239, 255, 247, 0.45);
+      flex: 0 0 1px;
+    }
+    .home-cta-auto .site-icon-download {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+    }
+    .home-cta-auto .site-icon-windows {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
+      opacity: 0.95;
+    }
+    .home-cta-auto span[data-i18n="download_button"] {
+      line-height: 1;
+    }
+    .home-cta-auto[data-download-mode="manual"] .site-icon-windows,
+    .home-cta-auto[data-download-mode="manual"] .home-cta-icon-sep {
+      display: none;
+    }
+    .home-cta-auto.is-disabled-link {
+      cursor: not-allowed;
+      color: #d8dbde;
+      border-color: #7a7f84;
+      background: linear-gradient(145deg, #4a545d, #313941);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+    }
+    .home-cta-auto.is-disabled-link:hover {
+      transform: none;
+      border-color: #8c9197;
+      background: linear-gradient(145deg, #4a545d, #313941);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+    }
+    .home-cta-auto.is-disabled-link .home-cta-icon-pack {
+      background: rgba(17, 19, 22, 0.36);
+      border-color: rgba(224, 229, 234, 0.2);
+    }
+    .home-cta-auto.is-disabled-shake {
+      animation: homeCtaShake 360ms ease;
+    }
+    .home-download-alert {
+      width: min(560px, 100%);
+      margin: 0 auto;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      border: 1px solid transparent;
+      border-radius: 9px;
+      background: rgba(0, 0, 0, 0.16);
+      color: #ffe9e9;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.35;
+      transition: opacity 200ms ease, transform 200ms ease, max-height 200ms ease, padding 200ms ease, border-color 200ms ease;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+    .home-download-alert.is-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      max-height: 56px;
+      padding: 8px 10px;
+      border-color: rgba(255, 174, 174, 0.42);
+      background: rgba(90, 21, 21, 0.42);
+      animation: homeAlertPulse 1200ms ease;
+    }
+    @keyframes homeCtaShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-3px); }
+      40% { transform: translateX(3px); }
+      60% { transform: translateX(-2px); }
+      80% { transform: translateX(2px); }
+    }
+    @keyframes homeAlertPulse {
+      0% { box-shadow: 0 0 0 rgba(255, 120, 120, 0); }
+      40% { box-shadow: 0 0 0 4px rgba(255, 120, 120, 0.2); }
+      100% { box-shadow: 0 0 0 rgba(255, 120, 120, 0); }
     }
 
     .home-cta-auto:hover {
@@ -754,17 +860,24 @@
                 id="homeAutoDownloadBtn"
                 class="home-cta home-cta-auto"
                 href="#"
-                data-offsite-key="download"
+                data-offsite-key="download_home_fr"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 3v11"></path>
-                  <path d="M8 10l4 4 4-4"></path>
-                  <path d="M5 20h14"></path>
-                </svg>
+                <span class="home-cta-icon-pack" aria-hidden="true">
+                  <svg class="site-icon-download" viewBox="0 0 24 24">
+                    <path d="M12 3v11"></path>
+                    <path d="M8 10l4 4 4-4"></path>
+                    <path d="M5 20h14"></path>
+                  </svg>
+                  <span class="home-cta-icon-sep"></span>
+                  <svg class="site-icon-windows" viewBox="0 0 24 24">
+                    <path d="M2 4.2L10.9 3v8.6H2V4.2zM12.1 2.9L22 1.5v10.1h-9.9V2.9zM2 12.4h8.9V21L2 19.8v-7.4zM12.1 12.4H22v10.1l-9.9-1.3v-8.8z"></path>
+                  </svg>
+                </span>
                 <span data-i18n="download_button">Telecharger</span>
               </a>
+              <p id="homeAutoDownloadAlert" class="home-download-alert" role="status" aria-live="polite" hidden></p>
 
               <button
                 type="button"
@@ -920,6 +1033,7 @@
     (function initHomePage() {
       const homeShell = document.getElementById("homeShell");
       const homeAutoDownloadBtn = document.getElementById("homeAutoDownloadBtn");
+      const homeAutoDownloadAlert = document.getElementById("homeAutoDownloadAlert");
       const homeManualToggleBtn = document.getElementById("homeManualToggleBtn");
       const homeManualDepsLink = document.getElementById("homeManualDepsLink");
       const homeManualMapDownloadLink = document.getElementById("homeManualMapDownloadLink");
@@ -930,6 +1044,9 @@
       const homeDiscordBtn = document.getElementById("homeDiscordBtn");
       const homeYoutubeBtn = document.getElementById("homeYoutubeBtn");
       const homeManualCloseBtn = document.getElementById("homeManualCloseBtn");
+      let autoDownloadAlertTimer = 0;
+      let autoDownloadAlertHideTimer = 0;
+      let autoDownloadAlertToken = 0;
 
       function lang() {
         return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
@@ -1016,7 +1133,107 @@
         }
       }
 
+      function setManualToggleVisibility(visible) {
+        if (!homeManualToggleBtn) return;
+        homeManualToggleBtn.hidden = !visible;
+        homeManualToggleBtn.style.display = visible ? "" : "none";
+        homeManualToggleBtn.setAttribute("aria-hidden", visible ? "false" : "true");
+        if (visible) {
+          homeManualToggleBtn.removeAttribute("tabindex");
+          return;
+        }
+        homeManualToggleBtn.setAttribute("tabindex", "-1");
+      }
+
+      function hideAutoDownloadAlert(immediate) {
+        if (!homeAutoDownloadAlert) return;
+        window.clearTimeout(autoDownloadAlertTimer);
+        window.clearTimeout(autoDownloadAlertHideTimer);
+        homeAutoDownloadAlert.classList.remove("is-visible");
+        if (immediate) {
+          homeAutoDownloadAlert.hidden = true;
+          return;
+        }
+        autoDownloadAlertHideTimer = window.setTimeout(() => {
+          if (!homeAutoDownloadAlert.classList.contains("is-visible")) {
+            homeAutoDownloadAlert.hidden = true;
+          }
+        }, 220);
+      }
+
+      function showAutoDownloadAlert() {
+        if (!homeAutoDownloadAlert || !homeAutoDownloadBtn) return;
+        autoDownloadAlertToken += 1;
+        const token = autoDownloadAlertToken;
+        window.clearTimeout(autoDownloadAlertTimer);
+        window.clearTimeout(autoDownloadAlertHideTimer);
+        const message = t(
+          "home_download_unavailable_manual_hint",
+          "Telechargement automatique indisponible. Le Telechargement manuel est disponible."
+        );
+        homeAutoDownloadAlert.textContent = message;
+        homeAutoDownloadAlert.hidden = false;
+        homeAutoDownloadAlert.classList.remove("is-visible");
+        void homeAutoDownloadAlert.offsetWidth;
+        homeAutoDownloadAlert.classList.add("is-visible");
+        homeAutoDownloadBtn.classList.remove("is-disabled-shake");
+        void homeAutoDownloadBtn.offsetWidth;
+        homeAutoDownloadBtn.classList.add("is-disabled-shake");
+        autoDownloadAlertTimer = window.setTimeout(() => {
+          if (token !== autoDownloadAlertToken) return;
+          hideAutoDownloadAlert(false);
+        }, 3600);
+      }
+
+      function setAutoDownloadMode(mode) {
+        if (!homeAutoDownloadBtn) return;
+        if (mode === "manual") {
+          homeAutoDownloadBtn.dataset.downloadMode = "manual";
+          homeAutoDownloadBtn.dataset.downloadLinkReady = "1";
+          homeAutoDownloadBtn.setAttribute("href", "#");
+          homeAutoDownloadBtn.classList.remove("is-disabled-link");
+          homeAutoDownloadBtn.classList.remove("is-disabled-shake");
+          homeAutoDownloadBtn.setAttribute("aria-disabled", "false");
+          homeAutoDownloadBtn.removeAttribute("target");
+          homeAutoDownloadBtn.removeAttribute("rel");
+          hideAutoDownloadAlert(true);
+          return;
+        }
+        homeAutoDownloadBtn.dataset.downloadMode = "link";
+        applyOffsiteHref(homeAutoDownloadBtn);
+        const href = String(homeAutoDownloadBtn.getAttribute("href") || "").trim();
+        const hasLink = !!href && href !== "#";
+        homeAutoDownloadBtn.dataset.downloadLinkReady = hasLink ? "1" : "0";
+        homeAutoDownloadBtn.classList.toggle("is-disabled-link", !hasLink);
+        homeAutoDownloadBtn.classList.remove("is-disabled-shake");
+        homeAutoDownloadBtn.setAttribute("aria-disabled", hasLink ? "false" : "true");
+        if (!hasLink) {
+          homeAutoDownloadBtn.setAttribute("href", "#");
+          homeAutoDownloadBtn.removeAttribute("target");
+          homeAutoDownloadBtn.removeAttribute("rel");
+          return;
+        }
+        hideAutoDownloadAlert(true);
+        homeAutoDownloadBtn.setAttribute("target", "_blank");
+        homeAutoDownloadBtn.setAttribute("rel", "noopener noreferrer");
+      }
+
       function bindEvents() {
+        if (homeAutoDownloadBtn && homeAutoDownloadBtn.dataset.bound !== "1") {
+          homeAutoDownloadBtn.dataset.bound = "1";
+          homeAutoDownloadBtn.addEventListener("click", (event) => {
+            if (homeAutoDownloadBtn.dataset.downloadMode === "link"
+              && homeAutoDownloadBtn.dataset.downloadLinkReady !== "1") {
+              event.preventDefault();
+              showAutoDownloadAlert();
+              return;
+            }
+            if (homeAutoDownloadBtn.dataset.downloadMode !== "manual") return;
+            event.preventDefault();
+            const isOpen = homeShell && homeShell.classList.contains("is-manual-open");
+            setManualPanelOpen(!isOpen);
+          });
+        }
         if (homeManualToggleBtn && homeManualToggleBtn.dataset.bound !== "1") {
           homeManualToggleBtn.dataset.bound = "1";
           homeManualToggleBtn.addEventListener("click", () => {
@@ -1039,11 +1256,13 @@
       function render() {
         const links = siteLinks();
         const guide = links.guide && typeof links.guide === "object" ? links.guide : {};
-        applyOffsiteHref(homeAutoDownloadBtn);
         applyOffsiteHref(homeManualDepsLink);
         applyOffsiteHref(homeManualMapDownloadLink);
         applyOffsiteHref(homeDiscordBtn);
         applyOffsiteHref(homeYoutubeBtn);
+        const isFrench = lang() === "fr";
+        setAutoDownloadMode(isFrench ? "link" : "manual");
+        setManualToggleVisibility(isFrench);
         if (homeSteamDlcLink) {
           const href = String(guide.steam_dlc || "").trim();
           if (href) homeSteamDlcLink.href = href;

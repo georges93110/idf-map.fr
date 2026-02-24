@@ -1460,9 +1460,6 @@
       display:none;
       user-select:none;
     }
-    .line-preview-audio-panel.is-extension-missing{
-      width:min(420px, calc(100vw - 24px));
-    }
     .line-preview-audio-panel.is-open{display:block}
     .line-preview-audio-head{
       display:flex;
@@ -1548,16 +1545,18 @@
     }
     .line-preview-audio-extension-missing{
       border:1px solid #5a1f1f;
-      background:#2b1010;
-      border-radius:10px;
+      outline:1px solid #2c1212;
+      background:linear-gradient(180deg, #2b1010 0%, #1d0b0b 100%);
+      border-radius:12px;
+      box-shadow:0 10px 24px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.02);
       padding:10px;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:8px;
     }
     .line-preview-audio-extension-missing-title{
       color:#ffd0d0;
-      font-size:14px;
+      font-size:13px;
       font-weight:800;
     }
     .line-preview-audio-extension-missing-text{
@@ -1568,22 +1567,18 @@
     .line-preview-audio-extension-missing-note{
       display:flex;
       flex-direction:column;
-      gap:8px;
+      gap:6px;
     }
     .line-preview-audio-extension-missing-badge{
       align-self:flex-start;
       user-select:text;
       -webkit-user-select:text;
     }
-    .line-preview-audio-extension-supported{
-      color:#f2dada;
-      font-size:12px;
-      line-height:1.4;
-    }
-    .line-preview-audio-extension-supported-list{
+    .line-preview-audio-extension-missing-actions{
       display:flex;
       flex-wrap:wrap;
-      gap:6px;
+      gap:8px;
+      margin-top:2px;
     }
     .line-preview-audio-code-badge{
       display:inline-flex;
@@ -1602,33 +1597,6 @@
       user-select:text;
       -webkit-user-select:text;
     }
-    .line-preview-audio-extension-guide-title{
-      color:#ffdede;
-      font-size:12px;
-      font-weight:800;
-      margin-top:2px;
-    }
-    .line-preview-audio-extension-guide{
-      margin:0;
-      padding-left:18px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      color:#f2dada;
-      font-size:12px;
-      line-height:1.45;
-    }
-    .line-preview-audio-extension-guide li{
-      margin:0;
-    }
-    .line-preview-audio-extension-missing-links{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .line-preview-audio-extension-install-wrap{
-      margin:10px 0 24px;
-    }
     .line-preview-audio-extension-link{
       display:inline-flex;
       align-items:center;
@@ -1643,9 +1611,74 @@
       font-weight:700;
       padding:6px 10px;
       box-sizing:border-box;
+      cursor:pointer;
     }
     .line-preview-audio-extension-link:hover{
       background:#4a1b1b;
+    }
+    .line-preview-audio-extension-btn{
+      appearance:none;
+      -webkit-appearance:none;
+      font-family:inherit;
+    }
+    .line-preview-audio-extension-btn[hidden]{
+      display:none !important;
+    }
+    .line-preview-audio-extension-dialog{
+      border:1px solid #552424;
+      border-radius:12px;
+      width:min(560px, calc(100vw - 24px));
+      max-height:min(82vh, 760px);
+      padding:0;
+      background:linear-gradient(180deg, #1c1c1c 0%, #121212 100%);
+      color:#ececec;
+      box-shadow:0 26px 58px rgba(0,0,0,.65);
+    }
+    .line-preview-audio-extension-dialog::backdrop{
+      background:rgba(0,0,0,.64);
+      backdrop-filter:blur(2px);
+    }
+    .line-preview-audio-extension-dialog-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:10px 12px;
+      border-bottom:1px solid #2c2c2c;
+      background:linear-gradient(180deg, #181818 0%, #121212 100%);
+    }
+    .line-preview-audio-extension-dialog-title{
+      font-size:14px;
+      font-weight:800;
+      color:#ffdede;
+      margin:0;
+    }
+    .line-preview-audio-extension-dialog-body{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      overflow:auto;
+      max-height:calc(min(82vh, 760px) - 56px);
+      color:#e7d9d9;
+      font-size:12px;
+      line-height:1.45;
+    }
+    .line-preview-audio-extension-guide{
+      margin:0;
+      padding-left:18px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .line-preview-audio-extension-guide li{
+      margin:0;
+    }
+    .line-preview-audio-extension-dialog-links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:2px;
     }
     .line-preview-audio-style{
       display:flex;
@@ -2948,16 +2981,26 @@
         </div>
       </div>
       <div class="line-preview-audio-extension-missing" id="lpAudioExtensionMissing" hidden>
-        <div class="line-preview-audio-extension-missing-title" id="lpAudioExtMissingTitle">Extension non détectée</div>
-        <div class="line-preview-audio-extension-missing-text" id="lpAudioExtMissingText">Le système d'annonces sonores nécessite l'extension.</div>
+        <div class="line-preview-audio-extension-missing-title" id="lpAudioExtMissingTitle">Raccourcis clavier indisponibles</div>
+        <div class="line-preview-audio-extension-missing-text" id="lpAudioExtMissingText">Les annonces sonores restent utilisables dans ce panneau. Les raccourcis clavier nécessitent l'extension Chrome.</div>
         <div class="line-preview-audio-extension-missing-note">
-          <span class="lang-toggle-badge line-preview-audio-extension-missing-badge">UNIQUEMENT COMPATIBLE CHROME</span>
+          <span class="line-preview-audio-extension-missing-text" id="lpAudioExtUnsupportedHint" hidden>Ce navigateur ne supporte pas les extensions Chrome, veuillez utiliser un navigateur compatible pour utiliser les raccourcis clavier.</span>
         </div>
-        <div class="line-preview-audio-extension-missing-links line-preview-audio-extension-install-wrap">
-          <a class="line-preview-audio-extension-link" id="lpAudioExtInstallLink" href="#" target="_blank" rel="noopener">Télécharger l'extension</a>
+        <div class="line-preview-audio-extension-missing-actions">
+          <button type="button" class="line-preview-audio-extension-link line-preview-audio-extension-btn" id="lpAudioExtHowToBtn" hidden>Comment faire ?</button>
         </div>
-        <div class="line-preview-audio-extension-guide-title">Guide d'Installation :</div>
-        <ol class="line-preview-audio-extension-guide">
+      </div>
+      <dialog class="line-preview-audio-extension-dialog" id="lpAudioExtGuideDialog" aria-label="Guide d'installation extension audio">
+        <div class="line-preview-audio-extension-dialog-head">
+          <div class="line-preview-audio-extension-dialog-title">Activer les raccourcis clavier</div>
+          <button type="button" class="line-preview-close" id="lpAudioExtGuideClose" aria-label="Fermer">X</button>
+        </div>
+        <div class="line-preview-audio-extension-dialog-body">
+          <div>Téléchargez et installez l'extension pour utiliser les annonces avec les raccourcis clavier.</div>
+          <div class="line-preview-audio-extension-dialog-links">
+            <a class="line-preview-audio-extension-link" id="lpAudioExtInstallLink" href="#" target="_blank" rel="noopener">Télécharger l'extension</a>
+          </div>
+          <ol class="line-preview-audio-extension-guide">
           <li>Décompressez le fichier <span class="line-preview-audio-code-badge">.zip</span> que vous avez téléchargé</li>
           <li>Placez le dossier <span class="line-preview-audio-code-badge">idf_annonces_sonores_extension</span> dans un emplacement où vous serez sûr qu'il ne sera pas déplacé ou de le supprimé</li>
           <li>Ouvrez la page <span class="line-preview-audio-code-badge">chrome://extensions/</span></li>
@@ -2971,8 +3014,9 @@
           <span class="line-preview-audio-code-badge">Raccourcis globaux</span> dans le menu déroulant.
           </li>
           <li>Revenez ensuite ici et rechargez la page</li>
-        </ol>
-      </div>
+          </ol>
+        </div>
+      </dialog>
     </div>
   </div>
 
@@ -5799,27 +5843,98 @@
       const href = String(offsite[key] || "").trim();
       return href || "#";
     }
+    function isLinePreviewAudioExtensionBrowserSupported(){
+      const ua = String(navigator.userAgent || "");
+      if (!ua) return false;
+      const isMobile = /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(ua);
+      if (isMobile) return false;
+      const hasChromeOrChromium = /\b(Chrome|Chromium)\//i.test(ua);
+      const hasUnsupportedChromiumFork = /\b(Edg|OPR|Vivaldi|Brave|YaBrowser|SamsungBrowser|DuckDuckGo|Whale|QQBrowser|UCBrowser)\b/i.test(ua);
+      const isCriOS = /\bCriOS\b/i.test(ua);
+      const isFirefox = /\b(Firefox|FxiOS)\b/i.test(ua);
+      const isSafariOnly = /\bSafari\b/i.test(ua) && !hasChromeOrChromium && !isCriOS;
+      const brands = Array.isArray(navigator.userAgentData?.brands)
+        ? navigator.userAgentData.brands.map((b) => String(b?.brand || "").toLowerCase())
+        : [];
+      const hasChromeBrand = brands.some((b) => b.includes("google chrome") || b.includes("chromium"));
+      return (hasChromeBrand || (hasChromeOrChromium && !hasUnsupportedChromiumFork))
+        && !isCriOS
+        && !isFirefox
+        && !isSafariOnly;
+    }
+    const LINE_PREVIEW_AUDIO_EXTENSION_BROWSER_SUPPORTED = isLinePreviewAudioExtensionBrowserSupported();
     function updateLinePreviewAudioExtensionLinks(){
       const installLink = document.getElementById("lpAudioExtInstallLink");
       if (installLink) installLink.href = getLinePreviewAudioExtensionLink("extension_install");
       const keysLink = document.getElementById("lpAudioExtKeysLink");
       if (keysLink) keysLink.href = getLinePreviewAudioExtensionLink("extension_keys");
     }
+    function closeLinePreviewAudioExtensionGuideDialog(){
+      const dialog = document.getElementById("lpAudioExtGuideDialog");
+      if (!dialog || !dialog.open) return;
+      if (typeof dialog.close === "function") {
+        dialog.close();
+        return;
+      }
+      dialog.removeAttribute("open");
+    }
+    function openLinePreviewAudioExtensionGuideDialog(){
+      const dialog = document.getElementById("lpAudioExtGuideDialog");
+      if (!dialog) return;
+      if (typeof dialog.showModal === "function") {
+        if (!dialog.open) dialog.showModal();
+        return;
+      }
+      dialog.setAttribute("open", "open");
+    }
+    function bindLinePreviewAudioExtensionGuideDialog(){
+      const howToBtn = document.getElementById("lpAudioExtHowToBtn");
+      if (howToBtn && !howToBtn.dataset.boundClick) {
+        howToBtn.dataset.boundClick = "1";
+        howToBtn.addEventListener("click", () => {
+          if (!LINE_PREVIEW_AUDIO_EXTENSION_BROWSER_SUPPORTED) return;
+          openLinePreviewAudioExtensionGuideDialog();
+        });
+      }
+      const closeBtn = document.getElementById("lpAudioExtGuideClose");
+      if (closeBtn && !closeBtn.dataset.boundClick) {
+        closeBtn.dataset.boundClick = "1";
+        closeBtn.addEventListener("click", closeLinePreviewAudioExtensionGuideDialog);
+      }
+      const dialog = document.getElementById("lpAudioExtGuideDialog");
+      if (dialog && !dialog.dataset.boundEvents) {
+        dialog.dataset.boundEvents = "1";
+        dialog.addEventListener("cancel", (event) => {
+          event.preventDefault();
+          closeLinePreviewAudioExtensionGuideDialog();
+        });
+        dialog.addEventListener("click", (event) => {
+          if (event.target === dialog) closeLinePreviewAudioExtensionGuideDialog();
+        });
+      }
+    }
     function updateLinePreviewAudioExtensionState(){
+      bindLinePreviewAudioExtensionGuideDialog();
       updateLinePreviewAudioExtensionLinks();
-      const panel = getLinePreviewAudioPanel();
       const head = document.getElementById("lpAudioPanelHead");
       const main = document.getElementById("lpAudioMainContent");
       const missing = document.getElementById("lpAudioExtensionMissing");
+      const howToBtn = document.getElementById("lpAudioExtHowToBtn");
+      const unsupportedHint = document.getElementById("lpAudioExtUnsupportedHint");
       if (!main || !missing) return;
       const extensionMissing = !LINE_PREVIEW_AUDIO_EXTENSION.detected;
-      if (panel) panel.classList.toggle("is-extension-missing", extensionMissing);
+      const showUnsupportedHint = extensionMissing && !LINE_PREVIEW_AUDIO_EXTENSION_BROWSER_SUPPORTED;
+      const showHowToBtn = extensionMissing && !showUnsupportedHint;
       if (head) head.style.display = "";
-      main.style.display = extensionMissing ? "none" : "";
+      main.style.display = "";
       missing.style.display = extensionMissing ? "flex" : "none";
-      if (extensionMissing) {
-        stopLinePreviewAudioPlayback();
+      if (unsupportedHint) unsupportedHint.hidden = !showUnsupportedHint;
+      if (howToBtn) {
+        howToBtn.hidden = !showHowToBtn;
+        howToBtn.style.display = showHowToBtn ? "inline-flex" : "none";
       }
+      if (showUnsupportedHint) closeLinePreviewAudioExtensionGuideDialog();
+      if (!extensionMissing) closeLinePreviewAudioExtensionGuideDialog();
     }
     function updateLinePreviewAudioRouteSectionVisibility(){
       const routeBlock = document.getElementById("lpAudioRouteBlock");

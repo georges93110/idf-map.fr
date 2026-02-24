@@ -2,6 +2,7 @@
   const links = {
     offsite: {
       download: "https://truckymods.io/euro-truck-simulator-2/maps/ile-de-france-map",
+      download_home_fr: "",
       discord: "https://discord.gg/5xDM99G67s",
       patreon: "https://www.patreon.com/",
       dbus_world: "https://dbusworld.com/",
