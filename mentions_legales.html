@@ -154,9 +154,15 @@
         <span data-i18n="legal_hosting_site_label">Site</span>:
         <a id="legalHostingLink" class="legal-link" href="#" target="_blank" rel="noopener noreferrer">pages.github.com</a>
       </p>
+
+      <hr class="legal-sep" aria-hidden="true"/>
+
+      <h2 class="legal-section-title">Mise a jour du site</h2>
+      <p class="legal-text" id="legalLastUpdateText">Ce site a ete mis a jour le : indisponible</p>
     </section>
   </main>
 
+  <script src="last-update.js"></script>
   <script src="config/translations.js"></script>
   <script src="config/config.js"></script>
   <script src="config/site-nav.js"></script>
@@ -212,6 +218,66 @@
         attributes: true,
         attributeFilter: ["lang"]
       });
+    })();
+  </script>
+  <script>
+    (function renderLegalLastUpdate() {
+      function parseLastUpdateUtc(rawValue) {
+        const raw = String(rawValue || "").trim();
+        const parts = raw.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) UTC$/);
+        if (!parts) return null;
+        const year = Number(parts[1]);
+        const month = Number(parts[2]) - 1;
+        const day = Number(parts[3]);
+        const hour = Number(parts[4]);
+        const minute = Number(parts[5]);
+        const second = Number(parts[6]);
+        const date = new Date(Date.UTC(year, month, day, hour, minute, second));
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
+      function formatFrenchDateUtc(date) {
+        const days = [
+          "Dimanche",
+          "Lundi",
+          "Mardi",
+          "Mercredi",
+          "Jeudi",
+          "Vendredi",
+          "Samedi"
+        ];
+        const months = [
+          "Janvier",
+          "Fevrier",
+          "Mars",
+          "Avril",
+          "Mai",
+          "Juin",
+          "Juillet",
+          "Aout",
+          "Septembre",
+          "Octobre",
+          "Novembre",
+          "Decembre"
+        ];
+        const dayName = days[date.getUTCDay()];
+        const dayNumber = date.getUTCDate();
+        const monthName = months[date.getUTCMonth()];
+        const year = date.getUTCFullYear();
+        const hour = String(date.getUTCHours()).padStart(2, "0");
+        const minute = String(date.getUTCMinutes()).padStart(2, "0");
+        const second = String(date.getUTCSeconds()).padStart(2, "0");
+        return `${dayName} ${dayNumber} ${monthName} ${year} ${hour}:${minute}:${second}`;
+      }
+
+      const output = document.getElementById("legalLastUpdateText");
+      if (!output) return;
+      const parsedDate = parseLastUpdateUtc(window.LAST_UPDATE);
+      if (!parsedDate) {
+        output.textContent = "Ce site a ete mis a jour le : indisponible";
+        return;
+      }
+      output.textContent = `Ce site a ete mis a jour le : ${formatFrenchDateUtc(parsedDate)}`;
     })();
   </script>
   <script>

@@ -260,6 +260,19 @@
       stroke-linecap:round;
       stroke-linejoin:round;
     }
+    .audio-panel-icon{
+      width:27px;
+      height:27px;
+      flex:0 0 27px;
+      max-width:none;
+      max-height:none;
+      display:block;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
     .map-topbar .btn{
       background:#1a1a1a;
       border-color:#2c2c2c;
@@ -1812,6 +1825,13 @@
       color:#b9b9b9;
       font-size:13px;
     }
+    .line-preview-audio-route-empty{
+      border:1px dashed #2e2e2e;
+      border-radius:10px;
+      padding:12px;
+      text-align:center;
+      background:#161616;
+    }
     .line-preview-audio-actions{
       display:grid;
       grid-template-columns:repeat(2, minmax(0, 1fr));
@@ -2670,6 +2690,13 @@
     <div class="map-topbar-row">
       <input id="search" class="search-input" type="search" placeholder="Rechercher..." autocomplete="off" aria-label="Recherche"/>
       <div class="top-actions">
+        <button id="btnAudioPanel" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Système d'annonces sonores" title="Système d'annonces sonores">
+          <svg class="audio-panel-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M11 5 6 9H3v6h3l5 4V5z"></path>
+            <path d="M15 9a5 5 0 0 1 0 6"></path>
+            <path d="M18 6a9 9 0 0 1 0 12"></path>
+          </svg>
+        </button>
         <button id="btnDbus" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Lignes Dbus World" title="Lignes Dbus World">
           <img id="btnDbusLogo" class="dbus-icon-logo" src="map_files/0.1.5a/Overlays/bus_logo_idfm.png" alt="" aria-hidden="true"/>
         </button>
@@ -2906,13 +2933,6 @@
             <div class="line-preview-meta" id="lpRouteMeta">-</div>
           </div>
           <div class="line-preview-actions">
-            <a class="line-preview-link line-preview-audio-link" id="lpAudioLink" href="" target="_blank" rel="noopener" aria-label="Activer le système d'annonces sonores" title="Activer le système d'annonces sonores" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 5 6 9H2v6h4l5 4z"></path>
-                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-              </svg>
-            </a>
             <a class="line-preview-link" id="lpLink" href="" target="_blank" rel="noopener" hidden>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -2961,6 +2981,7 @@
             <button type="button" class="line-preview-audio-btn" id="lpAudioTerminusBtn">Annonce Destination</button>
           </div>
         </div>
+        <div class="line-preview-audio-route-empty line-preview-audio-card line-preview-audio-stop-empty" id="lpAudioNoLineHint" hidden>Aucune ligne sélectionnée</div>
         <div class="line-preview-audio-global line-preview-audio-card" id="lpAudioGlobalBlock">
           <div class="line-preview-audio-section-head">
             <div class="line-preview-audio-section-title">Annonces Globales</div>
@@ -2975,7 +2996,7 @@
           <div class="line-preview-audio-section-title">Volume</div>
           <div class="line-preview-audio-volume-row">
             <label class="line-preview-audio-volume-label" id="lpAudioVolumeLabel" for="lpAudioVolumeRange">Volume</label>
-            <input id="lpAudioVolumeRange" type="range" min="0" max="100" step="1" value="100" />
+            <input id="lpAudioVolumeRange" type="range" min="0" max="200" step="1" value="100" />
             <button type="button" class="line-preview-audio-btn line-preview-audio-volume-stop" id="lpAudioStopBtn">Stop</button>
           </div>
         </div>
@@ -3135,6 +3156,9 @@
     const stored = localStorage.getItem(DBUS_STOP_ICONS_KEY);
     return stored === "1" || stored === "true";
   })();
+  var currentSelectedKey = "";
+  var currentSelectedLineUid = "";
+  var dbusRoutesClosedByPanel = false;
   function t(key){ return (I18N[LANG] && I18N[LANG][key]) || (I18N.fr[key]||key); }
   const SITE_NAV_TREE = Array.isArray(window.SITE_NAV_TREE) && window.SITE_NAV_TREE.length
     ? window.SITE_NAV_TREE
@@ -3770,6 +3794,12 @@
       $btnDbus.setAttribute("aria-label", label);
       $btnDbus.title = label;
     }
+    const $btnAudioPanel = document.getElementById("btnAudioPanel");
+    if ($btnAudioPanel) {
+      const label = t("audio_panel_title");
+      $btnAudioPanel.setAttribute("aria-label", label);
+      $btnAudioPanel.title = label;
+    }
     updateDbusPanelTitles();
     const $dbusModeLabel = document.getElementById("dbusModeLabel");
     if ($dbusModeLabel) $dbusModeLabel.textContent = t("dbus_mode_label");
@@ -3851,6 +3881,11 @@
     if ($lpAudioPanel) $lpAudioPanel.setAttribute("aria-label", t("audio_panel_title"));
     const $lpAudioPanelTitle = document.getElementById("lpAudioPanelTitle");
     if ($lpAudioPanelTitle) $lpAudioPanelTitle.textContent = t("audio_panel_title");
+    const $lpAudioNoLineHint = document.getElementById("lpAudioNoLineHint");
+    if ($lpAudioNoLineHint) {
+      const noLineSelected = !String(currentSelectedKey || "").trim();
+      $lpAudioNoLineHint.textContent = noLineSelected ? t("audio_no_line_selected") : t("audio_line_unavailable");
+    }
     const $lpAudioPanelClose = document.getElementById("lpAudioPanelClose");
     if ($lpAudioPanelClose) {
       $lpAudioPanelClose.setAttribute("aria-label", t("close"));
@@ -4756,6 +4791,7 @@
     const cityMarkers=[],searchIndex=[];
     let selectedCityMarker = null;
 
+    const $btnAudioPanel = document.getElementById("btnAudioPanel");
     const $btnDbus = document.getElementById("btnDbus");
     const $panelDbus = document.getElementById("dbusPanel");
     const $dbusList = document.getElementById("dbusList");
@@ -5435,6 +5471,7 @@
 
     const dbusRoot = `${DBUS_BASE}/IDF MAP`;
     const DBUS_FIS_ROOT = `${MAP_FILES_ROOT}/dbus_fis`;
+    const DBUS_FIS_DOSSIERS_ROOT = `${DBUS_FIS_ROOT}/dossiers`;
     const DBUS_FIS_GLOBAL_ROOT = `${DBUS_FIS_ROOT}/global`;
     const dbusLayers = L.layerGroup().addTo(map);
     const dbusStopsLayer = L.layerGroup().addTo(map);
@@ -5443,14 +5480,23 @@
     let linePreviewAudioCheckToken = 0;
     let dbusFisRootLineFolderTokensPromise = null;
     let DBUS_FIS_INDEX = null;
-    const LINE_PREVIEW_AUDIO_STATE = { folderPath: "", stopNames: [], currentIndex: 0, enabled: false, volume: 1, voiceStyles: [], selectedVoiceIndex: 0 };
+    const LINE_PREVIEW_AUDIO_STATE = { folderPath: "", stopNames: [], currentIndex: 0, enabled: false, volume: 1, voiceStyles: [], selectedVoiceIndex: 0, departureClipName: "Départ" };
     const LINE_PREVIEW_AUDIO_GLOBAL_STATE = { folders: [], selectedFolderPath: "", loadPromise: null, profile: "ratp", typeTokens: [] };
-    const LINE_PREVIEW_AUDIO_PLAYBACK = { token: 0, audio: null, isPlaying: false, lockNavigation: false, volumeMultiplier: 1 };
+    const LINE_PREVIEW_AUDIO_PLAYBACK = {
+      token: 0,
+      audio: null,
+      isPlaying: false,
+      lockNavigation: false,
+      volumeMultiplier: 1,
+      audioCtx: null,
+      sourceNode: null,
+      sourceAudio: null,
+      gainNode: null
+    };
     const LINE_PREVIEW_AUDIO_EXTENSION = { nonce: "", checked: false, detected: false, version: "" };
     const LINE_PREVIEW_AUDIO_DRAG = { initialized: false };
-    let currentSelectedKey = "";
-    let currentSelectedLineUid = "";
-    let dbusRoutesClosedByPanel = false;
+    const LINE_PREVIEW_AUDIO_POPUP = { win: null, syncTimer: null, htmlCache: "", keepOnTop: true, lastFocusAt: 0, bounds: null, boundsLoaded: false };
+    const LINE_PREVIEW_AUDIO_POPUP_BOUNDS_STORAGE_KEY = "idf_map_audio_popup_bounds_v1";
     const DBUS_MODES = { LINES: "lines", LENGTH: "length", DEPARTS: "departures" };
     let currentDbusMode = DBUS_MODES.LINES;
     let dbusDisplayMode = "normal";
@@ -5698,6 +5744,103 @@
         .replace(/\s+/g, " ")
         .trim();
     }
+    function getDbusFisLineCode(line, route){
+      const parsed = String(parseRouteName(route?.name || "").lineNumber || "").trim();
+      const fallback = String(getLineNumber(line, route) || line?.number || "").trim();
+      const raw = (parsed || fallback)
+        .replace(/\s+/g, "")
+        .replace(/[^0-9a-z_\-]/gi, "")
+        .trim();
+      return raw;
+    }
+    function getLinePreviewAudioDepartureClipCandidates(line, route){
+      const rawLineLabel = String(getDbusFisLineFolderName(line, route) || "").replace(/\s+/g, " ").trim();
+      const lineCode = getDbusFisLineCode(line, route);
+      const routeName = String(route?.name || "").trim();
+      const parsedLineNumber = String(parseRouteName(routeName || "").lineNumber || "").trim();
+      const fallbackLineNumber = String(getLineNumber(line, route) || line?.number || "").trim();
+      const compactToken = (value) => String(value || "").replace(/\s+/g, "").trim();
+      const lineToken = parsedLineNumber || fallbackLineNumber;
+      const candidates = [];
+      const pushSpecial = (value, prefix = "") => {
+        const suffix = compactToken(value);
+        if (!suffix) return;
+        candidates.push(`Départ_${prefix}${suffix}`);
+        candidates.push(`Depart_${prefix}${suffix}`);
+      };
+      const expressLike =
+        isExpress(line) ||
+        isExpressNumber(parsedLineNumber) ||
+        isExpressNumber(fallbackLineNumber) ||
+        /^express\b/i.test(routeName);
+      if (expressLike) {
+        const expressMatch =
+          String(lineToken || "").match(/^express\s*([0-9a-z]+)/i) ||
+          routeName.match(/\bexpress\s*([0-9a-z]+)/i) ||
+          String(fallbackLineNumber || "").match(/^express\s*([0-9a-z]+)/i);
+        let expressSuffix = String(expressMatch?.[1] || "").trim();
+        if (!expressSuffix && /^[0-9a-z]+$/i.test(compactToken(lineToken))) {
+          expressSuffix = compactToken(lineToken);
+        }
+        if (expressSuffix) pushSpecial(expressSuffix, "Express");
+      }
+      const noctLike = isNoctilien2(lineToken) || isNoctilien2(fallbackLineNumber) || isNoctilien2(line);
+      if (noctLike) {
+        const rawNoct =
+          (isNoctilien2(lineToken) ? lineToken : "") ||
+          (isNoctilien2(fallbackLineNumber) ? fallbackLineNumber : "") ||
+          String(line?.number || "");
+        const noctMatch = String(rawNoct || "").trim().toUpperCase().match(/^N\s*([0-9A-Z]+)/);
+        const noctSuffix = String(noctMatch?.[1] || "").trim();
+        if (noctSuffix) pushSpecial(`N${noctSuffix}`);
+      }
+      const titusMatch =
+        String(lineToken || "").match(/^titus\s*([0-9a-z]+)/i) ||
+        String(fallbackLineNumber || "").match(/^titus\s*([0-9a-z]+)/i) ||
+        routeName.match(/\btitus\s*([0-9a-z]+)/i) ||
+        String(line?.number || "").match(/^titus\s*([0-9a-z]+)/i);
+      if (titusMatch?.[1]) {
+        pushSpecial(String(titusMatch[1] || "").trim(), "Titus");
+      }
+      if (rawLineLabel) {
+        candidates.push(`Départ_${rawLineLabel}`);
+        candidates.push(`Depart_${rawLineLabel}`);
+      }
+      if (lineCode) {
+        candidates.push(`Départ_${lineCode}`);
+        candidates.push(`Depart_${lineCode}`);
+      }
+      candidates.push("Départ");
+      candidates.push("Depart");
+      const out = [];
+      const seen = new Set();
+      candidates.forEach((name) => {
+        const text = String(name || "").trim();
+        if (!text) return;
+        const key = normalizeAudioNameToken(text);
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        out.push(text);
+      });
+      return out;
+    }
+    function resolveLinePreviewAudioDepartureClipName(files, line, route){
+      const names = Array.isArray(files) ? files : [];
+      const byToken = new Map();
+      names.forEach((name) => {
+        const token = normalizeAudioNameToken(name);
+        if (!token || byToken.has(token)) return;
+        byToken.set(token, String(name || "").trim());
+      });
+      const candidates = getLinePreviewAudioDepartureClipCandidates(line, route);
+      for (const candidate of candidates) {
+        const token = normalizeAudioNameToken(candidate);
+        if (!token) continue;
+        const exact = byToken.get(token);
+        if (exact) return exact;
+      }
+      return "";
+    }
     function escapeRegExp(value){
       return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
@@ -5741,6 +5884,27 @@
       });
       return out;
     }
+    async function listDbusFisRouteStyleFoldersFromDossiers(){
+      const rootPath = ensureTrailingSlash(DBUS_FIS_DOSSIERS_ROOT);
+      const folders = [];
+      const rootClips = await listDirectoryMp3BaseNames(rootPath);
+      if (rootClips.length) {
+        folders.push({ name: ".", path: rootPath, files: rootClips });
+      }
+      const subfolders = await listDirectorySubfolders(rootPath);
+      for (const subfolderName of subfolders) {
+        const folderPath = ensureTrailingSlash(joinEncodedPath(rootPath, subfolderName));
+        const files = await listDirectoryMp3BaseNames(folderPath);
+        if (!files.length) continue;
+        folders.push({ name: subfolderName, path: folderPath, files });
+      }
+      if (folders.length > 1) {
+        const rootFirst = folders[0]?.name === "." ? folders.shift() : null;
+        folders.sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || ""), "fr", { sensitivity: "base" }));
+        if (rootFirst) folders.unshift(rootFirst);
+      }
+      return folders;
+    }
     async function getDbusFisRootLineFolderTokens(){
       if (dbusFisRootLineFolderTokensPromise) return dbusFisRootLineFolderTokensPromise;
       dbusFisRootLineFolderTokensPromise = (async () => {
@@ -5766,11 +5930,14 @@
       if (!known.size) return true;
       return known.has(token);
     }
-    function collectRequiredAudioTokensForRoute(route){
+    function collectRequiredAudioTokensForRoute(route, { includeDeparture = true, departureLabel = "Départ" } = {}){
       const required = new Set([
-        normalizeAudioNameToken("Départ"),
         normalizeAudioNameToken("Terminus")
       ]);
+      if (includeDeparture) {
+        const departureToken = normalizeAudioNameToken(departureLabel);
+        if (departureToken) required.add(departureToken);
+      }
       (route?.stops || []).forEach((stopRef) => {
         const stopName = String(DBUS_STOPS.get(stopRef?.uid)?.name || "").trim();
         if (!stopName) return;
@@ -5780,7 +5947,7 @@
       });
       return required;
     }
-    function collectRequiredAudioTokenLabelsForRoute(route){
+    function collectRequiredAudioTokenLabelsForRoute(route, { includeDeparture = true, departureLabel = "Départ" } = {}){
       const labelsByToken = new Map();
       const pushLabel = (label) => {
         const text = String(label || "").trim();
@@ -5789,7 +5956,7 @@
         if (!token || labelsByToken.has(token)) return;
         labelsByToken.set(token, text);
       };
-      pushLabel("Départ");
+      if (includeDeparture) pushLabel(departureLabel);
       pushLabel("Terminus");
       (route?.stops || []).forEach((stopRef) => {
         const stopName = String(DBUS_STOPS.get(stopRef?.uid)?.name || "").trim();
@@ -5819,6 +5986,409 @@
     function getLinePreviewAudioPanel(){
       return document.getElementById("lpAudioPanel");
     }
+    function getLinePreviewAudioPopupWindow(){
+      const win = LINE_PREVIEW_AUDIO_POPUP.win;
+      if (!win || win.closed) return null;
+      return win;
+    }
+    function bringLinePreviewAudioPopupToFront({ force = false } = {}){
+      if (!LINE_PREVIEW_AUDIO_POPUP.keepOnTop) return false;
+      const win = getLinePreviewAudioPopupWindow();
+      if (!win) return false;
+      if (!isLinePreviewAudioPanelOpen()) return false;
+      const now = Date.now();
+      const lastFocusAt = Number(LINE_PREVIEW_AUDIO_POPUP.lastFocusAt) || 0;
+      if (!force && (now - lastFocusAt) < 700) return false;
+      LINE_PREVIEW_AUDIO_POPUP.lastFocusAt = now;
+      try {
+        win.focus();
+        return true;
+      } catch {}
+      return false;
+    }
+    function normalizeLinePreviewAudioPopupBounds(bounds){
+      const width = Math.round(Number(bounds?.width) || 0);
+      const height = Math.round(Number(bounds?.height) || 0);
+      const left = Math.round(Number(bounds?.left) || 0);
+      const top = Math.round(Number(bounds?.top) || 0);
+      if (!Number.isFinite(width) || !Number.isFinite(height) || !Number.isFinite(left) || !Number.isFinite(top)) return null;
+      if (width < 200 || height < 200) return null;
+      const screenLeft = Math.round(Number(bounds?.screenLeft) || 0);
+      const screenTop = Math.round(Number(bounds?.screenTop) || 0);
+      const screenWidth = Math.round(Number(bounds?.screenWidth) || 0);
+      const screenHeight = Math.round(Number(bounds?.screenHeight) || 0);
+      return {
+        width,
+        height,
+        left,
+        top,
+        screenLeft: Number.isFinite(screenLeft) ? screenLeft : 0,
+        screenTop: Number.isFinite(screenTop) ? screenTop : 0,
+        screenWidth: Number.isFinite(screenWidth) && screenWidth > 0 ? screenWidth : 0,
+        screenHeight: Number.isFinite(screenHeight) && screenHeight > 0 ? screenHeight : 0
+      };
+    }
+    function loadLinePreviewAudioPopupBounds(){
+      if (LINE_PREVIEW_AUDIO_POPUP.boundsLoaded) return LINE_PREVIEW_AUDIO_POPUP.bounds;
+      LINE_PREVIEW_AUDIO_POPUP.boundsLoaded = true;
+      LINE_PREVIEW_AUDIO_POPUP.bounds = null;
+      try {
+        const raw = localStorage.getItem(LINE_PREVIEW_AUDIO_POPUP_BOUNDS_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        const normalized = normalizeLinePreviewAudioPopupBounds(parsed);
+        if (!normalized) return null;
+        LINE_PREVIEW_AUDIO_POPUP.bounds = normalized;
+      } catch {}
+      return LINE_PREVIEW_AUDIO_POPUP.bounds;
+    }
+    function saveLinePreviewAudioPopupBounds(bounds){
+      const normalized = normalizeLinePreviewAudioPopupBounds(bounds);
+      if (!normalized) return;
+      LINE_PREVIEW_AUDIO_POPUP.boundsLoaded = true;
+      LINE_PREVIEW_AUDIO_POPUP.bounds = normalized;
+      try {
+        localStorage.setItem(LINE_PREVIEW_AUDIO_POPUP_BOUNDS_STORAGE_KEY, JSON.stringify(normalized));
+      } catch {}
+    }
+    function captureLinePreviewAudioPopupWindowBounds(win){
+      if (!win || win.closed) return null;
+      const width = Math.round(Number(win.outerWidth) || Number(win.innerWidth) || 0);
+      const height = Math.round(Number(win.outerHeight) || Number(win.innerHeight) || 0);
+      const left = Math.round(Number(win.screenX) || Number(win.screenLeft) || 0);
+      const top = Math.round(Number(win.screenY) || Number(win.screenTop) || 0);
+      const popupScreen = win.screen || {};
+      const screenLeft = Math.round(Number(popupScreen.availLeft) || Number(popupScreen.left) || 0);
+      const screenTop = Math.round(Number(popupScreen.availTop) || Number(popupScreen.top) || 0);
+      const screenWidth = Math.round(Number(popupScreen.availWidth) || Number(popupScreen.width) || 0);
+      const screenHeight = Math.round(Number(popupScreen.availHeight) || Number(popupScreen.height) || 0);
+      return normalizeLinePreviewAudioPopupBounds({
+        width,
+        height,
+        left,
+        top,
+        screenLeft,
+        screenTop,
+        screenWidth,
+        screenHeight
+      });
+    }
+    function persistLinePreviewAudioPopupWindowBounds(win){
+      const bounds = captureLinePreviewAudioPopupWindowBounds(win);
+      if (!bounds) return;
+      saveLinePreviewAudioPopupBounds(bounds);
+    }
+    function stopLinePreviewAudioPopupSync(){
+      if (!LINE_PREVIEW_AUDIO_POPUP.syncTimer) return;
+      clearInterval(LINE_PREVIEW_AUDIO_POPUP.syncTimer);
+      LINE_PREVIEW_AUDIO_POPUP.syncTimer = null;
+    }
+    function setLinePreviewAudioMainPanelHidden(hidden){
+      const panel = getLinePreviewAudioPanel();
+      if (!panel) return;
+      if (hidden) {
+        if (panel.dataset.popupHostHidden === "1") return;
+        panel.dataset.popupHostHidden = "1";
+        panel.dataset.popupPrevVisibility = panel.style.visibility || "";
+        panel.dataset.popupPrevPointerEvents = panel.style.pointerEvents || "";
+        panel.dataset.popupPrevLeft = panel.style.left || "";
+        panel.dataset.popupPrevTop = panel.style.top || "";
+        panel.style.visibility = "hidden";
+        panel.style.pointerEvents = "none";
+        panel.style.left = "-10000px";
+        panel.style.top = "-10000px";
+        return;
+      }
+      if (panel.dataset.popupHostHidden !== "1") return;
+      panel.style.visibility = panel.dataset.popupPrevVisibility || "";
+      panel.style.pointerEvents = panel.dataset.popupPrevPointerEvents || "";
+      panel.style.left = panel.dataset.popupPrevLeft || "";
+      panel.style.top = panel.dataset.popupPrevTop || "";
+      delete panel.dataset.popupHostHidden;
+      delete panel.dataset.popupPrevVisibility;
+      delete panel.dataset.popupPrevPointerEvents;
+      delete panel.dataset.popupPrevLeft;
+      delete panel.dataset.popupPrevTop;
+    }
+    function buildLinePreviewAudioPopupShell(win){
+      const doc = win.document;
+      doc.open();
+      doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="lpAudioPopupRoot"></div>');
+      doc.close();
+      doc.title = "Systeme annonces sonores";
+      doc.documentElement.setAttribute("lang", String(document.documentElement.getAttribute("lang") || "fr"));
+
+      const base = doc.createElement("base");
+      base.href = String(location.href || "");
+      doc.head.appendChild(base);
+
+      const sourceStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
+      sourceStyles.forEach((node) => {
+        try {
+          doc.head.appendChild(node.cloneNode(true));
+        } catch {}
+      });
+
+      const localStyle = doc.createElement("style");
+      localStyle.textContent = [
+        "html, body { margin: 0; padding: 0; min-height: 100%; background: #0b0b0b; }",
+        "#lpAudioPopupRoot { padding: 8px; box-sizing: border-box; }",
+        "#lpAudioPopupRoot #lpAudioPanel {",
+        "  position: static !important;",
+        "  left: auto !important;",
+        "  top: auto !important;",
+        "  right: auto !important;",
+        "  bottom: auto !important;",
+        "  width: min(720px, calc(100vw - 16px)) !important;",
+        "  max-width: calc(100vw - 16px) !important;",
+        "  margin: 0 auto !important;",
+        "  display: block !important;",
+        "  z-index: 1 !important;",
+        "}"
+      ].join("\n");
+      doc.head.appendChild(localStyle);
+    }
+    function dispatchInputEvent(target, type){
+      if (!target) return;
+      target.dispatchEvent(new Event(type, { bubbles: true }));
+    }
+    function forwardLinePreviewAudioPopupClick(control){
+      if (!control) return;
+      if (control.closest("#lpAudioGlobalButtons")) {
+        const parent = control.parentElement;
+        const popupButtons = parent ? Array.from(parent.querySelectorAll(".line-preview-audio-btn")) : [];
+        const idx = popupButtons.indexOf(control);
+        if (idx < 0) return;
+        const mainButtons = Array.from(document.querySelectorAll("#lpAudioGlobalButtons .line-preview-audio-btn"));
+        const mainBtn = mainButtons[idx];
+        if (mainBtn) mainBtn.click();
+        return;
+      }
+      const id = String(control.id || "").trim();
+      if (!id) return;
+      const mainControl = document.getElementById(id);
+      if (!mainControl) return;
+      if (typeof mainControl.click === "function") mainControl.click();
+    }
+    function forwardLinePreviewAudioPopupInput(control, type){
+      if (!control) return;
+      const id = String(control.id || "").trim();
+      if (!id) return;
+      if (!["lpAudioStyleSelect", "lpAudioGlobalFolderSelect", "lpAudioVolumeRange"].includes(id)) return;
+      const mainControl = document.getElementById(id);
+      if (!mainControl) return;
+      mainControl.value = String(control.value || "");
+      dispatchInputEvent(mainControl, type);
+    }
+    function bindLinePreviewAudioPopupEvents(win){
+      const doc = win.document;
+      if (!doc || !doc.documentElement) return;
+      if (doc.documentElement.dataset.audioPopupBound === "1") return;
+      doc.documentElement.dataset.audioPopupBound = "1";
+
+      doc.addEventListener("click", (event) => {
+        const target = event.target;
+        const control = target && typeof target.closest === "function" ? target.closest("button, a") : null;
+        if (!control) return;
+        event.preventDefault();
+        forwardLinePreviewAudioPopupClick(control);
+      });
+
+      doc.addEventListener("change", (event) => {
+        const control = event.target;
+        if (!(control instanceof win.HTMLElement)) return;
+        forwardLinePreviewAudioPopupInput(control, "change");
+      });
+
+      doc.addEventListener("input", (event) => {
+        const control = event.target;
+        if (!(control instanceof win.HTMLElement)) return;
+        forwardLinePreviewAudioPopupInput(control, "input");
+      });
+      if (!win.__lpAudioBoundsBound) {
+        win.__lpAudioBoundsBound = true;
+        win.addEventListener("beforeunload", () => {
+          persistLinePreviewAudioPopupWindowBounds(win);
+        });
+        win.addEventListener("pagehide", () => {
+          persistLinePreviewAudioPopupWindowBounds(win);
+        });
+      }
+      if (!win.__lpAudioKeepOnTopBound) {
+        win.__lpAudioKeepOnTopBound = true;
+        win.addEventListener("blur", () => {
+          if (!LINE_PREVIEW_AUDIO_POPUP.keepOnTop) return;
+          setTimeout(() => {
+            bringLinePreviewAudioPopupToFront({ force: true });
+          }, 40);
+        });
+      }
+    }
+    function syncLinePreviewAudioPopupFromMain(){
+      const win = getLinePreviewAudioPopupWindow();
+      if (!win) return;
+      const panel = getLinePreviewAudioPanel();
+      if (!panel) return;
+
+      let popupDoc = null;
+      try { popupDoc = win.document; } catch { return; }
+      if (!popupDoc || !popupDoc.body) return;
+
+      const root = popupDoc.getElementById("lpAudioPopupRoot");
+      if (!root) return;
+      let popupPanel = popupDoc.getElementById("lpAudioPanel");
+      if (!popupPanel) {
+        popupPanel = panel.cloneNode(true);
+        root.innerHTML = "";
+        root.appendChild(popupPanel);
+        LINE_PREVIEW_AUDIO_POPUP.htmlCache = "";
+      }
+
+      const nextHtml = String(panel.innerHTML || "");
+      if (LINE_PREVIEW_AUDIO_POPUP.htmlCache !== nextHtml) {
+        popupPanel.innerHTML = nextHtml;
+        LINE_PREVIEW_AUDIO_POPUP.htmlCache = nextHtml;
+      }
+      popupPanel.className = panel.className;
+      popupPanel.classList.add("is-open");
+      popupPanel.setAttribute("aria-hidden", "false");
+      popupPanel.style.display = "block";
+      popupPanel.style.visibility = "visible";
+      popupPanel.style.pointerEvents = "auto";
+
+      ["lpAudioStyleSelect", "lpAudioGlobalFolderSelect", "lpAudioVolumeRange"].forEach((id) => {
+        const source = document.getElementById(id);
+        const target = popupDoc.getElementById(id);
+        if (!source || !target) return;
+        const value = String(source.value || "");
+        if (String(target.value || "") !== value) target.value = value;
+      });
+    }
+    function teardownLinePreviewAudioPopup(options = {}){
+      const closeWindow = !!options.closeWindow;
+      stopLinePreviewAudioPopupSync();
+      const win = getLinePreviewAudioPopupWindow();
+      persistLinePreviewAudioPopupWindowBounds(win);
+      LINE_PREVIEW_AUDIO_POPUP.htmlCache = "";
+      LINE_PREVIEW_AUDIO_POPUP.lastFocusAt = 0;
+      LINE_PREVIEW_AUDIO_POPUP.win = null;
+      setLinePreviewAudioMainPanelHidden(false);
+      if (closeWindow && win) {
+        try { win.close(); } catch {}
+      }
+    }
+    function closeLinePreviewAudioPopupForHostShutdown(){
+      stopLinePreviewAudioPopupSync();
+      const win = getLinePreviewAudioPopupWindow();
+      persistLinePreviewAudioPopupWindowBounds(win);
+      LINE_PREVIEW_AUDIO_POPUP.win = null;
+      LINE_PREVIEW_AUDIO_POPUP.htmlCache = "";
+      LINE_PREVIEW_AUDIO_POPUP.lastFocusAt = 0;
+      if (win) {
+        try { win.close(); } catch {}
+      }
+    }
+    function startLinePreviewAudioPopupSync(){
+      stopLinePreviewAudioPopupSync();
+      LINE_PREVIEW_AUDIO_POPUP.syncTimer = setInterval(() => {
+        const win = getLinePreviewAudioPopupWindow();
+        if (!win) {
+          closeLinePreviewAudioPanel({ stopPlayback: false });
+          return;
+        }
+        if (!isLinePreviewAudioPanelOpen()) {
+          teardownLinePreviewAudioPopup({ closeWindow: true });
+          return;
+        }
+        syncLinePreviewAudioPopupFromMain();
+        bringLinePreviewAudioPopupToFront();
+      }, 160);
+    }
+    function getLinePreviewAudioPopupWindowMetrics(){
+      const screenObj = window.screen || {};
+      const availableWidth = Math.max(320, Number(screenObj.availWidth) || Number(window.innerWidth) || 1280);
+      const availableHeight = Math.max(320, Number(screenObj.availHeight) || Number(window.innerHeight) || 900);
+      const widthCap = Math.max(280, availableWidth - 24);
+      const heightCap = Math.max(280, availableHeight - 24);
+      const stored = loadLinePreviewAudioPopupBounds();
+      const defaultWidth = Math.min(widthCap, Math.max(320, Math.min(980, Math.round(availableWidth * 0.45))));
+      const defaultHeight = Math.min(heightCap, Math.max(420, Math.min(1040, Math.round(availableHeight * 0.88))));
+      const width = stored
+        ? Math.min(widthCap, Math.max(320, Math.round(Number(stored.width) || defaultWidth)))
+        : defaultWidth;
+      const height = stored
+        ? Math.min(heightCap, Math.max(420, Math.round(Number(stored.height) || defaultHeight)))
+        : defaultHeight;
+      const storedLeft = Math.round(Number(stored?.left));
+      const storedTop = Math.round(Number(stored?.top));
+      const left = Number.isFinite(storedLeft)
+        ? Math.max(-100000, Math.min(100000, storedLeft))
+        : Math.round((availableWidth - width) / 2);
+      const top = Number.isFinite(storedTop)
+        ? Math.max(-100000, Math.min(100000, storedTop))
+        : Math.round((availableHeight - height) / 2);
+      return { width, height, left, top };
+    }
+    function applyLinePreviewAudioPopupWindowMetrics(win, { recenter = false } = {}){
+      if (!win || win.closed) return;
+      const metrics = getLinePreviewAudioPopupWindowMetrics();
+      try { win.resizeTo(metrics.width, metrics.height); } catch {}
+      if (recenter) {
+        try { win.moveTo(metrics.left, metrics.top); } catch {}
+      }
+    }
+    function openLinePreviewAudioPopup(){
+      const existing = getLinePreviewAudioPopupWindow();
+      if (existing) {
+        applyLinePreviewAudioPopupWindowMetrics(existing);
+        setLinePreviewAudioMainPanelHidden(true);
+        syncLinePreviewAudioPopupFromMain();
+        startLinePreviewAudioPopupSync();
+        bringLinePreviewAudioPopupToFront({ force: true });
+        return true;
+      }
+      const metrics = getLinePreviewAudioPopupWindowMetrics();
+      const features = [
+        "popup=yes",
+        "resizable=yes",
+        "scrollbars=yes",
+        `width=${metrics.width}`,
+        `height=${metrics.height}`,
+        `left=${metrics.left}`,
+        `top=${metrics.top}`
+      ].join(",");
+      const win = window.open("", "idfMapAudioPanelPopup", features);
+      if (!win) return false;
+      LINE_PREVIEW_AUDIO_POPUP.win = win;
+      buildLinePreviewAudioPopupShell(win);
+      bindLinePreviewAudioPopupEvents(win);
+      applyLinePreviewAudioPopupWindowMetrics(win, { recenter: true });
+      setLinePreviewAudioMainPanelHidden(true);
+      syncLinePreviewAudioPopupFromMain();
+      startLinePreviewAudioPopupSync();
+      bringLinePreviewAudioPopupToFront({ force: true });
+      return true;
+    }
+    window.addEventListener("resize", () => {
+      const win = getLinePreviewAudioPopupWindow();
+      if (!win) return;
+      applyLinePreviewAudioPopupWindowMetrics(win);
+    });
+    window.addEventListener("focus", () => {
+      bringLinePreviewAudioPopupToFront({ force: true });
+    });
+    window.addEventListener("pointerdown", () => {
+      bringLinePreviewAudioPopupToFront();
+    });
+    window.addEventListener("keydown", () => {
+      bringLinePreviewAudioPopupToFront();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "visible") return;
+      bringLinePreviewAudioPopupToFront({ force: true });
+    });
+    window.addEventListener("beforeunload", closeLinePreviewAudioPopupForHostShutdown);
+    window.addEventListener("pagehide", closeLinePreviewAudioPopupForHostShutdown);
     function parseLinePreviewAudioStyleMeta(rawName){
       const name = String(rawName || "").trim();
       if (!name || name === ".") {
@@ -5938,8 +6508,16 @@
     }
     function updateLinePreviewAudioRouteSectionVisibility(){
       const routeBlock = document.getElementById("lpAudioRouteBlock");
+      const noLineHint = document.getElementById("lpAudioNoLineHint");
       if (!routeBlock) return;
-      routeBlock.style.display = LINE_PREVIEW_AUDIO_STATE.enabled ? "" : "none";
+      const hasRouteAudio = !!LINE_PREVIEW_AUDIO_STATE.enabled;
+      routeBlock.style.display = hasRouteAudio ? "" : "none";
+      if (noLineHint) {
+        const noLineSelected = !String(currentSelectedKey || "").trim();
+        noLineHint.textContent = noLineSelected ? t("audio_no_line_selected") : t("audio_line_unavailable");
+        noLineHint.hidden = hasRouteAudio;
+        noLineHint.style.display = hasRouteAudio ? "none" : "";
+      }
     }
     function linePreviewAudioStyleDisplayName(rawName){
       return parseLinePreviewAudioStyleMeta(rawName).displayName;
@@ -5991,6 +6569,7 @@
       if (idx < 0) return;
       LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = idx;
       LINE_PREVIEW_AUDIO_STATE.folderPath = ensureTrailingSlash(String(styles[idx]?.path || ""));
+      LINE_PREVIEW_AUDIO_STATE.departureClipName = String(styles[idx]?.departureClipName || "Départ").trim() || "Départ";
       if (stopPlayback) stopLinePreviewAudioPlayback();
       updateLinePreviewAudioStyleSelect();
       updateLinePreviewAudioButtonsState();
@@ -6191,8 +6770,12 @@
       if (profile === "neutral") return !isRatp && !isFlix;
       return isRatp;
     }
+    function shouldFilterLinePreviewAudioGlobalsBySelectedLine(){
+      return !!String(currentSelectedKey || "").trim();
+    }
     function getLinePreviewAudioGlobalAvailableFolders(folders){
       const list = Array.isArray(folders) ? folders : [];
+      if (!shouldFilterLinePreviewAudioGlobalsBySelectedLine()) return list;
       const allowedTypes = new Set(
         (Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens : [])
           .map((t) => String(t || "").trim())
@@ -6207,13 +6790,14 @@
       });
     }
     function getLinePreviewAudioGlobalPlayableClips(folder){
+      const clipsRaw = Array.isArray(folder?.clips) ? folder.clips : [];
+      if (!shouldFilterLinePreviewAudioGlobalsBySelectedLine()) return clipsRaw;
       const allowedTypes = new Set(
         (Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens : [])
           .map((t) => String(t || "").trim())
           .filter(Boolean)
       );
       const folderType = parseLinePreviewAudioGlobalFolderMeta(folder?.name || "").typeToken;
-      const clipsRaw = Array.isArray(folder?.clips) ? folder.clips : [];
       return clipsRaw.filter((clipName) => {
         if (!allowedTypes.size) return true;
         if (folderType) return allowedTypes.has(folderType);
@@ -6379,23 +6963,89 @@
     function getLinePreviewAudioVolume(){
       const raw = Number(LINE_PREVIEW_AUDIO_STATE.volume);
       if (!Number.isFinite(raw)) return 1;
-      return Math.max(0, Math.min(1, raw));
+      return Math.max(0, Math.min(2, raw));
+    }
+    function ensureLinePreviewAudioContext(){
+      const Ctx = globalThis.AudioContext || globalThis.webkitAudioContext;
+      if (!Ctx) return null;
+      let ctx = LINE_PREVIEW_AUDIO_PLAYBACK.audioCtx;
+      if (!ctx) {
+        try { ctx = new Ctx(); } catch { return null; }
+        LINE_PREVIEW_AUDIO_PLAYBACK.audioCtx = ctx;
+      }
+      try {
+        if (ctx.state === "suspended" && typeof ctx.resume === "function") {
+          ctx.resume().catch(() => {});
+        }
+      } catch {}
+      return ctx;
+    }
+    function clearLinePreviewAudioGainRouting(){
+      try { LINE_PREVIEW_AUDIO_PLAYBACK.sourceNode?.disconnect(); } catch {}
+      try { LINE_PREVIEW_AUDIO_PLAYBACK.gainNode?.disconnect(); } catch {}
+      LINE_PREVIEW_AUDIO_PLAYBACK.sourceNode = null;
+      LINE_PREVIEW_AUDIO_PLAYBACK.sourceAudio = null;
+      LINE_PREVIEW_AUDIO_PLAYBACK.gainNode = null;
+    }
+    function ensureLinePreviewAudioGainRouting(audio){
+      if (!audio) return false;
+      if (
+        LINE_PREVIEW_AUDIO_PLAYBACK.sourceAudio === audio
+        && LINE_PREVIEW_AUDIO_PLAYBACK.sourceNode
+        && LINE_PREVIEW_AUDIO_PLAYBACK.gainNode
+      ) {
+        return true;
+      }
+      const ctx = ensureLinePreviewAudioContext();
+      if (!ctx) return false;
+      clearLinePreviewAudioGainRouting();
+      let source = null;
+      let gainNode = null;
+      try {
+        source = ctx.createMediaElementSource(audio);
+        gainNode = ctx.createGain();
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+      } catch {
+        try { source?.disconnect(); } catch {}
+        try { gainNode?.disconnect(); } catch {}
+        clearLinePreviewAudioGainRouting();
+        return false;
+      }
+      LINE_PREVIEW_AUDIO_PLAYBACK.sourceNode = source;
+      LINE_PREVIEW_AUDIO_PLAYBACK.sourceAudio = audio;
+      LINE_PREVIEW_AUDIO_PLAYBACK.gainNode = gainNode;
+      return true;
+    }
+    function applyLinePreviewAudioVolumeToActivePlayback(){
+      const active = LINE_PREVIEW_AUDIO_PLAYBACK.audio;
+      if (!active) return;
+      const baseVolume = getLinePreviewAudioVolume();
+      const mul = Number.isFinite(Number(LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier))
+        ? Number(LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier)
+        : 1;
+      const gainValue = Math.max(0, baseVolume * Math.max(0, Math.min(1, mul)));
+      if (gainValue > 1 && ensureLinePreviewAudioGainRouting(active)) {
+        active.volume = 1;
+        if (LINE_PREVIEW_AUDIO_PLAYBACK.gainNode) {
+          LINE_PREVIEW_AUDIO_PLAYBACK.gainNode.gain.value = gainValue;
+        }
+        return;
+      }
+      clearLinePreviewAudioGainRouting();
+      active.volume = Math.max(0, Math.min(1, gainValue));
     }
     function setLinePreviewAudioVolume(volume){
       const parsed = Number(volume);
       const safe = Number.isFinite(parsed) ? parsed : 1;
-      const clamped = Math.max(0, Math.min(1, safe));
+      const clamped = Math.max(0, Math.min(2, safe));
       LINE_PREVIEW_AUDIO_STATE.volume = clamped;
       const slider = document.getElementById("lpAudioVolumeRange");
       if (slider) {
         const sliderValue = String(Math.round(clamped * 100));
         if (slider.value !== sliderValue) slider.value = sliderValue;
       }
-      const active = LINE_PREVIEW_AUDIO_PLAYBACK.audio;
-      if (active) {
-        const mul = Number.isFinite(Number(LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier)) ? Number(LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier) : 1;
-        active.volume = Math.max(0, Math.min(1, clamped * mul));
-      }
+      applyLinePreviewAudioVolumeToActivePlayback();
     }
     function stopLinePreviewAudioPlayback(){
       LINE_PREVIEW_AUDIO_PLAYBACK.token += 1;
@@ -6404,6 +7054,7 @@
         try { active.pause(); } catch {}
         try { active.src = ""; } catch {}
       }
+      clearLinePreviewAudioGainRouting();
       LINE_PREVIEW_AUDIO_PLAYBACK.audio = null;
       LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying = false;
       LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
@@ -6502,6 +7153,7 @@
       fitLinePreviewAudioStopSignText();
     }
     function closeLinePreviewAudioPanel({ stopPlayback = true } = {}){
+      teardownLinePreviewAudioPopup({ closeWindow: true });
       const panel = getLinePreviewAudioPanel();
       if (panel) {
         panel.classList.remove("is-open");
@@ -6509,6 +7161,9 @@
         panel.setAttribute("aria-hidden", "true");
       }
       if (stopPlayback) stopLinePreviewAudioPlayback();
+      if (typeof updateUiOverlays === "function") {
+        try { updateUiOverlays(); } catch {}
+      }
     }
     function bindLinePreviewAudioPanelDrag(){
       if (LINE_PREVIEW_AUDIO_DRAG.initialized) return;
@@ -6545,6 +7200,8 @@
     function openLinePreviewAudioPanel(){
       const panel = getLinePreviewAudioPanel();
       if (!panel) return;
+      teardownLinePreviewAudioPopup({ closeWindow: true });
+      setLinePreviewAudioMainPanelHidden(false);
       updateLinePreviewAudioExtensionState();
       panel.style.display = "block";
       panel.classList.add("is-open");
@@ -6563,6 +7220,9 @@
       updateLinePreviewAudioButtonsState();
       bindLinePreviewAudioPanelDrag();
       ensureLinePreviewAudioGlobalFoldersLoaded();
+      if (typeof updateUiOverlays === "function") {
+        try { updateUiOverlays(); } catch {}
+      }
     }
     function setLinePreviewAudioRouteState(route, audioStatus){
       stopLinePreviewAudioPlayback();
@@ -6570,15 +7230,25 @@
       const normalizedStyles = stylesRaw.map((style) => {
         const name = String(style?.name || "").trim();
         const path = ensureTrailingSlash(String(style?.path || ""));
-        return { name, path };
+        const departureClipName = String(style?.departureClipName || "").trim();
+        return { name, path, departureClipName };
       }).filter((style) => !!style.path);
       if (!normalizedStyles.length) {
         const fallbackPath = ensureTrailingSlash(String(audioStatus?.href || ""));
-        if (fallbackPath) normalizedStyles.push({ name: ".", path: fallbackPath });
+        if (fallbackPath) {
+          normalizedStyles.push({
+            name: ".",
+            path: fallbackPath,
+            departureClipName: String(audioStatus?.departureClipName || "").trim()
+          });
+        }
       }
       LINE_PREVIEW_AUDIO_STATE.voiceStyles = normalizedStyles;
       LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = 0;
       LINE_PREVIEW_AUDIO_STATE.folderPath = String(normalizedStyles[0]?.path || "");
+      LINE_PREVIEW_AUDIO_STATE.departureClipName = String(
+        normalizedStyles[0]?.departureClipName || audioStatus?.departureClipName || "Départ"
+      ).trim() || "Départ";
       LINE_PREVIEW_AUDIO_STATE.stopNames = collectRouteAudioStopNames(route);
       LINE_PREVIEW_AUDIO_STATE.currentIndex = 0;
       LINE_PREVIEW_AUDIO_STATE.enabled = !!LINE_PREVIEW_AUDIO_STATE.folderPath && LINE_PREVIEW_AUDIO_STATE.stopNames.length > 0;
@@ -6595,6 +7265,7 @@
       LINE_PREVIEW_AUDIO_STATE.enabled = false;
       LINE_PREVIEW_AUDIO_STATE.voiceStyles = [];
       LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = 0;
+      LINE_PREVIEW_AUDIO_STATE.departureClipName = "Départ";
       updateLinePreviewAudioRouteSectionVisibility();
       updateLinePreviewAudioStyleSelect();
       updateLinePreviewAudioNowLabel();
@@ -6605,9 +7276,10 @@
       const url = linePreviewAudioClipUrl(folderPath, clipName);
       return new Promise((resolve) => {
         const audio = new Audio(url);
-        const baseVolume = getLinePreviewAudioVolume();
         const mul = Number.isFinite(Number(volumeMultiplier)) ? Number(volumeMultiplier) : 1;
-        audio.volume = Math.max(0, Math.min(1, baseVolume * mul));
+        LINE_PREVIEW_AUDIO_PLAYBACK.audio = audio;
+        LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier = Math.max(0, Math.min(1, mul));
+        applyLinePreviewAudioVolumeToActivePlayback();
         let done = false;
         const finish = () => {
           if (done) return;
@@ -6615,7 +7287,10 @@
           audio.onended = null;
           audio.onerror = null;
           audio.onpause = null;
-          if (LINE_PREVIEW_AUDIO_PLAYBACK.audio === audio) LINE_PREVIEW_AUDIO_PLAYBACK.audio = null;
+          if (LINE_PREVIEW_AUDIO_PLAYBACK.audio === audio) {
+            clearLinePreviewAudioGainRouting();
+            LINE_PREVIEW_AUDIO_PLAYBACK.audio = null;
+          }
           resolve();
         };
         audio.onended = finish;
@@ -6623,7 +7298,6 @@
         audio.onpause = () => {
           if (LINE_PREVIEW_AUDIO_PLAYBACK.token !== token) finish();
         };
-        LINE_PREVIEW_AUDIO_PLAYBACK.audio = audio;
         audio.play().then(() => {
           if (LINE_PREVIEW_AUDIO_PLAYBACK.token !== token) {
             try { audio.pause(); } catch {}
@@ -6694,14 +7368,81 @@
       const currentIndex = Math.max(0, Math.min(lastIndex, LINE_PREVIEW_AUDIO_STATE.currentIndex || 0));
       const shouldAdvance = currentIndex === 0 && lastIndex > 0;
       const shouldLockNavigation = currentIndex === 0;
-      const clips = ["Départ", LINE_PREVIEW_AUDIO_STATE.stopNames[lastIndex]];
+      const departureClip = String(LINE_PREVIEW_AUDIO_STATE.departureClipName || "Départ").trim() || "Départ";
+      const clips = [departureClip, LINE_PREVIEW_AUDIO_STATE.stopNames[lastIndex]];
       playLinePreviewAudioSequence(clips, { advanceOnFinish: shouldAdvance, lockNavigation: shouldLockNavigation });
     }
     async function evaluateRouteAudioCoverage(line, route){
       const lineFolder = getDbusFisLineFolderName(line, route);
       const routeName = String(route?.name || "").trim();
-      const requiredLabelsByToken = collectRequiredAudioTokenLabelsForRoute(route);
-      const allRequiredStops = [...requiredLabelsByToken.values()];
+      const departureCandidates = getLinePreviewAudioDepartureClipCandidates(line, route);
+      const preferredDepartureLabel = String(departureCandidates[0] || "Départ").trim() || "Départ";
+      const requiredLabelsByToken = collectRequiredAudioTokenLabelsForRoute(route, { includeDeparture: false });
+      const allRequiredStops = [preferredDepartureLabel, ...requiredLabelsByToken.values()];
+      const requiredTokens = collectRequiredAudioTokensForRoute(route, { includeDeparture: false });
+      const evaluateScanTargets = (scanTargets) => {
+        const completeStyles = [];
+        const missingByFolder = [];
+        (Array.isArray(scanTargets) ? scanTargets : []).forEach((target) => {
+          const folderPath = ensureTrailingSlash(String(target?.folderPath || ""));
+          const subfolderName = String(target?.folderName || "").trim() || ".";
+          const files = Array.isArray(target?.files) ? target.files : [];
+          const availableTokens = new Set(files.map(normalizeAudioNameToken).filter(Boolean));
+          const departureClipName = resolveLinePreviewAudioDepartureClipName(files, line, route);
+          const missingTokens = [...requiredTokens].filter((token) => !availableTokens.has(token));
+          const missingStops = missingTokens.map((token) => requiredLabelsByToken.get(token) || token);
+          if (!departureClipName) missingStops.unshift(preferredDepartureLabel);
+          if (missingStops.length) {
+            missingByFolder.push({
+              line: lineFolder,
+              route: routeName,
+              folder: subfolderName,
+              missingStops
+            });
+            return;
+          }
+          completeStyles.push({
+            name: subfolderName,
+            path: folderPath,
+            departureClipName
+          });
+        });
+        return { completeStyles, missingByFolder };
+      };
+
+      const dossiersScanTargets = await listDbusFisRouteStyleFoldersFromDossiers();
+      if (dossiersScanTargets.length) {
+        const { completeStyles, missingByFolder } = evaluateScanTargets(
+          dossiersScanTargets.map((target) => ({
+            folderName: target?.name || ".",
+            folderPath: ensureTrailingSlash(String(target?.path || "")),
+            files: Array.isArray(target?.files) ? target.files : []
+          }))
+        );
+        if (completeStyles.length) {
+          const targetFolder = completeStyles[0]?.path || "";
+          return {
+            ok: true,
+            href: ensureTrailingSlash(targetFolder),
+            styles: completeStyles,
+            departureClipName: String(completeStyles[0]?.departureClipName || preferredDepartureLabel),
+            reason: "complete",
+            line: lineFolder,
+            route: routeName
+          };
+        }
+        return {
+          ok: false,
+          href: "",
+          reason: "missing_stops_mp3",
+          line: lineFolder,
+          route: routeName,
+          missingByFolder: missingByFolder.length
+            ? missingByFolder
+            : [{ folder: DBUS_FIS_DOSSIERS_ROOT, missingStops: allRequiredStops }]
+        };
+      }
+
       const linePath = ensureTrailingSlash(joinEncodedPath(DBUS_FIS_ROOT, lineFolder));
       if (!lineFolder) {
         return {
@@ -6715,7 +7456,6 @@
           ]
         };
       }
-      const requiredTokens = collectRequiredAudioTokensForRoute(route);
       const scanTargets = [];
       const seenScanTarget = new Set();
       const addScanTarget = (folderName, folderPath, files) => {
@@ -6765,28 +7505,8 @@
           }))
         };
       }
-      const missingByFolder = [];
-      const checks = await Promise.all(scanTargets.map(async (target) => {
-        const folderPath = target.folderPath;
-        const subfolderName = target.folderName;
-        const files = target.files;
-        const availableTokens = new Set(files.map(normalizeAudioNameToken).filter(Boolean));
-        const missingTokens = [...requiredTokens].filter((token) => !availableTokens.has(token));
-        const missingStops = missingTokens.map((token) => requiredLabelsByToken.get(token) || token);
-        const complete = missingTokens.length === 0;
-        if (!complete) {
-          const rec = {
-            line: lineFolder,
-            route: routeName,
-            folder: subfolderName,
-            missingStops
-          };
-          missingByFolder.push(rec);
-        }
-        return { complete, folderPath };
-      }));
-      const allComplete = checks.length > 0 && checks.every((entry) => entry.complete);
-      if (!allComplete) {
+      const { completeStyles, missingByFolder } = evaluateScanTargets(scanTargets);
+      if (!completeStyles.length) {
         return {
           ok: false,
           href: "",
@@ -6796,15 +7516,12 @@
           missingByFolder
         };
       }
-      const styles = scanTargets.map((target) => ({
-        name: String(target?.folderName || "").trim() || ".",
-        path: ensureTrailingSlash(String(target?.folderPath || ""))
-      })).filter((style) => !!style.path);
-      const targetFolder = styles[0]?.path || ensureTrailingSlash(checks[0]?.folderPath || linePath);
+      const targetFolder = completeStyles[0]?.path || linePath;
       return {
         ok: true,
         href: ensureTrailingSlash(targetFolder),
-        styles,
+        styles: completeStyles,
+        departureClipName: String(completeStyles[0]?.departureClipName || preferredDepartureLabel),
         reason: "complete",
         line: lineFolder,
         route: routeName
@@ -6816,7 +7533,7 @@
     function isLinePreviewAudioLanguageAllowed(){
       return String(LANG || "").toLowerCase() === "fr";
     }
-    function refreshLinePreviewAudioButtonVisibility({ closePanelOnHide = true } = {}){
+    function refreshLinePreviewAudioButtonVisibility({ closePanelOnHide = false } = {}){
       const audioLink = document.getElementById("lpAudioLink");
       if (!audioLink) return;
       const hasAudioFeature = String(audioLink.dataset.audioAvailable || "") === "1";
@@ -6862,9 +7579,27 @@
         const routeReady = !!(status?.ok && status?.href);
         if (!routeReady) {
           const groups = Array.isArray(status?.missingByFolder) ? status.missingByFolder : [];
-          groups.forEach((group) => {
-            const missingStops = Array.isArray(group?.missingStops) ? group.missingStops : [];
-          });
+          if (groups.length) {
+            groups.forEach((group) => {
+              const lineLabel = String(group?.line || getLineNumber(line, route) || line?.number || "?").trim();
+              const routeLabel = String(group?.route || route?.name || "").trim();
+              const folderLabel = String(group?.folder || "").trim() || "(racine)";
+              const missingStops = Array.isArray(group?.missingStops)
+                ? group.missingStops.map((s) => String(s || "").trim()).filter(Boolean)
+                : [];
+              if (!missingStops.length) return;
+              console.warn(
+                `[Audio][Stops manquants] ligne=${lineLabel} route="${routeLabel}" dossier="${folderLabel}"`,
+                missingStops
+              );
+            });
+          } else if (status?.reason) {
+            const lineLabel = String(getLineNumber(line, route) || line?.number || "?").trim();
+            const routeLabel = String(route?.name || "").trim();
+            console.warn(
+              `[Audio][Stops manquants] ligne=${lineLabel} route="${routeLabel}" reason=${String(status.reason)}`
+            );
+          }
           clearLinePreviewAudioRouteState({ closePanel: false, stopPlayback: true });
         } else {
           setLinePreviewAudioRouteState(route, status);
@@ -8257,7 +8992,8 @@
       if (linePreviewStopsBox) {
         linePreviewStopsBox.classList.remove("can-scroll-up", "can-scroll-down");
       }
-      closeLinePreviewAudioPanel({ stopPlayback: true });
+      clearLinePreviewAudioRouteState({ closePanel: false, stopPlayback: true });
+      updateLinePreviewAudioGlobalFolderSelect();
       clearActiveStop()
       updateUiOverlays();
     }
@@ -8542,11 +9278,16 @@
       const lockSearch = isPreviewOpen;
       const isDepartIndicatorOpen = !!$dbusDepartIndicatorWrap && !$dbusDepartIndicatorWrap.hidden;
       const isSearchPanelOpen = isSearchOpen();
+      const isAudioPanelOpen = isLinePreviewAudioPanelOpen();
       if (lockSearch && isSearchPanelOpen && typeof closeSearchUI === "function") {
         closeSearchUI({ reset: true });
       }
       if ($btnSearch) $btnSearch.classList.toggle("is-open", isSearchPanelOpen);
       if ($btnDbus) $btnDbus.classList.toggle("is-open", isDbusMenuOpen || isPreviewOpen || isDepartIndicatorOpen);
+      if ($btnAudioPanel) {
+        $btnAudioPanel.classList.toggle("is-open", isAudioPanelOpen);
+        $btnAudioPanel.setAttribute("aria-expanded", isAudioPanelOpen ? "true" : "false");
+      }
       if ($btnLang) $btnLang.classList.toggle("is-open", isLangMenuOpen());
       if ($btnSettings) $btnSettings.classList.toggle("is-open", isSettingsPanelOpen);
       if ($topBar) $topBar.classList.toggle("dbus-open", isRightSidePanelOpen);
@@ -8693,6 +9434,20 @@
     $settingsSchoolToggle?.addEventListener("change", () => setSchoolFilter($settingsSchoolToggle.checked));
     $dbusFictiveToggle?.addEventListener("change", () => setFictiveFilter($dbusFictiveToggle.checked));
     $settingsFictiveToggle?.addEventListener("change", () => setFictiveFilter($settingsFictiveToggle.checked));
+
+    $btnAudioPanel?.addEventListener("click", () => {
+      if (isButtonDisabled($btnAudioPanel)) return;
+      if (isLinePreviewAudioPanelOpen()) {
+        closeLinePreviewAudioPanel({ stopPlayback: true });
+        updateUiOverlays();
+        return;
+      }
+      closeSearchUI({ reset: true });
+      closeSettingsPanel();
+      try { closeLangMenu(); } catch {}
+      openLinePreviewAudioPanel();
+      updateUiOverlays();
+    });
 
     $btnDbus.addEventListener('click', () => {
       if (isButtonDisabled($btnDbus)) {

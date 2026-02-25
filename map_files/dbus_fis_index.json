@@ -1,42 +1,36 @@
 {
-  "24": {
-    "Voix de Synthèse (Anciennes) [AnnoncesSonoresRATP-ov1bu]": {
-      "_files": [
-        "Baron le Roy",
-        "Bercy-Arena",
-        "Centre Commercial",
-        "Départ",
-        "Dijon-Lachambeaudie",
-        "Gare de Bercy",
-        "Gare de Lyon",
-        "Gare de Lyon - Maison de la RATP",
-        "Lachambeaudie",
-        "Ministère de l'Economie et des Finances",
-        "Pont National - Quai de Bercy",
-        "Terminus",
-        "Terroirs de France"
-      ]
-    }
-  },
-  "114": {
-    "Voix de Synthèse (Anciennes) [AnnoncesSonoresRATP-ov1bu]": {
+  "dossiers": {
+    "Voix de Synthèse (Anciennes)": {
       "_files": [
         "Alexander Fleming",
         "Alexandre 1er",
         "Allée de la Tour",
+        "Auguste Polissard",
         "Avenue de Rosny",
+        "Baron le Roy",
         "Bel Air",
         "Bellevue",
+        "Bercy-Arena",
         "Bords de Marne",
         "Caves d'Avron",
+        "Centre Commercial",
         "Charles Hildevert",
         "Château de Villemomble",
         "Château de Vincennes",
         "Cimetière de Neuilly-Plaisance",
-        "Départ",
+        "Départ_114",
+        "Départ_24",
+        "Départ_351",
+        "Dijon-Lachambeaudie",
+        "Édouard Vaillant",
         "Étienne Dolet",
         "Faidherbe - Église",
+        "Gallieni",
         "Gallieni - Le Raincy - Villemomble - Montfermeil RER",
+        "Gare de Bercy",
+        "Gare de Lyon",
+        "Gare de Lyon - Maison de la RATP",
+        "Général de Gaulle",
         "Général Leclerc",
         "Georges Pompidou",
         "Hoche",
@@ -44,6 +38,7 @@
         "Jean Jaurès - Victor Hugo",
         "Kennedy - Renouillères",
         "La Maltournée",
+        "Lachambeaudie",
         "Le Parc",
         "Le Raincy - Villemomble - Montfermeil RER",
         "Ledru-Rollin - Général de Gaulle",
@@ -55,36 +50,27 @@
         "Marcel Douret",
         "Marché de Nogent-sur-Marne",
         "Marius Gonin",
+        "Ministère de l'Economie et des Finances",
+        "Nation - Trone",
         "Neuilly-Plaisance RER",
         "Nogent-le-Perreux RER",
         "Nogent-sur-Marne RER - Pierre Sémard",
         "Parmentier",
         "Place du Général Leclerc",
         "Plateau d'Avron - Place de Stalingrad",
+        "Pont National - Quai de Bercy",
+        "Porte de Vincennes",
         "Porte Jaune",
+        "Pyrénées – Docteur Netter",
         "Raspail RER",
         "Rue de Beauté",
         "Rue des Hersiers",
         "Sous-Préfecture - Jules Ferry",
         "Square Jean Mermoz",
         "Terminus",
+        "Terroirs de France",
         "Tremblay - Pépinière",
         "Villemomble - Les Coquetiers"
-      ]
-    }
-  },
-  "351": {
-    "Voix de Synthèse (Anciennes) [AnnoncesSonoresRATP-ov1bu]": {
-      "_files": [
-        "Auguste Polissard",
-        "Départ",
-        "Édouard Vaillant",
-        "Gallieni",
-        "Général de Gaulle",
-        "Nation - Trone",
-        "Porte de Vincennes",
-        "Pyrénées – Docteur Netter",
-        "Terminus"
       ]
     }
   },

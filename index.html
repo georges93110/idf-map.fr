@@ -320,6 +320,17 @@
       flex: 0 0 16px;
       opacity: 0.95;
     }
+    .home-cta-auto .home-cta-loading-spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(244, 255, 248, 0.36);
+      border-top-color: #f4fff8;
+      animation: homeDownloadSpin 750ms linear infinite;
+      box-sizing: border-box;
+      flex: 0 0 16px;
+    }
     .home-cta-auto span[data-i18n="download_button"] {
       line-height: 1;
     }
@@ -347,8 +358,36 @@
     .home-cta-auto.is-disabled-shake {
       animation: homeCtaShake 360ms ease;
     }
+    .home-cta-auto.is-loading {
+      cursor: not-allowed;
+      color: #d5d8db;
+      border-color: #7b8086;
+      background: linear-gradient(145deg, #4b5057, #353a41);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+      transform: none;
+    }
+    .home-cta-auto.is-loading:hover {
+      cursor: not-allowed;
+      color: #d5d8db;
+      border-color: #7b8086;
+      background: linear-gradient(145deg, #4b5057, #353a41);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+      transform: none;
+    }
+    .home-cta-auto.is-loading .home-cta-icon-pack {
+      background: rgba(18, 20, 23, 0.4);
+      border-color: rgba(224, 229, 234, 0.22);
+    }
+    .home-cta-auto.is-loading .site-icon-download,
+    .home-cta-auto.is-loading .site-icon-windows,
+    .home-cta-auto.is-loading .home-cta-icon-sep {
+      display: none;
+    }
+    .home-cta-auto.is-loading .home-cta-loading-spinner {
+      display: inline-block;
+    }
     .home-download-alert {
-      width: min(560px, 100%);
+      width: min(350px, 100%);
       margin: 0 auto;
       max-height: 0;
       overflow: hidden;
@@ -360,7 +399,11 @@
       color: #ffe9e9;
       font-size: 12px;
       font-weight: 700;
-      line-height: 1.35;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
       transition: opacity 200ms ease, transform 200ms ease, max-height 200ms ease, padding 200ms ease, border-color 200ms ease;
       padding: 0 10px;
       box-sizing: border-box;
@@ -368,11 +411,139 @@
     .home-download-alert.is-visible {
       opacity: 1;
       transform: translateY(0) scale(1);
-      max-height: 56px;
-      padding: 8px 10px;
+      max-height: 54px;
+      min-height: 54px;
+      padding: 0 10px;
       border-color: rgba(255, 174, 174, 0.42);
       background: rgba(90, 21, 21, 0.42);
       animation: homeAlertPulse 1200ms ease;
+    }
+    body.home-download-modal-open {
+      overflow: hidden;
+    }
+    .home-download-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      box-sizing: border-box;
+      background: rgba(12, 12, 13, 0.84);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    .home-download-modal-panel {
+      position: relative;
+      width: min(980px, 96vw);
+      max-height: min(88vh, 820px);
+      overflow: auto;
+      display: flex;
+      gap: 18px;
+      align-items: start;
+      border: 1px solid #3a3a3d;
+      border-radius: 14px;
+      padding: 26px;
+      background: linear-gradient(165deg, #1a1b1f 0%, #141519 100%);
+      color: #ededee;
+      box-shadow: 0 22px 44px rgba(0, 0, 0, 0.42);
+    }
+    .home-download-modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 34px;
+      height: 34px;
+      border: 1px solid #4a4a4f;
+      border-radius: 8px;
+      background: rgba(28, 28, 30, 0.9);
+      color: #f0f0f1;
+      cursor: pointer;
+      font-size: 24px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .home-download-modal-close:hover {
+      border-color: #6a6a70;
+      background: rgba(34, 34, 37, 0.96);
+    }
+    .home-download-modal-icon-wrap {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      background: #2c2d31;
+      border: 1px solid #4a4b50;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #d8d8db;
+      box-sizing: border-box;
+      flex: 0 0 auto;
+    }
+    .home-download-modal-icon-wrap svg {
+      width: 36px;
+      height: 36px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .home-download-modal-copy {
+      display: grid;
+      gap: 8px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .home-download-modal-title {
+      margin: 0;
+      font-size: clamp(21px, 3.6vw, 30px);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      color: #f4f4f5;
+    }
+    .home-download-modal-text {
+      margin: 0;
+      color: #d6d6d8;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .home-download-modal-countdown {
+      margin: 0;
+      color: #ececef;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+    .home-download-modal-help {
+      margin: 0;
+      color: #cfcfd3;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .home-download-modal-help a {
+      color: #f2f2f4;
+      font-weight: 800;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .home-download-modal-help a:hover {
+      color: #ffffff;
+    }
+    @media (max-width: 640px) {
+      .home-download-modal-panel {
+        gap: 12px;
+      }
+      .home-download-modal-icon-wrap {
+        width: 62px;
+        height: 62px;
+      }
+    }
+    .home-download-modal[hidden] {
+      display: none;
     }
     @keyframes homeCtaShake {
       0%, 100% { transform: translateX(0); }
@@ -385,6 +556,9 @@
       0% { box-shadow: 0 0 0 rgba(255, 120, 120, 0); }
       40% { box-shadow: 0 0 0 4px rgba(255, 120, 120, 0.2); }
       100% { box-shadow: 0 0 0 rgba(255, 120, 120, 0); }
+    }
+    @keyframes homeDownloadSpin {
+      to { transform: rotate(360deg); }
     }
 
     .home-cta-auto:hover {
@@ -874,6 +1048,7 @@
                   <svg class="site-icon-windows" viewBox="0 0 24 24">
                     <path d="M2 4.2L10.9 3v8.6H2V4.2zM12.1 2.9L22 1.5v10.1h-9.9V2.9zM2 12.4h8.9V21L2 19.8v-7.4zM12.1 12.4H22v10.1l-9.9-1.3v-8.8z"></path>
                   </svg>
+                  <span class="home-cta-loading-spinner"></span>
                 </span>
                 <span data-i18n="download_button">Telecharger</span>
               </a>
@@ -1024,6 +1199,24 @@
       </aside>
     </section>
   </main>
+  <div id="homeDownloadModal" class="home-download-modal" role="dialog" aria-modal="true" aria-labelledby="homeDownloadModalTitle" hidden>
+    <div class="home-download-modal-panel" role="document">
+      <button type="button" id="homeDownloadModalCloseBtn" class="home-download-modal-close" aria-label="Fermer">&times;</button>
+      <div class="home-download-modal-icon-wrap" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v10"></path>
+          <path d="M8.2 9.6L12 13.4l3.8-3.8"></path>
+          <path d="M4 20h16"></path>
+        </svg>
+      </div>
+      <div class="home-download-modal-copy">
+        <h2 id="homeDownloadModalTitle" class="home-download-modal-title">Merci pour votre téléchargement</h2>
+        <p id="homeDownloadModalCountdown" class="home-download-modal-countdown" aria-live="polite"></p>
+        <p class="home-download-modal-text">Après le téléchargement, lancez le fichier <strong>.exe</strong>. Selon votre antivirus, une alerte peut apparaître, c’est généralement un faux positif.</p>
+        <p class="home-download-modal-help">Si le téléchargement ne démarre pas, <a id="homeDownloadModalManualStart" href="#">cliquez ici</a>.</p>
+      </div>
+    </div>
+  </div>
 
   <script src="config/translations.js"></script>
   <script src="config/config.js"></script>
@@ -1044,9 +1237,20 @@
       const homeDiscordBtn = document.getElementById("homeDiscordBtn");
       const homeYoutubeBtn = document.getElementById("homeYoutubeBtn");
       const homeManualCloseBtn = document.getElementById("homeManualCloseBtn");
+      const homeDownloadModal = document.getElementById("homeDownloadModal");
+      const homeDownloadModalCloseBtn = document.getElementById("homeDownloadModalCloseBtn");
+      const homeDownloadModalManualStart = document.getElementById("homeDownloadModalManualStart");
+      const homeDownloadModalCountdown = document.getElementById("homeDownloadModalCountdown");
       let autoDownloadAlertTimer = 0;
       let autoDownloadAlertHideTimer = 0;
       let autoDownloadAlertToken = 0;
+      let homeDownloadBtnLoadingTimer = 0;
+      let homeDownloadModalLastFocus = null;
+      let homeDownloadModalCountdownTimer = 0;
+      let homeDownloadModalCountdownValue = 0;
+      let homeDownloadLauncherFrame = null;
+      const HOME_DOWNLOAD_AUTO_DELAY_SECONDS = 6;
+      const HOME_DOWNLOAD_BUTTON_LOCK_MS = 1600;
 
       function lang() {
         return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
@@ -1145,6 +1349,127 @@
         homeManualToggleBtn.setAttribute("tabindex", "-1");
       }
 
+      function homeDownloadCountdownText(remainingSeconds) {
+        const amount = Math.max(0, Number(remainingSeconds) || 0);
+        if (amount <= 0) return "Lancement du téléchargement...";
+        return "Le téléchargement va se lancer dans " + amount + " seconde" + (amount > 1 ? "s" : "") + "...";
+      }
+
+      function setHomeDownloadCountdown(remainingSeconds) {
+        if (!homeDownloadModalCountdown) return;
+        homeDownloadModalCountdown.textContent = homeDownloadCountdownText(remainingSeconds);
+      }
+
+      function setHomeAutoDownloadLoading(active) {
+        if (!homeAutoDownloadBtn) return;
+        if (homeDownloadBtnLoadingTimer) {
+          window.clearTimeout(homeDownloadBtnLoadingTimer);
+          homeDownloadBtnLoadingTimer = 0;
+        }
+        homeAutoDownloadBtn.classList.toggle("is-loading", !!active);
+        homeAutoDownloadBtn.setAttribute("aria-busy", active ? "true" : "false");
+        homeAutoDownloadBtn.setAttribute("aria-disabled", active ? "true" : "false");
+        if (!active) return;
+        homeDownloadBtnLoadingTimer = window.setTimeout(() => {
+          homeDownloadBtnLoadingTimer = 0;
+          homeAutoDownloadBtn.classList.remove("is-loading");
+          homeAutoDownloadBtn.setAttribute("aria-busy", "false");
+          homeAutoDownloadBtn.setAttribute("aria-disabled", "false");
+        }, HOME_DOWNLOAD_BUTTON_LOCK_MS);
+      }
+
+      function clearHomeDownloadCountdown() {
+        if (homeDownloadModalCountdownTimer) {
+          window.clearInterval(homeDownloadModalCountdownTimer);
+          homeDownloadModalCountdownTimer = 0;
+        }
+      }
+
+      function syncHomeDownloadManualStartLink() {
+        if (!homeDownloadModalManualStart || !homeAutoDownloadBtn) return;
+        const href = String(homeAutoDownloadBtn.getAttribute("href") || "").trim();
+        homeDownloadModalManualStart.setAttribute("href", href && href !== "#" ? href : "#");
+      }
+
+      function getHomeDownloadLauncherFrame() {
+        if (homeDownloadLauncherFrame && document.body.contains(homeDownloadLauncherFrame)) {
+          return homeDownloadLauncherFrame;
+        }
+        const frame = document.createElement("iframe");
+        frame.setAttribute("aria-hidden", "true");
+        frame.setAttribute("tabindex", "-1");
+        frame.style.display = "none";
+        frame.style.width = "0";
+        frame.style.height = "0";
+        frame.style.border = "0";
+        document.body.appendChild(frame);
+        homeDownloadLauncherFrame = frame;
+        return frame;
+      }
+
+      function triggerHomeDownloadWithoutNavigation(href) {
+        const frame = getHomeDownloadLauncherFrame();
+        if (!frame) return false;
+        try {
+          frame.src = "about:blank";
+          frame.src = href;
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      function closeHomeDownloadModal() {
+        if (!homeDownloadModal) return;
+        clearHomeDownloadCountdown();
+        homeDownloadModalCountdownValue = 0;
+        homeDownloadModal.hidden = true;
+        document.body.classList.remove("home-download-modal-open");
+        if (homeDownloadModalLastFocus && typeof homeDownloadModalLastFocus.focus === "function") {
+          homeDownloadModalLastFocus.focus();
+        }
+        homeDownloadModalLastFocus = null;
+      }
+
+      function openHomeDownloadModal() {
+        if (!homeDownloadModal) return;
+        homeDownloadModalLastFocus = document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+        clearHomeDownloadCountdown();
+        homeDownloadModalCountdownValue = HOME_DOWNLOAD_AUTO_DELAY_SECONDS;
+        syncHomeDownloadManualStartLink();
+        setHomeDownloadCountdown(homeDownloadModalCountdownValue);
+        homeDownloadModal.hidden = false;
+        document.body.classList.add("home-download-modal-open");
+        homeDownloadModalCloseBtn?.focus();
+        homeDownloadModalCountdownTimer = window.setInterval(() => {
+          homeDownloadModalCountdownValue -= 1;
+          if (homeDownloadModalCountdownValue <= 0) {
+            clearHomeDownloadCountdown();
+            launchHomeDownloadFromModal();
+            return;
+          }
+          setHomeDownloadCountdown(homeDownloadModalCountdownValue);
+        }, 1000);
+      }
+
+      function launchHomeDownloadFromModal() {
+        if (!homeAutoDownloadBtn) return;
+        if (homeAutoDownloadBtn.classList.contains("is-loading")) return;
+        const href = String(homeAutoDownloadBtn.getAttribute("href") || "").trim();
+        if (!href || href === "#") {
+          setHomeAutoDownloadLoading(false);
+          closeHomeDownloadModal();
+          showAutoDownloadAlert();
+          return;
+        }
+        setHomeAutoDownloadLoading(true);
+        clearHomeDownloadCountdown();
+        setHomeDownloadCountdown(0);
+        triggerHomeDownloadWithoutNavigation(href);
+      }
+
       function hideAutoDownloadAlert(immediate) {
         if (!homeAutoDownloadAlert) return;
         window.clearTimeout(autoDownloadAlertTimer);
@@ -1161,15 +1486,15 @@
         }, 220);
       }
 
-      function showAutoDownloadAlert() {
+      function showAutoDownloadAlert(customMessage) {
         if (!homeAutoDownloadAlert || !homeAutoDownloadBtn) return;
         autoDownloadAlertToken += 1;
         const token = autoDownloadAlertToken;
         window.clearTimeout(autoDownloadAlertTimer);
         window.clearTimeout(autoDownloadAlertHideTimer);
-        const message = t(
+        const message = customMessage || t(
           "home_download_unavailable_manual_hint",
-          "Telechargement automatique indisponible. Le Telechargement manuel est disponible."
+          "Téléchargement automatique temporairement indisponible. Veuillez utiliser le téléchargement manuel pour le moment."
         );
         homeAutoDownloadAlert.textContent = message;
         homeAutoDownloadAlert.hidden = false;
@@ -1182,12 +1507,13 @@
         autoDownloadAlertTimer = window.setTimeout(() => {
           if (token !== autoDownloadAlertToken) return;
           hideAutoDownloadAlert(false);
-        }, 3600);
+        }, 5000);
       }
 
       function setAutoDownloadMode(mode) {
         if (!homeAutoDownloadBtn) return;
         if (mode === "manual") {
+          setHomeAutoDownloadLoading(false);
           homeAutoDownloadBtn.dataset.downloadMode = "manual";
           homeAutoDownloadBtn.dataset.downloadLinkReady = "1";
           homeAutoDownloadBtn.setAttribute("href", "#");
@@ -1199,6 +1525,7 @@
           hideAutoDownloadAlert(true);
           return;
         }
+        setHomeAutoDownloadLoading(false);
         homeAutoDownloadBtn.dataset.downloadMode = "link";
         applyOffsiteHref(homeAutoDownloadBtn);
         const href = String(homeAutoDownloadBtn.getAttribute("href") || "").trim();
@@ -1222,10 +1549,16 @@
         if (homeAutoDownloadBtn && homeAutoDownloadBtn.dataset.bound !== "1") {
           homeAutoDownloadBtn.dataset.bound = "1";
           homeAutoDownloadBtn.addEventListener("click", (event) => {
-            if (homeAutoDownloadBtn.dataset.downloadMode === "link"
-              && homeAutoDownloadBtn.dataset.downloadLinkReady !== "1") {
-              event.preventDefault();
-              showAutoDownloadAlert();
+            if (homeAutoDownloadBtn.dataset.downloadMode === "link") {
+              if (homeAutoDownloadBtn.dataset.downloadLinkReady !== "1") {
+                event.preventDefault();
+                showAutoDownloadAlert();
+                return;
+              }
+              if (lang() === "fr") {
+                event.preventDefault();
+                launchHomeDownloadFromModal();
+              }
               return;
             }
             if (homeAutoDownloadBtn.dataset.downloadMode !== "manual") return;
@@ -1245,10 +1578,34 @@
           homeManualCloseBtn.dataset.bound = "1";
           homeManualCloseBtn.addEventListener("click", () => setManualPanelOpen(false));
         }
+        if (homeDownloadModal && homeDownloadModal.dataset.bound !== "1") {
+          homeDownloadModal.dataset.bound = "1";
+          homeDownloadModal.addEventListener("click", (event) => {
+            if (event.target === homeDownloadModal) {
+              closeHomeDownloadModal();
+            }
+          });
+        }
+        if (homeDownloadModalCloseBtn && homeDownloadModalCloseBtn.dataset.bound !== "1") {
+          homeDownloadModalCloseBtn.dataset.bound = "1";
+          homeDownloadModalCloseBtn.addEventListener("click", closeHomeDownloadModal);
+        }
+        if (homeDownloadModalManualStart && homeDownloadModalManualStart.dataset.bound !== "1") {
+          homeDownloadModalManualStart.dataset.bound = "1";
+          homeDownloadModalManualStart.addEventListener("click", (event) => {
+            event.preventDefault();
+            launchHomeDownloadFromModal();
+          });
+        }
         if (!document.body.dataset.homeManualEscBound) {
           document.body.dataset.homeManualEscBound = "1";
           document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") setManualPanelOpen(false);
+            if (event.key !== "Escape") return;
+            if (homeDownloadModal && !homeDownloadModal.hidden) {
+              closeHomeDownloadModal();
+              return;
+            }
+            setManualPanelOpen(false);
           });
         }
       }
@@ -1262,6 +1619,8 @@
         applyOffsiteHref(homeYoutubeBtn);
         const isFrench = lang() === "fr";
         setAutoDownloadMode(isFrench ? "link" : "manual");
+        syncHomeDownloadManualStartLink();
+        if (!isFrench) closeHomeDownloadModal();
         setManualToggleVisibility(isFrench);
         if (homeSteamDlcLink) {
           const href = String(guide.steam_dlc || "").trim();
