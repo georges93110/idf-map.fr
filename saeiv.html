@@ -1,0 +1,869 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ecran SAEIV</title>
+  <style>
+    :root {
+      --hud-scale: 1;
+      --hud-main: #7f92b9;
+      --hud-dark: #2c4868;
+      --hud-right: #385f5d;
+      --hud-mask: #000149;
+      --hud-depart: #4d2426;
+      --hud-bg-a: #1d3f90;
+      --hud-bg-b: #122e7a;
+      --hud-bg-c: #081a4e;
+      --hud-track: #ff3c26;
+      --hud-track-left: 33.873%;
+      --hud-track-width: 1.62%;
+      --hud-track-center: 34.683%;
+      --overlay-screen-dark: #000149;
+      --overlay-screen-mid: #142e76;
+      --overlay-screen-light: #2c4378;
+      --bottom-bar-bg: #4e73c6;
+      --font-main: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: var(--font-main);
+    }
+
+    .root {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      background: #000;
+    }
+
+    .hud {
+      position: relative;
+      width: min(100vw, calc(100vh * (679 / 383)));
+      aspect-ratio: 679 / 383;
+      overflow: hidden;
+      background:
+        radial-gradient(120% 95% at 50% -10%, rgba(146, 198, 255, 0.33) 0%, rgba(115, 160, 238, 0.1) 38%, rgba(45, 79, 170, 0.25) 65%, rgba(8, 20, 63, 0.38) 100%),
+        linear-gradient(180deg, var(--hud-bg-a) 0%, var(--hud-bg-b) 64%, var(--hud-bg-c) 100%);
+      font-size: calc(14px * var(--hud-scale));
+    }
+
+    .hud::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(95% 85% at 50% 50%, rgba(0, 0, 0, 0) 58%, rgba(0, 0, 0, 0.24) 100%);
+      z-index: 1;
+    }
+
+    .top-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+
+    .top-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 12.5%;
+      background: var(--hud-main);
+      border: 0;
+    }
+
+    .top-mask {
+      position: absolute;
+      left: 35%;
+      top: 0;
+      width: 40%;
+      height: 12.5%;
+      background: var(--hud-mask);
+      z-index: 3;
+    }
+
+    .route-letter {
+      position: absolute;
+      left: 76%;
+      top: 3.15%;
+      width: 5%;
+      height: 7%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 2.85em;
+      font-weight: 700;
+      line-height: 1;
+      z-index: 6;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.4);
+    }
+
+    .top-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 90%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      cursor: pointer;
+      background: var(--hud-dark);
+      z-index: 6;
+    }
+
+    .top-btn-a {
+      left: 0.3%;
+      width: 12.5%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .top-btn-b {
+      left: 13%;
+      width: 10%;
+    }
+
+    .top-btn-a .top-btn-q {
+      color: #dbe9ff;
+      font-family: Arial, sans-serif;
+      font-size: 7em;
+      font-weight: 700;
+      line-height: 1;
+      display: block;
+    }
+
+    .clock {
+      position: absolute;
+      right: 1%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20%;
+      height: 40%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-weight: 700;
+      font-size: 1.75em;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-align: right;
+      color: #fff;
+      z-index: 7;
+      text-shadow: 0 0 0.07em rgba(0, 0, 0, 0.38);
+      pointer-events: none;
+    }
+
+    .pip-mark {
+      position: absolute;
+      left: 45%;
+      top: 2.5%;
+      width: 10%;
+      height: 8%;
+      border-radius: 0.38em;
+      background: #fff;
+      z-index: 6;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .pip-mark::before {
+      content: "";
+      width: 87.5%;
+      height: 87.5%;
+      border-radius: 0.3em;
+      background: #000;
+    }
+
+    .bottom-bar {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 17.5%;
+      background: var(--bottom-bar-bg);
+      z-index: 5;
+    }
+
+    .call-btn {
+      position: absolute;
+      bottom: 0;
+      width: 22.5%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      cursor: pointer;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 2%;
+      box-sizing: border-box;
+      padding-bottom: 3%;
+    }
+
+    .call-btn-left {
+      left: 0;
+      background: var(--hud-dark);
+    }
+
+    .call-btn-right {
+      right: 0;
+      background: var(--hud-right);
+    }
+
+    .call-btn svg {
+      width: 30%;
+      height: auto;
+      fill: #e5eeff;
+    }
+
+    .call-btn span {
+      font-size: 1em;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.45);
+    }
+
+    .middle-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 13%;
+      height: 90%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      cursor: pointer;
+      background: #000;
+      border-radius: 0.26em;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 0.04em rgba(255, 255, 255, 0.05);
+    }
+
+    .middle-btn::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 98%;
+      height: 96%;
+      border-radius: 0.22em;
+      background: var(--hud-dark);
+      box-shadow: inset 0 0 0 0.06em rgba(255, 255, 255, 0.07);
+    }
+
+    .middle-btn-a {
+      left: 24%;
+    }
+
+    .middle-btn-b {
+      left: 49.5%;
+    }
+
+    .middle-btn-c {
+      left: 63%;
+    }
+
+    .middle-btn svg {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 46%;
+      height: auto;
+      fill: #d8e6ff;
+      opacity: 0.95;
+      z-index: 2;
+    }
+
+    .overlay-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0) 0 12.5%,
+        var(--overlay-screen-dark) 12.5%,
+        var(--overlay-screen-mid) 58%,
+        var(--overlay-screen-light) 82.5%,
+        rgba(0, 0, 0, 0) 82.5% 100%
+      );
+    }
+
+    .menu-rail {
+      position: absolute;
+      right: 0;
+      top: 15%;
+      width: 9%;
+      height: 65%;
+      border: 0;
+      margin: 0;
+      padding: 0;
+      background: var(--hud-main);
+      color: #fff;
+      cursor: pointer;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6%;
+    }
+
+    .menu-rail svg {
+      width: 62%;
+      height: auto;
+      fill: #e8efff;
+      filter: drop-shadow(0 0 0.06em rgba(0, 0, 0, 0.4));
+    }
+
+    .menu-rail span {
+      font-size: 1.03em;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .depart-box {
+      position: absolute;
+      left: 74.963%;
+      top: 15%;
+      width: 12.5%;
+      height: 65%;
+      background: var(--hud-depart);
+      display: grid;
+      grid-template-rows: 1fr 1fr 1fr;
+      align-items: center;
+      justify-items: center;
+      color: #fff;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.5);
+    }
+
+    .depart-label {
+      font-size: 0.96em;
+      font-weight: 500;
+      line-height: 1.1;
+      text-align: center;
+    }
+
+    .depart-value {
+      font-size: 1.45em;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .line-track-shell {
+      position: absolute;
+      left: var(--hud-track-left);
+      top: 15%;
+      width: var(--hud-track-width);
+      height: 67.1%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .line-track-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--hud-track);
+      opacity: 0.95;
+    }
+
+    .line-track-bottom-dashed {
+      position: absolute;
+      left: var(--hud-track-left);
+      top: 68.59%;
+      bottom: 17.5%;
+      width: var(--hud-track-width);
+      pointer-events: none;
+      display: none;
+      z-index: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 60, 38, 0.95) 0 0.55em,
+        rgba(255, 115, 77, 0) 0.55em 0.95em
+      );
+    }
+
+    .line-stops {
+      position: absolute;
+      left: 0;
+      top: 19%;
+      width: 100%;
+      height: 57%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .stop-row {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 26%;
+    }
+
+    .stop-row-a {
+      top: 0;
+    }
+
+    .stop-row-b {
+      top: 37%;
+    }
+
+    .stop-row-c {
+      top: 74%;
+    }
+
+    .stop-dot {
+      position: absolute;
+      left: calc(var(--hud-track-center) - 1.6%);
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3.2%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      background: #fff;
+      border: 0.2em solid #000;
+      box-sizing: border-box;
+    }
+
+    .stop-name {
+      position: absolute;
+      left: calc(var(--hud-track-center) + 3.4%);
+      top: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      font-size: 1.2em;
+      font-weight: 400;
+      line-height: 1;
+      white-space: nowrap;
+      color: #fff;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.56);
+    }
+
+    .stop-arrow {
+      position: absolute;
+      left: var(--hud-track-center);
+      top: 68.5%;
+      transform: translate(-50%, -50%);
+      width: 4.5%;
+      height: 16%;
+      pointer-events: none;
+      z-index: 3;
+      filter: drop-shadow(0 0 0.08em rgba(0, 0, 0, 0.35));
+    }
+
+    .stop-arrow svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .line-card {
+      position: absolute;
+      left: 1.2%;
+      width: 25%;
+      background: var(--hud-dark);
+      color: #fff;
+      box-sizing: border-box;
+      padding: 2.2% 2.5%;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.48);
+      z-index: 2;
+    }
+
+    .line-card-main {
+      top: 15%;
+      height: 12%;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      align-items: center;
+    }
+
+    .line-main-code {
+      font-size: 1.02em;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .line-main-stop {
+      font-size: 1.02em;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .line-card-ref {
+      top: 60%;
+      height: 22%;
+      display: grid;
+      grid-template-rows: 0.55fr 0.9fr 0.8fr;
+      align-items: center;
+    }
+
+    .line-ref-label {
+      font-size: 0.98em;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .line-ref-time {
+      font-size: 1.05em;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .line-ref-stop {
+      font-size: 1.05em;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    button:active {
+      filter: brightness(0.93);
+    }
+  </style>
+</head>
+<body>
+  <div class="root">
+    <section class="hud" id="saeivHud" role="application" aria-label="Ecran SAEIV">
+      <section class="top-screen" aria-hidden="false">
+        <header class="top-bar">
+          <button type="button" class="top-btn top-btn-a" data-action="top-left-a" aria-label="Top left A">
+            <span class="top-btn-q" aria-hidden="true">?</span>
+          </button>
+          <button type="button" class="top-btn top-btn-b" data-action="top-left-b" aria-label="Top left B"></button>
+          <div class="clock" id="saeivClock">00:00</div>
+        </header>
+
+        <div class="top-mask"></div>
+        <div class="route-letter" id="saeivRouteLetter">D</div>
+        <div class="pip-mark" aria-hidden="true"></div>
+
+        <footer class="bottom-bar">
+          <button type="button" class="call-btn call-btn-left" data-action="call-sup" aria-label="Appel sup">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6.6 10.8c2.1 4.1 5.4 7.4 9.5 9.5l2.4-2.4c.3-.3.7-.4 1.1-.3 1.2.4 2.4.6 3.7.6.6 0 1 .4 1 1V23c0 .6-.4 1-1 1C10.4 24 0 13.6 0 1c0-.6.4-1 1-1h3.8c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.7.1.4 0 .8-.3 1.1z"></path>
+            </svg>
+            <span>APPEL SUP</span>
+          </button>
+
+          <button type="button" class="middle-btn middle-btn-a" data-action="slot-a" aria-label="Onglet 1">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <text x="12" y="17" text-anchor="middle" fill="#d8e6ff" font-size="16" font-family="Arial, sans-serif" font-weight="700">?</text>
+            </svg>
+          </button>
+
+          <button type="button" class="middle-btn middle-btn-b" data-action="slot-b" aria-label="Onglet 2">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <text x="12" y="17" text-anchor="middle" fill="#d8e6ff" font-size="16" font-family="Arial, sans-serif" font-weight="700">?</text>
+            </svg>
+          </button>
+
+          <button type="button" class="middle-btn middle-btn-c" data-action="slot-c" aria-label="Onglet 3">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <text x="12" y="17" text-anchor="middle" fill="#d8e6ff" font-size="16" font-family="Arial, sans-serif" font-weight="700">?</text>
+            </svg>
+          </button>
+
+          <button type="button" class="call-btn call-btn-right" data-action="call-reg" aria-label="Appel reg">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6.6 10.8c2.1 4.1 5.4 7.4 9.5 9.5l2.4-2.4c.3-.3.7-.4 1.1-.3 1.2.4 2.4.6 3.7.6.6 0 1 .4 1 1V23c0 .6-.4 1-1 1C10.4 24 0 13.6 0 1c0-.6.4-1 1-1h3.8c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.7.1.4 0 .8-.3 1.1z"></path>
+            </svg>
+            <span>APPEL REG</span>
+          </button>
+        </footer>
+      </section>
+
+      <section class="overlay-screen">
+        <button type="button" class="menu-rail" data-action="menu" aria-label="Menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <text x="12" y="17" text-anchor="middle" fill="#e8efff" font-size="16" font-family="Arial, sans-serif" font-weight="700">?</text>
+          </svg>
+          <span>Menu</span>
+        </button>
+
+        <div class="depart-box">
+          <div class="depart-label">Départ dans</div>
+          <div class="depart-value" id="saeivDepartMinutes">09</div>
+          <div class="depart-label">minutes</div>
+        </div>
+
+        <div class="line-track-shell"></div>
+        <div class="line-track-bottom-dashed" id="lineTrackBottomDashed" aria-hidden="true"></div>
+
+        <div class="line-stops">
+          <div class="stop-row stop-row-a">
+            <div class="stop-dot"></div>
+            <div class="stop-name" id="stopNameA">Nom Arrêt</div>
+          </div>
+          <div class="stop-row stop-row-b">
+            <div class="stop-dot"></div>
+            <div class="stop-name" id="stopNameB">Nom Arrêt</div>
+          </div>
+          <div class="stop-row stop-row-c">
+            <div class="stop-dot"></div>
+            <div class="stop-name" id="stopNameC">Nom Arrêt</div>
+          </div>
+          <div class="stop-arrow" aria-hidden="true">
+            <svg viewBox="0 0 100 120" preserveAspectRatio="xMidYMid meet">
+              <polygon points="50,4 92,72 66,66 58,114 42,114 34,66 8,72" fill="#22b8ef"></polygon>
+              <polygon points="50,14 74,68 58,64 53,108 47,108 42,64 26,68" fill="#9cefff"></polygon>
+              <polygon points="50,8 56,22 44,22" fill="#dbfbff"></polygon>
+            </svg>
+          </div>
+        </div>
+
+        <div class="line-card line-card-main">
+          <div class="line-main-code" id="lineMainCode">000</div>
+          <div class="line-main-stop" id="lineMainStop">Arrêt</div>
+        </div>
+
+        <div class="line-card line-card-ref">
+          <div class="line-ref-label">Point de régulation</div>
+          <div class="line-ref-time" id="lineRefTime">00:00</div>
+          <div class="line-ref-stop" id="lineRefStop">Arrêt</div>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const CHANNEL_NAME = "idf_map_saeiv_v1";
+      const params = new URLSearchParams(location.search);
+      const sourceId = String(params.get("source") || "").trim();
+      const isValidSourceId = /^map-[a-z0-9]+-[a-z0-9]+$/i.test(sourceId);
+      if (!isValidSourceId) {
+        const target = new URL("map.html", location.href);
+        location.replace(target.toString());
+        return;
+      }
+      const hudEl = document.getElementById("saeivHud");
+      const clockEl = document.getElementById("saeivClock");
+      const routeLetterEl = document.getElementById("saeivRouteLetter");
+      const departEl = document.getElementById("saeivDepartMinutes");
+      const lineCodeEl = document.getElementById("lineMainCode");
+      const lineStopEl = document.getElementById("lineMainStop");
+      const lineRefTimeEl = document.getElementById("lineRefTime");
+      const lineRefStopEl = document.getElementById("lineRefStop");
+      const stopAEl = document.getElementById("stopNameA");
+      const stopBEl = document.getElementById("stopNameB");
+      const stopCEl = document.getElementById("stopNameC");
+      const lineTrackEl = document.querySelector(".line-track-shell");
+      const stopRowAEl = document.querySelector(".stop-row-a");
+      const stopRowBEl = document.querySelector(".stop-row-b");
+      const stopRowCEl = document.querySelector(".stop-row-c");
+      const stopArrowEl = document.querySelector(".stop-arrow");
+      const lineTrackBottomDashedEl = document.getElementById("lineTrackBottomDashed");
+      const TRACK_DEFAULT_TOP = 15;
+      const TRACK_DEFAULT_BOTTOM = 82.1;
+      const TRACK_MIDDLE_DOT_CENTER = 47.5;
+      const TRACK_BOTTOM_DOT_CENTER = 68.59;
+      let trackExtendTop = false;
+      let trackExtendBottom = false;
+      let trackShowBottomDashed = false;
+      let trackBottomDashedStart = TRACK_BOTTOM_DOT_CENTER;
+      let channel = null;
+      let clockTimer = null;
+
+      function applyScale() {
+        if (!hudEl) return;
+        const width = Math.max(320, Number(hudEl.clientWidth) || 0);
+        const scale = Math.max(0.35, Math.min(1.6, width / 679));
+        document.documentElement.style.setProperty("--hud-scale", String(scale));
+        updateDynamicTrackBounds();
+      }
+
+      function post(type, extra = {}) {
+        if (!channel || !sourceId) return;
+        try {
+          channel.postMessage({ type, sourceId, ...extra });
+        } catch {}
+      }
+
+      function sanitizeLineCode(raw) {
+        const value = String(raw || "").trim();
+        if (!value) return "000";
+        return value.slice(0, 8);
+      }
+
+      function currentClockText() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, "0");
+        const m = String(now.getMinutes()).padStart(2, "0");
+        return `${h}:${m}`;
+      }
+
+      function tickClock() {
+        if (!clockEl) return;
+        clockEl.textContent = currentClockText();
+      }
+
+      function pickDirectionLetter(payload) {
+        const route = String(payload.routeName || payload.directionName || "").trim();
+        if (!route) return "D";
+        const letter = route.charAt(0).toUpperCase();
+        return /^[A-Z]$/.test(letter) ? letter : "D";
+      }
+
+      function updateDynamicTrackBounds() {
+        if (!lineTrackEl) return;
+        // Dot centers in HUD percentage (derived from CSS):
+        // line-stops: top 19%, height 57%
+        // rows: top 0/37/74%, each height 26% => center offset 13%
+        const rows = [
+          { row: stopRowAEl, centerPct: 26.41 },
+          { row: stopRowBEl, centerPct: 47.50 },
+          { row: stopRowCEl, centerPct: 68.59 }
+        ].filter((item) => !!item.row);
+        if (!rows.length) return;
+
+        const visibleRows = rows.filter((item) => {
+          try {
+            return window.getComputedStyle(item.row).visibility !== "hidden";
+          } catch {
+            return true;
+          }
+        });
+
+        if (!visibleRows.length) {
+          lineTrackEl.style.top = "15%";
+          lineTrackEl.style.height = "67.1%";
+          return;
+        }
+
+        const centers = visibleRows.map((item) => Number(item.centerPct) || 0);
+        let topPct = Math.min(...centers);
+        let bottomPct = Math.max(...centers);
+        if (trackExtendTop) topPct = Math.min(topPct, TRACK_DEFAULT_TOP);
+        if (trackExtendBottom) bottomPct = Math.max(bottomPct, TRACK_DEFAULT_BOTTOM);
+        let heightPct = bottomPct - topPct;
+
+        if (heightPct < 0.05) {
+          // Single visible stop: keep a tiny segment centered on the dot.
+          heightPct = 0.18;
+          topPct -= heightPct / 2;
+        }
+
+        const clampedHeight = Math.max(0.05, Math.min(100, heightPct));
+        const clampedTop = Math.max(0, Math.min(100 - clampedHeight, topPct));
+        lineTrackEl.style.top = `${clampedTop.toFixed(3)}%`;
+        lineTrackEl.style.height = `${clampedHeight.toFixed(3)}%`;
+
+        if (lineTrackBottomDashedEl) {
+          if (trackShowBottomDashed) {
+            lineTrackBottomDashedEl.style.display = "block";
+            lineTrackBottomDashedEl.style.top = `${trackBottomDashedStart}%`;
+          } else {
+            lineTrackBottomDashedEl.style.display = "none";
+          }
+        }
+      }
+
+      function renderState(payload) {
+        const data = payload && typeof payload === "object" ? payload : {};
+        const linkedStops = Array.isArray(data.audioStopNames)
+          ? data.audioStopNames.map((name) => String(name || "").trim()).filter(Boolean)
+          : [];
+        const linkedLastIndex = Math.max(0, linkedStops.length - 1);
+        const linkedIndex = linkedStops.length
+          ? Math.max(0, Math.min(linkedLastIndex, Number(data.audioCurrentIndex || 0)))
+          : 0;
+        const linkedPrev = linkedIndex > 0 ? String(linkedStops[linkedIndex - 1] || "").trim() : "";
+        const linkedCurrent = String(linkedStops[linkedIndex] || "").trim();
+        const linkedNext = linkedIndex < linkedLastIndex ? String(linkedStops[linkedIndex + 1] || "").trim() : "";
+        const hasStopAfterTopDot = (linkedIndex + 2) <= linkedLastIndex;
+        const hasStopBeforeBottomDot = (linkedIndex - 2) >= 0;
+        const lineCode = sanitizeLineCode(data.lineNumber);
+        const currentStop = String(linkedCurrent || data.stopName || data.stopLabel || "Arret").trim() || "Arret";
+        const previousStop = String(linkedPrev || data.previousStopName || "").trim();
+        const nextStop = String(linkedNext || data.nextStopName || data.nextStop || "").trim();
+        const refTime = String(data.refTime || currentClockText()).trim() || currentClockText();
+        const departIn = String(data.departMinutes || "09").trim() || "09";
+        const directionLetter = pickDirectionLetter(data);
+        const hasPreviousStop = !!previousStop;
+        const hasNextStop = !!nextStop;
+        const isBeforeFirstStop = linkedStops.length > 0 && linkedIndex === 0 && !hasPreviousStop;
+        trackExtendTop = hasNextStop && hasStopAfterTopDot;
+        trackExtendBottom = hasPreviousStop && hasStopBeforeBottomDot;
+        trackShowBottomDashed = isBeforeFirstStop;
+        trackBottomDashedStart = isBeforeFirstStop ? TRACK_MIDDLE_DOT_CENTER : TRACK_BOTTOM_DOT_CENTER;
+
+        if (routeLetterEl) routeLetterEl.textContent = directionLetter;
+        if (departEl) departEl.textContent = departIn;
+        if (lineCodeEl) lineCodeEl.textContent = lineCode;
+        if (lineStopEl) lineStopEl.textContent = currentStop;
+        if (lineRefTimeEl) lineRefTimeEl.textContent = refTime;
+        if (lineRefStopEl) lineRefStopEl.textContent = currentStop;
+        if (stopAEl) stopAEl.textContent = nextStop;
+        if (stopBEl) stopBEl.textContent = currentStop || "-";
+        if (stopCEl) stopCEl.textContent = previousStop;
+
+        if (stopRowAEl) stopRowAEl.style.visibility = hasNextStop ? "visible" : "hidden";
+        if (stopRowBEl) stopRowBEl.style.visibility = "visible";
+        if (stopRowCEl) stopRowCEl.style.visibility = hasPreviousStop ? "visible" : "hidden";
+        if (stopArrowEl) stopArrowEl.style.visibility = (hasPreviousStop || isBeforeFirstStop) ? "visible" : "hidden";
+        updateDynamicTrackBounds();
+      }
+
+      if (typeof BroadcastChannel === "function") {
+        channel = new BroadcastChannel(CHANNEL_NAME);
+        channel.addEventListener("message", (event) => {
+          const data = event && event.data ? event.data : {};
+          if (!data || data.sourceId !== sourceId) return;
+          if (String(data.type || "") !== "saeiv:state") return;
+          renderState(data.payload || {});
+        });
+      }
+
+      document.querySelectorAll("[data-action]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const action = String(btn.getAttribute("data-action") || "").trim();
+          if (!action) return;
+          post("saeiv:action", { action });
+        });
+      });
+
+      window.addEventListener("pagehide", () => {
+        post("saeiv:closed");
+      });
+
+      window.addEventListener("resize", applyScale, { passive: true });
+      if (typeof ResizeObserver === "function" && hudEl) {
+        const ro = new ResizeObserver(() => applyScale());
+        ro.observe(hudEl);
+      }
+
+      tickClock();
+      clockTimer = window.setInterval(tickClock, 1000);
+      window.addEventListener("beforeunload", () => {
+        if (clockTimer) {
+          clearInterval(clockTimer);
+          clockTimer = null;
+        }
+      });
+
+      post("saeiv:ready");
+      post("saeiv:request_state");
+      applyScale();
+      renderState({});
+    })();
+  </script>
+</body>
+</html>
