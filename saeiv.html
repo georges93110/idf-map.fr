@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ecran SAEIV</title>
+  <link rel="icon" type="image/png" href="images/idf_logo_new.png" />
   <style>
     :root {
       --hud-scale: 1;
@@ -22,7 +23,17 @@
       --overlay-screen-dark: #000149;
       --overlay-screen-mid: #142e76;
       --overlay-screen-light: #2c4378;
-      --bottom-bar-bg: #4e73c6;
+      --bottom-bar-bg: linear-gradient(180deg, rgba(97, 166, 242, 0.86) 0%, rgba(70, 132, 218, 0.86) 100%);
+      --tab-btn-grad-top: #a1bcd3;
+      --tab-btn-grad-bottom: #4b70b0;
+      --call-btn-width: 20%;
+      --middle-btn-width: 14%;
+      --middle-btn-gap: 0.75%;
+      --line-card-main-left: 1.2%;
+      --line-card-main-width: 27.5%;
+      --line-ref-left: 1.2%;
+      --line-ref-width: 27.5%;
+      --line-ref-shift-per-line: 0.22em;
       --font-main: Arial, "Helvetica Neue", Helvetica, sans-serif;
     }
 
@@ -35,6 +46,8 @@
       background: #000;
       color: #fff;
       font-family: var(--font-main);
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     .root {
@@ -43,6 +56,118 @@
       display: grid;
       place-items: center;
       background: #000;
+      position: relative;
+    }
+
+    .pip-drawer {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.45rem;
+      pointer-events: auto;
+    }
+
+    .pip-drawer[hidden] {
+      display: none !important;
+    }
+
+    .pip-drawer-toggle {
+      border: 0.08em solid rgba(255, 255, 255, 0.92);
+      border-radius: 0.42em;
+      padding: 0.38em 0.62em;
+      background: linear-gradient(180deg, rgba(44, 53, 70, 0.96) 0%, rgba(20, 26, 38, 0.98) 100%);
+      color: #ffffff;
+      font-weight: 700;
+      line-height: 1;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px), (pointer: coarse) {
+      .pip-drawer-toggle {
+        display: none !important;
+      }
+    }
+
+    .pip-drawer-items {
+      display: none;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .pip-drawer.is-open .pip-drawer-items {
+      display: flex;
+    }
+
+    .pip-toggle-btn {
+      border: 0.08em solid rgba(255, 255, 255, 0.92);
+      border-radius: 0.42em;
+      padding: 0.45em 0.8em;
+      background: linear-gradient(180deg, rgba(44, 53, 70, 0.96) 0%, rgba(20, 26, 38, 0.98) 100%);
+      color: #ffffff;
+      font-weight: 700;
+      line-height: 1;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+    }
+
+    .pip-stop-audio-btn {
+      border-color: rgba(255, 206, 206, 0.95);
+      background: linear-gradient(180deg, rgba(96, 42, 42, 0.96) 0%, rgba(48, 17, 17, 0.98) 100%);
+    }
+
+    .pip-toggle-btn[hidden] {
+      display: none !important;
+    }
+
+    .pip-host-notice {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      text-align: center;
+      padding: 11vh 6vw 6vh;
+      box-sizing: border-box;
+      z-index: 12;
+      pointer-events: none;
+      color: #f1f7ff;
+      font-weight: 700;
+      line-height: 1.08;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.5);
+    }
+
+    .pip-host-notice.is-active {
+      display: flex;
+    }
+
+    .pip-host-notice-main {
+      font-size: clamp(30px, 6vw, 60px);
+      letter-spacing: 0.02em;
+    }
+
+    .pip-host-notice-sub {
+      margin-top: 0.45em;
+      font-size: clamp(16px, 2.6vw, 38px);
+      opacity: 0.92;
+    }
+
+    .pip-host-notice-actions {
+      margin-top: 1.1rem;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
+      pointer-events: auto;
+    }
+
+    .pip-host-notice.is-active .pip-host-notice-actions {
+      display: flex;
     }
 
     .hud {
@@ -54,6 +179,13 @@
         radial-gradient(120% 95% at 50% -10%, rgba(146, 198, 255, 0.33) 0%, rgba(115, 160, 238, 0.1) 38%, rgba(45, 79, 170, 0.25) 65%, rgba(8, 20, 63, 0.38) 100%),
         linear-gradient(180deg, var(--hud-bg-a) 0%, var(--hud-bg-b) 64%, var(--hud-bg-c) 100%);
       font-size: calc(14px * var(--hud-scale));
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* Force all text in the HUD to the exact same size. */
+    .hud :where(*:not(.clock):not(.line-main-code):not(.line-main-stop):not(.message-tab-label)) {
+      font-size: inherit !important;
     }
 
     .hud::after {
@@ -77,7 +209,7 @@
       top: 0;
       width: 100%;
       height: 12.5%;
-      background: var(--hud-main);
+      background: linear-gradient(180deg, rgba(97, 166, 242, 0.86) 0%, rgba(70, 132, 218, 0.86) 100%);
       border: 0;
     }
 
@@ -106,6 +238,7 @@
       line-height: 1;
       z-index: 6;
       text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.4);
+      display: none;
     }
 
     .top-btn {
@@ -130,17 +263,27 @@
     }
 
     .top-btn-b {
-      left: 13%;
-      width: 10%;
+      left: 13.5%;
+      width: 9.5%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .top-btn-a .top-btn-q {
-      color: #dbe9ff;
-      font-family: Arial, sans-serif;
-      font-size: 7em;
-      font-weight: 700;
-      line-height: 1;
-      display: block;
+    .top-btn-a svg,
+    .top-btn-a .top-btn-icon {
+      width: 46%;
+      height: auto;
+      opacity: 0.95;
+      object-fit: contain;
+    }
+
+    .top-btn-b svg,
+    .top-btn-b .top-btn-icon {
+      width: 57.5%;
+      height: auto;
+      opacity: 0.95;
+      object-fit: contain;
     }
 
     .clock {
@@ -154,23 +297,29 @@
       align-items: center;
       justify-content: flex-end;
       font-weight: 700;
-      font-size: 1.75em;
+      font-size: 125% !important;
       line-height: 1;
       letter-spacing: 0.02em;
       text-align: right;
       color: #fff;
       z-index: 7;
       text-shadow: 0 0 0.07em rgba(0, 0, 0, 0.38);
-      pointer-events: none;
+      pointer-events: auto;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .clock.is-date {
+      font-size: 62.5% !important;
     }
 
     .pip-mark {
       position: absolute;
       left: 45%;
       top: 2.5%;
-      width: 10%;
-      height: 8%;
-      border-radius: 0.38em;
+      width: 5%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
       background: #fff;
       z-index: 6;
       overflow: hidden;
@@ -180,9 +329,9 @@
 
     .pip-mark::before {
       content: "";
-      width: 87.5%;
-      height: 87.5%;
-      border-radius: 0.3em;
+      width: 90%;
+      height: 90%;
+      border-radius: 50%;
       background: #000;
     }
 
@@ -199,8 +348,8 @@
     .call-btn {
       position: absolute;
       bottom: 0;
-      width: 22.5%;
-      height: 100%;
+      width: var(--call-btn-width);
+      height: 92.5%;
       margin: 0;
       padding: 0;
       border: 0;
@@ -209,10 +358,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-end;
-      gap: 2%;
+      justify-content: center;
+      gap: 3%;
       box-sizing: border-box;
-      padding-bottom: 3%;
+      padding-bottom: 0;
     }
 
     .call-btn-left {
@@ -225,10 +374,12 @@
       background: var(--hud-right);
     }
 
-    .call-btn svg {
+    .call-btn svg,
+    .call-btn .call-btn-icon {
       width: 30%;
       height: auto;
       fill: #e5eeff;
+      object-fit: contain;
     }
 
     .call-btn span {
@@ -237,13 +388,14 @@
       line-height: 1;
       white-space: nowrap;
       text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.45);
+      margin-top: 3%;
     }
 
     .middle-btn {
       position: absolute;
-      top: 50%;
+      top: 52.5%;
       transform: translateY(-50%);
-      width: 13%;
+      width: var(--middle-btn-width);
       height: 90%;
       margin: 0;
       padding: 0;
@@ -268,18 +420,23 @@
     }
 
     .middle-btn-a {
-      left: 24%;
+      left: calc(var(--call-btn-width) + var(--middle-btn-gap));
+    }
+
+    .middle-btn-d {
+      left: calc(var(--call-btn-width) + (2 * var(--middle-btn-gap)) + var(--middle-btn-width));
     }
 
     .middle-btn-b {
-      left: 49.5%;
+      left: calc(var(--call-btn-width) + (3 * var(--middle-btn-gap)) + (2 * var(--middle-btn-width)));
     }
 
     .middle-btn-c {
-      left: 63%;
+      left: calc(var(--call-btn-width) + (4 * var(--middle-btn-gap)) + (3 * var(--middle-btn-width)));
     }
 
-    .middle-btn svg {
+    .middle-btn svg,
+    .middle-btn .middle-btn-icon {
       position: absolute;
       left: 50%;
       top: 50%;
@@ -289,6 +446,7 @@
       fill: #d8e6ff;
       opacity: 0.95;
       z-index: 2;
+      object-fit: contain;
     }
 
     .overlay-screen {
@@ -306,6 +464,580 @@
       );
     }
 
+    .overlay-page {
+      position: absolute;
+      inset: 0;
+      display: none;
+      pointer-events: none;
+    }
+
+    .overlay-page.is-active {
+      display: block;
+    }
+
+    .alarm-pane {
+      position: absolute;
+      left: 1.5%;
+      right: 0%;
+      top: 15%;
+      height: 65%;
+      background: linear-gradient(180deg, rgba(89, 157, 236, 0.48) 0%, rgba(56, 110, 192, 0.58) 100%);
+      box-shadow: inset 0 0 0 0.08em rgba(188, 225, 255, 0.18);
+      display: grid;
+      grid-template-columns: 11% 1fr 8.5%;
+      grid-template-rows: 12% 1fr;
+      pointer-events: none;
+    }
+
+    .alarm-back-btn {
+      grid-column: 1;
+      grid-row: 2;
+      border: 0;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, rgba(97, 166, 242, 0.86) 0%, rgba(70, 132, 218, 0.86) 100%);
+      color: #eaf5ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2%;
+      text-align: center;
+      box-shadow: inset -0.08em 0 0 rgba(177, 220, 255, 0.45);
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .alarm-back-icon {
+      width: 55%;
+      height: auto;
+    }
+
+    .alarm-back-text {
+      line-height: 1.05;
+      white-space: normal;
+      max-width: 92%;
+    }
+
+    .alarm-title {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-weight: 700;
+      color: #dff3ff;
+      background: linear-gradient(180deg, rgba(112, 179, 248, 0.9) 0%, rgba(79, 140, 224, 0.82) 100%);
+      border-bottom: 0.08em solid rgba(184, 225, 255, 0.58);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.35);
+    }
+
+    .alarm-list {
+      grid-column: 2;
+      grid-row: 2;
+      display: grid;
+      grid-template-rows: repeat(7, minmax(0, 1fr));
+      min-height: 0;
+      background: linear-gradient(180deg, rgba(55, 114, 205, 0.58) 0%, rgba(42, 95, 177, 0.52) 100%);
+    }
+
+    .alarm-row {
+      display: flex;
+      align-items: center;
+      padding: 0 2.3%;
+      color: #e9f8ff;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-bottom: 0.08em solid rgba(170, 216, 255, 0.42);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.3);
+    }
+
+    .menu-center {
+      grid-column: 2;
+      grid-row: 2;
+      position: relative;
+      min-height: 0;
+      pointer-events: auto;
+      background: linear-gradient(180deg, rgba(55, 114, 205, 0.58) 0%, rgba(42, 95, 177, 0.52) 100%);
+    }
+
+    .menu-grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      min-height: 0;
+    }
+
+    .menu-grid:not(.is-active) {
+      display: none;
+    }
+
+    .menu-tile {
+      border: 0.08em solid rgba(170, 216, 255, 0.42);
+      border-top: 0;
+      border-left: 0;
+      margin: 0;
+      padding: 0.42em 0.32em 2.15em;
+      background: linear-gradient(180deg, var(--tab-btn-grad-top) 0%, var(--tab-btn-grad-bottom) 100%);
+      color: #ecf9ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.18em;
+      text-align: center;
+      line-height: 1;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.42);
+      pointer-events: auto;
+      cursor: not-allowed;
+      position: relative;
+    }
+
+    .menu-tile.is-dark {
+      background: linear-gradient(180deg, var(--tab-btn-grad-top) 0%, var(--tab-btn-grad-bottom) 100%);
+    }
+
+    .menu-tile.is-enabled {
+      cursor: pointer;
+    }
+
+    .menu-tile.is-missing-target {
+      background: linear-gradient(180deg, rgba(132, 148, 174, 0.92) 0%, rgba(91, 104, 126, 0.94) 100%);
+      color: #dbe4f2;
+      text-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .menu-tile:disabled {
+      opacity: 1;
+      background: linear-gradient(180deg, rgba(96, 108, 128, 0.95) 0%, rgba(62, 72, 90, 0.97) 100%);
+      color: #ccd7e8;
+      text-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .menu-tile:disabled .menu-tile-icon path {
+      stroke: #c7d3e6;
+    }
+
+    .menu-tile:disabled .menu-tile-icon {
+      opacity: 0.85;
+      filter: grayscale(0.45) brightness(1.05);
+    }
+
+    .menu-tile.page-two-1 {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .menu-tile.page-two-2 {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .menu-tile.page-two-3 {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .menu-tile-icon {
+      width: 55%;
+      height: auto;
+      display: block;
+      pointer-events: none;
+    }
+
+    .menu-tile-icon path {
+      fill: none;
+      stroke: #e9f7ff;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+    }
+
+    .menu-tile-label {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0.24em;
+      min-height: 2.05em;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0 0.2em;
+      font-weight: 700;
+      line-height: 1.05;
+      text-align: center;
+    }
+
+    .alarm-scroll {
+      grid-column: 3;
+      grid-row: 2;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      border-left: 0.08em solid rgba(173, 219, 255, 0.45);
+      pointer-events: auto;
+    }
+
+    .alarm-scroll-btn {
+      border: 0;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      color: #e8f6ff;
+      font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(180deg, rgba(102, 168, 242, 0.8) 0%, rgba(70, 131, 215, 0.8) 100%);
+      cursor: not-allowed;
+      overflow: hidden;
+    }
+
+    .alarm-scroll-btn:not(:disabled) {
+      cursor: pointer;
+    }
+
+    .hud .alarm-scroll-btn {
+      font-size: 240% !important;
+    }
+
+    .alarm-scroll-btn > span {
+      display: inline-block;
+      line-height: 1;
+    }
+
+    .alarm-scroll-btn-up > span {
+      transform: rotate(90deg);
+    }
+
+    .alarm-scroll-btn-down > span {
+      transform: rotate(90deg);
+    }
+
+    .alarm-scroll-btn:disabled {
+      opacity: 1;
+    }
+
+    .signal-center {
+      grid-column: 2;
+      grid-row: 2;
+      display: grid;
+      grid-template-rows: 35% 1fr;
+      min-height: 0;
+      background: linear-gradient(180deg, rgba(55, 114, 205, 0.58) 0%, rgba(42, 95, 177, 0.52) 100%);
+      pointer-events: auto;
+      position: relative;
+      z-index: 2;
+      overflow: visible;
+    }
+
+    .signal-top {
+      position: relative;
+      border-bottom: 0.08em solid rgba(170, 216, 255, 0.42);
+      overflow: visible;
+    }
+
+    .signal-hint {
+      position: absolute;
+      left: 3.2%;
+      top: 85%;
+      transform: translateY(-50%);
+      color: #b7f2ef;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .signal-actions {
+      position: absolute;
+      right: -9.2%;
+      top: 20%;
+      width: 56%;
+      height: 48%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.4%;
+      z-index: 4;
+    }
+
+    .signal-action-btn {
+      border: 0;
+      margin: 0;
+      padding: 0;
+      color: #e9f8ff;
+      font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(180deg, var(--tab-btn-grad-top) 0%, var(--tab-btn-grad-bottom) 100%);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.35);
+      cursor: not-allowed;
+    }
+
+    .signal-action-btn:disabled {
+      opacity: 1;
+    }
+
+    .signal-list {
+      display: grid;
+      grid-template-rows: repeat(4, minmax(0, 1fr));
+      min-height: 0;
+    }
+
+    .signal-row {
+      display: flex;
+      align-items: center;
+      padding: 0 2.3%;
+      color: #e9f8ff;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-bottom: 0.08em solid rgba(170, 216, 255, 0.42);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.3);
+    }
+
+    .signal-row-btn {
+      border: 0;
+      margin: 0;
+      width: 100%;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 110ms linear;
+      box-shadow: inset 0 0 0 0.08em rgba(170, 216, 255, 0.42);
+    }
+
+    .signal-row-btn:hover,
+    .signal-row-btn:focus-visible {
+      background: transparent;
+      filter: none !important;
+      outline: none;
+    }
+
+    .signal-row-btn:active {
+      background: transparent;
+      filter: none !important;
+    }
+
+    .signal-scroll {
+      grid-template-rows: 35% 1fr 1fr;
+      border-left: 0;
+      background: linear-gradient(180deg, rgba(55, 114, 205, 0.58) 0%, rgba(42, 95, 177, 0.52) 100%);
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .signal-scroll::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 35%;
+      border-top: 0.08em solid rgba(170, 216, 255, 0.42);
+      pointer-events: none;
+    }
+
+    .signal-scroll .alarm-scroll-btn-up {
+      grid-row: 2;
+    }
+
+    .signal-scroll .alarm-scroll-btn-down {
+      grid-row: 3;
+    }
+
+    .diffusion-center {
+      grid-column: 2;
+      grid-row: 2;
+      min-height: 0;
+      pointer-events: auto;
+      box-sizing: border-box;
+      padding: 2.2% 0.8% 0.7%;
+      background: linear-gradient(180deg, rgba(96, 169, 241, 0.48) 0%, rgba(78, 141, 224, 0.42) 100%);
+    }
+
+    .diffusion-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-auto-rows: minmax(0, 1fr);
+      row-gap: 4.25%;
+      column-gap: 0.9%;
+      height: 58%;
+      min-height: 0;
+    }
+
+    .diffusion-btn {
+      border: 0.08em solid rgba(170, 216, 255, 0.42);
+      margin: 0;
+      padding: 0.34em 0.42em;
+      color: #e9f8ff;
+      font-weight: 700;
+      line-height: 1.08;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.35);
+      background: linear-gradient(180deg, var(--tab-btn-grad-top) 0%, var(--tab-btn-grad-bottom) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .diffusion-btn:disabled {
+      opacity: 1;
+      cursor: not-allowed;
+      color: #dbe4f2;
+      background: linear-gradient(180deg, rgba(140, 156, 182, 0.9) 0%, rgba(102, 117, 142, 0.92) 100%);
+      text-shadow: none;
+    }
+
+    .diffusion-empty {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e9f8ff;
+      font-weight: 700;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.35);
+    }
+
+    .message-center {
+      grid-column: 2;
+      grid-row: 2;
+      display: grid;
+      grid-template-rows: 34% 1fr;
+      min-height: 0;
+      background: linear-gradient(180deg, rgba(55, 114, 205, 0.58) 0%, rgba(42, 95, 177, 0.52) 100%);
+      pointer-events: auto;
+    }
+
+    .message-tabs-row {
+      display: flex;
+      align-items: stretch;
+      border-bottom: 0.08em solid rgba(170, 216, 255, 0.42);
+    }
+
+    .message-tabs {
+      display: flex;
+      align-items: stretch;
+      width: 50%;
+      pointer-events: auto;
+    }
+
+    .message-tab {
+      flex: 0 0 33.333%;
+      border: 0;
+      margin: 0;
+      padding: 0.42em 0.28em 0.3em;
+      background: linear-gradient(180deg, rgba(122, 169, 223, 0.9) 0%, rgba(64, 107, 176, 0.92) 100%);
+      color: #dcecff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.12em;
+      text-align: center;
+      border-right: 0.08em solid rgba(170, 216, 255, 0.42);
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .message-tab:last-child {
+      border-right: 0.08em solid rgba(170, 216, 255, 0.42);
+    }
+
+    .message-tab.is-active {
+      background: linear-gradient(180deg, rgba(68, 104, 203, 0.98) 0%, rgba(61, 99, 174, 0.96) 100%);
+    }
+
+    .message-tab:disabled {
+      opacity: 1;
+      cursor: default;
+    }
+
+    .message-tab-icon {
+      display: block;
+      width: 46%;
+      height: auto;
+      line-height: 1;
+      object-fit: contain;
+    }
+
+    .message-tab-icon path {
+      fill: none;
+      stroke: #e8f6ff;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+    }
+
+    .hud .message-tab .message-tab-label {
+      line-height: 1.04;
+      font-weight: 700;
+      font-size: 65% !important;
+    }
+
+    .message-table {
+      display: grid;
+      grid-template-columns: 26% 1fr;
+      grid-template-rows: 0.85fr repeat(3, 1fr);
+      min-height: 0;
+    }
+
+    .message-head {
+      display: flex;
+      align-items: center;
+      padding: 0 6%;
+      font-weight: 700;
+      color: #eef9ff;
+      background: linear-gradient(180deg, rgba(41, 79, 161, 0.95) 0%, rgba(29, 62, 132, 0.95) 100%);
+      border-bottom: 0.08em solid rgba(170, 216, 255, 0.42);
+    }
+
+    .message-head-left,
+    .message-cell-left {
+      border-right: 0.08em solid rgba(170, 216, 255, 0.42);
+    }
+
+    .message-cell {
+      display: flex;
+      align-items: center;
+      padding: 0 2.6%;
+      color: #e9f8ff;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-bottom: 0.08em solid rgba(170, 216, 255, 0.42);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.3);
+    }
+
+    .message-empty-text {
+      opacity: 1;
+    }
+
+    .message-empty-text.is-switching {
+      visibility: hidden;
+    }
+
+    .message-scroll {
+      grid-template-rows: 34% 14.57% 25.715% 25.715%;
+    }
+
+    .message-scroll-spacer-top,
+    .message-scroll-spacer-head {
+      border-bottom: 0.08em solid rgba(170, 216, 255, 0.42);
+    }
+
+    .message-scroll-spacer-top {
+      background: linear-gradient(180deg, rgba(55, 114, 205, 0.58) 0%, rgba(42, 95, 177, 0.52) 100%);
+    }
+
+    .message-scroll-spacer-head {
+      background: linear-gradient(180deg, rgba(41, 79, 161, 0.95) 0%, rgba(29, 62, 132, 0.95) 100%);
+    }
+
     .menu-rail {
       position: absolute;
       right: 0;
@@ -313,9 +1045,10 @@
       width: 9%;
       height: 65%;
       border: 0;
+      gap: 2%;
       margin: 0;
       padding: 0;
-      background: var(--hud-main);
+      background: linear-gradient(180deg, rgba(97, 166, 242, 0.86) 0%, rgba(70, 132, 218, 0.86) 100%);
       color: #fff;
       cursor: pointer;
       pointer-events: auto;
@@ -323,14 +1056,17 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6%;
+      gap: 2%;
+      z-index: 6;
     }
 
-    .menu-rail svg {
-      width: 62%;
+    .menu-rail svg,
+    .menu-rail .menu-rail-icon {
+      width: 60%;
       height: auto;
       fill: #e8efff;
       filter: drop-shadow(0 0 0.06em rgba(0, 0, 0, 0.4));
+      object-fit: contain;
     }
 
     .menu-rail span {
@@ -341,30 +1077,117 @@
 
     .depart-box {
       position: absolute;
-      left: 74.963%;
+      left: 75%;
       top: 15%;
-      width: 12.5%;
+      width: 12%;
       height: 65%;
-      background: var(--hud-depart);
-      display: grid;
-      grid-template-rows: 1fr 1fr 1fr;
+      background: linear-gradient(180deg, rgba(184, 82, 67, 0.95) 0%, rgba(152, 64, 58, 0.93) 38%, rgba(103, 43, 58, 0.96) 100%);
+      border-left: 0.1em solid rgba(54, 16, 26, 0.7);
+      border-right: 0.1em solid rgba(54, 16, 26, 0.7);
+      box-shadow: inset 0 0 0 0.08em rgba(103, 32, 40, 0.58);
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-items: center;
+      justify-content: center;
+      gap: 7.5%;
+      padding: 8% 0;
+      box-sizing: border-box;
       color: #fff;
       text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.5);
+      visibility: hidden;
+      display: none;
+      text-align: center;
+      z-index: 6;
     }
 
     .depart-label {
-      font-size: 0.96em;
-      font-weight: 500;
-      line-height: 1.1;
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      font-size: 0.98em !important;
+      font-weight: 700;
+      line-height: 1.04;
       text-align: center;
+      white-space: normal;
     }
 
     .depart-value {
-      font-size: 1.45em;
-      font-weight: 700;
-      line-height: 1;
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      font-size: 1.5em !important;
+      font-weight: 300;
+      line-height: 2;
+      letter-spacing: 0.01em;
+      transform: scale(2);
+      transform-origin: center center;
+    }
+
+    .depart-box .depart-label:last-child {
+      margin-top: 0;
+    }
+
+    .home-mini-lane {
+      position: absolute;
+      left: 81%;
+      top: 15%;
+      width: 4.5%;
+      bottom: 20%;
+      background: linear-gradient(180deg, rgba(97, 166, 242, 1) 0%, rgba(70, 132, 218, 1) 100%);
+      border-left: 0.1em solid rgba(70, 132, 218, 0.88);
+      border-right: 0.1em solid rgba(70, 132, 218, 0.88);
+      box-shadow: inset 0 0 0 0.08em rgba(207, 230, 255, 0.36);
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .home-mini-lane-ticks {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 0.5em;
+      height: auto;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0) 0 5%,
+        rgba(236, 248, 255, 1) 1% 6%,
+        rgba(255, 255, 255, 0) 1% 9%
+      );
+      opacity: 0.95;
+    }
+
+    .home-mini-lane-ticks-left {
+      left: 2%;
+    }
+
+    .home-mini-lane-ticks-right {
+      right: 2%;
+    }
+
+    .home-mini-lane-guide {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1%;
+      background: #ffffff;
+    }
+
+    .home-mini-lane-arrow {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -56%);
+      width: 0;
+      height: 0;
+      border-left: 0.75em solid transparent;
+      border-right: 0.75em solid transparent;
+      border-bottom: 1.38em solid #f5f9ff;
+      filter: drop-shadow(0 0.08em 0.12em rgba(0, 0, 0, 0.45));
     }
 
     .line-track-shell {
@@ -389,7 +1212,7 @@
       position: absolute;
       left: var(--hud-track-left);
       top: 68.59%;
-      bottom: 17.5%;
+      bottom: 22.5%;
       width: var(--hud-track-width);
       pointer-events: none;
       display: none;
@@ -430,6 +1253,11 @@
       top: 74%;
     }
 
+    .stop-row-placeholder {
+      top: 37%;
+      visibility: hidden;
+    }
+
     .stop-dot {
       position: absolute;
       left: calc(var(--hud-track-center) - 1.6%);
@@ -456,6 +1284,7 @@
       white-space: nowrap;
       color: #fff;
       text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.56);
+      z-index: 1;
     }
 
     .stop-arrow {
@@ -478,167 +1307,514 @@
 
     .line-card {
       position: absolute;
-      left: 1.2%;
-      width: 25%;
+      left: var(--line-card-main-left);
+      width: var(--line-card-main-width);
       background: var(--hud-dark);
       color: #fff;
       box-sizing: border-box;
-      padding: 2.2% 2.5%;
+      padding: 1% 1%;
       text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.48);
       z-index: 2;
     }
 
     .line-card-main {
       top: 15%;
-      height: 12%;
-      display: grid;
-      grid-template-rows: 1fr 1fr;
-      align-items: center;
+      height: 15%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      text-align: left;
+      padding-top: 0.7%;
+      padding-bottom: 0.7%;
     }
 
     .line-main-code {
-      font-size: 1.02em;
-      font-weight: 500;
-      line-height: 1;
+      font-size: 1em !important;
+      font-weight: 700;
+      line-height: 1.06;
+      width: 100%;
+      min-height: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
     }
 
     .line-main-stop {
-      font-size: 1.02em;
-      font-weight: 500;
-      line-height: 1;
+      font-size: 0.9em !important;
+      font-weight: 600;
+      line-height: 1.06;
+      width: 100%;
+      min-height: 0;
+      margin-top: 0.1em;
+      overflow: hidden;
+      text-overflow: clip;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      text-align: left;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
     }
 
     .line-card-ref {
-      top: 60%;
-      height: 22%;
-      display: grid;
-      grid-template-rows: 0.55fr 0.9fr 0.8fr;
-      align-items: center;
+      --line-ref-shift: 0em;
+      left: var(--line-ref-left);
+      width: var(--line-ref-width);
+      min-width: var(--line-ref-width);
+      max-width: var(--line-ref-width);
+      top: 50%;
+      height: 30%;
+      min-height: 30%;
+      max-height: 30%;
+      display: none;
+      flex: 0 0 auto;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: stretch;
+      gap: 0;
+      padding: 0.4% 0 0.6%;
+      background: transparent;
+      box-shadow: none;
+      overflow: visible;
     }
 
     .line-ref-label {
-      font-size: 0.98em;
-      font-weight: 500;
-      line-height: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 0.42em;
+      margin-bottom: 0.28em;
+      font-size: 0.9em !important;
+      font-weight: 700;
+      line-height: 1.4;
+      color: #d8f0ff;
+      background: linear-gradient(180deg, rgba(66, 117, 171, 0.94) 0%, rgba(61, 124, 214, 0.9) 100%);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.35);
+      transform: translateY(calc(-1 * var(--line-ref-shift)));
     }
 
     .line-ref-time {
-      font-size: 1.05em;
+      display: flex;
+      align-items: center;
+      padding: 0 0.15em;
+      margin-top: 0.15em;
+      margin-bottom: -0.15em;
+      font-size: 1.75em !important;
       font-weight: 700;
       line-height: 1;
+      letter-spacing: 0.01em;
+      color: #f0fbff;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.42);
+      transform: translateY(calc(-1 * var(--line-ref-shift)));
     }
 
     .line-ref-stop {
-      font-size: 1.05em;
+      display: block;
+      padding: 0 0.42em 0.1em;
+      font-size: 0.8em !important;
       font-weight: 700;
-      line-height: 1;
+      line-height: 1.05;
+      margin: -0.1em 0 0.3em;
+      color: #e9fbff;
+      text-transform: uppercase;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: initial;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      min-height: 0;
+      max-height: none;
     }
 
-    button:active {
-      filter: brightness(0.93);
+    .line-ref-meta {
+      margin-top: 0;
+      padding: 0.12em 0.42em;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 0.16em;
+      height: 2.45em;
+      min-height: 2.45em;
+      max-height: 2.45em;
+      flex: 0 0 2.45em;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(66, 117, 171, 0.94) 0%, rgba(61, 124, 214, 0.9) 100%);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.35);
+      color: #dff5ff;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.34);
+    }
+
+    .line-ref-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 0.28em;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .line-ref-meta-row-split {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.35em;
+    }
+
+    .line-ref-meta-row-split > .line-ref-meta-value:last-child {
+      justify-self: end;
+      text-align: right;
+    }
+
+    .line-ref-meta-key {
+      font-size: 0.9em !important;
+      font-weight: 600;
+      opacity: 0.97;
+    }
+
+    .line-ref-meta-value {
+      font-size: 0.9em !important;
+      font-weight: 700;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    button:disabled,
+    button:disabled:active,
+    button:disabled:focus {
+      cursor: not-allowed !important;
+      filter: none !important;
+    }
+
+    .hud button:not(:disabled),
+    .hud [role="button"]:not([aria-disabled="true"]) {
+      cursor: default !important;
+    }
+
+    button:hover {
+      filter: none !important;
+    }
+
+    button:not(:disabled):active {
+      filter: brightness(0.85) !important;
     }
   </style>
 </head>
 <body>
   <div class="root">
+    <div class="pip-drawer" id="pipDrawer">
+      <button type="button" class="pip-drawer-toggle" id="pipDrawerToggle" aria-label="Ouvrir les boutons">></button>
+      <div class="pip-drawer-items" id="pipDrawerItems">
+        <button type="button" class="pip-toggle-btn" id="pipToggleBtn" aria-label="Basculer fenetre PIP">Mode PIP</button>
+        <button type="button" class="pip-toggle-btn pip-stop-audio-btn" id="pipStopAudioBtn" aria-label="Arreter annonce en cours" hidden>Arreter annonce</button>
+      </div>
+    </div>
+    <div class="pip-host-notice" id="pipHostNotice" aria-live="polite">
+      <div>
+        <div class="pip-host-notice-main">MERCI DE PAS FERMER CETTE PAGE</div>
+        <div class="pip-host-notice-sub">VOUS POUVEZ EN REVANCHE MINIMISER CETTE PAGE</div>
+        <div class="pip-host-notice-actions" id="pipHostNoticeActions">
+          <button type="button" class="pip-toggle-btn" id="pipHostQuitBtn" aria-label="Quitter fenetre PIP">Quitter PIP</button>
+          <button type="button" class="pip-toggle-btn pip-stop-audio-btn" id="pipHostStopAudioBtn" aria-label="Arreter annonce en cours" hidden>Arreter annonce</button>
+        </div>
+      </div>
+    </div>
     <section class="hud" id="saeivHud" role="application" aria-label="Ecran SAEIV">
       <section class="top-screen" aria-hidden="false">
         <header class="top-bar">
           <button type="button" class="top-btn top-btn-a" data-action="top-left-a" aria-label="Top left A">
-            <span class="top-btn-q" aria-hidden="true">?</span>
+            <img class="top-btn-icon" src="images/saiev/alarmes_on.png" alt="" aria-hidden="true" />
           </button>
-          <button type="button" class="top-btn top-btn-b" data-action="top-left-b" aria-label="Top left B"></button>
-          <div class="clock" id="saeivClock">00:00</div>
+          <button type="button" class="top-btn top-btn-b" data-action="top-left-b" aria-label="Top left B">
+            <img class="top-btn-icon" src="images/saiev/messagerie.png" alt="" aria-hidden="true" />
+          </button>
+          <div class="clock" id="saeivClock" role="button" tabindex="0" aria-label="Basculer heure et date">00:00</div>
         </header>
 
         <div class="top-mask"></div>
-        <div class="route-letter" id="saeivRouteLetter">D</div>
+        <div class="route-letter" id="saeivRouteLetter"></div>
         <div class="pip-mark" aria-hidden="true"></div>
 
         <footer class="bottom-bar">
           <button type="button" class="call-btn call-btn-left" data-action="call-sup" aria-label="Appel sup">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6.6 10.8c2.1 4.1 5.4 7.4 9.5 9.5l2.4-2.4c.3-.3.7-.4 1.1-.3 1.2.4 2.4.6 3.7.6.6 0 1 .4 1 1V23c0 .6-.4 1-1 1C10.4 24 0 13.6 0 1c0-.6.4-1 1-1h3.8c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.7.1.4 0 .8-.3 1.1z"></path>
-            </svg>
+            <img class="call-btn-icon" src="images/saiev/telephone.png" alt="" aria-hidden="true" />
             <span>APPEL SUP</span>
           </button>
 
           <button type="button" class="middle-btn middle-btn-a" data-action="slot-a" aria-label="Onglet 1">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <text x="12" y="17" text-anchor="middle" fill="#d8e6ff" font-size="16" font-family="Arial, sans-serif" font-weight="700">?</text>
-            </svg>
+            <img class="middle-btn-icon" src="images/saiev/validateurs.png" alt="" aria-hidden="true" />
+          </button>
+
+          <button type="button" class="middle-btn middle-btn-d" data-action="slot-d" aria-label="Onglet 4">
+            <img class="middle-btn-icon" src="images/saiev/ticket.png" alt="" aria-hidden="true" />
           </button>
 
           <button type="button" class="middle-btn middle-btn-b" data-action="slot-b" aria-label="Onglet 2">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <text x="12" y="17" text-anchor="middle" fill="#d8e6ff" font-size="16" font-family="Arial, sans-serif" font-weight="700">?</text>
-            </svg>
+            <img class="middle-btn-icon" src="images/saiev/signalement.png" alt="" aria-hidden="true" />
           </button>
 
           <button type="button" class="middle-btn middle-btn-c" data-action="slot-c" aria-label="Onglet 3">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <text x="12" y="17" text-anchor="middle" fill="#d8e6ff" font-size="16" font-family="Arial, sans-serif" font-weight="700">?</text>
-            </svg>
+            <img class="middle-btn-icon" src="images/saiev/diffusion_sonore.png" alt="" aria-hidden="true" />
           </button>
 
           <button type="button" class="call-btn call-btn-right" data-action="call-reg" aria-label="Appel reg">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6.6 10.8c2.1 4.1 5.4 7.4 9.5 9.5l2.4-2.4c.3-.3.7-.4 1.1-.3 1.2.4 2.4.6 3.7.6.6 0 1 .4 1 1V23c0 .6-.4 1-1 1C10.4 24 0 13.6 0 1c0-.6.4-1 1-1h3.8c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.7.1.4 0 .8-.3 1.1z"></path>
-            </svg>
+            <img class="call-btn-icon" src="images/saiev/telephone.png" alt="" aria-hidden="true" />
             <span>APPEL REG</span>
           </button>
         </footer>
       </section>
 
       <section class="overlay-screen">
-        <button type="button" class="menu-rail" data-action="menu" aria-label="Menu">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <text x="12" y="17" text-anchor="middle" fill="#e8efff" font-size="16" font-family="Arial, sans-serif" font-weight="700">?</text>
-          </svg>
-          <span>Menu</span>
-        </button>
+        <section class="overlay-page overlay-page-line is-active" data-page="ligne">
+          <button type="button" class="menu-rail" data-action="menu" aria-label="Menu">
+            <img class="menu-rail-icon" src="images/saiev/menu_button.png" alt="" aria-hidden="true" />
+            <span>Menu</span>
+          </button>
 
-        <div class="depart-box">
-          <div class="depart-label">Départ dans</div>
-          <div class="depart-value" id="saeivDepartMinutes">09</div>
-          <div class="depart-label">minutes</div>
-        </div>
-
-        <div class="line-track-shell"></div>
-        <div class="line-track-bottom-dashed" id="lineTrackBottomDashed" aria-hidden="true"></div>
-
-        <div class="line-stops">
-          <div class="stop-row stop-row-a">
-            <div class="stop-dot"></div>
-            <div class="stop-name" id="stopNameA">Nom Arrêt</div>
+          <div class="depart-box" id="departBox">
+            <div class="depart-label">Départ dans</div>
+            <div class="depart-value" id="saeivDepartMinutes">00</div>
+            <div class="depart-label">minutes</div>
           </div>
-          <div class="stop-row stop-row-b">
-            <div class="stop-dot"></div>
-            <div class="stop-name" id="stopNameB">Nom Arrêt</div>
+          <div class="home-mini-lane" aria-hidden="true">
+            <div class="home-mini-lane-ticks home-mini-lane-ticks-left"></div>
+            <div class="home-mini-lane-ticks home-mini-lane-ticks-right"></div>
+            <div class="home-mini-lane-guide"></div>
+            <div class="home-mini-lane-arrow"></div>
           </div>
-          <div class="stop-row stop-row-c">
-            <div class="stop-dot"></div>
-            <div class="stop-name" id="stopNameC">Nom Arrêt</div>
-          </div>
-          <div class="stop-arrow" aria-hidden="true">
-            <svg viewBox="0 0 100 120" preserveAspectRatio="xMidYMid meet">
-              <polygon points="50,4 92,72 66,66 58,114 42,114 34,66 8,72" fill="#22b8ef"></polygon>
-              <polygon points="50,14 74,68 58,64 53,108 47,108 42,64 26,68" fill="#9cefff"></polygon>
-              <polygon points="50,8 56,22 44,22" fill="#dbfbff"></polygon>
-            </svg>
-          </div>
-        </div>
 
-        <div class="line-card line-card-main">
-          <div class="line-main-code" id="lineMainCode">000</div>
-          <div class="line-main-stop" id="lineMainStop">Arrêt</div>
-        </div>
+          <div class="line-track-shell"></div>
+          <div class="line-track-bottom-dashed" id="lineTrackBottomDashed" aria-hidden="true"></div>
 
-        <div class="line-card line-card-ref">
-          <div class="line-ref-label">Point de régulation</div>
-          <div class="line-ref-time" id="lineRefTime">00:00</div>
-          <div class="line-ref-stop" id="lineRefStop">Arrêt</div>
-        </div>
+          <div class="line-stops">
+            <div class="stop-row stop-row-a">
+              <div class="stop-dot"></div>
+              <div class="stop-name" id="stopNameA">Nom Arrêt</div>
+            </div>
+            <div class="stop-row stop-row-b">
+              <div class="stop-dot"></div>
+              <div class="stop-name" id="stopNameB">Nom Arrêt</div>
+            </div>
+            <div class="stop-row stop-row-c">
+              <div class="stop-dot"></div>
+              <div class="stop-name" id="stopNameC">Nom Arrêt</div>
+            </div>
+            <div class="stop-row stop-row-placeholder" id="stopRowPlaceholder">
+              <div class="stop-dot"></div>
+              <div class="stop-name" id="stopNamePlaceholder">Arrêt</div>
+            </div>
+            <div class="stop-arrow" aria-hidden="true">
+              <svg viewBox="0 0 100 120" preserveAspectRatio="xMidYMid meet">
+                <path d="M50 6 L96 90 L64 90 L50 74 L36 90 L4 90 Z" fill="#22b8ef"></path>
+                <path d="M50 16 L84 82 L60 82 L50 70 L40 82 L16 82 Z" fill="#9cefff"></path>
+                <path d="M50 17 L57 29 H43 Z" fill="#dbfbff"></path>
+              </svg>
+            </div>
+          </div>
+
+          <div class="line-card line-card-main">
+            <div class="line-main-code" id="lineMainCode">000</div>
+            <div class="line-main-stop" id="lineMainStop">Arrêt</div>
+          </div>
+
+          <div class="line-card line-card-ref">
+            <div class="line-ref-label">Point de régulation</div>
+            <div class="line-ref-time" id="lineRefTime">00:00</div>
+            <div class="line-ref-stop" id="lineRefStop">Arrêt</div>
+            <div class="line-ref-meta" aria-hidden="true">
+              <div class="line-ref-meta-row line-ref-meta-row-split">
+                <span class="line-ref-meta-key">Agent-Voiture :</span>
+                <span class="line-ref-meta-value">XXX-XXX</span>
+              </div>
+              <div class="line-ref-meta-row line-ref-meta-row-split">
+                <span class="line-ref-meta-value">Mission EVA</span>
+                <span class="line-ref-meta-value">XXXX</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="overlay-page overlay-page-menu" data-page="menu" aria-label="Menu SAE">
+          <div class="alarm-pane">
+            <div class="alarm-title">MENU SAE</div>
+            <button type="button" class="alarm-back-btn" id="menuCloseBtn" aria-label="Fermer menu">
+              <img class="alarm-back-icon" src="images/saiev/menu_fermer.png" alt="" aria-hidden="true" />
+              <span class="alarm-back-text">Fermer<br>Menu</span>
+            </button>
+            <div class="menu-center">
+              <div class="menu-grid is-active" data-menu-grid="1">
+                <button type="button" class="menu-tile" disabled aria-label="Service">
+                  <img class="menu-tile-icon" src="images/saiev/menu_service.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Service</span>
+                </button>
+                <button type="button" class="menu-tile is-enabled" data-menu-target="alarmes" aria-label="Liste des alarmes">
+                  <img class="menu-tile-icon" src="images/saiev/menu_alarme.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Liste des alarmes</span>
+                </button>
+                <button type="button" class="menu-tile is-enabled" data-menu-target="signalement" aria-label="Signalement">
+                  <img class="menu-tile-icon" src="images/saiev/menu_signalement.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Signalement</span>
+                </button>
+                <button type="button" class="menu-tile is-dark is-enabled" data-menu-target="messagerie" aria-label="Messagerie">
+                  <img class="menu-tile-icon" src="images/saiev/menu_messagerie.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Messagerie</span>
+                </button>
+                <button type="button" class="menu-tile is-enabled" data-menu-target="diffusion" aria-label="Diffusion sonore preregistree">
+                  <img class="menu-tile-icon" src="images/saiev/menu_diffusion_sonore.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Diffusion sonore<br>pré-enregistrée</span>
+                </button>
+                <button type="button" class="menu-tile" disabled aria-label="Releve">
+                  <img class="menu-tile-icon" src="images/saiev/menu_releve.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Relève</span>
+                </button>
+                <button type="button" class="menu-tile" disabled aria-label="Prise de service complete">
+                  <img class="menu-tile-icon" src="images/saiev/menu_service_complete.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Prise de service<br>complete</span>
+                </button>
+                <button type="button" class="menu-tile" disabled aria-label="Test d exploitation">
+                  <img class="menu-tile-icon" src="images/saiev/menu_test_exploitation.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Test d'exploitation</span>
+                </button>
+              </div>
+              <div class="menu-grid menu-grid-page-2" data-menu-grid="2">
+                <button type="button" class="menu-tile page-two-1" disabled aria-label="Maintenance">
+                  <img class="menu-tile-icon" src="images/saiev/menu_maintenance.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Maintenance</span>
+                </button>
+                <button type="button" class="menu-tile page-two-2" disabled aria-label="Reglages">
+                  <img class="menu-tile-icon" src="images/saiev/menu_reglages.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Réglages</span>
+                </button>
+                <button type="button" class="menu-tile is-dark page-two-3" disabled aria-label="Info Voyageur">
+                  <img class="menu-tile-icon" src="images/saiev/menu_info_voyageur.png" alt="" aria-hidden="true" />
+                  <span class="menu-tile-label">Info. Voyageur</span>
+                </button>
+              </div>
+            </div>
+            <div class="alarm-scroll">
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-up" id="menuScrollUpBtn" aria-label="Menu precedent"><span aria-hidden="true">&lt;</span></button>
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-down" id="menuScrollDownBtn" aria-label="Menu suivant"><span aria-hidden="true">&gt;</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="overlay-page overlay-page-signal" data-page="signalement" aria-label="Signalement">
+          <div class="alarm-pane">
+            <div class="alarm-title">SIGNALEMENT</div>
+            <button type="button" class="alarm-back-btn" id="signalBackBtn" aria-label="Retour menu">
+              <img class="alarm-back-icon" src="images/saiev/menu_retour.png" alt="" aria-hidden="true" />
+              <span class="alarm-back-text">Retour<br>Menu</span>
+            </button>
+            <div class="signal-center">
+              <div class="signal-top">
+                <div class="signal-hint" aria-hidden="true">&gt;</div>
+                <div class="signal-actions">
+                  <button type="button" class="signal-action-btn" disabled>Consultation</button>
+                  <button type="button" class="signal-action-btn" disabled>ANNULER</button>
+                  <button type="button" class="signal-action-btn" disabled>SAISIE</button>
+                </div>
+              </div>
+              <div class="signal-list">
+                <button type="button" class="signal-row signal-row-btn" disabled>ABS/ASR</button>
+                <button type="button" class="signal-row signal-row-btn" disabled>AERATEURS DE TOITURE</button>
+                <button type="button" class="signal-row signal-row-btn" disabled>AIR</button>
+                <button type="button" class="signal-row signal-row-btn" disabled>ALARME DISCRETE</button>
+              </div>
+            </div>
+            <div class="alarm-scroll signal-scroll">
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-up" disabled aria-label="Signalement precedent"><span aria-hidden="true">&lt;</span></button>
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-down" disabled aria-label="Signalement suivant"><span aria-hidden="true">&gt;</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="overlay-page overlay-page-diffusion" data-page="diffusion" aria-label="Diffusion sonore preregistree">
+          <div class="alarm-pane">
+            <div class="alarm-title">DIFFUSION SONORE PRE-ENREGISTREE</div>
+            <button type="button" class="alarm-back-btn" id="diffusionBackBtn" aria-label="Retour menu">
+              <img class="alarm-back-icon" src="images/saiev/menu_retour.png" alt="" aria-hidden="true" />
+              <span class="alarm-back-text">Retour<br>Menu</span>
+            </button>
+            <div class="diffusion-center">
+              <div class="diffusion-grid" id="diffusionGrid"></div>
+            </div>
+            <div class="alarm-scroll diffusion-scroll">
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-up" disabled aria-label="Diffusion precedente"><span aria-hidden="true">&lt;</span></button>
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-down" disabled aria-label="Diffusion suivante"><span aria-hidden="true">&gt;</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="overlay-page overlay-page-alarms" data-page="alarmes" aria-label="Liste des alarmes">
+          <div class="alarm-pane">
+            <div class="alarm-title">LISTE DES ALARMES</div>
+            <button type="button" class="alarm-back-btn" id="alarmBackBtn" aria-label="Retour menu">
+              <img class="alarm-back-icon" src="images/saiev/menu_retour.png" alt="" aria-hidden="true" />
+              <span class="alarm-back-text">Retour<br>Menu</span>
+            </button>
+            <div class="alarm-list">
+              <div class="alarm-row">DEFAUT LIAISON BCV</div>
+              <div class="alarm-row">TEST EXPLOITATION : OK</div>
+              <div class="alarm-row">DEFAUT PORTE</div>
+              <div class="alarm-row">BROKER MQTT INDISPONIBLE</div>
+              <div class="alarm-row">BROKER MQTT Flowbird INTROUVABLE</div>
+            </div>
+            <div class="alarm-scroll">
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-up" disabled aria-label="Alarme precedente"><span aria-hidden="true">&lt;</span></button>
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-down" disabled aria-label="Alarme suivante"><span aria-hidden="true">&gt;</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="overlay-page overlay-page-messages" data-page="messagerie" aria-label="Messagerie">
+          <div class="alarm-pane">
+            <div class="alarm-title">MESSAGERIE</div>
+            <button type="button" class="alarm-back-btn" id="messageBackBtn" aria-label="Retour menu">
+              <img class="alarm-back-icon" src="images/saiev/menu_retour.png" alt="" aria-hidden="true" />
+              <span class="alarm-back-text">Retour<br>Menu</span>
+            </button>
+            <div class="message-center">
+              <div class="message-tabs-row">
+                <div class="message-tabs">
+                  <button type="button" class="message-tab is-active" data-message-tab="regulateur" aria-label="Messagerie regulateur">
+                    <img class="message-tab-icon" src="images/saiev/messagerie_regul.png" alt="" aria-hidden="true" />
+                    <span class="message-tab-label">Cons. messagerie<br>regulateur</span>
+                  </button>
+                  <button type="button" class="message-tab" data-message-tab="exploitant" aria-label="Messagerie exploitant">
+                    <img class="message-tab-icon" src="images/saiev/messagerie_regul.png" alt="" aria-hidden="true" />
+                    <span class="message-tab-label">Cons. messagerie<br>exploitant</span>
+                  </button>
+                  <button type="button" class="message-tab" data-message-tab="visuelle-passager" aria-label="Messagerie visuelle passager">
+                    <img class="message-tab-icon" src="images/saiev/messagerie_voyageur.png" alt="" aria-hidden="true" />
+                    <span class="message-tab-label">Cons. messagerie<br>visuelle passager</span>
+                  </button>
+                </div>
+              </div>
+              <div class="message-table" role="table" aria-label="Table messagerie">
+                <div class="message-head message-head-left">Reçu</div>
+                <div class="message-head">Objet</div>
+
+                <div class="message-cell message-cell-left"></div>
+                <div class="message-cell"><span class="message-empty-text" id="messageEmptyText">PAS DE MESSAGE</span></div>
+
+                <div class="message-cell message-cell-left"></div>
+                <div class="message-cell"></div>
+
+                <div class="message-cell message-cell-left"></div>
+                <div class="message-cell"></div>
+              </div>
+            </div>
+            <div class="alarm-scroll message-scroll">
+              <div class="message-scroll-spacer-top" aria-hidden="true"></div>
+              <div class="message-scroll-spacer-head" aria-hidden="true"></div>
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-up" disabled aria-label="Message precedent"><span aria-hidden="true">&lt;</span></button>
+              <button type="button" class="alarm-scroll-btn alarm-scroll-btn-down" disabled aria-label="Message suivant"><span aria-hidden="true">&gt;</span></button>
+            </div>
+          </div>
+        </section>
       </section>
     </section>
   </div>
@@ -647,14 +1823,36 @@
     (() => {
       const CHANNEL_NAME = "idf_map_saeiv_v1";
       const params = new URLSearchParams(location.search);
+      if (params.has("dev_pip")) {
+        const target = new URL("map.html", location.href);
+        location.replace(target.toString());
+        return;
+      }
+      const isDevMode = params.has("dev");
+      const DEV_RATP_GLOBAL_FOLDER = "map_files/dbus_fis/global/1_RATP%20%5BGST_TC%5D%20%7B0.25%7D/";
+      const DEV_RATP_GLOBAL_CLIPS = [
+        "Validez votre titre.mp3",
+        "Avancez vers le fond.mp3",
+        "Bienvenue à bord.mp3",
+        "Montée par l’avant.mp3"
+      ];
       const sourceId = String(params.get("source") || "").trim();
       const isValidSourceId = /^map-[a-z0-9]+-[a-z0-9]+$/i.test(sourceId);
-      if (!isValidSourceId) {
+      if (!isValidSourceId && !isDevMode) {
         const target = new URL("map.html", location.href);
         location.replace(target.toString());
         return;
       }
       const hudEl = document.getElementById("saeivHud");
+      const rootEl = document.querySelector(".root");
+      const pipDrawerEl = document.getElementById("pipDrawer");
+      const pipDrawerToggleEl = document.getElementById("pipDrawerToggle");
+      const pipToggleBtnEl = document.getElementById("pipToggleBtn");
+      const pipStopAudioBtnEl = document.getElementById("pipStopAudioBtn");
+      const pipHostNoticeEl = document.getElementById("pipHostNotice");
+      const pipHostNoticeActionsEl = document.getElementById("pipHostNoticeActions");
+      const pipHostQuitBtnEl = document.getElementById("pipHostQuitBtn");
+      const pipHostStopAudioBtnEl = document.getElementById("pipHostStopAudioBtn");
       const clockEl = document.getElementById("saeivClock");
       const routeLetterEl = document.getElementById("saeivRouteLetter");
       const departEl = document.getElementById("saeivDepartMinutes");
@@ -665,29 +1863,377 @@
       const stopAEl = document.getElementById("stopNameA");
       const stopBEl = document.getElementById("stopNameB");
       const stopCEl = document.getElementById("stopNameC");
+      const lineStopsEl = document.querySelector(".line-stops");
       const lineTrackEl = document.querySelector(".line-track-shell");
       const stopRowAEl = document.querySelector(".stop-row-a");
       const stopRowBEl = document.querySelector(".stop-row-b");
       const stopRowCEl = document.querySelector(".stop-row-c");
+      const stopRowPlaceholderEl = document.getElementById("stopRowPlaceholder");
+      const stopDotAEl = stopRowAEl ? stopRowAEl.querySelector(".stop-dot") : null;
+      const stopDotBEl = stopRowBEl ? stopRowBEl.querySelector(".stop-dot") : null;
+      const stopDotCEl = stopRowCEl ? stopRowCEl.querySelector(".stop-dot") : null;
+      const stopPlaceholderNameEl = document.getElementById("stopNamePlaceholder");
       const stopArrowEl = document.querySelector(".stop-arrow");
+      const homeMiniLaneEl = document.querySelector(".home-mini-lane");
+      const lineCardMainEl = document.querySelector(".line-card-main");
+      const lineCardRefEl = document.querySelector(".line-card-ref");
       const lineTrackBottomDashedEl = document.getElementById("lineTrackBottomDashed");
+      const overlayPageLineEl = document.querySelector('[data-page="ligne"]');
+      const overlayPageMenuEl = document.querySelector('[data-page="menu"]');
+      const overlayPageSignalEl = document.querySelector('[data-page="signalement"]');
+      const overlayPageDiffusionEl = document.querySelector('[data-page="diffusion"]');
+      const overlayPageAlarmsEl = document.querySelector('[data-page="alarmes"]');
+      const overlayPageMessagesEl = document.querySelector('[data-page="messagerie"]');
+      const menuCloseBtnEl = document.getElementById("menuCloseBtn");
+      const menuScrollUpBtnEl = document.getElementById("menuScrollUpBtn");
+      const menuScrollDownBtnEl = document.getElementById("menuScrollDownBtn");
+      const signalBackBtnEl = document.getElementById("signalBackBtn");
+      const diffusionBackBtnEl = document.getElementById("diffusionBackBtn");
+      const alarmBackBtnEl = document.getElementById("alarmBackBtn");
+      const messageBackBtnEl = document.getElementById("messageBackBtn");
+      const messageEmptyTextEl = document.getElementById("messageEmptyText");
+      const messageTabButtons = Array.from(document.querySelectorAll("[data-message-tab]"));
+      const menuGridPages = Array.from(document.querySelectorAll("[data-menu-grid]"));
+      const menuTargetButtons = Array.from(document.querySelectorAll("[data-menu-target]"));
+      const diffusionGridEl = document.getElementById("diffusionGrid");
       const TRACK_DEFAULT_TOP = 15;
       const TRACK_DEFAULT_BOTTOM = 82.1;
       const TRACK_MIDDLE_DOT_CENTER = 47.5;
       const TRACK_BOTTOM_DOT_CENTER = 68.59;
+      const MENU_GRID_MIN_PAGE = 1;
+      const MENU_GRID_MAX_PAGE = 2;
+      let currentOverlayPage = "ligne";
+      let currentMenuGridPage = MENU_GRID_MIN_PAGE;
       let trackExtendTop = false;
       let trackExtendBottom = false;
       let trackShowBottomDashed = false;
       let trackBottomDashedStart = TRACK_BOTTOM_DOT_CENTER;
       let channel = null;
       let clockTimer = null;
+      let clockShowDate = false;
+      let latestStatePayload = {};
+      let diffusionAudioEl = null;
+      let diffusionAudioToken = 0;
+      let diffusionAudioPlaying = false;
+      let lineRefStopLayoutRetryTimer = null;
+      let pipHudWindow = null;
+      let pipResizeHandler = null;
+      let pipDrawerOpen = false;
+      const isCurrentWindowDocumentPiP = (() => {
+        try {
+          return !!(
+            window.opener
+            && window.opener.documentPictureInPicture
+            && window.opener.documentPictureInPicture.window === window
+          );
+        } catch {
+          return false;
+        }
+      })();
+      const canUseDocumentPiP = !!(
+        window.documentPictureInPicture
+        && typeof window.documentPictureInPicture.requestWindow === "function"
+      );
+
+      function withDevGlobalAudioFallback(state) {
+        const payload = state && typeof state === "object" ? { ...state } : {};
+        const urls = Array.isArray(payload.globalAudioUrls)
+          ? payload.globalAudioUrls.map((url) => String(url || "").trim()).filter(Boolean)
+          : [];
+        if (urls.length || !isDevMode) return payload;
+        const fallbackUrls = DEV_RATP_GLOBAL_CLIPS.map((name) => {
+          const encodedName = encodeURIComponent(String(name || "").trim());
+          return `${DEV_RATP_GLOBAL_FOLDER}${encodedName}`;
+        });
+        const fallbackLabels = DEV_RATP_GLOBAL_CLIPS.map((name) =>
+          String(name || "").replace(/\.mp3$/i, "").trim()
+        );
+        payload.globalAudioFolderPath = String(payload.globalAudioFolderPath || DEV_RATP_GLOBAL_FOLDER);
+        payload.globalAudioUrls = fallbackUrls;
+        payload.globalAudioLabels = fallbackLabels;
+        payload.globalAudioCount = fallbackUrls.length;
+        if (!Number.isFinite(Number(payload.globalAudioVolumeMultiplier))) {
+          payload.globalAudioVolumeMultiplier = 0.25;
+        }
+        return payload;
+      }
+
+      function activateMessageTab(tabName) {
+        if (!messageTabButtons.length) return false;
+        const wanted = String(tabName || "").trim().toLowerCase();
+        let nextActive = messageTabButtons.find(
+          (btn) => String(btn.getAttribute("data-message-tab") || "").trim().toLowerCase() === wanted
+        );
+        if (!nextActive) nextActive = messageTabButtons[0];
+        const hasChanged = !nextActive.classList.contains("is-active");
+        messageTabButtons.forEach((btn) => {
+          const isActive = btn === nextActive;
+          btn.classList.toggle("is-active", isActive);
+          btn.disabled = isActive;
+          btn.setAttribute("aria-disabled", isActive ? "true" : "false");
+        });
+        return hasChanged;
+      }
+
+      function pulseMessageSwitch() {
+        if (!messageEmptyTextEl) return;
+        messageEmptyTextEl.classList.remove("is-switching");
+        void messageEmptyTextEl.offsetWidth;
+        messageEmptyTextEl.classList.add("is-switching");
+        window.setTimeout(() => {
+          messageEmptyTextEl.classList.remove("is-switching");
+        }, 180);
+      }
+
+      function setMenuGridPage(pageNumber) {
+        const normalized = Number(pageNumber) || MENU_GRID_MIN_PAGE;
+        const nextPage = Math.max(MENU_GRID_MIN_PAGE, Math.min(MENU_GRID_MAX_PAGE, normalized));
+        currentMenuGridPage = nextPage;
+        if (menuGridPages.length) {
+          menuGridPages.forEach((pageEl) => {
+            const pageId = Number(pageEl.getAttribute("data-menu-grid") || MENU_GRID_MIN_PAGE);
+            pageEl.classList.toggle("is-active", pageId === nextPage);
+          });
+        }
+        if (menuScrollUpBtnEl) {
+          const disabled = nextPage <= MENU_GRID_MIN_PAGE;
+          menuScrollUpBtnEl.disabled = disabled;
+          menuScrollUpBtnEl.setAttribute("aria-disabled", disabled ? "true" : "false");
+        }
+        if (menuScrollDownBtnEl) {
+          const disabled = nextPage >= MENU_GRID_MAX_PAGE;
+          menuScrollDownBtnEl.disabled = disabled;
+          menuScrollDownBtnEl.setAttribute("aria-disabled", disabled ? "true" : "false");
+        }
+      }
+
+      function updateMenuTargetButtonsAvailability() {
+        if (!menuTargetButtons.length) return;
+        const hostDoc = (hudEl && hudEl.ownerDocument) ? hudEl.ownerDocument : document;
+        menuTargetButtons.forEach((btn) => {
+          const page = String(btn.getAttribute("data-menu-target") || "").trim().toLowerCase();
+          const hasTarget = !!(page && hostDoc.querySelector(`[data-page="${page}"]`));
+          btn.classList.toggle("is-missing-target", !hasTarget);
+          if (!hasTarget) {
+            btn.disabled = true;
+            btn.setAttribute("aria-disabled", "true");
+            return;
+          }
+          btn.disabled = false;
+          btn.setAttribute("aria-disabled", "false");
+        });
+      }
 
       function applyScale() {
         if (!hudEl) return;
-        const width = Math.max(320, Number(hudEl.clientWidth) || 0);
-        const scale = Math.max(0.35, Math.min(1.6, width / 679));
-        document.documentElement.style.setProperty("--hud-scale", String(scale));
+        const width = Math.max(1, Number(hudEl.clientWidth) || 0);
+        const scale = Math.max(0.01, width / 679);
+        const hudDoc = hudEl.ownerDocument || document;
+        if (hudDoc && hudDoc.documentElement) {
+          hudDoc.documentElement.style.setProperty("--hud-scale", String(scale));
+        }
+        updateLineRefStopLayout();
         updateDynamicTrackBounds();
+      }
+
+      function updateLineRefStopLayout(retryCount = 0) {
+        if (!lineCardRefEl || !lineRefStopEl) return;
+        try {
+          const doc = lineRefStopEl.ownerDocument || document;
+          const view = doc.defaultView || window;
+          const cs = view.getComputedStyle(lineRefStopEl);
+          const sourceWidth = Math.max(1, lineRefStopEl.clientWidth || lineRefStopEl.getBoundingClientRect().width || 1);
+          if (sourceWidth <= 2 && retryCount < 8) {
+            if (lineRefStopLayoutRetryTimer) {
+              clearTimeout(lineRefStopLayoutRetryTimer);
+              lineRefStopLayoutRetryTimer = null;
+            }
+            lineRefStopLayoutRetryTimer = window.setTimeout(() => {
+              lineRefStopLayoutRetryTimer = null;
+              updateLineRefStopLayout(retryCount + 1);
+            }, 16);
+            return;
+          }
+
+          lineRefStopEl.style.setProperty("font-size", "0.8em", "important");
+          const text = String(lineRefStopEl.textContent || "").trim() || " ";
+          const probe = doc.createElement("div");
+          probe.textContent = text;
+          probe.style.position = "absolute";
+          probe.style.left = "-99999px";
+          probe.style.top = "0";
+          probe.style.visibility = "hidden";
+          probe.style.pointerEvents = "none";
+          probe.style.width = `${sourceWidth}px`;
+          probe.style.maxWidth = `${sourceWidth}px`;
+          probe.style.boxSizing = cs.boxSizing || "border-box";
+          probe.style.paddingLeft = cs.paddingLeft || "0px";
+          probe.style.paddingRight = cs.paddingRight || "0px";
+          probe.style.paddingTop = cs.paddingTop || "0px";
+          probe.style.paddingBottom = cs.paddingBottom || "0px";
+          probe.style.whiteSpace = "normal";
+          probe.style.wordBreak = cs.wordBreak || "break-word";
+          probe.style.overflowWrap = cs.overflowWrap || "anywhere";
+          probe.style.textTransform = cs.textTransform || "uppercase";
+          probe.style.fontFamily = cs.fontFamily;
+          probe.style.fontWeight = cs.fontWeight;
+          probe.style.fontStyle = cs.fontStyle;
+          probe.style.letterSpacing = cs.letterSpacing;
+          probe.style.lineHeight = cs.lineHeight && cs.lineHeight !== "normal" ? cs.lineHeight : "1.04";
+          probe.style.fontSize = cs.fontSize;
+          doc.body.appendChild(probe);
+          const probeHeight = probe.getBoundingClientRect().height || 0;
+          doc.body.removeChild(probe);
+
+          const lineHeightPxRaw = Number.parseFloat(cs.lineHeight || "");
+          const fontPx = Number.parseFloat(cs.fontSize || "") || 14;
+          const lineHeightPx = Number.isFinite(lineHeightPxRaw) ? lineHeightPxRaw : (fontPx * 1.04);
+          const estimatedLines = lineHeightPx > 0 ? (probeHeight / lineHeightPx) : 1;
+          const roundedLines = Math.max(1, Math.min(6, Math.ceil(estimatedLines - 0.02)));
+          const shiftPerLine = Number.parseFloat(
+            view.getComputedStyle(doc.documentElement).getPropertyValue("--line-ref-shift-per-line")
+          ) || 0.22;
+          const upShiftEm = Math.max(0, (roundedLines - 1) * shiftPerLine);
+          lineCardRefEl.style.setProperty("--line-ref-shift", `${upShiftEm.toFixed(3)}em`);
+          lineCardRefEl.setAttribute("data-stop-lines", String(roundedLines));
+        } catch {
+          lineCardRefEl.style.setProperty("--line-ref-shift", "0em");
+          lineCardRefEl.setAttribute("data-stop-lines", "1");
+        }
+      }
+
+      function cloneStylesToPipDoc(targetDoc) {
+        if (!targetDoc) return;
+        targetDoc.head.innerHTML = "";
+        const titleEl = targetDoc.createElement("title");
+        titleEl.textContent = document.title || "Ecran SAEIV";
+        targetDoc.head.appendChild(titleEl);
+        document.querySelectorAll("style, link[rel='stylesheet']").forEach((node) => {
+          targetDoc.head.appendChild(node.cloneNode(true));
+        });
+      }
+
+      function mountHudBackToMain() {
+        if (!rootEl || !hudEl) return;
+        if (hudEl.parentElement !== rootEl) {
+          rootEl.appendChild(hudEl);
+        }
+        applyScale();
+      }
+
+      function setPipToggleButtonState() {
+        const isHostWithPipOpen = !!pipHudWindow && !isCurrentWindowDocumentPiP;
+        const hideDrawer = !canUseDocumentPiP || isCurrentWindowDocumentPiP || isHostWithPipOpen;
+        if (pipDrawerEl) pipDrawerEl.hidden = hideDrawer;
+        if (pipToggleBtnEl) {
+          pipToggleBtnEl.hidden = hideDrawer;
+          pipToggleBtnEl.textContent = pipHudWindow ? "Quitter PIP" : "Mode PIP";
+        }
+        if (pipHostNoticeEl) {
+          const showHostNotice = isHostWithPipOpen;
+          pipHostNoticeEl.classList.toggle("is-active", showHostNotice);
+        }
+        if (pipHostNoticeActionsEl) {
+          pipHostNoticeActionsEl.hidden = !isHostWithPipOpen;
+        }
+        if (pipHostQuitBtnEl) {
+          pipHostQuitBtnEl.hidden = !isHostWithPipOpen;
+          pipHostQuitBtnEl.textContent = "Quitter PIP";
+        }
+        if (hideDrawer) setPipDrawerOpen(false);
+        updatePipAudioStopButton();
+      }
+
+      function setPipDrawerOpen(nextOpen) {
+        pipDrawerOpen = !!nextOpen;
+        if (pipDrawerEl) pipDrawerEl.classList.toggle("is-open", pipDrawerOpen);
+        if (pipDrawerToggleEl) {
+          pipDrawerToggleEl.textContent = pipDrawerOpen ? "Ʌ" : "V";
+          pipDrawerToggleEl.setAttribute("aria-expanded", pipDrawerOpen ? "true" : "false");
+        }
+      }
+
+      function updatePipAudioStopButton() {
+        const isHostWithPipOpen = !!pipHudWindow && !isCurrentWindowDocumentPiP;
+        const drawerVisible = !(pipDrawerEl && pipDrawerEl.hidden);
+        const showDrawerStop = drawerVisible && diffusionAudioPlaying;
+        if (pipStopAudioBtnEl) {
+          pipStopAudioBtnEl.hidden = !showDrawerStop;
+          pipStopAudioBtnEl.disabled = !showDrawerStop;
+          pipStopAudioBtnEl.setAttribute("aria-disabled", showDrawerStop ? "false" : "true");
+        }
+        const showHostStop = isHostWithPipOpen && diffusionAudioPlaying;
+        if (pipHostStopAudioBtnEl) {
+          pipHostStopAudioBtnEl.hidden = !showHostStop;
+          pipHostStopAudioBtnEl.disabled = !showHostStop;
+          pipHostStopAudioBtnEl.setAttribute("aria-disabled", showHostStop ? "false" : "true");
+        }
+      }
+
+      function detachPipWindow({ closeWindow = false } = {}) {
+        const win = pipHudWindow;
+        if (!win) {
+          mountHudBackToMain();
+          setPipToggleButtonState();
+          return;
+        }
+        if (pipResizeHandler) {
+          try { win.removeEventListener("resize", pipResizeHandler); } catch {}
+          pipResizeHandler = null;
+        }
+        pipHudWindow = null;
+        mountHudBackToMain();
+        setPipToggleButtonState();
+        if (closeWindow) {
+          try { if (!win.closed) win.close(); } catch {}
+        }
+      }
+
+      async function attachHudToPipWindow() {
+        if (!canUseDocumentPiP || pipHudWindow || !hudEl) return;
+        const rect = hudEl.getBoundingClientRect();
+        const width = Math.max(420, Math.round(rect.width || 679));
+        const height = Math.max(240, Math.round(rect.height || 383));
+        let win = null;
+        try {
+          win = await window.documentPictureInPicture.requestWindow({ width, height });
+        } catch {
+          return;
+        }
+        if (!win) return;
+        pipHudWindow = win;
+        cloneStylesToPipDoc(win.document);
+        try {
+          win.document.body.style.margin = "0";
+          win.document.body.style.background = "#000";
+          win.document.body.style.overflow = "hidden";
+        } catch {}
+        try {
+          win.document.body.appendChild(hudEl);
+        } catch {
+          pipHudWindow = null;
+          mountHudBackToMain();
+          setPipToggleButtonState();
+          return;
+        }
+        pipResizeHandler = () => applyScale();
+        try { win.addEventListener("resize", pipResizeHandler, { passive: true }); } catch {}
+        try {
+          win.addEventListener("pagehide", () => {
+            detachPipWindow({ closeWindow: false });
+          }, { once: true });
+        } catch {}
+        applyScale();
+        setPipToggleButtonState();
+      }
+
+      function togglePipMode() {
+        if (!canUseDocumentPiP) return;
+        if (pipHudWindow) {
+          detachPipWindow({ closeWindow: true });
+          return;
+        }
+        attachHudToPipWindow().catch(() => {});
       }
 
       function post(type, extra = {}) {
@@ -698,9 +2244,53 @@
       }
 
       function sanitizeLineCode(raw) {
-        const value = String(raw || "").trim();
-        if (!value) return "000";
-        return value.slice(0, 8);
+        return String(raw || "").trim().slice(0, 24);
+      }
+
+      function buildLineMainCode(payload) {
+        const rawLine = String(payload?.lineNumber || "").trim();
+        const rawRoute = String(payload?.routeName || payload?.directionName || "").trim();
+        const lineCode = sanitizeLineCode(rawLine);
+        const merged = `${rawLine} ${rawRoute}`.trim();
+
+        const titusNumberMatch = merged.match(/\btitus\s*(\d+[0-9a-z]*)/i);
+        if (titusNumberMatch && titusNumberMatch[1]) {
+          return sanitizeLineCode(`Titus ${String(titusNumberMatch[1]).trim()}`);
+        }
+        const titusTokenMatch = merged.match(/\btitus\s*([0-9a-z]+)/i);
+        if (titusTokenMatch && titusTokenMatch[1] && !/^titus$/i.test(String(titusTokenMatch[1]).trim())) {
+          return sanitizeLineCode(`Titus ${String(titusTokenMatch[1]).trim()}`);
+        }
+
+        const hasTitus = /\btitus\b/i.test(merged) || /\br[ée]seau\s*titus\b/i.test(merged);
+        if (hasTitus) {
+          const numberToken = (lineCode.match(/\d+[0-9a-z]*/i) || [])[0] || "";
+          return sanitizeLineCode(numberToken ? `Titus ${numberToken}` : "Titus");
+        }
+
+        const expressMatch = merged.match(/\bexpress\s*([0-9a-z]+)/i);
+        if (expressMatch && expressMatch[1]) {
+          return sanitizeLineCode(`Express ${String(expressMatch[1]).trim()}`);
+        }
+
+        const isFictiveLike =
+          /\bfict/i.test(merged) ||
+          /\bautocar\b/i.test(merged) ||
+          /\bflix\s*bus\b/i.test(merged) ||
+          /\bflixbus\b/i.test(merged);
+        if (isFictiveLike) return "Autocar";
+
+        return lineCode || sanitizeLineCode(rawRoute);
+      }
+
+      function formatDepartMinutes(raw) {
+        const text = String(raw ?? "").trim();
+        if (!text) return "XX";
+        const digits = text.replace(/[^\d]/g, "");
+        if (!digits) return "XX";
+        const num = Number(digits);
+        if (!Number.isFinite(num)) return "XX";
+        return String(Math.max(0, Math.min(99, Math.floor(num)))).padStart(2, "0");
       }
 
       function currentClockText() {
@@ -710,16 +2300,143 @@
         return `${h}:${m}`;
       }
 
+      function currentDateText() {
+        const now = new Date();
+        const dd = String(now.getDate()).padStart(2, "0");
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const yyyy = String(now.getFullYear());
+        return `${dd}/${mm}/${yyyy}`;
+      }
+
       function tickClock() {
         if (!clockEl) return;
-        clockEl.textContent = currentClockText();
+        clockEl.classList.toggle("is-date", clockShowDate);
+        clockEl.textContent = clockShowDate ? currentDateText() : currentClockText();
+      }
+
+      function toggleClockMode() {
+        clockShowDate = !clockShowDate;
+        tickClock();
       }
 
       function pickDirectionLetter(payload) {
         const route = String(payload.routeName || payload.directionName || "").trim();
-        if (!route) return "D";
+        if (!route) return "";
         const letter = route.charAt(0).toUpperCase();
-        return /^[A-Z]$/.test(letter) ? letter : "D";
+        return /^[A-Z]$/.test(letter) ? letter : "";
+      }
+
+      function setOverlayPage(pageName) {
+        const prevPage = currentOverlayPage;
+        const rawPage = String(pageName || "").trim().toLowerCase();
+        const nextPage =
+          rawPage === "menu" ||
+          rawPage === "signalement" ||
+          rawPage === "diffusion" ||
+          rawPage === "alarmes" ||
+          rawPage === "messagerie"
+            ? rawPage
+            : "ligne";
+        if (prevPage === "menu" && nextPage !== "menu") {
+          setMenuGridPage(MENU_GRID_MIN_PAGE);
+        }
+        currentOverlayPage = nextPage;
+        if (overlayPageLineEl) overlayPageLineEl.classList.toggle("is-active", nextPage === "ligne");
+        if (overlayPageMenuEl) overlayPageMenuEl.classList.toggle("is-active", nextPage === "menu");
+        if (overlayPageSignalEl) overlayPageSignalEl.classList.toggle("is-active", nextPage === "signalement");
+        if (overlayPageDiffusionEl) overlayPageDiffusionEl.classList.toggle("is-active", nextPage === "diffusion");
+        if (overlayPageAlarmsEl) overlayPageAlarmsEl.classList.toggle("is-active", nextPage === "alarmes");
+        if (overlayPageMessagesEl) overlayPageMessagesEl.classList.toggle("is-active", nextPage === "messagerie");
+        if (nextPage === "menu" && prevPage !== "menu") setMenuGridPage(MENU_GRID_MIN_PAGE);
+        if (nextPage === "menu") updateMenuTargetButtonsAvailability();
+        if (nextPage === "messagerie" && prevPage !== "messagerie") activateMessageTab("regulateur");
+        if (nextPage === "ligne") updateDynamicTrackBounds();
+      }
+
+      function setDiffusionAudioPlaying(nextValue) {
+        diffusionAudioPlaying = !!nextValue;
+        updatePipAudioStopButton();
+        updateDiffusionActionButtons(latestStatePayload);
+      }
+
+      function stopDiffusionAudioPlayback() {
+        diffusionAudioToken += 1;
+        const active = diffusionAudioEl;
+        if (active) {
+          try { active.pause(); } catch {}
+          try { active.src = ""; } catch {}
+        }
+        diffusionAudioEl = null;
+        setDiffusionAudioPlaying(false);
+      }
+
+      function playDiffusionAudioBySlot(slotNumber) {
+        const slot = Number(slotNumber);
+        if (!Number.isInteger(slot) || slot <= 0) return;
+        const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
+        const urls = Array.isArray(state.globalAudioUrls)
+          ? state.globalAudioUrls.map((url) => String(url || "").trim()).filter(Boolean)
+          : [];
+        const targetUrl = String(urls[slot - 1] || "").trim();
+        if (!targetUrl) return;
+        const token = diffusionAudioToken + 1;
+        stopDiffusionAudioPlayback();
+        diffusionAudioToken = token;
+        const audio = new Audio(targetUrl);
+        diffusionAudioEl = audio;
+        const mulRaw = Number(state.globalAudioVolumeMultiplier);
+        const safeVolume = Number.isFinite(mulRaw) ? Math.max(0, Math.min(1, mulRaw)) : 1;
+        audio.volume = safeVolume;
+        const finish = () => {
+          if (token !== diffusionAudioToken) return;
+          diffusionAudioEl = null;
+          setDiffusionAudioPlaying(false);
+        };
+        audio.onended = finish;
+        audio.onerror = finish;
+        audio.onpause = () => {
+          if (token !== diffusionAudioToken) return;
+          if (audio.currentTime <= 0 || audio.ended) return;
+          finish();
+        };
+        setDiffusionAudioPlaying(true);
+        audio.play().catch(() => {
+          finish();
+        });
+      }
+
+      function updateDiffusionActionButtons(payload) {
+        if (!diffusionGridEl) return;
+        const data = payload && typeof payload === "object" ? payload : {};
+        const globalLabels = Array.isArray(data.globalAudioLabels)
+          ? data.globalAudioLabels.map((label) => String(label || "").trim()).filter(Boolean)
+          : [];
+        const globalUrls = Array.isArray(data.globalAudioUrls)
+          ? data.globalAudioUrls.map((url) => String(url || "").trim()).filter(Boolean)
+          : [];
+        const hasGlobalFolder = !!String(data.globalAudioFolderPath || "").trim();
+        const isAudioBusy = !!data.audioPlaybackBusy || diffusionAudioPlaying;
+        const enabledBase = hasGlobalFolder && !isAudioBusy;
+        diffusionGridEl.innerHTML = "";
+        if (!globalLabels.length) {
+          const empty = document.createElement("div");
+          empty.className = "diffusion-empty";
+          empty.textContent = "AUCUN FICHIER AUDIO DISPONIBLE";
+          diffusionGridEl.appendChild(empty);
+          return;
+        }
+        globalLabels.forEach((label, index) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "diffusion-btn";
+          btn.textContent = label;
+          btn.dataset.diffusionSlot = String(index + 1);
+          btn.dataset.diffusionLabel = label;
+          const enabled = enabledBase && !!globalUrls[index];
+          btn.disabled = !enabled;
+          btn.setAttribute("aria-disabled", enabled ? "false" : "true");
+          diffusionGridEl.appendChild(btn);
+        });
       }
 
       function updateDynamicTrackBounds() {
@@ -736,7 +2453,10 @@
 
         const visibleRows = rows.filter((item) => {
           try {
-            return window.getComputedStyle(item.row).visibility !== "hidden";
+            const docView = item.row && item.row.ownerDocument && item.row.ownerDocument.defaultView
+              ? item.row.ownerDocument.defaultView
+              : window;
+            return docView.getComputedStyle(item.row).visibility !== "hidden";
           } catch {
             return true;
           }
@@ -777,10 +2497,91 @@
       }
 
       function renderState(payload) {
-        const data = payload && typeof payload === "object" ? payload : {};
+        const data = withDevGlobalAudioFallback(payload);
+        latestStatePayload = data;
+        updateDiffusionActionButtons(data);
+        const hasLineSelection = data.lineSelected === true || !!String(data.selectedLineUid || data.lineNumber || "").trim();
+
+        if (!hasLineSelection) {
+          trackExtendTop = false;
+          trackExtendBottom = false;
+          trackShowBottomDashed = false;
+          trackBottomDashedStart = TRACK_BOTTOM_DOT_CENTER;
+
+          if (routeLetterEl) routeLetterEl.textContent = "";
+          if (departEl) departEl.textContent = "00";
+          if (lineCodeEl) lineCodeEl.textContent = "";
+          if (lineStopEl) lineStopEl.textContent = "";
+          if (lineRefTimeEl) lineRefTimeEl.textContent = "00:00";
+          if (lineRefStopEl) lineRefStopEl.textContent = "Arrêt";
+          if (stopAEl) stopAEl.textContent = "";
+          if (stopBEl) stopBEl.textContent = "";
+          if (stopCEl) stopCEl.textContent = "";
+
+          if (lineTrackEl) lineTrackEl.style.display = "none";
+          if (homeMiniLaneEl) homeMiniLaneEl.style.display = "none";
+          if (lineTrackBottomDashedEl) lineTrackBottomDashedEl.style.display = "none";
+          if (lineStopsEl) lineStopsEl.style.display = "none";
+          if (lineCardMainEl) lineCardMainEl.style.display = "none";
+          if (lineCardRefEl) lineCardRefEl.style.display = "none";
+
+          if (stopRowAEl) stopRowAEl.style.visibility = "hidden";
+          if (stopRowBEl) stopRowBEl.style.visibility = "hidden";
+          if (stopRowCEl) stopRowCEl.style.visibility = "hidden";
+          if (stopRowPlaceholderEl) stopRowPlaceholderEl.style.visibility = "hidden";
+          if (stopDotAEl) stopDotAEl.style.visibility = "hidden";
+          if (stopDotBEl) stopDotBEl.style.visibility = "hidden";
+          if (stopDotCEl) stopDotCEl.style.visibility = "hidden";
+          if (stopArrowEl) stopArrowEl.style.visibility = "hidden";
+          updateLineRefStopLayout();
+          return;
+        }
+
+        if (lineTrackEl) lineTrackEl.style.display = "";
+        if (lineStopsEl) lineStopsEl.style.display = "";
+        if (lineCardMainEl) lineCardMainEl.style.display = "";
+        if (lineCardRefEl) lineCardRefEl.style.display = "none";
+
         const linkedStops = Array.isArray(data.audioStopNames)
           ? data.audioStopNames.map((name) => String(name || "").trim()).filter(Boolean)
           : [];
+        const hasRouteSelection =
+          data.routeSelected === true ||
+          (data.selected === true && !!String(data.selectedRouteUid || "").trim());
+        if (!hasRouteSelection) {
+          trackExtendTop = false;
+          trackExtendBottom = false;
+          trackShowBottomDashed = false;
+          trackBottomDashedStart = TRACK_BOTTOM_DOT_CENTER;
+
+          if (routeLetterEl) routeLetterEl.textContent = "";
+          if (departEl) departEl.textContent = "00";
+          if (lineCodeEl) lineCodeEl.textContent = "";
+          if (lineStopEl) lineStopEl.textContent = "";
+          if (lineRefTimeEl) lineRefTimeEl.textContent = "00:00";
+          if (lineRefStopEl) lineRefStopEl.textContent = "Arrêt";
+          if (stopAEl) stopAEl.textContent = "";
+          if (stopBEl) stopBEl.textContent = "";
+          if (stopCEl) stopCEl.textContent = "";
+          if (stopPlaceholderNameEl) stopPlaceholderNameEl.textContent = "";
+
+          if (lineTrackEl) lineTrackEl.style.display = "none";
+          if (homeMiniLaneEl) homeMiniLaneEl.style.display = "none";
+          if (lineStopsEl) lineStopsEl.style.display = "none";
+          if (stopRowAEl) stopRowAEl.style.visibility = "hidden";
+          if (stopRowBEl) stopRowBEl.style.visibility = "hidden";
+          if (stopRowCEl) stopRowCEl.style.visibility = "hidden";
+          if (stopRowPlaceholderEl) stopRowPlaceholderEl.style.visibility = "hidden";
+          if (stopDotAEl) stopDotAEl.style.visibility = "hidden";
+          if (stopDotBEl) stopDotBEl.style.visibility = "hidden";
+          if (stopDotCEl) stopDotCEl.style.visibility = "hidden";
+          if (stopArrowEl) stopArrowEl.style.visibility = "hidden";
+          if (lineTrackBottomDashedEl) lineTrackBottomDashedEl.style.display = "none";
+          if (lineCardMainEl) lineCardMainEl.style.display = "none";
+          if (lineCardRefEl) lineCardRefEl.style.display = "none";
+          updateLineRefStopLayout();
+          return;
+        }
         const linkedLastIndex = Math.max(0, linkedStops.length - 1);
         const linkedIndex = linkedStops.length
           ? Math.max(0, Math.min(linkedLastIndex, Number(data.audioCurrentIndex || 0)))
@@ -790,12 +2591,21 @@
         const linkedNext = linkedIndex < linkedLastIndex ? String(linkedStops[linkedIndex + 1] || "").trim() : "";
         const hasStopAfterTopDot = (linkedIndex + 2) <= linkedLastIndex;
         const hasStopBeforeBottomDot = (linkedIndex - 2) >= 0;
-        const lineCode = sanitizeLineCode(data.lineNumber);
-        const currentStop = String(linkedCurrent || data.stopName || data.stopLabel || "Arret").trim() || "Arret";
+        const lineCode = buildLineMainCode(data);
+        const currentStop = String(linkedCurrent || data.stopName || data.stopLabel || "Arrêt").trim() || "Arrêt";
+        const terminusStop = String(
+          data.terminusStopName ||
+            data.terminus ||
+            linkedStops[linkedLastIndex] ||
+            data.thirdStopName ||
+            data.nextStopName ||
+            ""
+        ).trim();
+        const lineMainTerminus = terminusStop;
         const previousStop = String(linkedPrev || data.previousStopName || "").trim();
         const nextStop = String(linkedNext || data.nextStopName || data.nextStop || "").trim();
         const refTime = String(data.refTime || currentClockText()).trim() || currentClockText();
-        const departIn = String(data.departMinutes || "09").trim() || "09";
+        const departIn = "00";
         const directionLetter = pickDirectionLetter(data);
         const hasPreviousStop = !!previousStop;
         const hasNextStop = !!nextStop;
@@ -805,20 +2615,30 @@
         trackShowBottomDashed = isBeforeFirstStop;
         trackBottomDashedStart = isBeforeFirstStop ? TRACK_MIDDLE_DOT_CENTER : TRACK_BOTTOM_DOT_CENTER;
 
+        if (homeMiniLaneEl) homeMiniLaneEl.style.display = "";
         if (routeLetterEl) routeLetterEl.textContent = directionLetter;
         if (departEl) departEl.textContent = departIn;
         if (lineCodeEl) lineCodeEl.textContent = lineCode;
-        if (lineStopEl) lineStopEl.textContent = currentStop;
+        if (lineStopEl) lineStopEl.textContent = lineMainTerminus;
+        if (lineCardRefEl) lineCardRefEl.style.display = "flex";
         if (lineRefTimeEl) lineRefTimeEl.textContent = refTime;
         if (lineRefStopEl) lineRefStopEl.textContent = currentStop;
         if (stopAEl) stopAEl.textContent = nextStop;
         if (stopBEl) stopBEl.textContent = currentStop || "-";
         if (stopCEl) stopCEl.textContent = previousStop;
 
-        if (stopRowAEl) stopRowAEl.style.visibility = hasNextStop ? "visible" : "hidden";
-        if (stopRowBEl) stopRowBEl.style.visibility = "visible";
-        if (stopRowCEl) stopRowCEl.style.visibility = hasPreviousStop ? "visible" : "hidden";
+        const showStopA = hasNextStop;
+        const showStopB = true;
+        const showStopC = hasPreviousStop;
+        if (stopRowPlaceholderEl) stopRowPlaceholderEl.style.visibility = "hidden";
+        if (stopRowAEl) stopRowAEl.style.visibility = showStopA ? "visible" : "hidden";
+        if (stopRowBEl) stopRowBEl.style.visibility = showStopB ? "visible" : "hidden";
+        if (stopRowCEl) stopRowCEl.style.visibility = showStopC ? "visible" : "hidden";
+        if (stopDotAEl) stopDotAEl.style.visibility = showStopA ? "visible" : "hidden";
+        if (stopDotBEl) stopDotBEl.style.visibility = showStopB ? "visible" : "hidden";
+        if (stopDotCEl) stopDotCEl.style.visibility = showStopC ? "visible" : "hidden";
         if (stopArrowEl) stopArrowEl.style.visibility = (hasPreviousStop || isBeforeFirstStop) ? "visible" : "hidden";
+        updateLineRefStopLayout();
         updateDynamicTrackBounds();
       }
 
@@ -832,15 +2652,192 @@
         });
       }
 
-      document.querySelectorAll("[data-action]").forEach((btn) => {
+      const actionButtons = Array.from(document.querySelectorAll("[data-action]"));
+      const localNavActions = new Set(["top-left-a", "top-left-b", "menu", "slot-b", "slot-c"]);
+      actionButtons.forEach((btn) => {
+        const action = String(btn.getAttribute("data-action") || "").trim();
+        const isLocalNav = localNavActions.has(action);
+        btn.disabled = !isLocalNav;
+        btn.setAttribute("aria-disabled", isLocalNav ? "false" : "true");
+      });
+
+      actionButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
           const action = String(btn.getAttribute("data-action") || "").trim();
+          if (action === "top-left-a") {
+            setOverlayPage(currentOverlayPage === "alarmes" ? "ligne" : "alarmes");
+            return;
+          }
+          if (action === "top-left-b") {
+            setOverlayPage(currentOverlayPage === "messagerie" ? "ligne" : "messagerie");
+            return;
+          }
+          if (action === "menu") {
+            setOverlayPage("menu");
+            return;
+          }
+          if (action === "slot-b") {
+            setOverlayPage(currentOverlayPage === "signalement" ? "ligne" : "signalement");
+            return;
+          }
+          if (action === "slot-c") {
+            setOverlayPage(currentOverlayPage === "diffusion" ? "ligne" : "diffusion");
+            return;
+          }
+          if (btn.disabled) return;
           if (!action) return;
           post("saeiv:action", { action });
         });
       });
 
+      if (menuCloseBtnEl) {
+        menuCloseBtnEl.addEventListener("click", () => {
+          setOverlayPage("ligne");
+        });
+      }
+
+      if (alarmBackBtnEl) {
+        alarmBackBtnEl.addEventListener("click", () => {
+          setOverlayPage("menu");
+        });
+      }
+
+      if (signalBackBtnEl) {
+        signalBackBtnEl.addEventListener("click", () => {
+          setOverlayPage("menu");
+        });
+      }
+
+      if (diffusionBackBtnEl) {
+        diffusionBackBtnEl.addEventListener("click", () => {
+          setOverlayPage("menu");
+        });
+      }
+
+      if (messageBackBtnEl) {
+        messageBackBtnEl.addEventListener("click", () => {
+          setOverlayPage("menu");
+        });
+      }
+
+      if (diffusionGridEl) {
+        diffusionGridEl.addEventListener("click", (event) => {
+          const target = event.target;
+          const btn = target && target.closest ? target.closest("[data-diffusion-slot]") : null;
+          if (!btn || btn.disabled) return;
+          const slot = Number(btn.getAttribute("data-diffusion-slot") || 0);
+          if (!Number.isInteger(slot) || slot <= 0) return;
+          playDiffusionAudioBySlot(slot);
+          const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
+          post("saeiv:action", {
+            action: `saeiv-local-diffusion-slot-${slot}`,
+            selectedLineUid: String(state.selectedLineUid || ""),
+            selectedRouteUid: String(state.selectedRouteUid || ""),
+            lineNumber: String(state.lineNumber || ""),
+            routeName: String(state.routeName || ""),
+            audioFolderPath: String(state.audioFolderPath || ""),
+            globalAudioFolderPath: String(state.globalAudioFolderPath || ""),
+            diffusionSlot: slot,
+            diffusionLabel: String(btn.getAttribute("data-diffusion-label") || "")
+          });
+        });
+      }
+
+      if (messageTabButtons.length) {
+        activateMessageTab("regulateur");
+        messageTabButtons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (btn.disabled || btn.classList.contains("is-active")) return;
+            const hasChanged = activateMessageTab(btn.getAttribute("data-message-tab"));
+            if (hasChanged) pulseMessageSwitch();
+          });
+        });
+      }
+
+      if (menuTargetButtons.length) {
+        menuTargetButtons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (btn.disabled) return;
+            const page = String(btn.getAttribute("data-menu-target") || "").trim().toLowerCase();
+            setOverlayPage(page);
+          });
+        });
+      }
+
+      if (overlayPageMenuEl) {
+        overlayPageMenuEl.addEventListener("click", (event) => {
+          const target = event.target;
+          const btn = target && target.closest ? target.closest("[data-menu-target]") : null;
+          if (!btn || btn.disabled) return;
+          const page = String(btn.getAttribute("data-menu-target") || "").trim().toLowerCase();
+          if (!page) return;
+          setOverlayPage(page);
+        });
+      }
+
+      if (menuScrollUpBtnEl) {
+        menuScrollUpBtnEl.addEventListener("click", () => {
+          if (menuScrollUpBtnEl.disabled) return;
+          setMenuGridPage(currentMenuGridPage - 1);
+        });
+      }
+
+      if (menuScrollDownBtnEl) {
+        menuScrollDownBtnEl.addEventListener("click", () => {
+          if (menuScrollDownBtnEl.disabled) return;
+          setMenuGridPage(currentMenuGridPage + 1);
+        });
+      }
+
+      if (clockEl) {
+        clockEl.addEventListener("click", () => {
+          toggleClockMode();
+        });
+        clockEl.addEventListener("keydown", (event) => {
+          const key = String(event.key || "");
+          if (key !== "Enter" && key !== " ") return;
+          event.preventDefault();
+          toggleClockMode();
+        });
+      }
+
+      if (pipToggleBtnEl) {
+        pipToggleBtnEl.addEventListener("click", () => {
+          togglePipMode();
+        });
+      }
+
+      if (pipStopAudioBtnEl) {
+        pipStopAudioBtnEl.addEventListener("click", () => {
+          stopDiffusionAudioPlayback();
+        });
+      }
+
+      if (pipHostQuitBtnEl) {
+        pipHostQuitBtnEl.addEventListener("click", () => {
+          if (!pipHudWindow) return;
+          detachPipWindow({ closeWindow: true });
+        });
+      }
+
+      if (pipHostStopAudioBtnEl) {
+        pipHostStopAudioBtnEl.addEventListener("click", () => {
+          stopDiffusionAudioPlayback();
+        });
+      }
+
+      if (pipDrawerToggleEl) {
+        pipDrawerToggleEl.addEventListener("click", () => {
+          const nextOpen = !pipDrawerOpen;
+          setPipDrawerOpen(nextOpen);
+          if (!nextOpen && pipHudWindow) {
+            detachPipWindow({ closeWindow: true });
+          }
+        });
+      }
+
       window.addEventListener("pagehide", () => {
+        detachPipWindow({ closeWindow: true });
         post("saeiv:closed");
       });
 
@@ -853,6 +2850,7 @@
       tickClock();
       clockTimer = window.setInterval(tickClock, 1000);
       window.addEventListener("beforeunload", () => {
+        stopDiffusionAudioPlayback();
         if (clockTimer) {
           clearInterval(clockTimer);
           clockTimer = null;
@@ -861,7 +2859,12 @@
 
       post("saeiv:ready");
       post("saeiv:request_state");
+      setMenuGridPage(MENU_GRID_MIN_PAGE);
+      updateMenuTargetButtonsAvailability();
+      setPipDrawerOpen(false);
+      setPipToggleButtonState();
       applyScale();
+      setOverlayPage(currentOverlayPage);
       renderState({});
     })();
   </script>

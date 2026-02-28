@@ -3226,7 +3226,7 @@
   const AUDIO_PANEL_BUTTON_KEY = "idf_audio_panel_button_enabled";
   const SAEIV_SETTINGS_FEATURE_ALLOWED = (() => {
     const qs = new URLSearchParams(location.search);
-    return qs.has("dev") || qs.has("dev_pip");
+    return qs.has("dev");
   })();
   const LINE_PREVIEW_LAYOUT_KEY = "idf_line_preview_layout";
   const CENTER_ON_LINE_SELECT_KEY = "idf_center_on_line_select";
@@ -5776,8 +5776,7 @@
     const SAEIV_ASPECT_RATIO = 16 / 9;
     const SAEIV_QUERY_PARAMS = new URLSearchParams(location.search);
     const SAEIV_DEV_MODE = SAEIV_QUERY_PARAMS.has("dev");
-    const SAEIV_DEV_PIP_MODE = SAEIV_QUERY_PARAMS.has("dev_pip");
-    const SAEIV_FEATURE_ALLOWED = SAEIV_DEV_MODE || SAEIV_DEV_PIP_MODE;
+    const SAEIV_FEATURE_ALLOWED = SAEIV_DEV_MODE;
     const SAEIV_CHANNEL_NAME = "idf_map_saeiv_v1";
     const SAEIV_PANEL_STATE = {
       sourceId: `map-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`,
@@ -7353,6 +7352,9 @@
       LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
       LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier = 1;
       updateLinePreviewAudioButtonsState();
+      if (typeof syncSaeivExternalState === "function") {
+        try { syncSaeivExternalState({ force: false }); } catch {}
+      }
     }
     function updateLinePreviewAudioNowLabel(){
       const now = document.getElementById("lpAudioNowStop");
@@ -7618,11 +7620,17 @@
       LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = !!lockNavigation;
       LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier = Math.max(0, Math.min(1, safeMul));
       updateLinePreviewAudioButtonsState();
+      if (typeof syncSaeivExternalState === "function") {
+        try { syncSaeivExternalState({ force: false }); } catch {}
+      }
       for (const clip of sequence) {
         if (token !== LINE_PREVIEW_AUDIO_PLAYBACK.token) {
           LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying = false;
           LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
           updateLinePreviewAudioButtonsState();
+          if (typeof syncSaeivExternalState === "function") {
+            try { syncSaeivExternalState({ force: false }); } catch {}
+          }
           return;
         }
         await playLinePreviewAudioClip(folderPath, clip, token, LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier);
@@ -7631,6 +7639,9 @@
         LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying = false;
         LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
         updateLinePreviewAudioButtonsState();
+        if (typeof syncSaeivExternalState === "function") {
+          try { syncSaeivExternalState({ force: false }); } catch {}
+        }
         if (advanceOnFinish) {
           const lastIndex = Math.max(0, (LINE_PREVIEW_AUDIO_STATE.stopNames.length || 1) - 1);
           const currentIndex = Math.max(0, Math.min(lastIndex, LINE_PREVIEW_AUDIO_STATE.currentIndex || 0));
@@ -7852,6 +7863,15 @@
           if (type === "saeiv:action") {
             const action = String(data.action || "").trim();
             if (!action) return;
+            if (action.startsWith("diffusion-")) {
+              const actionMatch = /(\d+)$/.exec(action);
+              const slotFromAction = actionMatch ? Number(actionMatch[1]) : 0;
+              const slotRaw = Number(data.diffusionSlot || slotFromAction || 0);
+              const slotIndex = Number.isInteger(slotRaw) && slotRaw > 0 ? slotRaw - 1 : -1;
+              if (slotIndex >= 0) {
+                triggerSaeivGlobalAudioByIndex(slotIndex).catch(() => {});
+              }
+            }
             SAEIV_PANEL_STATE.lastAction = action;
             console.log("[SAEIV][TEST]", action);
             syncSaeivExternalState({ force: true });
@@ -7968,19 +7988,113 @@
         audioVoiceStyle: String((LINE_PREVIEW_AUDIO_STATE.voiceStyles || [])[LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex]?.name || "")
       };
     }
+    function getSaeivGlobalFolderPlayableClips(folder, { includeRawFallback = true } = {}){
+      const filtered = getLinePreviewAudioGlobalPlayableClips(folder);
+      if (filtered.length || !includeRawFallback) return filtered;
+      return (Array.isArray(folder?.clips) ? folder.clips : [])
+        .map((clip) => String(clip || "").trim())
+        .filter(Boolean);
+    }
+    function findSaeivRatpGlobalFolder(folders, { requirePlayable = false } = {}){
+      const list = Array.isArray(folders) ? folders : [];
+      if (!list.length) return null;
+      const tagged = list.filter((folder) => linePreviewAudioGlobalFolderHasTag(folder, "ratp"));
+      if (!tagged.length) return null;
+      if (!requirePlayable) return tagged[0] || null;
+      return tagged.find((folder) => getSaeivGlobalFolderPlayableClips(folder).length > 0) || null;
+    }
+    function buildSaeivGlobalAudioState({ forceRatpDefault = false } = {}){
+      const allFolders = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
+      if (!allFolders.length && !LINE_PREVIEW_AUDIO_GLOBAL_STATE.loadPromise) {
+        ensureLinePreviewAudioGlobalFoldersLoaded()
+          .then(() => {
+            try { syncSaeivExternalState({ force: true }); } catch {}
+          })
+          .catch(() => {});
+      }
+      const filteredFolders = getLinePreviewAudioGlobalAvailableFolders(allFolders);
+      const folders = filteredFolders.length ? filteredFolders : allFolders;
+      let selectedPath = String(LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath || "");
+      let selectedFolder = folders.find((folder) => String(folder?.path || "") === selectedPath) || null;
+      if (forceRatpDefault) {
+        selectedFolder = findSaeivRatpGlobalFolder(folders, { requirePlayable: true })
+          || findSaeivRatpGlobalFolder(folders)
+          || findSaeivRatpGlobalFolder(allFolders, { requirePlayable: true })
+          || findSaeivRatpGlobalFolder(allFolders)
+          || selectedFolder;
+        selectedPath = String(selectedFolder?.path || selectedPath || "");
+        if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
+      }
+      if (!selectedFolder && folders.length) {
+        const preferredIndex = getPreferredGlobalFolderIndex(folders);
+        const fallbackIndex = preferredIndex >= 0 ? preferredIndex : 0;
+        selectedFolder = folders[fallbackIndex] || null;
+        selectedPath = String(selectedFolder?.path || "");
+        if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
+      }
+      let playableClips = getSaeivGlobalFolderPlayableClips(selectedFolder);
+      if (!playableClips.length) {
+        const ratpFallback = findSaeivRatpGlobalFolder(folders, { requirePlayable: true })
+          || findSaeivRatpGlobalFolder(allFolders, { requirePlayable: true });
+        if (ratpFallback) {
+          selectedFolder = ratpFallback;
+          selectedPath = String(ratpFallback?.path || "");
+          if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
+          playableClips = getSaeivGlobalFolderPlayableClips(ratpFallback);
+        }
+      }
+      if (!playableClips.length && folders.length) {
+        const fallbackFolder = folders.find((folder) => {
+          return getSaeivGlobalFolderPlayableClips(folder).length > 0;
+        }) || null;
+        if (fallbackFolder) {
+          selectedFolder = fallbackFolder;
+          selectedPath = String(fallbackFolder?.path || "");
+          if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
+          playableClips = getSaeivGlobalFolderPlayableClips(fallbackFolder);
+        }
+      }
+      const labels = playableClips
+        .map((clipName) => {
+          const meta = parseLinePreviewAudioGlobalClipMeta(clipName);
+          return String(meta?.label || clipName || "").trim();
+        })
+        .filter(Boolean);
+      const urls = selectedPath
+        ? playableClips.map((clipName) => linePreviewAudioClipUrl(selectedPath, clipName))
+        : [];
+      const folderMeta = parseLinePreviewAudioGlobalFolderMeta(selectedFolder?.name || "");
+      const volumeMultiplier = Number.isFinite(Number(folderMeta?.volumeMultiplier))
+        ? Number(folderMeta.volumeMultiplier)
+        : 1;
+      return {
+        globalAudioFolderPath: selectedPath,
+        globalAudioLabels: labels,
+        globalAudioUrls: urls,
+        globalAudioCount: labels.length,
+        globalAudioVolumeMultiplier: volumeMultiplier
+      };
+    }
     function buildSaeivStatePayload(){
       const info = getSaeivSelectedInfo();
       const audioLinkedState = buildSaeivAudioLinkedState(info);
+      const hasLineSelected = !!String(currentSelectedLineUid || "").trim() || !!String(currentSelectedKey || "").trim();
+      const hasRouteSelected = !!String(currentSelectedKey || "").trim();
+      const globalAudioState = buildSaeivGlobalAudioState({ forceRatpDefault: !hasRouteSelected });
       return {
         lang: String(LANG || "fr"),
         canUseFeature: SAEIV_FEATURE_ALLOWED && isLinePreviewAudioLanguageAllowed() && !!SAEIV_PANEL_BUTTON_ENABLED,
         selected: info.selected,
+        lineSelected: hasLineSelected,
+        routeSelected: hasRouteSelected,
         selectedKey: info.key,
         selectedLineUid: info.lineUid,
         selectedRouteUid: info.routeUid,
         lineNumber: info.lineNumber,
         routeName: info.routeName,
         ...audioLinkedState,
+        ...globalAudioState,
+        audioPlaybackBusy: !!LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying,
         lastAction: SAEIV_PANEL_STATE.lastAction || ""
       };
     }
@@ -12192,6 +12306,59 @@
       const btn = buttons[idx];
       if (!btn || btn.disabled) return false;
       btn.click();
+      return true;
+    }
+
+    async function triggerSaeivGlobalAudioByIndex(index) {
+      const idx = Number(index);
+      if (!Number.isInteger(idx) || idx < 0) return false;
+      const hasRouteSelected = !!String(currentSelectedKey || "").trim();
+      try { await ensureLinePreviewAudioGlobalFoldersLoaded(); } catch {}
+      if (hasRouteSelected && triggerFisGlobalAudioByIndex(idx)) return true;
+      const allFolders = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
+      const folders = getLinePreviewAudioGlobalAvailableFolders(allFolders);
+      if (!folders.length && !allFolders.length) return false;
+      let selectedPath = String(LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath || "");
+      let selectedFolder = folders.find((folder) => String(folder?.path || "") === selectedPath) || null;
+      if (!hasRouteSelected) {
+        selectedFolder = findSaeivRatpGlobalFolder(folders, { requirePlayable: true })
+          || findSaeivRatpGlobalFolder(folders)
+          || findSaeivRatpGlobalFolder(allFolders, { requirePlayable: true })
+          || findSaeivRatpGlobalFolder(allFolders)
+          || selectedFolder;
+        selectedPath = String(selectedFolder?.path || selectedPath || "");
+        if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
+      }
+      if (!selectedFolder) {
+        selectedFolder = folders[0] || allFolders[0] || null;
+        selectedPath = String(selectedFolder?.path || "");
+        if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
+      }
+      if (!selectedPath || !selectedFolder) return false;
+      let clips = getSaeivGlobalFolderPlayableClips(selectedFolder);
+      if (!clips.length) {
+        const ratpFallback = findSaeivRatpGlobalFolder(folders, { requirePlayable: true })
+          || findSaeivRatpGlobalFolder(allFolders, { requirePlayable: true });
+        if (ratpFallback) {
+          selectedFolder = ratpFallback;
+          selectedPath = String(ratpFallback?.path || "");
+          if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
+          clips = getSaeivGlobalFolderPlayableClips(ratpFallback);
+        }
+      }
+      if (!clips.length || idx >= clips.length) return false;
+      const clipName = String(clips[idx] || "").trim();
+      if (!clipName) return false;
+      const folderMeta = parseLinePreviewAudioGlobalFolderMeta(selectedFolder?.name || "");
+      const folderVolumeMultiplier = Number.isFinite(Number(folderMeta?.volumeMultiplier))
+        ? Number(folderMeta.volumeMultiplier)
+        : 1;
+      playLinePreviewAudioSequenceFromFolder(selectedPath, [clipName], {
+        advanceOnFinish: false,
+        lockNavigation: false,
+        volumeMultiplier: folderVolumeMultiplier
+      });
+      updateLinePreviewAudioButtonsState();
       return true;
     }
 
