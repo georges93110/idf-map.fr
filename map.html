@@ -2177,6 +2177,39 @@
       border-radius:50%; animation:spin .8s linear infinite;
       vertical-align:-.2em;
     }
+    .route-dir-arrow-host{
+      background:transparent;
+      border:none;
+    }
+    .route-dir-arrow-rot{
+      display:block;
+      width:18px;
+      height:18px;
+      transform:rotate(var(--dir-angle, 0deg));
+      transform-origin:50% 50%;
+      pointer-events:none;
+    }
+    .route-dir-arrow-glyph{
+      display:block;
+      width:18px;
+      height:18px;
+      line-height:18px;
+      text-align:center;
+      font-size:18px;
+      font-weight:900;
+      color:var(--dir-color, #ffffff);
+      text-shadow:
+        0 0 2px rgba(0,0,0,.95),
+        0 0 4px rgba(0,0,0,.85),
+        -1px -1px 0 rgba(0,0,0,.95),
+        1px -1px 0 rgba(0,0,0,.95),
+        -1px 1px 0 rgba(0,0,0,.95),
+        1px 1px 0 rgba(0,0,0,.95);
+      opacity:.98;
+      user-select:none;
+      pointer-events:none;
+      will-change:transform;
+    }
 
     .results::-webkit-scrollbar,
     .dbus-content::-webkit-scrollbar,
@@ -4596,6 +4629,9 @@
     const dbusRoutePane = map.createPane("dbusRoutePane");
     dbusRoutePane.style.zIndex = "320";
     dbusRoutePane.style.pointerEvents = "none";
+    const dbusRouteDirectionPane = map.createPane("dbusRouteDirectionPane");
+    dbusRouteDirectionPane.style.zIndex = "325";
+    dbusRouteDirectionPane.style.pointerEvents = "none";
     const dbusRouteMarkerPane = map.createPane("dbusRouteMarkerPane");
     dbusRouteMarkerPane.style.zIndex = "330";
     dbusRouteMarkerPane.style.pointerEvents = "auto";
@@ -5753,6 +5789,11 @@
     const dbusStopsLayer = L.layerGroup().addTo(map);
     const dbusDepartLayers = L.layerGroup();
     const dbusRouteLayers = new Map();
+    const DBUS_NAV_MAX_SNAP_DISTANCE = 450;
+    const DBUS_NAV_STOP_CANDIDATES = 6;
+    let DBUS_NAV_GRAPH = null;
+    const dbusNavNodesByStopId = new Map();
+    const dbusNavPathCache = new Map();
     let linePreviewAudioCheckToken = 0;
     let dbusFisRootLineFolderTokensPromise = null;
     let DBUS_FIS_INDEX = null;
@@ -8799,6 +8840,291 @@
       });
     }
 
+    function resetDbusNavGraphState(){
+      DBUS_NAV_GRAPH = null;
+      dbusNavNodesByStopId.clear();
+      dbusNavPathCache.clear();
+    }
+    function createDbusMinHeap(){
+      const arr = [];
+      const swap = (a, b) => {
+        const tmp = arr[a];
+        arr[a] = arr[b];
+        arr[b] = tmp;
+      };
+      const bubbleUp = (index) => {
+        let i = index;
+        while (i > 0) {
+          const parent = Math.floor((i - 1) / 2);
+          if (arr[parent].f <= arr[i].f) break;
+          swap(parent, i);
+          i = parent;
+        }
+      };
+      const bubbleDown = (index) => {
+        let i = index;
+        for (;;) {
+          const left = (i * 2) + 1;
+          const right = left + 1;
+          let smallest = i;
+          if (left < arr.length && arr[left].f < arr[smallest].f) smallest = left;
+          if (right < arr.length && arr[right].f < arr[smallest].f) smallest = right;
+          if (smallest === i) break;
+          swap(i, smallest);
+          i = smallest;
+        }
+      };
+      return {
+        push(item){
+          arr.push(item);
+          bubbleUp(arr.length - 1);
+        },
+        pop(){
+          if (!arr.length) return null;
+          const first = arr[0];
+          const last = arr.pop();
+          if (arr.length && last) {
+            arr[0] = last;
+            bubbleDown(0);
+          }
+          return first;
+        },
+        get size(){
+          return arr.length;
+        }
+      };
+    }
+    function appendUniqueWorldPoint(target, point){
+      if (!point) return;
+      const x = Number(point.x);
+      const y = Number(point.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      const last = target[target.length - 1];
+      if (last && Math.abs(last.x - x) < 0.001 && Math.abs(last.y - y) < 0.001) return;
+      target.push({ x, y });
+    }
+    function buildDbusNavGraph(raw){
+      const nodes = Array.isArray(raw?.nodes) ? raw.nodes : [];
+      const edges = Array.isArray(raw?.edges) ? raw.edges : [];
+      if (!nodes.length || !edges.length) return null;
+      const nodesById = new Map();
+      const nodeList = [];
+      nodes.forEach((node) => {
+        const id = Number(node?.id);
+        const x = Number(node?.x);
+        const y = Number(node?.y);
+        if (!Number.isFinite(id) || !Number.isFinite(x) || !Number.isFinite(y)) return;
+        const rec = { id, x, y };
+        nodesById.set(id, rec);
+        nodeList.push(rec);
+      });
+      if (!nodeList.length) return null;
+      const adjacency = new Map();
+      const addTransition = (from, to, weight, points, reverse = false) => {
+        if (!adjacency.has(from)) adjacency.set(from, []);
+        adjacency.get(from).push({ from, to, weight, points, reverse });
+      };
+      edges.forEach((edge) => {
+        const from = Number(edge?.from);
+        const to = Number(edge?.to);
+        const fromNode = nodesById.get(from);
+        const toNode = nodesById.get(to);
+        if (!fromNode || !toNode) return;
+        let weight = Number(edge?.length);
+        if (!Number.isFinite(weight) || weight <= 0) {
+          weight = Math.hypot(fromNode.x - toNode.x, fromNode.y - toNode.y);
+        }
+        const points = Array.isArray(edge?.polyline) ? edge.polyline : [];
+        addTransition(from, to, weight, points, false);
+        if (!edge?.one_way) addTransition(to, from, weight, points, true);
+      });
+      return { nodesById, nodeList, adjacency };
+    }
+    async function loadDbusNavGraph(){
+      resetDbusNavGraphState();
+      let res;
+      try {
+        res = await fetch(dataPath("nav_graph.json"), { cache: "no-store" });
+      } catch {
+        return;
+      }
+      if (!res.ok) return;
+      try {
+        const raw = await res.json();
+        DBUS_NAV_GRAPH = buildDbusNavGraph(raw);
+      } catch (err) {
+        console.warn("DBus nav_graph.json invalide", err);
+      }
+    }
+    function dbusNavHeuristic(fromId, toId){
+      const graph = DBUS_NAV_GRAPH;
+      if (!graph) return 0;
+      const a = graph.nodesById.get(fromId);
+      const b = graph.nodesById.get(toId);
+      if (!a || !b) return 0;
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+    function findDbusNavPathTransitions(fromId, toId){
+      if (fromId === toId) return [];
+      const graph = DBUS_NAV_GRAPH;
+      if (!graph) return null;
+      const open = createDbusMinHeap();
+      const best = new Map([[fromId, 0]]);
+      const prev = new Map();
+      open.push({ id: fromId, g: 0, f: dbusNavHeuristic(fromId, toId) });
+      const EPS = 1e-9;
+      while (open.size > 0) {
+        const current = open.pop();
+        if (!current) break;
+        const known = best.get(current.id);
+        if (!Number.isFinite(known) || current.g > known + EPS) continue;
+        if (current.id === toId) break;
+        const transitions = graph.adjacency.get(current.id) || [];
+        for (const transition of transitions) {
+          const nextG = current.g + transition.weight;
+          const knownNext = best.get(transition.to);
+          if (Number.isFinite(knownNext) && nextG >= knownNext - EPS) continue;
+          best.set(transition.to, nextG);
+          prev.set(transition.to, { from: current.id, transition });
+          open.push({
+            id: transition.to,
+            g: nextG,
+            f: nextG + dbusNavHeuristic(transition.to, toId)
+          });
+        }
+      }
+      if (!prev.has(toId)) return null;
+      const out = [];
+      let cursor = toId;
+      while (cursor !== fromId) {
+        const step = prev.get(cursor);
+        if (!step) return null;
+        out.push(step.transition);
+        cursor = step.from;
+      }
+      out.reverse();
+      return out;
+    }
+    function appendTransitionWorldPoints(target, transition){
+      const graph = DBUS_NAV_GRAPH;
+      if (!graph || !transition) return;
+      const rawPoints = Array.isArray(transition.points) ? transition.points : [];
+      if (rawPoints.length) {
+        if (transition.reverse) {
+          for (let i = rawPoints.length - 1; i >= 0; i--) appendUniqueWorldPoint(target, rawPoints[i]);
+        } else {
+          rawPoints.forEach((point) => appendUniqueWorldPoint(target, point));
+        }
+      } else {
+        appendUniqueWorldPoint(target, graph.nodesById.get(transition.from));
+        appendUniqueWorldPoint(target, graph.nodesById.get(transition.to));
+      }
+      appendUniqueWorldPoint(target, graph.nodesById.get(transition.to));
+    }
+    function getDbusNavPathBetweenNodes(fromId, toId){
+      const key = `${fromId}>${toId}`;
+      if (dbusNavPathCache.has(key)) return dbusNavPathCache.get(key);
+      const graph = DBUS_NAV_GRAPH;
+      if (!graph) return null;
+      const fromNode = graph.nodesById.get(fromId);
+      const toNode = graph.nodesById.get(toId);
+      if (!fromNode || !toNode) return null;
+      const transitions = findDbusNavPathTransitions(fromId, toId);
+      if (!transitions) {
+        dbusNavPathCache.set(key, null);
+        return null;
+      }
+      const points = [];
+      let cost = 0;
+      appendUniqueWorldPoint(points, fromNode);
+      transitions.forEach((transition) => {
+        cost += Number(transition.weight) || 0;
+        appendTransitionWorldPoints(points, transition);
+      });
+      appendUniqueWorldPoint(points, toNode);
+      dbusNavPathCache.set(key, points.length ? { points, cost } : null);
+      return dbusNavPathCache.get(key);
+    }
+    function getNearestDbusNavNodesForStop(stop, limit = DBUS_NAV_STOP_CANDIDATES){
+      const graph = DBUS_NAV_GRAPH;
+      if (!graph || !stop) return [];
+      const stopId = Number(stop.id);
+      if (Number.isFinite(stopId) && dbusNavNodesByStopId.has(stopId)) {
+        const cached = dbusNavNodesByStopId.get(stopId) || [];
+        return cached.slice(0, Math.max(1, limit));
+      }
+      const x = Number(stop.X);
+      const y = Number(stop.Z);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return [];
+      const candidates = [];
+      for (const node of graph.nodeList) {
+        const dx = node.x - x;
+        const dy = node.y - y;
+        const distSq = (dx * dx) + (dy * dy);
+        const dist = Math.sqrt(distSq);
+        if (dist > DBUS_NAV_MAX_SNAP_DISTANCE) continue;
+        candidates.push({ nodeId: node.id, distance: dist });
+      }
+      candidates.sort((a, b) => a.distance - b.distance);
+      const out = candidates.slice(0, Math.max(1, DBUS_NAV_STOP_CANDIDATES));
+      if (Number.isFinite(stopId)) dbusNavNodesByStopId.set(stopId, out);
+      return out.slice(0, Math.max(1, limit));
+    }
+    function pickBestDbusNavSegment(fromStop, toStop){
+      const fromCandidates = getNearestDbusNavNodesForStop(fromStop);
+      const toCandidates = getNearestDbusNavNodesForStop(toStop);
+      if (!fromCandidates.length || !toCandidates.length) return null;
+      let best = null;
+      for (const fromCandidate of fromCandidates) {
+        for (const toCandidate of toCandidates) {
+          let path = null;
+          let cost = 0;
+          if (fromCandidate.nodeId === toCandidate.nodeId) {
+            const node = DBUS_NAV_GRAPH?.nodesById.get(fromCandidate.nodeId);
+            if (!node) continue;
+            path = { points: [{ x: node.x, y: node.y }], cost: 0 };
+          } else {
+            path = getDbusNavPathBetweenNodes(fromCandidate.nodeId, toCandidate.nodeId);
+            if (!path) continue;
+          }
+          cost = (path?.cost || 0) + fromCandidate.distance + toCandidate.distance;
+          if (!best || cost < best.cost) {
+            best = { cost, path };
+          }
+        }
+      }
+      return best;
+    }
+    function buildDbusRoutePolylineLatLngs(routeStops){
+      const direct = routeStops.map((stop) => stop?.latlng).filter(Boolean);
+      if (direct.length < 2 || !DBUS_NAV_GRAPH) return direct;
+      const worldPoints = [];
+      for (let i = 0; i < routeStops.length - 1; i++) {
+        const fromStop = routeStops[i];
+        const toStop = routeStops[i + 1];
+        if (!fromStop || !toStop) continue;
+        const fromPoint = { x: Number(fromStop.X), y: Number(fromStop.Z) };
+        const toPoint = { x: Number(toStop.X), y: Number(toStop.Z) };
+        const segment = pickBestDbusNavSegment(fromStop, toStop);
+        if (i === 0) appendUniqueWorldPoint(worldPoints, fromPoint);
+        if (segment?.path && Array.isArray(segment.path.points)) {
+          const worldPath = segment.path.points;
+          if (worldPath.length) {
+            worldPath.forEach((point) => appendUniqueWorldPoint(worldPoints, point));
+          } else {
+            appendUniqueWorldPoint(worldPoints, fromPoint);
+            appendUniqueWorldPoint(worldPoints, toPoint);
+          }
+        } else {
+          appendUniqueWorldPoint(worldPoints, fromPoint);
+          appendUniqueWorldPoint(worldPoints, toPoint);
+        }
+        appendUniqueWorldPoint(worldPoints, toPoint);
+      }
+      const navLatLngs = worldPoints.map((point) => toLatLng(point.x, point.y)).filter(Boolean);
+      return navLatLngs.length >= 2 ? navLatLngs : direct;
+    }
+
 
     const BUS_COLORS = [getComputedStyle(document.documentElement).getPropertyValue('--busA').trim(),
                         getComputedStyle(document.documentElement).getPropertyValue('--busB').trim(),
@@ -9142,11 +9468,198 @@
       return [bg, text];
     }
 
+    function getRouteDirectionSpacingPx(zoom = map.getZoom()){
+      return Math.max(34, Math.min(106, 150 - (zoom * 10)));
+    }
+    function getRouteDirectionSpeedPx(zoom = map.getZoom()){
+      return Math.max(24, Math.min(96, 28 + (zoom * 6)));
+    }
+    function buildRouteDirectionGeometry(latlngs){
+      if (!Array.isArray(latlngs) || latlngs.length < 2) return null;
+      const zoom = map.getZoom();
+      const pts = latlngs.map((ll) => map.project(ll, zoom));
+      const segments = [];
+      let total = 0;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i];
+        const b = pts[i + 1];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.hypot(dx, dy);
+        if (!Number.isFinite(len) || len < 0.001) continue;
+        segments.push({ a, dx, dy, len, start: total });
+        total += len;
+      }
+      if (!segments.length || total < 1) return null;
+      return { zoom, total, segments };
+    }
+    function buildRouteDirectionArrowIcon(angleDeg = 0, color = "#ffffff"){
+      const safeAngle = Number.isFinite(angleDeg) ? angleDeg : 0;
+      const safeColor = String(color || "#ffffff");
+      return L.divIcon({
+        className: "route-dir-arrow-host",
+        html: `<span class="route-dir-arrow-rot" style="--dir-angle:${safeAngle.toFixed(1)}deg;"><span class="route-dir-arrow-glyph" style="--dir-color:${escapeHTML(safeColor)};">➤</span></span>`,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
+      });
+    }
+    function clearRouteDirectionMarkers(bundle){
+      if (!bundle) return;
+      const markers = Array.isArray(bundle.directionMarkers) ? bundle.directionMarkers : [];
+      markers.forEach((marker) => {
+        if (!marker) return;
+        try { bundle.group.removeLayer(marker); } catch {}
+      });
+      bundle.directionMarkers = [];
+    }
+    function ensureRouteDirectionMarkerCount(bundle, count){
+      if (!bundle) return;
+      const safeCount = Math.max(0, Number(count) || 0);
+      if (!Array.isArray(bundle.directionMarkers)) bundle.directionMarkers = [];
+      const markers = bundle.directionMarkers;
+      while (markers.length > safeCount) {
+        const marker = markers.pop();
+        if (!marker) continue;
+        try { bundle.group.removeLayer(marker); } catch {}
+      }
+      const baseLatLng = bundle.routeLatLngs?.[0] || map.getCenter();
+      while (markers.length < safeCount) {
+        const marker = L.marker(baseLatLng, {
+          pane: "dbusRouteDirectionPane",
+          interactive: false,
+          keyboard: false,
+          bubblingMouseEvents: false,
+          zIndexOffset: 250,
+          icon: buildRouteDirectionArrowIcon(0, bundle.directionColor || "#ffffff")
+        }).addTo(bundle.group);
+        marker._dirAngle = 0;
+        markers.push(marker);
+      }
+    }
+    function updateRouteDirectionMarkerColor(bundle, color){
+      if (!bundle || !color) return;
+      bundle.directionColor = color;
+      const markers = Array.isArray(bundle.directionMarkers) ? bundle.directionMarkers : [];
+      markers.forEach((marker) => {
+        const el = marker?.getElement?.();
+        if (el) {
+          const glyph = el.querySelector(".route-dir-arrow-glyph");
+          if (glyph) glyph.style.setProperty("--dir-color", String(color));
+          return;
+        }
+        const angle = Number(marker?._dirAngle) || 0;
+        try { marker.setIcon(buildRouteDirectionArrowIcon(angle, color)); } catch {}
+      });
+    }
+    function resolveRouteDirectionPoint(geom, offsetPx){
+      if (!geom || !Array.isArray(geom.segments) || !geom.segments.length || !Number.isFinite(geom.total) || geom.total <= 0) return null;
+      const total = geom.total;
+      let d = Number(offsetPx) || 0;
+      d = ((d % total) + total) % total;
+      let lo = 0;
+      let hi = geom.segments.length - 1;
+      let idx = hi;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        const seg = geom.segments[mid];
+        if (d < seg.start) {
+          hi = mid - 1;
+          continue;
+        }
+        if (d >= seg.start + seg.len) {
+          lo = mid + 1;
+          continue;
+        }
+        idx = mid;
+        break;
+      }
+      const seg = geom.segments[idx];
+      if (!seg || !Number.isFinite(seg.len) || seg.len <= 0) return null;
+      const t = (d - seg.start) / seg.len;
+      const x = seg.a.x + (seg.dx * t);
+      const y = seg.a.y + (seg.dy * t);
+      const angle = Math.atan2(seg.dy, seg.dx) * (180 / Math.PI);
+      return { latlng: map.unproject(L.point(x, y), geom.zoom), angle };
+    }
+    function updateRouteDirectionMarkersAtPhase(bundle, phasePx){
+      if (!bundle) return;
+      const geom = bundle.directionGeometry;
+      const markers = Array.isArray(bundle.directionMarkers) ? bundle.directionMarkers : [];
+      if (!geom || !markers.length) return;
+      const spacing = Number(bundle.directionSpacingPx) || getRouteDirectionSpacingPx();
+      for (let i = 0; i < markers.length; i++) {
+        const marker = markers[i];
+        if (!marker) continue;
+        const point = resolveRouteDirectionPoint(geom, phasePx + (i * spacing));
+        if (!point) continue;
+        try { marker.setLatLng(point.latlng); } catch {}
+        marker._dirAngle = point.angle;
+        const el = marker.getElement?.();
+        if (el) {
+          const rot = el.querySelector(".route-dir-arrow-rot");
+          if (rot) rot.style.setProperty("--dir-angle", `${Number(point.angle).toFixed(1)}deg`);
+        } else {
+          try { marker.setIcon(buildRouteDirectionArrowIcon(point.angle, bundle.directionColor || "#ffffff")); } catch {}
+        }
+      }
+    }
+    function refreshRouteDirectionMarkers(bundle){
+      if (!bundle) return;
+      const latlngs = Array.isArray(bundle.routeLatLngs) ? bundle.routeLatLngs : [];
+      const geometry = buildRouteDirectionGeometry(latlngs);
+      if (!geometry) {
+        clearRouteDirectionMarkers(bundle);
+        bundle.directionGeometry = null;
+        return;
+      }
+      bundle.directionGeometry = geometry;
+      const spacing = getRouteDirectionSpacingPx(geometry.zoom);
+      bundle.directionSpacingPx = spacing;
+      bundle.directionSpeedPx = getRouteDirectionSpeedPx(geometry.zoom);
+      const count = Math.max(1, Math.min(180, Math.floor(geometry.total / spacing)));
+      ensureRouteDirectionMarkerCount(bundle, count);
+      updateRouteDirectionMarkersAtPhase(bundle, bundle.directionPhasePx || 0);
+    }
+    function stopRouteDirectionAnimation(bundle){
+      if (!bundle) return;
+      if (bundle.directionAnimRaf) cancelAnimationFrame(bundle.directionAnimRaf);
+      bundle.directionAnimRaf = 0;
+      bundle.directionAnimating = false;
+      bundle.directionLastTs = 0;
+      bundle.directionLastPaintTs = 0;
+    }
+    function startRouteDirectionAnimation(bundle){
+      if (!bundle) return;
+      stopRouteDirectionAnimation(bundle);
+      bundle.directionAnimating = true;
+      bundle.directionLastTs = 0;
+      bundle.directionLastPaintTs = 0;
+      if (!Number.isFinite(bundle.directionPhasePx)) bundle.directionPhasePx = 0;
+      const tick = (ts) => {
+        if (!bundle.directionAnimating) return;
+        if (!bundle.directionLastTs) bundle.directionLastTs = ts;
+        const dt = Math.min(0.1, Math.max(0, (ts - bundle.directionLastTs) / 1000));
+        bundle.directionLastTs = ts;
+        const speed = Number(bundle.directionSpeedPx) || getRouteDirectionSpeedPx();
+        bundle.directionPhasePx = (Number(bundle.directionPhasePx) || 0) + (speed * dt);
+        if (!bundle.directionLastPaintTs || (ts - bundle.directionLastPaintTs) >= 33) {
+          bundle.directionLastPaintTs = ts;
+          updateRouteDirectionMarkersAtPhase(bundle, bundle.directionPhasePx || 0);
+        }
+        bundle.directionAnimRaf = requestAnimationFrame(tick);
+      };
+      bundle.directionAnimRaf = requestAnimationFrame(tick);
+    }
+    function stopAllRouteDirectionAnimations(){
+      dbusRouteLayers.forEach((bundle) => stopRouteDirectionAnimation(bundle));
+    }
+
 
     function drawRoute(lineIdx, line, route){
       const key = `${line.uid}:${route.uid}`;
       if(dbusRouteLayers.has(key)) return dbusRouteLayers.get(key);
 
+      let bundleRef = null;
       const group = L.layerGroup().addTo(dbusLayers);
       const poly  = L.polyline([], {
         color: colorFor(lineIdx),
@@ -9156,7 +9669,8 @@
         pane: "dbusRoutePane"
       }).addTo(group);
 
-      const latlngs = route.stops.map(s => DBUS_STOPS.get(s.uid)?.latlng).filter(Boolean);
+      const routeStops = route.stops.map(s => DBUS_STOPS.get(s.uid)).filter(Boolean);
+      const latlngs = buildDbusRoutePolylineLatLngs(routeStops);
 
       if (latlngs.length >= 2){
         poly.setLatLngs(latlngs);
@@ -9164,7 +9678,11 @@
       }
 
       const effNum = getLineNumber(line, route);
-      getLineColors(effNum).then(([bg])=>{ if(bg) poly.setStyle({color:bg}); });
+      getLineColors(effNum).then(([bg])=>{
+        if(!bg) return;
+        poly.setStyle({color:bg});
+        if (bundleRef) updateRouteDirectionMarkerColor(bundleRef, bg);
+      });
 
       const { lineNumber, routeTitle, flag } = parseRouteName(route.name || "");
       const { titleStart, titleEnd } = getRouteEndpoints(route);
@@ -9198,7 +9716,9 @@
 
         const [bg, text] = getLineColorsSync(cleanNum);
         getLineColors(cleanNum).then(([bg])=>{
-          if(bg) poly.setStyle({color:bg});
+          if(!bg) return;
+          poly.setStyle({color:bg});
+          if (bundleRef) updateRouteDirectionMarkerColor(bundleRef, bg);
         });
         
         const stopOrderLabel = `${idx+1} / ${arr.length}`;
@@ -9232,21 +9752,25 @@
           bubblingMouseEvents: false,
           icon: L.divIcon({
             className: "stop-number",
-            html: `<div style="
-              width:${isFirst || isLast ? 26 : 22}px;
-              height:${isFirst || isLast ? 26 : 22}px;
-              border-radius:50%;
-              background:#fff;
-              border:2px solid #000;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              font-size:12px;
-              font-weight:700;
-              color:#000;
-            ">${idx+1}</div>`,
-            iconSize: [isFirst || isLast ? 26 : 22, isFirst || isLast ? 26 : 22],
-            iconAnchor: [(isFirst || isLast ? 26 : 22)/2, (isFirst || isLast ? 26 : 22)/2]
+            // Smaller stop circles for better map readability.
+            html: (() => {
+              const circleSize = isFirst || isLast ? 22 : 18;
+              return `<div style="
+                width:${circleSize}px;
+                height:${circleSize}px;
+                border-radius:50%;
+                background:#fff;
+                border:2px solid #000;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-size:12px;
+                font-weight:700;
+                color:#000;
+              ">${idx+1}</div>`;
+            })(),
+            iconSize: [isFirst || isLast ? 22 : 18, isFirst || isLast ? 22 : 18],
+            iconAnchor: [(isFirst || isLast ? 22 : 18)/2, (isFirst || isLast ? 22 : 18)/2]
           })
         }).addTo(group).bindPopup(
           L.popup({ maxWidth: 420, autoPan: true }).setContent(html)
@@ -9322,12 +9846,15 @@
         return marker;
       }).filter(Boolean);
 
-      const bundle = { group, poly, stops };
+      const bundle = { group, poly, stops, routeLatLngs: latlngs, directionMarkers: [], directionColor: poly?.options?.color || "#ffffff" };
+      bundleRef = bundle;
+      refreshRouteDirectionMarkers(bundle);
       dbusRouteLayers.set(key, bundle);
       return bundle;
     }
 
     function hideAllRoutes(){
+      stopAllRouteDirectionAnimations();
       dbusLayers.clearLayers();
       routeAnimHandles.forEach(h => h.stop());
       routeAnimHandles.clear();
@@ -9369,11 +9896,13 @@
         bundle = existing;
         if (existing.poly?._path) startLineAnim(key, existing.poly);
         else existing.poly.once('add', () => startLineAnim(key, existing.poly));
+        refreshRouteDirectionMarkers(existing);
       } else {
         bundle = drawRoute(lineIdx, line, route);
       }
       forceRouteBundlePassive(bundle);
       requestAnimationFrame(() => forceRouteBundlePassive(bundle));
+      startRouteDirectionAnimation(bundle);
 
       if (CENTER_ON_LINE_SELECT && route.stops && route.stops.length){
         const first = DBUS_STOPS.get(route.stops[0].uid);
@@ -9386,6 +9915,27 @@
 
       return bundle;
     }
+    let routeDirectionRefreshRaf = 0;
+    function refreshActiveRouteDirectionMarkers(){
+      if (!currentSelectedKey) return;
+      const bundle = dbusRouteLayers.get(currentSelectedKey);
+      if (!bundle) return;
+      if (!dbusLayers.hasLayer(bundle.group)) return;
+      refreshRouteDirectionMarkers(bundle);
+    }
+    function scheduleActiveRouteDirectionRefresh(){
+      if (routeDirectionRefreshRaf) return;
+      routeDirectionRefreshRaf = requestAnimationFrame(() => {
+        routeDirectionRefreshRaf = 0;
+        refreshActiveRouteDirectionMarkers();
+      });
+    }
+    map.on("zoom", scheduleActiveRouteDirectionRefresh);
+    map.on("zoomend", refreshActiveRouteDirectionMarkers);
+    map.on("moveend", refreshActiveRouteDirectionMarkers);
+    map.on("viewreset", refreshActiveRouteDirectionMarkers);
+    map.on("resize", scheduleActiveRouteDirectionRefresh);
+    map.on("move", scheduleActiveRouteDirectionRefresh);
 
     function getRouteEndpoints(route){
       const routeTitleRaw = route.name.includes(":") ? route.name.split(":")[1].trim() : route.name;
@@ -11133,6 +11683,7 @@
       try{
         await loadStops();
         await loadLines();
+        await loadDbusNavGraph();
         buildDbusStopLineEntries();
         renderDbusStopsLayer();
       }catch(err){
