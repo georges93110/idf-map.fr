@@ -2154,7 +2154,7 @@
       not_found_home: "ホームに戻る",
     }
   };
-
+ 
   (function ensureI18NCompleteness() {
     const i18n = window.I18N || {};
     const ensure = (lang, key, value) => {
