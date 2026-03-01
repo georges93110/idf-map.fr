@@ -1607,7 +1607,7 @@
     <name>Marcel Dassault</name>
     <zone></zone>
     <requestStop>true</requestStop>
-    <location>6064.17;8.80111;-1254.92;0.496715;-0.254015</location>
+    <location>6057.51;3.86352;-1267.99;0.147466;0.0234952</location>
   </busstop>
   <busstop>
     <id>231</id>
@@ -1839,5 +1839,138 @@
     <zone></zone>
     <requestStop>false</requestStop>
     <location>-765.125;14.7776;488.333;1.58563;0.000497341</location>
+  </busstop>
+  <busstop>
+    <id>264</id>
+    <name>Terroirs de France</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>-4579.16;15.5548;1673.54;1.95679;0.00947714</location>
+  </busstop>
+  <busstop>
+    <id>265</id>
+    <name>Nation</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>-3415.95;20.1003;133.935;-2.00657;0.0000710487</location>
+  </busstop>
+  <busstop>
+    <id>266</id>
+    <name>Vincennes</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>-1902.99;14.8204;533.023;-1.68396;0.00113344</location>
+  </busstop>
+  <busstop>
+    <id>267</id>
+    <name>Nogent-sur-Marne</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>1248.58;14.8054;1508.66;-1.89705;0.00150585</location>
+  </busstop>
+  <busstop>
+    <id>268</id>
+    <name>Val-de-Fontenay</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>2498.32;0.310095;79.28;-0.462912;0.00122738</location>
+  </busstop>
+  <busstop>
+    <id>269</id>
+    <name>Neuilly-Plaisance</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>5300.67;0.0185004;10.2165;-1.29757;0.00142145</location>
+  </busstop>
+  <busstop>
+    <id>270</id>
+    <name>Nogent-sur-Marne</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>1195.7;14.8038;1465.96;1.23447;0.00107241</location>
+  </busstop>
+  <busstop>
+    <id>271</id>
+    <name>Vincennes</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>-1895.56;14.8204;516.077;1.4723;0.00094986</location>
+  </busstop>
+  <busstop>
+    <id>272</id>
+    <name>Nation</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>-3424.84;20.1323;99.0494;1.12565;0.000377178</location>
+  </busstop>
+  <busstop>
+    <id>273</id>
+    <name>Rosny-sous-Bois RER</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>2718.03;5.40127;-1744.71;-0.305863;0.00128794</location>
+  </busstop>
+  <busstop>
+    <id>274</id>
+    <name>Rosny-Bois-Perrier RER</name>
+    <zone></zone>
+    <requestStop>false</requestStop>
+    <location>3203.97;-3.6887;-3141.56;-2.60622;0.00196838</location>
+  </busstop>
+  <busstop>
+    <id>275</id>
+    <name>Le Raincy - Villemomble - Montfermeil RER</name>
+    <zone></zone>
+    <requestStop>true</requestStop>
+    <location>5172.94;0.0441596;-3966.88;1.56951;-0.00469476</location>
+  </busstop>
+  <busstop>
+    <id>276</id>
+    <name>Château de Vincennes</name>
+    <zone></zone>
+    <requestStop>true</requestStop>
+    <location>-764.462;14.8213;488.495;1.60856;0.00100946</location>
+  </busstop>
+  <busstop>
+    <id>277</id>
+    <name>Bérault</name>
+    <zone></zone>
+    <requestStop>true</requestStop>
+    <location>-1897.03;14.8206;516.153;1.47928;0.000722885</location>
+  </busstop>
+  <busstop>
+    <id>278</id>
+    <name>Saint-Mandé</name>
+    <zone></zone>
+    <requestStop>true</requestStop>
+    <location>-2665.67;20.198;468.86;1.22626;0.00479174</location>
+  </busstop>
+  <busstop>
+    <id>279</id>
+    <name>Porte de Vincennes</name>
+    <zone></zone>
+    <requestStop>true</requestStop>
+    <location>-3197.21;20.1356;208.661;1.11969;0.00097847</location>
+  </busstop>
+  <busstop>
+    <id>280</id>
+    <name>Porte de Vincennes</name>
+    <zone></zone>
+    <requestStop>true</requestStop>
+    <location>-3206.02;20.1338;234.906;-2.02034;0.00107718</location>
+  </busstop>
+  <busstop>
+    <id>281</id>
+    <name>Saint-Mandé</name>
+    <zone></zone>
+    <requestStop>true</requestStop>
+    <location>-2678.69;20.2114;482.758;-1.98511;-0.000298325</location>
+  </busstop>
+  <busstop>
+    <id>282</id>
+    <name>Bérault</name>
+    <zone></zone>
+    <requestStop>true</requestStop>
+    <location>-1898.17;14.8213;534.055;-1.6484;0.000985145</location>
   </busstop>
 </busstops>

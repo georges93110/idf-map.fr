@@ -6,13 +6,13 @@
       <busstop uid="49" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"></busstop>
       <busstop uid="50" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"></busstop>
       <busstop uid="51" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"></busstop>
-      <busstop uid="79" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="2" nextStopPrice="0"></busstop>
+      <busstop uid="264" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="2" nextStopPrice="0"></busstop>
       <busstop uid="25" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"></busstop>
     </route>
     <route uid="2" name="24: Centre Commercial &gt; Gare de Lyon">
       <busstop uid="46" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"></busstop>
       <busstop uid="26" passengersMin="0" passengersMax="50" coefOn="25" nextStopTime="1" nextStopPrice="0"></busstop>
-      <busstop uid="45" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"></busstop>
+      <busstop uid="79" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"></busstop>
       <busstop uid="52" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"></busstop>
       <busstop uid="53" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"></busstop>
       <busstop uid="54" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"></busstop>
@@ -281,7 +281,6 @@
       <busstop uid="39" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="1" nextStopPrice="0"></busstop>
       <busstop uid="82" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="1" nextStopPrice="0"></busstop>
       <busstop uid="40" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"></busstop>
-      <busstop uid="243" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"></busstop>
     </route>
     <route uid="2" name="303 (Soirée): Cimetière de Villemomble &gt; Château de Villemomble">
       <busstop uid="33" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="1" nextStopPrice="0"></busstop>
@@ -1542,6 +1541,46 @@
       <busstop uid="187" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="2" nextStopPrice="0"></busstop>
       <busstop uid="188" passengersMin="0" passengersMax="30" coefOn="80" nextStopTime="1" nextStopPrice="0"></busstop>
       <busstop uid="189" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"></busstop>
+    </route>
+  </line>
+  <line uid="17" number="Bus de Remplacement" adultCoef="75" reducedRate="15" city="true">
+    <route uid="1" name="RER A: Nation &gt; Neuilly-Plaisance">
+      <busstop uid="265" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="6" nextStopPrice="0"></busstop>
+      <busstop uid="266" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="13" nextStopPrice="0"></busstop>
+      <busstop uid="267" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="26" nextStopPrice="0"></busstop>
+      <busstop uid="268" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="29" nextStopPrice="0"></busstop>
+      <busstop uid="269" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"></busstop>
+    </route>
+    <route uid="2" name="RER A: Neuilly-Plaisance &gt; Nation">
+      <busstop uid="269" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="30" nextStopPrice="0"></busstop>
+      <busstop uid="268" passengersMin="0" passengersMax="50" coefOn="25" nextStopTime="22" nextStopPrice="0"></busstop>
+      <busstop uid="270" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="10" nextStopPrice="0"></busstop>
+      <busstop uid="271" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="6" nextStopPrice="0"></busstop>
+      <busstop uid="272" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"></busstop>
+    </route>
+    <route uid="3" name="RER E: Val-de-Fontenay &gt; Le Raincy-Villemomble-Montfermeil">
+      <busstop uid="268" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="9" nextStopPrice="0"></busstop>
+      <busstop uid="273" passengersMin="0" passengersMax="50" coefOn="25" nextStopTime="26" nextStopPrice="0"></busstop>
+      <busstop uid="274" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="16" nextStopPrice="0"></busstop>
+      <busstop uid="275" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"></busstop>
+    </route>
+    <route uid="4" name="RER E: Le Raincy-Villemomble-Montfermeil &gt; Val-de-Fontenay">
+      <busstop uid="275" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="16" nextStopPrice="0"></busstop>
+      <busstop uid="274" passengersMin="0" passengersMax="50" coefOn="25" nextStopTime="22" nextStopPrice="0"></busstop>
+      <busstop uid="273" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="9" nextStopPrice="0"></busstop>
+      <busstop uid="268" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"></busstop>
+    </route>
+    <route uid="5" name="Métro 1: Château de Vincennes &gt; Porte de Vincennes">
+      <busstop uid="276" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="3" nextStopPrice="0"></busstop>
+      <busstop uid="277" passengersMin="0" passengersMax="50" coefOn="25" nextStopTime="3" nextStopPrice="0"></busstop>
+      <busstop uid="278" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="4" nextStopPrice="0"></busstop>
+      <busstop uid="279" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"></busstop>
+    </route>
+    <route uid="6" name="Métro 1: Porte de Vincennes &gt; Château de Vincennes">
+      <busstop uid="280" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="4" nextStopPrice="0"></busstop>
+      <busstop uid="281" passengersMin="0" passengersMax="50" coefOn="25" nextStopTime="3" nextStopPrice="0"></busstop>
+      <busstop uid="282" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="3" nextStopPrice="0"></busstop>
+      <busstop uid="276" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"></busstop>
     </route>
   </line>
 </lines>

@@ -35,7 +35,8 @@
           "X": -4640.92,
           "Y": 2006.07
         }
-      ]
+      ],
+      "force_point_chain_exact": true
     },
     {
       "id": "l109_terroirs_to_centre_commercial_fix_01",
@@ -72,7 +73,8 @@
           "X": -4640.92,
           "Y": 2006.07
         }
-      ]
+      ],
+      "force_point_chain_exact": true
     },
     {
       "id": "l112_plaine_to_chateau_ctrl_after_5572_01",
@@ -83,6 +85,7 @@
         "route_uid": "2"
       },
       "insert_control_points_after_node": {
+        "force_direct_links": true,
         "points": [
           {
             "X": -838.5,
@@ -95,14 +98,6 @@
           {
             "X": -745.79,
             "Y": 531.02
-          },
-          {
-            "X": -755.87,
-            "Y": 540.65
-          },
-          {
-            "X": -821.03,
-            "Y": 544.46
           }
         ],
         "after_point": {
@@ -133,14 +128,6 @@
           {
             "X": -745.79,
             "Y": 531.02
-          },
-          {
-            "X": -755.87,
-            "Y": 540.65
-          },
-          {
-            "X": -821.03,
-            "Y": 544.46
           }
         ],
         "after_point": {
@@ -207,6 +194,248 @@
         }
       ],
       "notes": "114 route uid 2: avant arret 7 ajouter 10024,10038,10040."
+    },
+    {
+      "id": "l114_neuilly_to_plateau_stalingrad_redirect_stop15_01",
+      "enabled": true,
+      "scope": {
+        "line": "114",
+        "route_uid": "4"
+      },
+      "replace_between_points": {
+        "from": {
+          "X": 5240.875,
+          "Y": -2379.30859375
+        },
+        "to": {
+          "X": 5304.122,
+          "Y": -2404.048
+        }
+      },
+      "force_point_chain": [
+        {
+          "X": 5240.875,
+          "Y": -2379.30859375
+        },
+        {
+          "X": 5262.075,
+          "Y": -2386.464
+        },
+        {
+          "X": 5272.234,
+          "Y": -2375.180
+        },
+        {
+          "X": 5284.097,
+          "Y": -2372.231
+        },
+        {
+          "X": 5298.423,
+          "Y": -2377.883
+        },
+        {
+          "X": 5305.052,
+          "Y": -2388.585
+        },
+        {
+          "X": 5304.122,
+          "Y": -2404.048
+        }
+      ],
+      "force_point_chain_exact": true,
+      "notes": "114 route uid 4: supprimer tous les points intermediaires entre le point 2290 et l'arret 15 via un segment direct."
+    },
+    {
+      "id": "l114_neuilly_to_raincy_montfermeil_redirect_stop15_01",
+      "enabled": true,
+      "scope": {
+        "line": "114",
+        "route_uid": "5"
+      },
+      "replace_between_points": {
+        "from": {
+          "X": 5240.875,
+          "Y": -2379.30859375
+        },
+        "to": {
+          "X": 5304.122,
+          "Y": -2404.048
+        }
+      },
+      "force_point_chain": [
+        {
+          "X": 5240.875,
+          "Y": -2379.30859375
+        },
+        {
+          "X": 5262.075,
+          "Y": -2386.464
+        },
+        {
+          "X": 5272.234,
+          "Y": -2375.18
+        },
+        {
+          "X": 5284.097,
+          "Y": -2372.231
+        },
+        {
+          "X": 5298.423,
+          "Y": -2377.883
+        },
+        {
+          "X": 5305.052,
+          "Y": -2388.585
+        },
+        {
+          "X": 5304.122,
+          "Y": -2404.048
+        }
+      ],
+      "force_point_chain_exact": true,
+      "insert_control_points": [
+        {
+          "position": "after_stop",
+          "stop_number": 15,
+          "ignore_points": [
+            {
+              "X": 5291.871,
+              "Y": -2407.081
+            },
+            {
+              "X": 5283.403,
+              "Y": -2394.62
+            },
+            {
+              "X": 5288.03,
+              "Y": -2400.68
+            },
+            {
+              "X": 5275.04,
+              "Y": -2391.95
+            },
+            {
+              "X": 5269.227,
+              "Y": -2389.516
+            }
+          ],
+          "points": [
+            {
+              "X": 5296.38,
+              "Y": -2413.138
+            },
+            {
+              "X": 5282.602,
+              "Y": -2416.896
+            },
+            {
+              "X": 5269.2,
+              "Y": -2412.256
+            },
+            {
+              "X": 5261.552,
+              "Y": -2399.623
+            }
+          ]
+        }
+      ],
+      "notes": "114 route uid 5: supprimer tous les points intermediaires entre le point 2290 et l'arret 15 via un segment direct."
+    },
+    {
+      "id": "l114_neuilly_to_coquetiers_redirect_stop15_01",
+      "enabled": true,
+      "scope": {
+        "line": "114",
+        "route_uid": "6"
+      },
+      "replace_between_points": {
+        "from": {
+          "X": 5240.875,
+          "Y": -2379.30859375
+        },
+        "to": {
+          "X": 5304.122,
+          "Y": -2404.048
+        }
+      },
+      "force_point_chain": [
+        {
+          "X": 5240.875,
+          "Y": -2379.30859375
+        },
+        {
+          "X": 5262.075,
+          "Y": -2386.464
+        },
+        {
+          "X": 5272.234,
+          "Y": -2375.18
+        },
+        {
+          "X": 5284.097,
+          "Y": -2372.231
+        },
+        {
+          "X": 5298.423,
+          "Y": -2377.883
+        },
+        {
+          "X": 5305.052,
+          "Y": -2388.585
+        },
+        {
+          "X": 5304.122,
+          "Y": -2404.048
+        }
+      ],
+      "force_point_chain_exact": true,
+      "insert_control_points": [
+        {
+          "position": "after_stop",
+          "stop_number": 15,
+          "ignore_points": [
+            {
+              "X": 5291.871,
+              "Y": -2407.081
+            },
+            {
+              "X": 5283.403,
+              "Y": -2394.62
+            },
+            {
+              "X": 5288.03,
+              "Y": -2400.68
+            },
+            {
+              "X": 5275.04,
+              "Y": -2391.95
+            },
+            {
+              "X": 5269.227,
+              "Y": -2389.516
+            }
+          ],
+          "points": [
+            {
+              "X": 5296.38,
+              "Y": -2413.138
+            },
+            {
+              "X": 5282.602,
+              "Y": -2416.896
+            },
+            {
+              "X": 5269.2,
+              "Y": -2412.256
+            },
+            {
+              "X": 5261.552,
+              "Y": -2399.623
+            }
+          ]
+        }
+      ],
+      "notes": "114 route uid 6: supprimer tous les points intermediaires entre le point 2290 et l'arret 15 via un segment direct."
     },
     {
       "id": "l114_nogent_pierre_semard_to_chateau_ctrl_01",

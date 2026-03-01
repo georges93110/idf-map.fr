@@ -580,6 +580,11 @@
       display:flex;
       align-items:center;
     }
+    #settingsPanel .settings-map-reset-row{
+      display:flex;
+      align-items:center;
+      margin-top:8px;
+    }
     #settingsPanel .settings-map-version-select{
       width:100%;
       max-width:100%;
@@ -591,6 +596,29 @@
       font-size:13px;
       font-weight:600;
       padding:8px 10px;
+      outline:none;
+    }
+    #settingsPanel .settings-map-reset-btn{
+      width:100%;
+      min-height:38px;
+      border:1px solid #4a2b2b;
+      border-radius:10px;
+      background:#261818;
+      color:#ffd7d7;
+      font-size:13px;
+      font-weight:600;
+      padding:8px 10px;
+      cursor:pointer;
+      transition:background .15s ease,border-color .15s ease,color .15s ease;
+    }
+    #settingsPanel .settings-map-reset-btn:hover{
+      background:#3a2020;
+      border-color:#6a3a3a;
+      color:#ffe8e8;
+    }
+    #settingsPanel .settings-map-reset-btn:focus{
+      border-color:#9a5454;
+      box-shadow:0 0 0 2px rgba(154,84,84,.2);
       outline:none;
     }
     #settingsPanel .settings-map-version-select:focus{
@@ -701,6 +729,16 @@
     .dbus-mode-btn{border:1px solid #2c2c2c;background:#1a1a1a;color:#b1b1b1;padding:6px 14px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
     .dbus-mode-btn:hover{background:#252525;color:#d0d6e6}
     .dbus-mode-btn.active{background:#343434;color:#f2f2f2;border-color:#444444;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04)}
+    #settingsNavigationTypeModes .dbus-mode-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    #settingsNavigationTypeModes .nav-type-exp-badge{
+      padding:1px 6px;
+      font-size:9px;
+      line-height:1.2;
+    }
     .dbus-footer{
       display:flex;
       align-items:center;
@@ -734,6 +772,36 @@
       flex:1 1 auto;
       min-height:220px;
       max-height:none;
+    }
+    #dbusPanel .dbus-layout-resizer{
+      display:none;
+      height:10px;
+      min-height:10px;
+      flex:0 0 10px;
+      cursor:row-resize;
+      position:relative;
+      border-radius:8px;
+      touch-action:none;
+      user-select:none;
+    }
+    #dbusPanel .dbus-layout-resizer::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:56px;
+      height:4px;
+      border-radius:999px;
+      background:#3a3a3a;
+      box-shadow:0 0 0 1px rgba(255,255,255,0.05) inset;
+      transition:background .16s ease;
+    }
+    #dbusPanel .dbus-layout-resizer:hover::before{
+      background:#5a5a5a;
+    }
+    body.dbus-layout-resizing #dbusPanel .dbus-layout-resizer::before{
+      background:#7da8ff;
     }
     #dbusPanel .dbus-network-filters{
       display:flex;
@@ -906,8 +974,89 @@
       word-break: break-word;
     }
     .line-block{display:flex;flex-direction:column;align-items:flex-start}
+    .line-block--titus{width:70px}
+    .line-block--scolaire{width:70px}
     .dbus-logo{width:88px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid #2c2c2c;background:#303030;color:#fff;font-weight:800;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04)}
     .dbus-logo--titus{border:none;background:transparent;box-shadow:none}
+    .dbus-logo--scolaire{border:none;background:transparent;box-shadow:none}
+    .line-block--titus .dbus-logo--titus{width:70px;height:36px}
+    .line-block--scolaire .dbus-logo--scolaire{width:36px;height:36px}
+    .dbus-rer-lines-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:6px;
+      width:fit-content;
+    }
+    .dbus-rer-lines-row + .dbus-rer-lines-row{
+      margin-top:4px;
+    }
+    .dbus-rer-master-logo{
+      width:36px;
+      min-width:36px;
+      height:36px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+      user-select:none;
+    }
+    .dbus-rer-master-logo.dim{
+      opacity:.25;
+      filter:grayscale(100%);
+    }
+    .dbus-rer-master-logo img{
+      width:auto;
+      height:36px;
+      object-fit:contain;
+      pointer-events:none;
+      user-select:none;
+    }
+    .dbus-rer-lines-grid{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+    }
+    .dbus-logo.dbus-logo-rer-square{
+      width:36px;
+      min-width:36px;
+      height:36px;
+      border-radius:15px;
+      padding:0 4px;
+      box-sizing:border-box;
+    }
+    .dbus-logo.dbus-logo-rer-square.badge-metro{
+      border-radius:999px !important;
+    }
+    .dbus-logo .dbus-rer-logo-combo{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+    }
+    .dbus-logo .dbus-rer-logo-combo img{
+      width:auto;
+      height:26px;
+      object-fit:contain;
+      pointer-events:none;
+      user-select:none;
+    }
+    .dbus-logo .dbus-rer-letter-badge{
+      width:26px !important;
+      min-width:26px !important;
+      height:26px !important;
+      border-radius:5px !important;
+      padding:0 3px !important;
+      pointer-events:none;
+      user-select:none;
+    }
+    .dbus-logo .dbus-rer-letter-badge.badge-metro{
+      border-radius:999px !important;
+    }
     .dbus-logo.dim{opacity:.25; filter:grayscale(100%);}
     .dbus-logo.sel{position:relative}
     
@@ -916,8 +1065,19 @@
     .line-routes{margin-top:8px;width:100%}
     .dbus-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #2c2c2c;border-radius:10px;background:var(--panel2);cursor:pointer;margin:6px}
     .dbus-item:hover{background:#222222}
+    .dbus-item.dbus-item-rer{gap:4px}
     .dbus-item .badge{display:flex;align-items:center;justify-content:center;width:72px;height:32px;border-radius:8px;font-weight:800;font-size:16px}
+    .dbus-item .badge.badge-rer,
+    .dbus-item .badge.badge-metro{width:26px;min-width:26px;height:26px;padding:0 4px}
+    .dbus-item .badge.badge-rer{border-radius:5px}
+    .dbus-item .badge.badge-metro{border-radius:999px}
+    .badge.badge-metro,
+    .dbus-badge.badge-metro{border-radius:999px !important}
+    .dbus-item.dbus-item-rer .dbus-route-logo + .dbus-route-logo{margin-left:0}
+    .dbus-item.dbus-item-rer .dbus-route-logo + .badge{margin-left:0}
     .dbus-route-logo{width:46px;height:26px;object-fit:contain;flex:0 0 auto}
+    .dbus-route-logo.dbus-route-logo-rer{width:26px;height:26px}
+    .dbus-item.dbus-item-rer .dbus-route-logo-bus{display:none}
     .dbus-route-logo + .dbus-route-logo{margin-left:6px}
     .dbus-item .rname{
       color:var(--text);
@@ -937,6 +1097,9 @@
     }
     .dbus-item-length.logo-badge-tight .dbus-route-logo + .badge{
       margin-left:-4px;
+    }
+    .dbus-item.dbus-item-rer.dbus-item-length.logo-badge-tight .dbus-route-logo + .badge{
+      margin-left:0;
     }
     .dbus-item-length .dbus-item-meta{
       display:flex;
@@ -2039,6 +2202,14 @@
     .line-preview .network-badge .network-chip.network-chip-express{
       --_lp-chip-ratio:3.2;
     }
+    .line-preview .network-badge .network-chip:not(.network-chip-express):not(.network-chip-rer){
+      font-size:calc(16px * 1.5);
+    }
+    .line-preview .network-badge .network-chip.network-chip-rer{
+      --_lp-chip-ratio:1;
+      padding:0 4px;
+      font-size:22.5px;
+    }
 
     .transit-scroll{
       overflow-x:auto;
@@ -2547,6 +2718,14 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .badge,
+    .dbus-badge,
+    .network-chip,
+    .titus-chip,
+    .badge-label{
+      font-family:sans-serif !important;
+      font-weight:700 !important;
+    }
 
     .dbus-sechead .chev {
       transition: transform .18s ease;
@@ -2714,6 +2893,7 @@
         min-height:170px;
         max-height:none;
       }
+      #dbusPanel .dbus-layout-resizer{display:none !important}
       .side-panel-resizer{display:none}
       #searchPanel.search-panel-modal{
         left:0;
@@ -2736,8 +2916,19 @@
       .dbus-grid{grid-template-columns:repeat(auto-fill,72px)}
       .dbus-double{grid-template-columns:1fr}
       .dbus-item{flex-wrap:wrap;gap:8px}
+      .dbus-item.dbus-item-rer{gap:4px}
       .dbus-item .badge{width:64px;height:28px;font-size:14px}
+      .dbus-item .badge.badge-rer,
+      .dbus-item .badge.badge-metro{width:22px;min-width:22px;height:22px;padding:0 3px}
+      .dbus-item .badge.badge-rer{border-radius:5px}
+      .dbus-item .badge.badge-metro{border-radius:999px}
       .dbus-route-logo{width:38px;height:22px}
+      .dbus-route-logo.dbus-route-logo-rer{width:22px;height:22px}
+      .dbus-rer-master-logo{width:30px;min-width:30px;height:30px}
+      .dbus-rer-master-logo img{height:30px}
+      .dbus-logo.dbus-logo-rer-square{width:30px;min-width:30px;height:30px}
+      .dbus-logo .dbus-rer-logo-combo img{height:22px}
+      .dbus-logo .dbus-rer-letter-badge{width:22px !important;min-width:22px !important;height:22px !important}
       .line-preview{padding:8px 10px;margin:8px auto 10px}
       .line-preview .dbus-badge{
         width:64px;
@@ -2771,6 +2962,16 @@
       .dbus-switch{padding:3px 6px}
       .dbus-switch-label{font-size:11px}
       .dbus-route-logo{width:34px;height:20px}
+      .dbus-route-logo.dbus-route-logo-rer{width:20px;height:20px}
+      .dbus-item .badge.badge-rer,
+      .dbus-item .badge.badge-metro{width:20px;min-width:20px;height:20px;padding:0 2px}
+      .dbus-item .badge.badge-rer{border-radius:5px}
+      .dbus-item .badge.badge-metro{border-radius:999px}
+      .dbus-rer-master-logo{width:26px;min-width:26px;height:26px}
+      .dbus-rer-master-logo img{height:26px}
+      .dbus-logo.dbus-logo-rer-square{width:26px;min-width:26px;height:26px;padding:0 2px}
+      .dbus-logo .dbus-rer-logo-combo img{height:20px}
+      .dbus-logo .dbus-rer-letter-badge{width:20px !important;min-width:20px !important;height:20px !important;padding:0 2px !important}
       .results{max-height:55vh}
     }
     @media (max-height:700px){
@@ -2880,6 +3081,7 @@
             <div id="dbusDepartList" class="dbus-list"></div>
           </div>
         </div>
+        <div class="dbus-layout-resizer" id="dbusLayoutResizer" aria-hidden="true"></div>
         <div class="dbus-box dbus-routes-box" id="dbusRoutesBox">
           <div class="dbus-box-title" id="dbusRoutesTitle">
             <span class="dbus-box-title-label" id="dbusRoutesTitleLabel">Liste des routes</span>
@@ -2900,6 +3102,10 @@
               <label class="dbus-switch">
                 <span class="dbus-switch-label" id="dbusFictiveLabel">Fictives</span>
                 <input type="checkbox" id="dbusFictiveToggle">
+              </label>
+              <label class="dbus-switch">
+                <span class="dbus-switch-label" id="dbusSpecialLabel">Spéciaux</span>
+                <input type="checkbox" id="dbusSpecialToggle">
               </label>
             </div>
           </div>
@@ -2943,6 +3149,9 @@
                 <span class="dbus-switch-label" id="settingsTranslateStopsLabel">Traduire les arrêts</span>
                 <input type="checkbox" id="settingsTranslateStopsToggle">
               </label>
+            </div>
+            <div class="settings-map-reset-row">
+              <button type="button" id="settingsResetDefaultsBtn" class="settings-map-reset-btn">Réinitialiser les paramètres</button>
             </div>
           </section>
           <section class="settings-sec" id="settingsMapVersionSection" hidden>
@@ -3205,14 +3414,17 @@
     "N33":        ["#e9682a", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n33","1,2"],
     "Titus 1":    ["#e63b20", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/","1"],
     "Titus 2":    ["#49713e", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/","1"],
-    "Fictives":   ["#cfcfcf", "#221f20","","0"],
-    "Autocar":    ["#cfcfcf", "#221f20","","0"],
+    "Fictives":   ["#005e2c", "#FFFFFF","","0"],
+    "Autocar":    ["#005e2c", "#FFFFFF","","0"],
     "Scolaire":   ["#f0c748", "#221f20","","0"],
     "Express":    ["#6fb2e1", "#FFFFFF","","0"],
     "Express 75": ["#6fb2e1", "#FFFFFF","","0"],
     "Express 77": ["#6fb2e1", "#FFFFFF","","0"],
     "Express 93": ["#6fb2e1", "#FFFFFF","","0"],
     "Express 94": ["#6fb2e1", "#FFFFFF","","0"],
+    "RER A":      ["#e84528", "#FFFFFF","","1"],
+    "RER E":      ["#af4f8d", "#FFFFFF","","1"],
+    "Métro 1":    ["#f3c043", "#221f20","","1"],
   };
 
   const I18N = window.I18N || {};
@@ -3274,8 +3486,20 @@
   const CENTER_ON_LINE_SELECT_KEY = "idf_center_on_line_select";
   const DBUS_STOP_ICONS_KEY = "idf_dbus_stop_icons";
   const DBUS_NAVIGATION_TYPE_KEY = "idf_dbus_navigation_type";
+  const DBUS_FILTER_SCHOOL_KEY = "idf_dbus_filter_school";
+  const DBUS_FILTER_FICTIVE_KEY = "idf_dbus_filter_fictive";
+  const DBUS_FILTER_SPECIAL_KEY = "idf_dbus_filter_special";
+  const DBUS_PANEL_SPLIT_RATIO_KEY = "idf_dbus_panel_split_ratio";
+  const DBUS_PANEL_SPLIT_DEFAULT_REV_KEY = "idf_dbus_panel_split_default_rev";
+  const DBUS_PANEL_SPLIT_DEFAULT_REV = "2026-03-01-equal-v2";
+  const DBUS_PANEL_SPLIT_DEFAULT_RATIO = 0.5;
   const LINE_PREVIEW_LAYOUTS = { VERTICAL: "vertical", HORIZONTAL: "horizontal" };
   const DBUS_NAVIGATION_TYPES = { GPS: "gps", LEGACY: "legacy" };
+  function readStoredBoolean(key, fallback = false) {
+    const stored = localStorage.getItem(key);
+    if (stored === null) return !!fallback;
+    return stored === "1" || stored === "true";
+  }
   let TRANSLATE_STOP_TYPES = (() => {
     const stored = localStorage.getItem(STOP_TYPE_TRANSLATION_KEY);
     return stored === "1" || stored === "true";
@@ -3604,9 +3828,11 @@
     if (key === "Express") return translateBadgeToken("Express");
     if (key === "urban") return t("dbus_sub_urban");
     if (key === "noctilien") return translatedNightBusLabel();
+    if (key === "replacement_bus") return t("dbus_sub_replacement_bus");
     if (key === "other_networks") return t("dbus_sub_other_networks");
     if (key === "others") return localizedLabel(AUTOCAR_BADGE_LABELS, "Autocar");
     if (key === "Scolaire") return translateBadgeToken("Scolaire");
+    if (key === "Speciaux") return t("dbus_special_toggle");
     if (key === "Autres") return localizedLabel(AUTOCAR_BADGE_LABELS, "Autocar");
     if (key === "Urbain") return "IDFM";
     if (key === "Noctilien") return translatedNightBusLabel();
@@ -3807,6 +4033,13 @@
       settingsMapVersionSelect.setAttribute("aria-label", label);
       settingsMapVersionSelect.title = label;
     }
+    const settingsResetDefaultsBtn = document.getElementById("settingsResetDefaultsBtn");
+    if (settingsResetDefaultsBtn) {
+      const label = t("settings_reset_defaults_button");
+      settingsResetDefaultsBtn.textContent = label;
+      settingsResetDefaultsBtn.setAttribute("aria-label", label);
+      settingsResetDefaultsBtn.title = label;
+    }
     const settingsAnimationsTitle = document.getElementById("settingsAnimationsTitle");
     if (settingsAnimationsTitle) settingsAnimationsTitle.textContent = t("settings_animations_title");
     const settingsAnimationsLabel = document.getElementById("settingsAnimationsLabel");
@@ -3900,8 +4133,25 @@
     if (settingsNavigationTypeModes) settingsNavigationTypeModes.setAttribute("aria-label", t("settings_navigation_type_label"));
     document.querySelectorAll("#settingsNavigationTypeModes .dbus-mode-btn[data-nav-type]").forEach(btn => {
       const mode = String(btn.dataset.navType || "").toLowerCase();
-      if (mode === DBUS_NAVIGATION_TYPES.GPS) btn.textContent = t("settings_navigation_type_gps");
-      if (mode === DBUS_NAVIGATION_TYPES.LEGACY) btn.textContent = t("settings_navigation_type_legacy");
+      if (mode === DBUS_NAVIGATION_TYPES.GPS) {
+        const gpsLabel = t("settings_navigation_type_gps");
+        const experimentalLabel = t("experimental");
+        btn.textContent = "";
+        const label = document.createElement("span");
+        label.className = "nav-type-main-label";
+        label.textContent = gpsLabel;
+        const badge = document.createElement("span");
+        badge.className = "lang-toggle-badge nav-type-exp-badge";
+        badge.textContent = experimentalLabel;
+        btn.appendChild(label);
+        btn.appendChild(badge);
+        btn.setAttribute("aria-label", `${gpsLabel} ${experimentalLabel}`);
+      }
+      if (mode === DBUS_NAVIGATION_TYPES.LEGACY) {
+        const legacyLabel = t("settings_navigation_type_legacy");
+        btn.textContent = legacyLabel;
+        btn.setAttribute("aria-label", legacyLabel);
+      }
       const active = mode === DBUS_NAVIGATION_TYPE;
       btn.classList.toggle("active", active);
       btn.setAttribute("aria-pressed", active ? "true" : "false");
@@ -4109,6 +4359,14 @@
       $dbusFictiveToggle.setAttribute("aria-label", label);
       $dbusFictiveToggle.title = label;
     }
+    const $dbusSpecialLabel = document.getElementById("dbusSpecialLabel");
+    const $dbusSpecialToggle = document.getElementById("dbusSpecialToggle");
+    if ($dbusSpecialLabel) $dbusSpecialLabel.textContent = t("dbus_special_toggle");
+    if ($dbusSpecialToggle) {
+      const label = t("dbus_special_toggle");
+      $dbusSpecialToggle.setAttribute("aria-label", label);
+      $dbusSpecialToggle.title = label;
+    }
     const $settingsSchoolToggle = document.getElementById("settingsSchoolToggle");
     if ($settingsSchoolToggle) {
       const label = t("dbus_school_toggle");
@@ -4120,6 +4378,12 @@
       const label = t("dbus_fictive_toggle");
       $settingsFictiveToggle.setAttribute("aria-label", label);
       $settingsFictiveToggle.title = label;
+    }
+    const $settingsSpecialToggle = document.getElementById("settingsSpecialToggle");
+    if ($settingsSpecialToggle) {
+      const label = t("dbus_special_toggle");
+      $settingsSpecialToggle.setAttribute("aria-label", label);
+      $settingsSpecialToggle.title = label;
     }
     const $lpClose = document.getElementById("lpClose");
     if ($lpClose){ $lpClose.setAttribute("aria-label", t("close")); $lpClose.title = t("close"); }
@@ -4361,10 +4625,17 @@
       const labelText = translateBadgeToken(raw);
       const labelEl = ensureBadgeLabel(badgeEl, labelText);
       if (!labelEl) return;
+      if (badgeEl.classList.contains("dbus-logo-rer-square")) return;
       const box = badgeEl.getBoundingClientRect();
       const width = Math.max(24, Math.round(box.width || parseInt(badgeEl.style.width || "72", 10)));
       const height = Math.max(16, Math.round(box.height || parseInt(badgeEl.style.height || "32", 10)));
-      labelEl.style.fontSize = computeBadgeFontSize(labelText, width, height) + "px";
+      const baseFontSize = computeBadgeFontSize(labelText, width, height);
+      const isRerBadge = badgeEl.classList.contains("badge-rer");
+      const isMetroBadge = badgeEl.classList.contains("badge-metro");
+      const finalFontSize = (isRerBadge || isMetroBadge) ? (baseFontSize * 1.15) : baseFontSize;
+      if (isMetroBadge) badgeEl.style.borderRadius = "999px";
+      else if (isRerBadge) badgeEl.style.borderRadius = "5px";
+      labelEl.style.fontSize = `${finalFontSize.toFixed(2)}px`;
     });
     const $lpRouteTitle = document.getElementById("lpRouteTitle");
     const $lpRouteMeta = document.getElementById("lpRouteMeta");
@@ -4639,6 +4910,32 @@
           }
           location.assign(nextUrl.toString());
         } catch {}
+      });
+    }
+    const settingsResetDefaultsBtnEl = document.getElementById("settingsResetDefaultsBtn");
+    if (settingsResetDefaultsBtnEl && !settingsResetDefaultsBtnEl.dataset.boundResetDefaults) {
+      settingsResetDefaultsBtnEl.dataset.boundResetDefaults = "1";
+      settingsResetDefaultsBtnEl.addEventListener("click", () => {
+        const confirmLabel = (typeof t === "function")
+          ? t("settings_reset_defaults_confirm")
+          : "Réinitialiser tous les paramètres sauvegardés ?";
+        if (!window.confirm(confirmLabel)) return;
+        try {
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i += 1) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith("idf_")) keysToRemove.push(key);
+          }
+          keysToRemove.forEach((key) => localStorage.removeItem(key));
+        } catch {}
+        try {
+          const nextUrl = new URL(location.href);
+          nextUrl.searchParams.delete("version");
+          nextUrl.searchParams.delete("v");
+          location.assign(nextUrl.toString());
+        } catch {
+          location.reload();
+        }
       });
     }
 
@@ -5115,9 +5412,12 @@
     const $btnDbus = document.getElementById("btnDbus");
     const $panelDbus = document.getElementById("dbusPanel");
     const $dbusList = document.getElementById("dbusList");
+    const $dbusLayout = $panelDbus ? $panelDbus.querySelector(".dbus-layout") : null;
     const $dbusLinesBox = document.querySelector("#dbusPanel .dbus-lines-box");
     const $dbusLinesContent = $dbusLinesBox ? $dbusLinesBox.querySelector(".dbus-content") : null;
+    const $dbusLayoutResizer = document.getElementById("dbusLayoutResizer");
     const $dbusRoutesBox = document.getElementById("dbusRoutesBox");
+    const $dbusLayoutFooter = $panelDbus ? $panelDbus.querySelector(".dbus-layout > .dbus-footer") : null;
     const $dbusRoutesTitleLabel = document.getElementById("dbusRoutesTitleLabel");
     const $dbusRoutesClear = document.getElementById("dbusRoutesClear");
     const $dbusRoutesList = document.getElementById("dbusRoutesList");
@@ -5131,8 +5431,10 @@
     const $dbusModeButtons = document.querySelectorAll(".dbus-sort-modes .dbus-mode-btn[data-mode]");
     const $dbusSchoolToggle = document.getElementById("dbusSchoolToggle");
     const $dbusFictiveToggle = document.getElementById("dbusFictiveToggle");
+    const $dbusSpecialToggle = document.getElementById("dbusSpecialToggle");
     const $settingsSchoolToggle = document.getElementById("settingsSchoolToggle");
     const $settingsFictiveToggle = document.getElementById("settingsFictiveToggle");
+    const $settingsSpecialToggle = document.getElementById("settingsSpecialToggle");
     const $dbusDepartIndicatorWrap = document.getElementById("dbusDepartIndicatorWrap");
     const $dbusDepartIndicatorLabel = document.getElementById("dbusDepartIndicatorLabel");
     const $dbusDepartIndicatorClose = document.getElementById("dbusDepartIndicatorClose");
@@ -5903,15 +6205,30 @@
     const DBUS_MODES = { LINES: "lines", LENGTH: "length", DEPARTS: "departures" };
     let currentDbusMode = DBUS_MODES.LINES;
     let dbusDisplayMode = "normal";
-    let showSchoolLines = false;
-    let showFictiveLines = false;
+    let showSchoolLines = readStoredBoolean(DBUS_FILTER_SCHOOL_KEY, false);
+    let showFictiveLines = readStoredBoolean(DBUS_FILTER_FICTIVE_KEY, false);
+    let showSpecialLines = readStoredBoolean(DBUS_FILTER_SPECIAL_KEY, false);
+    let dbusPanelSplitRatio = (() => {
+      const stored = Number(localStorage.getItem(DBUS_PANEL_SPLIT_RATIO_KEY));
+      if (!Number.isFinite(stored)) return DBUS_PANEL_SPLIT_DEFAULT_RATIO;
+      return Math.max(0, Math.min(1, stored));
+    })();
+    (() => {
+      try {
+        const rev = String(localStorage.getItem(DBUS_PANEL_SPLIT_DEFAULT_REV_KEY) || "");
+        if (rev === DBUS_PANEL_SPLIT_DEFAULT_REV) return;
+        dbusPanelSplitRatio = DBUS_PANEL_SPLIT_DEFAULT_RATIO;
+        localStorage.setItem(DBUS_PANEL_SPLIT_RATIO_KEY, String(DBUS_PANEL_SPLIT_DEFAULT_RATIO));
+        localStorage.setItem(DBUS_PANEL_SPLIT_DEFAULT_REV_KEY, DBUS_PANEL_SPLIT_DEFAULT_REV);
+      } catch {}
+    })();
     let renderDbusLinesList = null;
     const DBUS_DEPART_MERGE_PX = 100;
     let dbusDepartGroups = [];
     let dbusDepartMarkers = new Map();
     let dbusDepartNameIndex = new Map();
     let selectedDepartMarker = null;
-    let dbusDepartFilterKey = `${showSchoolLines}-${showFictiveLines}`;
+    let dbusDepartFilterKey = `${showSchoolLines}-${showFictiveLines}-${showSpecialLines}`;
     let dbusDepartPreviewActive = false;
 
     async function fetchXml(path){
@@ -8548,6 +8865,7 @@
       const cat = getCategory(line);
       if (!showSchoolLines && cat === "Scolaire") return false;
       if (!showFictiveLines && cat === "Autres") return false;
+      if (!showSpecialLines && cat === "Speciaux") return false;
       return true;
     }
     function collectVisibleStopLineEntries(stopIds){
@@ -9581,17 +9899,36 @@
       const graph = DBUS_NAV_GRAPH;
       const ref = parseBridgeSinglePoint(worldPoint);
       if (!graph || !ref) return null;
+      const EXACT_THRESHOLD = 0.05;
+      let exactId = null;
+      let exactDist = Number.POSITIVE_INFINITY;
       let bestId = null;
       let bestDist = Number.POSITIVE_INFINITY;
       for (const node of graph.nodeList || []) {
         const dist = Math.hypot(Number(node.x) - ref.x, Number(node.y) - ref.y);
+        if (dist <= EXACT_THRESHOLD && dist < exactDist) {
+          exactDist = dist;
+          exactId = Number(node.id);
+        }
         if (dist < bestDist) {
           bestDist = dist;
           bestId = Number(node.id);
         }
       }
+      if (Number.isFinite(exactId)) return exactId;
       if (!Number.isFinite(bestDist) || bestDist > maxDistance) return null;
       return Number.isFinite(bestId) ? bestId : null;
+    }
+    function mapBridgePointsToNodeIds(points, maxDistance = DBUS_NAV_MAX_SNAP_DISTANCE * 6){
+      const list = Array.isArray(points) ? points : [];
+      if (!list.length) return null;
+      const out = [];
+      for (const point of list) {
+        const nodeId = getNearestDbusGraphNodeIdForPoint(point, maxDistance);
+        if (!Number.isFinite(nodeId)) return null;
+        out.push(nodeId);
+      }
+      return out;
     }
     function resolveBridgeRefPoints(rawValue){
       const out = [];
@@ -9631,12 +9968,25 @@
     function buildBridgeControlPoints(entry, navOptions = null, options = null){
       if (!entry || typeof entry !== "object") return [];
       const points = parseBridgeControlPoints(entry.points ?? entry.control_points);
-      if (points.length) return points;
       const nodeIds = parseBridgeControlNodeIds(entry.node_ids ?? entry.control_nodes ?? entry.control_node_ids ?? entry.node_ids_csv);
       const forceDirectLinks =
         entry.force_direct_links === true ||
         entry.force_direct === true ||
         entry.ignore_existing_paths === true;
+      if (points.length) {
+        if (forceDirectLinks) return points;
+        if (points.length >= 2) {
+          const snappedNodeIds = mapBridgePointsToNodeIds(points);
+          if (snappedNodeIds && snappedNodeIds.length === points.length) {
+            const chain = buildDbusForcedNodeChainWorldPoints(snappedNodeIds, navOptions, {
+              anchorStart: options?.anchorStart || null,
+              anchorEnd: options?.anchorEnd || null
+            });
+            if (chain && chain.length) return chain;
+          }
+        }
+        return points;
+      }
       if (forceDirectLinks) {
         return nodeIds.map((id) => getDbusGraphNodeWorldPoint(id)).filter(Boolean);
       }
@@ -9859,7 +10209,11 @@
         ? bridgeRule.force_node_chain.map((id) => Number(id)).filter((id) => Number.isFinite(id))
         : [];
       const forcedPointChain = parseBridgeControlPoints(bridgeRule?.force_point_chain);
-      if (!forcedNodeChain.length && forcedPointChain.length >= 2) {
+      const forcePointChainExact =
+        bridgeRule?.force_point_chain_exact === true ||
+        bridgeRule?.force_points_even_without_nodes === true ||
+        bridgeRule?.force_points_always === true;
+      if (!forcePointChainExact && !forcedNodeChain.length && forcedPointChain.length >= 2) {
         const mappedNodeIds = forcedPointChain
           .map((point) => getNearestDbusGraphNodeIdForPoint(point))
           .filter((id) => Number.isFinite(id));
@@ -10238,6 +10592,38 @@
 
       return { lineNumber, routeTitle, flag };
     }
+    function getSpecialBadgeMeta(value){
+      const raw = String(value || "").trim();
+      if (!raw) return { kind: "", label: "" };
+      const rerMatch = raw.match(/^RER(?:\s*[-–—]\s*|\s+)(.+)$/i);
+      if (rerMatch && rerMatch[1]) {
+        const label = String(rerMatch[1]).trim();
+        return { kind: "rer", label: label || raw };
+      }
+      if (/^RER\b/i.test(raw)) return { kind: "rer", label: raw };
+      const metroMatch = raw.match(/^M[ée]tro(?:\s*[-–—]\s*|\s+)(.+)$/i);
+      if (metroMatch && metroMatch[1]) {
+        const label = String(metroMatch[1]).trim();
+        return { kind: "metro", label: label || raw };
+      }
+      if (/^M[ée]tro\b/i.test(raw)) return { kind: "metro", label: raw };
+      return { kind: "", label: raw };
+    }
+    function getSpecialBadgeKind(value){
+      return getSpecialBadgeMeta(value).kind || "";
+    }
+    function getSpecialBadgeLabel(value){
+      return getSpecialBadgeMeta(value).label || String(value || "").trim();
+    }
+    function getRerBadgeLabel(value){
+      const meta = getSpecialBadgeMeta(value);
+      return meta.kind === "rer" ? meta.label : String(value || "").trim();
+    }
+    function getRerRouteBadgeSize(){
+      if (window.matchMedia("(max-width: 720px)").matches) return "20x20";
+      if (window.matchMedia("(max-width: 960px)").matches) return "22x22";
+      return "26x26";
+    }
 
     function ensureFictiveStripe(badgeEl) {
       return badgeEl;
@@ -10280,7 +10666,7 @@
       badge.style.justifyContent = "center";
       badge.style.flex = "0 0 auto";
       badge.style.overflow = "hidden";
-      badge.style.fontWeight = "800";
+      badge.style.fontWeight = "400";
       badge.style.fontVariantNumeric = "tabular-nums";
       badge.style.background = bg; 
       badge.style.color = text;
@@ -10297,15 +10683,22 @@
       return badge;
     }
 
-    function createNetworkBadgeElement({ label, imgSrc, alt, colorKey, chipClass = "dbus-badge network-chip", stripeColor = null, invertLogo = false }) {
+    function createNetworkBadgeElement({ label, imgSrc, alt, logos, colorKey, chipClass = "dbus-badge network-chip", stripeColor = null, invertLogo = false }) {
       const wrap = document.createElement("div");
       wrap.className = "network-badge";
 
-      const img = document.createElement("img");
-      img.src = imgSrc;
-      img.alt = alt;
-      if (invertLogo) img.classList.add("network-logo-invert");
-      wrap.appendChild(img);
+      const resolvedLogos = Array.isArray(logos) && logos.length
+        ? logos
+        : [{ src: imgSrc, alt, invert: invertLogo }];
+      resolvedLogos.forEach((entry) => {
+        const src = String(entry?.src || "").trim();
+        if (!src) return;
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = String(entry?.alt || "").trim();
+        if (entry?.invert) img.classList.add("network-logo-invert");
+        wrap.appendChild(img);
+      });
 
       const [bg, text] = getLineColorsSync(colorKey || label);
       const chip = document.createElement("div");
@@ -10424,7 +10817,12 @@
     }
 
     function getRouteDirectionSpacingPx(zoom = map.getZoom()){
-      return Math.max(34, Math.min(106, 150 - (zoom * 10)));
+      // Reduce arrow density across zoom levels.
+      return Math.max(42, Math.min(120, 168 - (zoom * 10)));
+    }
+    function getRouteDirectionMaxMarkers(zoom = map.getZoom()){
+      // Keep a hard cap to avoid visual overload when zooming.
+      return Math.max(120, Math.min(420, Math.round(90 + (zoom * 33))));
     }
     function getRouteDirectionSpeedPx(zoom = map.getZoom()){
       return Math.max(12, Math.min(48, 14 + (zoom * 3)));
@@ -10574,7 +10972,11 @@
       const spacing = getRouteDirectionSpacingPx(geometry.zoom);
       bundle.directionSpacingPx = spacing;
       bundle.directionSpeedPx = getRouteDirectionSpeedPx(geometry.zoom);
-      const count = Math.max(1, Math.min(180, Math.floor(geometry.total / spacing)));
+      const maxMarkers = getRouteDirectionMaxMarkers(geometry.zoom);
+      const rawCount = Math.ceil(geometry.total / spacing);
+      const minCount = geometry.total >= (spacing * 1.25) ? 2 : 1;
+      const count = Math.max(minCount, Math.min(maxMarkers, rawCount));
+      bundle.directionMarkerCount = count;
       ensureRouteDirectionMarkerCount(bundle, count);
       updateRouteDirectionMarkersAtPhase(bundle, bundle.directionPhasePx || 0);
     }
@@ -10600,7 +11002,9 @@
         bundle.directionLastTs = ts;
         const speed = Number(bundle.directionSpeedPx) || getRouteDirectionSpeedPx();
         bundle.directionPhasePx = (Number(bundle.directionPhasePx) || 0) + (speed * dt);
-        if (!bundle.directionLastPaintTs || (ts - bundle.directionLastPaintTs) >= 33) {
+        const markerCount = Number(bundle.directionMarkerCount) || 0;
+        const paintInterval = markerCount > 500 ? 50 : 33;
+        if (!bundle.directionLastPaintTs || (ts - bundle.directionLastPaintTs) >= paintInterval) {
           bundle.directionLastPaintTs = ts;
           updateRouteDirectionMarkersAtPhase(bundle, bundle.directionPhasePx || 0);
         }
@@ -10667,8 +11071,10 @@
         const stopNameHTML = withRERIconInStop(translatedDisplayName);
         const xyzCoordParts = [st.X, st.Y, st.Z].map(v => (v == null ? "" : String(v)));
         const xyzCoords = xyzCoordParts.join(";");
+        const cmdCoordParts = [st.X, st.Y, st.Z, st.rotX ?? 0, st.rotY ?? 0].map(v => (v == null ? "" : String(v)));
+        const cmdCoords = cmdCoordParts.join(";");
         const coordsDisplay = escapeHTML(xyzCoords);
-        const gotoCmd = `goto ${xyzCoords}`;
+        const gotoCmd = `goto ${cmdCoords}`;
 
         const { lineNumber } = parseRouteName(route.name || "");
         let cleanNum = String(lineNumber || "").trim();
@@ -11180,6 +11586,18 @@
           alt: "Reseau urbain Ile-de-France Mobilites",
           chipClass: linePreviewChipClass
         });
+      } else if (lineCategory === "Speciaux") {
+        const specialMeta = getSpecialBadgeMeta(lineNumber);
+        const specialKind = specialMeta.kind || "rer";
+        applyNetworkBadgeToPreview({
+          label: getSpecialBadgeLabel(lineNumber),
+          colorKey: lineNumber,
+          logos: [
+            { src: overlayPath("bus_logo_idfm.png"), alt: t("dbus_sub_replacement_bus") },
+            { src: specialKind === "metro" ? overlayPath("metro_logo_idfm.png") : overlayPath("rer_logo_idfm.png"), alt: specialKind === "metro" ? "Métro" : "RER" }
+          ],
+          chipClass: `dbus-badge network-chip network-chip-rer${specialKind === "metro" ? " badge-metro" : ""}`
+        });
       } else if (lineCategory === "Autres") {
         const previewChipClassOnly = linePreviewChipClass.replace(/\bdbus-badge\b/g, "").trim();
         applyDefaultBadgeToPreview(previewChipClassOnly);
@@ -11640,7 +12058,7 @@
       updateUiOverlays();
     }
     function refreshDbusDepartures(showOnMap){
-      const needsBuild = !dbusDepartGroups.length || dbusDepartFilterKey !== `${showSchoolLines}-${showFictiveLines}`;
+      const needsBuild = !dbusDepartGroups.length || dbusDepartFilterKey !== `${showSchoolLines}-${showFictiveLines}-${showSpecialLines}`;
       if (needsBuild) buildDbusDepartures();
       else renderDbusDepartList();
       if (showOnMap) showDbusDepartures();
@@ -11705,12 +12123,13 @@
         }
         return currentSelectedLineUid || "";
       })();
-      if ((!showSchoolLines || !showFictiveLines) && selectedLineUid) {
+      if ((!showSchoolLines || !showFictiveLines || !showSpecialLines) && selectedLineUid) {
         try {
           const line = DBUS_LINES.find(l => String(l.uid) === String(selectedLineUid));
           const cat = line ? getCategory(line) : "";
           if (!showSchoolLines && cat === "Scolaire") clearDbusSelection();
           if (!showFictiveLines && cat === "Autres") clearDbusSelection();
+          if (!showSpecialLines && cat === "Speciaux") clearDbusSelection();
         } catch {}
       }
       if (isDbusDisplayModeForced()) {
@@ -11734,26 +12153,35 @@
       if ($settingsSchoolToggle) $settingsSchoolToggle.checked = !!showSchoolLines;
       if ($dbusFictiveToggle) $dbusFictiveToggle.checked = !!showFictiveLines;
       if ($settingsFictiveToggle) $settingsFictiveToggle.checked = !!showFictiveLines;
+      if ($dbusSpecialToggle) $dbusSpecialToggle.checked = !!showSpecialLines;
+      if ($settingsSpecialToggle) $settingsSpecialToggle.checked = !!showSpecialLines;
     }
     function setSchoolFilter(next, { apply = true } = {}) {
       showSchoolLines = !!next;
+      try { localStorage.setItem(DBUS_FILTER_SCHOOL_KEY, showSchoolLines ? "1" : "0"); } catch {}
       syncFilterTogglesUI();
       if (apply) onDbusFilterChange();
     }
     function setFictiveFilter(next, { apply = true } = {}) {
       showFictiveLines = !!next;
+      try { localStorage.setItem(DBUS_FILTER_FICTIVE_KEY, showFictiveLines ? "1" : "0"); } catch {}
       syncFilterTogglesUI();
       if (apply) onDbusFilterChange();
     }
-    if ($dbusSchoolToggle) setSchoolFilter($dbusSchoolToggle.checked, { apply: false });
-    else if ($settingsSchoolToggle) setSchoolFilter($settingsSchoolToggle.checked, { apply: false });
-    if ($dbusFictiveToggle) setFictiveFilter($dbusFictiveToggle.checked, { apply: false });
-    else if ($settingsFictiveToggle) setFictiveFilter($settingsFictiveToggle.checked, { apply: false });
+    function setSpecialFilter(next, { apply = true } = {}) {
+      showSpecialLines = !!next;
+      try { localStorage.setItem(DBUS_FILTER_SPECIAL_KEY, showSpecialLines ? "1" : "0"); } catch {}
+      syncFilterTogglesUI();
+      if (apply) onDbusFilterChange();
+    }
+    syncFilterTogglesUI();
 
     $dbusSchoolToggle?.addEventListener("change", () => setSchoolFilter($dbusSchoolToggle.checked));
     $settingsSchoolToggle?.addEventListener("change", () => setSchoolFilter($settingsSchoolToggle.checked));
     $dbusFictiveToggle?.addEventListener("change", () => setFictiveFilter($dbusFictiveToggle.checked));
     $settingsFictiveToggle?.addEventListener("change", () => setFictiveFilter($settingsFictiveToggle.checked));
+    $dbusSpecialToggle?.addEventListener("change", () => setSpecialFilter($dbusSpecialToggle.checked));
+    $settingsSpecialToggle?.addEventListener("change", () => setSpecialFilter($settingsSpecialToggle.checked));
 
     $btnSaeivPanel?.addEventListener("click", async () => {
       if (isButtonDisabled($btnSaeivPanel)) return;
@@ -11926,6 +12354,147 @@
         keepDbusSelectionVisible({ smooth: true });
       }, 120);
     }
+    function clampDbusPanelSplitRatio(value){
+      const parsed = Number(value);
+      if (!Number.isFinite(parsed)) return 0.5;
+      return Math.max(0, Math.min(1, parsed));
+    }
+    function persistDbusPanelSplitRatio(){
+      try {
+        localStorage.setItem(DBUS_PANEL_SPLIT_RATIO_KEY, String(clampDbusPanelSplitRatio(dbusPanelSplitRatio)));
+      } catch {}
+    }
+    function shouldShowDbusRoutesBox(){
+      const hasLineSelection = !!currentSelectedKey || !!currentSelectedLineUid;
+      return currentDbusMode === DBUS_MODES.LINES && hasLineSelection && !dbusRoutesClosedByPanel;
+    }
+    function isDbusPanelSplitResizable(){
+      return !window.matchMedia("(max-width: 980px)").matches;
+    }
+    function getDbusBoxMinimumHeight(boxEl){
+      if (!boxEl) return 0;
+      const titleEl = boxEl.querySelector(".dbus-box-title");
+      const titleHeight = titleEl ? titleEl.getBoundingClientRect().height : 0;
+      return Math.max(0, Math.ceil(titleHeight + 2));
+    }
+    function getDbusPanelSplitLimits(trackHeight){
+      const safeTrack = Number(trackHeight);
+      if (!(safeTrack > 0)) {
+        return { minLinesPx: 0, minRoutesPx: 0, minRatio: 0, maxRatio: 1 };
+      }
+      const minLinesPx = Math.min(safeTrack, getDbusBoxMinimumHeight($dbusLinesBox));
+      const minRoutesPx = Math.min(safeTrack, getDbusBoxMinimumHeight($dbusRoutesBox));
+      const rawMinRatio = minLinesPx / safeTrack;
+      const rawMaxRatio = 1 - (minRoutesPx / safeTrack);
+      if (rawMinRatio > rawMaxRatio) {
+        return { minLinesPx: 0, minRoutesPx: 0, minRatio: 0, maxRatio: 1 };
+      }
+      return { minLinesPx, minRoutesPx, minRatio: rawMinRatio, maxRatio: rawMaxRatio };
+    }
+    function getDbusLinesRoutesTrackHeight(){
+      if (!$dbusLinesBox || !$dbusRoutesBox) return 0;
+      const linesHeight = $dbusLinesBox.getBoundingClientRect().height;
+      const routesHeight = $dbusRoutesBox.getBoundingClientRect().height;
+      const directTotal = linesHeight + routesHeight;
+      if (directTotal > 0) return directTotal;
+      const layoutHeight = $dbusLayout ? $dbusLayout.clientHeight : 0;
+      if (!(layoutHeight > 0)) return 0;
+      const footerHeight = $dbusLayoutFooter ? $dbusLayoutFooter.getBoundingClientRect().height : 0;
+      const resizerHeight = $dbusLayoutResizer ? $dbusLayoutResizer.getBoundingClientRect().height : 0;
+      const layoutStyles = $dbusLayout ? getComputedStyle($dbusLayout) : null;
+      const gapPx = layoutStyles ? (parseFloat(layoutStyles.rowGap || layoutStyles.gap || "0") || 0) : 0;
+      const total = layoutHeight - footerHeight - resizerHeight - (gapPx * 3);
+      return total > 0 ? total : 0;
+    }
+    function applyDbusPanelSplit({ showRoutesBox = shouldShowDbusRoutesBox() } = {}){
+      if (!$dbusLinesBox || !$dbusRoutesBox) return;
+      const splitActive = !!showRoutesBox && isDbusPanelSplitResizable();
+      if ($dbusLayoutResizer) {
+        $dbusLayoutResizer.hidden = !showRoutesBox;
+        $dbusLayoutResizer.style.display = splitActive ? "block" : "none";
+      }
+      if (!showRoutesBox) {
+        $dbusLinesBox.style.flex = "1 1 auto";
+        $dbusLinesBox.style.minHeight = "0";
+        $dbusLinesBox.style.maxHeight = "";
+        $dbusRoutesBox.style.flex = "";
+        $dbusRoutesBox.style.minHeight = "";
+        return;
+      }
+      if (!splitActive) {
+        $dbusLinesBox.style.flex = "1 1 auto";
+        $dbusLinesBox.style.minHeight = "0";
+        $dbusLinesBox.style.maxHeight = "";
+        $dbusRoutesBox.style.flex = "1 1 auto";
+        $dbusRoutesBox.style.minHeight = "";
+        return;
+      }
+      const trackHeight = getDbusLinesRoutesTrackHeight();
+      if (!(trackHeight > 0)) {
+        $dbusLinesBox.style.flex = "1 1 auto";
+        $dbusLinesBox.style.minHeight = "0";
+        $dbusLinesBox.style.maxHeight = "";
+        $dbusRoutesBox.style.flex = "1 1 auto";
+        $dbusRoutesBox.style.minHeight = "";
+        return;
+      }
+      const limits = getDbusPanelSplitLimits(trackHeight);
+      dbusPanelSplitRatio = Math.max(limits.minRatio, Math.min(limits.maxRatio, clampDbusPanelSplitRatio(dbusPanelSplitRatio)));
+      const linesPx = Math.round(trackHeight * dbusPanelSplitRatio);
+      $dbusLinesBox.style.flex = `0 0 ${linesPx}px`;
+      $dbusLinesBox.style.minHeight = "0";
+      $dbusLinesBox.style.maxHeight = `${linesPx}px`;
+      $dbusRoutesBox.style.flex = "1 1 0";
+      $dbusRoutesBox.style.minHeight = "0";
+    }
+    function bindDbusLayoutResizer(){
+      if (!$dbusLayoutResizer || !$dbusLinesBox || !$dbusRoutesBox) return;
+      const start = (event) => {
+        if (!shouldShowDbusRoutesBox() || !isDbusPanelSplitResizable()) return;
+        event.preventDefault();
+        try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
+        const startY = Number(event.clientY || 0);
+        const startLinesHeight = $dbusLinesBox.getBoundingClientRect().height;
+        const startRoutesHeight = $dbusRoutesBox.getBoundingClientRect().height;
+        const trackHeight = startLinesHeight + startRoutesHeight;
+        if (!(trackHeight > 0)) return;
+        const limits = getDbusPanelSplitLimits(trackHeight);
+        const minPx = Math.max(0, limits.minLinesPx);
+        const maxPx = Math.max(minPx, trackHeight - Math.max(0, limits.minRoutesPx));
+        document.body.style.userSelect = "none";
+        document.body.classList.add("dbus-layout-resizing");
+        const move = (e) => {
+          const dy = Number(e.clientY || startY) - startY;
+          const nextLinesHeight = Math.max(minPx, Math.min(maxPx, startLinesHeight + dy));
+          dbusPanelSplitRatio = clampDbusPanelSplitRatio(nextLinesHeight / trackHeight);
+          $dbusLinesBox.style.flex = `0 0 ${Math.round(nextLinesHeight)}px`;
+          $dbusLinesBox.style.minHeight = "0";
+          $dbusLinesBox.style.maxHeight = `${Math.round(nextLinesHeight)}px`;
+          $dbusRoutesBox.style.flex = "1 1 0";
+          $dbusRoutesBox.style.minHeight = "0";
+        };
+        const stop = () => {
+          window.removeEventListener("pointermove", move);
+          window.removeEventListener("pointerup", stop);
+          window.removeEventListener("pointercancel", stop);
+          document.body.style.userSelect = "";
+          document.body.classList.remove("dbus-layout-resizing");
+          persistDbusPanelSplitRatio();
+          if (shouldShowDbusRoutesBox()) {
+            applyDbusPanelSplit({ showRoutesBox: true });
+          }
+        };
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", stop);
+        window.addEventListener("pointercancel", stop);
+      };
+      $dbusLayoutResizer.addEventListener("pointerdown", start);
+      window.addEventListener("resize", () => {
+        if (!shouldShowDbusRoutesBox()) return;
+        applyDbusPanelSplit({ showRoutesBox: true });
+        requestAnimationFrame(() => applyDbusPanelSplit({ showRoutesBox: true }));
+      });
+    }
 
     function updateDbusModeUI(){
       $dbusModeButtons.forEach(btn => {
@@ -11937,7 +12506,7 @@
       const isDepartMode = currentDbusMode === DBUS_MODES.DEPARTS;
       const isListMode = (currentDbusMode === DBUS_MODES.LINES || currentDbusMode === DBUS_MODES.LENGTH);
       const hasLineSelection = !!currentSelectedKey || !!currentSelectedLineUid;
-      const showRoutesBox = currentDbusMode === DBUS_MODES.LINES && hasLineSelection && !dbusRoutesClosedByPanel;
+      const showRoutesBox = shouldShowDbusRoutesBox();
       if ($dbusList) $dbusList.style.display = isListMode ? "" : "none";
       if ($dbusDepartActions) $dbusDepartActions.hidden = !isDepartMode;
       if ($dbusDepartList) $dbusDepartList.style.display = isDepartMode ? "" : "none";
@@ -11945,17 +12514,11 @@
         $dbusRoutesBox.hidden = !showRoutesBox;
         $dbusRoutesBox.style.display = showRoutesBox ? "flex" : "none";
       }
-      if ($dbusLinesBox) {
-        $dbusLinesBox.style.flex = showRoutesBox ? "0 0 43vh" : "1 1 auto";
-        $dbusLinesBox.style.minHeight = "0";
-        $dbusLinesBox.style.maxHeight = showRoutesBox ? "43vh" : "";
-      }
-      if ($dbusRoutesBox && showRoutesBox) {
-        $dbusRoutesBox.style.flex = "1 1 0";
-        $dbusRoutesBox.style.minHeight = "0";
-      } else if ($dbusRoutesBox) {
-        $dbusRoutesBox.style.flex = "";
-        $dbusRoutesBox.style.minHeight = "";
+      applyDbusPanelSplit({ showRoutesBox });
+      if (showRoutesBox) {
+        requestAnimationFrame(() => {
+          applyDbusPanelSplit({ showRoutesBox: shouldShowDbusRoutesBox() });
+        });
       }
       if ($dbusLinesContent) $dbusLinesContent.style.maxHeight = "";
       if (!showRoutesBox) showDbusRoutesPlaceholder();
@@ -11965,11 +12528,11 @@
       if (typeof updateDbusPanelTitles === "function") updateDbusPanelTitles();
       updateUiOverlays();
     }
+    bindDbusLayoutResizer();
 
     function setDbusMode(mode){
       if (!mode || currentDbusMode === mode) return;
       currentDbusMode = mode;
-      updateDbusModeUI();
       const forced = isDbusDisplayModeForced();
       if (mode === DBUS_MODES.DEPARTS) {
         resetDbusSelection();
@@ -12089,6 +12652,20 @@
       const num = String(line.number||"").trim().toUpperCase();
       return /^N\d+$/.test(num);
     }
+    function isReplacementBus(line){
+      const num = String(line?.number || "").trim();
+      if (/^RER\b/i.test(num) || /^M[ée]tro\b/i.test(num)) return true;
+      return (line?.routes || []).some((route) => {
+        const rawRouteName = String(route?.name || "").trim();
+        const parsed = String(parseRouteName(rawRouteName || "").lineNumber || "").trim();
+        return (
+          /^RER\b/i.test(parsed) ||
+          /^RER\b/i.test(rawRouteName) ||
+          /^M[ée]tro\b/i.test(parsed) ||
+          /^M[ée]tro\b/i.test(rawRouteName)
+        );
+      });
+    }
     function isAutocar(line){
       const num = String(line.number||"").toLowerCase();
       if (num.includes("autocar")) return true;
@@ -12127,6 +12704,10 @@
         /^fict/i.test(routeName) ||
         /^autocar\b/i.test(parsed) ||
         /^fict/i.test(parsed);
+      if (isReplacementBus(line)) {
+        if (parsed) return parsed;
+        return getLineNumber(line, route);
+      }
       if (routeIsAutocarLike || (!routeIsExpressLike && (isAutocar(line) || isFictive(line)))) {
         return "Autocar";
       }
@@ -12139,6 +12720,7 @@
     }
     function getCategory(line){
       if (isNoctilien(line))          return "Noctilien";
+      if (isReplacementBus(line))     return "Speciaux";
       if (isFlix(line))               return "FlixBus";
       if (isAutocar(line))            return "Autres";
       if (isExpress(line))            return "Urbain";
@@ -12176,7 +12758,7 @@
       return total + scolaireLines.size;
     }
 
-    const DEPART_CATEGORY_ORDER = ["Urbain", "Noctilien", "FlixBus", "Scolaire", "Autres"];
+    const DEPART_CATEGORY_ORDER = ["Urbain", "Noctilien", "Speciaux", "FlixBus", "Scolaire", "Autres"];
     function dbusSectionHeadHTML(key, count){
       const safeCount = Number.isFinite(Number(count)) ? Number(count) : 0;
       if (key === "Scolaire") {
@@ -12196,6 +12778,7 @@
       const buckets = {
         "Urbain": [],
         "Noctilien": [],
+        "Speciaux": [],
         "FlixBus": [],
         "Scolaire": [],
         "Autres": []
@@ -12259,6 +12842,8 @@
       const isNoct = isNoctilien2(rawLineNumber);
       const isTitusLogo = /^titus\s*(\d+)/i.test(rawLineNumber) || isTitusLine(line);
       const cat = getCategory(line);
+      const isRerCategory = cat === "Speciaux";
+      const specialMeta = getSpecialBadgeMeta(rawLineNumber);
       const logos = [];
       if (isTitusLogo) {
         logos.push({ src: overlayPath("reseau_titus.png"), alt: "Reseau Titus" });
@@ -12266,6 +12851,10 @@
         logos.push({ src: overlayPath("noctilien_logo_idfm.png"), alt: "Noctilien" });
       } else if (cat === "Scolaire") {
         logos.push({ src: overlayPath("bus_school.png"), alt: "Scolaire" });
+      } else if (cat === "Speciaux") {
+        logos.push({ src: overlayPath("bus_logo_idfm.png"), alt: t("dbus_sub_replacement_bus") });
+        if (specialMeta.kind === "metro") logos.push({ src: overlayPath("o_metro.png"), alt: "Métro" });
+        else logos.push({ src: overlayPath("rer_logo_idfm.png"), alt: "RER" });
       } else if (cat === "Urbain") {
         logos.push({ src: overlayPath("bus_logo_idfm.png"), alt: "IDFM" });
       }
@@ -12273,6 +12862,9 @@
       logos.forEach(({ src, alt }) => {
         const logo = document.createElement("img");
         logo.className = "dbus-route-logo";
+        if (isRerCategory) logo.classList.add("dbus-route-logo-rer");
+        if (isRerCategory && specialMeta.kind === "metro") logo.classList.add("dbus-route-logo-metro");
+        if (src.includes("bus_logo_idfm.png")) logo.classList.add("dbus-route-logo-bus");
         logo.src = src;
         logo.alt = alt;
         item.appendChild(logo);
@@ -12286,9 +12878,27 @@
       const { lineNumber, routeTitle, flag } = parseRouteName(route.name || "");
       const { titleEnd } = getRouteEndpoints(route);
       const mTitus = /^titus\s*(\d+)/i.exec(String(lineNumber||""));
-      const displayNumber = mTitus ? mTitus[1] : lineNumber;
-      const isScolaire = getCategory(line) === "Scolaire";
-      const badge = isScolaire ? null : makeLineBadge(displayNumber, "#444", "#fff", routeBadgeSizeFor(lineNumber));
+      const lineCategory = getCategory(line);
+      const isRerLine = lineCategory === "Speciaux";
+      const specialKind = isRerLine
+        ? (getSpecialBadgeKind(lineNumber) || getSpecialBadgeKind(getLineNumber(line, route)) || getSpecialBadgeKind(String(line?.number || "")) || "rer")
+        : "";
+      if (isRerLine) item.classList.add("dbus-item-rer");
+      let displayNumber = mTitus ? mTitus[1] : lineNumber;
+      if (lineCategory === "Speciaux") displayNumber = getSpecialBadgeLabel(displayNumber);
+      const isScolaire = lineCategory === "Scolaire";
+      const badgeSize = lineCategory === "Speciaux" ? getRerRouteBadgeSize() : routeBadgeSizeFor(displayNumber);
+      const badge = isScolaire ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
+      if (badge && isRerLine) {
+        badge.classList.add("badge-rer");
+        if (specialKind === "metro") badge.classList.add("badge-metro");
+        badge.style.borderRadius = specialKind === "metro" ? "999px" : "5px";
+        const rerBadgeLabel = badge.querySelector(".badge-label");
+        const currentFontSize = rerBadgeLabel ? parseFloat(rerBadgeLabel.style.fontSize || "") : NaN;
+        if (rerBadgeLabel && Number.isFinite(currentFontSize) && currentFontSize > 0) {
+          rerBadgeLabel.style.fontSize = `${(currentFontSize * 1.15).toFixed(2)}px`;
+        }
+      }
       appendRouteLogo(item, line, lineNumber, true);
 
       const titleEl = document.createElement("div");
@@ -12530,6 +13140,7 @@
         const cat = getCategory(line);
         if (!showSchoolLines && cat === "Scolaire") return;
         if (!showFictiveLines && cat === "Autres") return;
+        if (!showSpecialLines && cat === "Speciaux") return;
         line.routes.forEach(route => {
           const firstStopId = route.stops[0]?.uid;
           if (typeof firstStopId === "undefined") return;
@@ -12647,13 +13258,13 @@
         dbusDepartLayers.addLayer(marker);
       });
 
-      dbusDepartFilterKey = `${showSchoolLines}-${showFictiveLines}`;
+      dbusDepartFilterKey = `${showSchoolLines}-${showFictiveLines}-${showSpecialLines}`;
       renderDbusDepartList();
     }
 
     function showDbusDepartures() {
       if (!DBUS_LINES.length || !DBUS_STOPS.size) return;
-      if (!dbusDepartGroups.length || dbusDepartFilterKey !== `${showSchoolLines}-${showFictiveLines}`) buildDbusDepartures();
+      if (!dbusDepartGroups.length || dbusDepartFilterKey !== `${showSchoolLines}-${showFictiveLines}-${showSpecialLines}`) buildDbusDepartures();
       if (!map.hasLayer(dbusDepartLayers)) dbusDepartLayers.addTo(map);
     }
 
@@ -12691,17 +13302,19 @@
       }
 
       function buildLineBuckets(){
-        const buckets = { "Urbain": [], "FlixBus": [], "Noctilien": [], "Autres": [], "Scolaire": [] };
+        const buckets = { "Urbain": [], "FlixBus": [], "Noctilien": [], "Speciaux": [], "Autres": [], "Scolaire": [] };
         DBUS_LINES.forEach(line => {
           const cat = getCategory(line);
           if (!showSchoolLines && cat === "Scolaire") return;
           if (!showFictiveLines && cat === "Autres") return;
+          if (!showSpecialLines && cat === "Speciaux") return;
           buckets[cat].push(line);
         });
 
         buckets["Urbain"].sort(compareUrbainLines);
         buckets["Noctilien"].sort((a,b)=> String(a.number).localeCompare(String(b.number), 'fr', {numeric:true}));
         buckets["FlixBus"].sort((a,b)=> String(a.number).localeCompare(String(b.number), 'fr', {numeric:true}));
+        buckets["Speciaux"].sort((a,b)=> String(a.number).localeCompare(String(b.number), 'fr', {numeric:true}));
         buckets["Autres"].sort((a,b)=> String(a.number).localeCompare(String(b.number), 'fr', {numeric:true}));
         buckets["Scolaire"].sort((a, b) => {
           return String(a.number).localeCompare(String(b.number), 'fr', {numeric:true});
@@ -12710,16 +13323,17 @@
       }
 
       function buildRouteBuckets(){
-        const buckets = { "Urbain": [], "FlixBus": [], "Noctilien": [], "Autres": [], "Scolaire": [] };
+        const buckets = { "Urbain": [], "FlixBus": [], "Noctilien": [], "Speciaux": [], "Autres": [], "Scolaire": [] };
         DBUS_LINES.forEach(line => {
           const cat = getCategory(line);
           if (!showSchoolLines && cat === "Scolaire") return;
           if (!showFictiveLines && cat === "Autres") return;
+          if (!showSpecialLines && cat === "Speciaux") return;
           line.routes.forEach(route => buckets[cat].push({ line, route }));
         });
         Object.values(buckets).forEach(list => {
           list.sort((a, b) => {
-            const diff = lengthScoreForLengthMode(b.line, b.route) - lengthScoreForLengthMode(a.line, a.route);
+            const diff = routeDurationForLengthMode(b.route) - routeDurationForLengthMode(a.route);
             if (diff) return diff;
             return String(a.route.name || "").localeCompare(String(b.route.name || ""), 'fr', {numeric:true, sensitivity:"base"});
           });
@@ -12760,10 +13374,9 @@
           colorKey
         };
       }
-      function lengthScoreForLengthMode(line, route){
-        const base = Number(route?.totalMinutes || 0);
-        const express = isExpress(line) || isExpressRoute(route);
-        return express ? base * 0.75 : base;
+      function routeDurationForLengthMode(route){
+        const minutes = Number(route?.totalMinutes);
+        return Number.isFinite(minutes) ? minutes : 0;
       }
 
       function isAutocarRoute(route){
@@ -12832,6 +13445,40 @@
         });
         return all;
       }
+      function buildGroupedSpecialLines(sourceLines){
+        const groups = new Map();
+        (sourceLines || []).forEach((srcLine) => {
+          (srcLine.routes || []).forEach((route) => {
+            const parsedLineNumber = String(parseRouteName(String(route?.name || "")).lineNumber || "").trim();
+            let displayNumber = parsedLineNumber || String(srcLine?.number || "").trim() || "RER";
+            if (!/^RER\b/i.test(displayNumber) && !/^M[ée]tro\b/i.test(displayNumber)) {
+              const routeName = String(route?.name || "").trim();
+              const rerMatch = routeName.match(/\bRER(?:\s*[-–—]\s*|\s+)([A-Z0-9]+)/i);
+              if (rerMatch && rerMatch[1]) displayNumber = `RER ${String(rerMatch[1]).trim().toUpperCase()}`;
+              const metroMatch = routeName.match(/\bM[ée]tro(?:\s*[-–—]\s*|\s+)([A-Z0-9]+)/i);
+              if (metroMatch && metroMatch[1]) displayNumber = `Métro ${String(metroMatch[1]).trim().toUpperCase()}`;
+            }
+            const groupKey = normalizeBadgeToken(displayNumber || "RER");
+            let group = groups.get(groupKey);
+            if (!group) {
+              const specialKind = getSpecialBadgeKind(displayNumber || "");
+              group = {
+                uid: `group:special:${groupKey || "rer"}`,
+                number: displayNumber || "RER",
+                routes: [],
+                __isGroup: true,
+                __isSpecialGroup: true,
+                __specialKind: specialKind || "rer"
+              };
+              groups.set(groupKey, group);
+            }
+            group.routes.push({ ...route, __sourceLine: srcLine });
+          });
+        });
+        const all = [...groups.values()];
+        all.sort((a, b) => String(a.number || "").localeCompare(String(b.number || ""), "fr", { numeric: true, sensitivity: "base" }));
+        return all;
+      }
 
       function renderSection(key, lines) {
         if (!lines.length) return;
@@ -12874,7 +13521,7 @@
           }
         });
 
-        const showSchoolLogo = key === "Scolaire";
+        const showSchoolLogo = key === "Scolaire" || key === "Speciaux";
         if (key === "Scolaire") {
           const allRoutes = [];
           lines.forEach(line => {
@@ -12922,6 +13569,9 @@
             el.classList.remove("dim", "sel");
             el.style.removeProperty("--selColor");
           });
+          ($dbusList || body).querySelectorAll(".dbus-rer-master-logo").forEach(el=>{
+            el.classList.remove("dim");
+          });
           try { currentSelectedKey = ""; } catch {}
           try { currentSelectedLineUid = ""; } catch {}
           try { dbusRoutesClosedByPanel = false; } catch {}
@@ -12945,8 +13595,10 @@
           const raw = String(line.number || "").trim();
           const wrap = document.createElement("div");
           wrap.className = "dbus-logo";
+          const lineCategory = getCategory(line);
 
-          if (/^scolaire\b/i.test(raw) || getCategory(line) === "Scolaire") {
+          if (/^scolaire\b/i.test(raw) || lineCategory === "Scolaire") {
+            wrap.classList.add("dbus-logo--scolaire");
             wrap.style.background = "transparent";
             wrap.style.border = "none";
             wrap.style.boxShadow = "none";
@@ -12957,6 +13609,28 @@
             img.style.height = "100%";
             img.style.objectFit = "contain";
             wrap.appendChild(img);
+            return wrap;
+          }
+          if (lineCategory === "Speciaux" || /^RER\b/i.test(raw)) {
+            const combo = document.createElement("div");
+            combo.className = "dbus-rer-logo-combo";
+            const rerImg = document.createElement("img");
+            const specialMeta = getSpecialBadgeMeta(raw);
+            const specialKind = specialMeta.kind || "rer";
+            rerImg.alt = specialKind === "metro" ? "Métro" : "RER";
+            rerImg.src = specialKind === "metro" ? overlayPath("o_metro.png") : overlayPath("rer_logo_idfm.png");
+            combo.appendChild(rerImg);
+            const letter = getSpecialBadgeLabel(raw);
+            const letterBadge = makeLineBadge(letter, "#444", "#fff", "26x26");
+            letterBadge.classList.add("badge-rer", "dbus-rer-letter-badge");
+            if (specialKind === "metro") letterBadge.classList.add("badge-metro");
+            letterBadge.style.borderRadius = specialKind === "metro" ? "999px" : "5px";
+            getLineColors(raw).then(([bg, text]) => {
+              letterBadge.style.background = bg;
+              letterBadge.style.color = text;
+            });
+            combo.appendChild(letterBadge);
+            wrap.appendChild(combo);
             return wrap;
           }
 
@@ -13018,7 +13692,8 @@
         if (!routes.length) return;
         routes.forEach(route => {
           const sourceLine = route && route.__sourceLine ? route.__sourceLine : line;
-          const showSchoolLogo = getCategory(sourceLine) === "Scolaire";
+          const sourceCategory = getCategory(sourceLine);
+          const showSchoolLogo = sourceCategory === "Scolaire" || sourceCategory === "Speciaux";
           renderLineItem(sourceLine, route, $dbusRoutesList, {
             showLogo: showSchoolLogo,
             compactBadges: true
@@ -13048,6 +13723,19 @@
             else { getLineColors(raw).then(([bg])=>{ logo.style.setProperty("--selColor", bg); }); }
             renderRoutesForLine(line);
             ($dbusList || body).querySelectorAll(".dbus-logo").forEach(el=>{ if (el!==logo) el.classList.add("dim"); else el.classList.remove("dim"); });
+            const selectedSpecialKind = getCategory(line) === "Speciaux"
+              ? (String(line?.__specialKind || "").trim() || getSpecialBadgeKind(String(line?.number || "").trim()) || "rer")
+              : "";
+            ($dbusList || body).querySelectorAll(".dbus-rer-master-logo").forEach(el=>{
+              const rowKind = String(el?.dataset?.specialKind || "").trim();
+              if (!selectedSpecialKind) {
+                el.classList.add("dim");
+              } else if (!rowKind || rowKind === selectedSpecialKind) {
+                el.classList.remove("dim");
+              } else {
+                el.classList.add("dim");
+              }
+            });
             ($dbusList || body).querySelectorAll(".dbus-logo.sel").forEach(el=> el.classList.remove("sel"));
             logo.classList.add("sel");
             window.__DBUS_GRID_OPEN = { section: sectionId, clear: clearLocal };
@@ -13064,14 +13752,75 @@
             const block = document.createElement("div");
             block.className = "line-block";
             const logo = createLogoForLine(line);
+            if (logo.classList.contains("dbus-logo--titus")) {
+              block.classList.add("line-block--titus");
+            }
+            if (logo.classList.contains("dbus-logo--scolaire")) {
+              block.classList.add("line-block--scolaire");
+            }
             logo.dataset.lineUid = String(line.uid || "");
             block.appendChild(logo);
             bindLogoClick(logo, line, sectionId);
             grid.appendChild(block);
           });
         }
+        function renderReplacementBusGrid(host, items, sectionId){
+          if (!items.length) return;
+          host.style.display = "flex";
+          host.style.flexDirection = "column";
+          host.style.alignItems = "flex-start";
+          const byKind = { rer: [], metro: [], other: [] };
+          items.forEach((line) => {
+            const raw = String(line?.number || "").trim();
+            const kind = String(line?.__specialKind || "").trim() || getSpecialBadgeKind(raw);
+            if (kind === "metro") byKind.metro.push(line);
+            else if (kind === "rer") byKind.rer.push(line);
+            else byKind.other.push(line);
+          });
+          if (byKind.other.length) byKind.rer.push(...byKind.other);
 
-        renderLogoGrid(body, lines, key);
+          const renderKindRow = (kind, kindItems) => {
+            if (!kindItems.length) return;
+            const row = document.createElement("div");
+            row.className = "dbus-rer-lines-row";
+            host.appendChild(row);
+
+            const masterLogo = document.createElement("div");
+            masterLogo.className = "dbus-rer-master-logo";
+            masterLogo.dataset.specialKind = kind;
+            const masterImg = document.createElement("img");
+            masterImg.src = kind === "metro" ? overlayPath("o_metro.png") : overlayPath("rer_logo_idfm.png");
+            masterImg.alt = kind === "metro" ? "Métro" : "RER";
+            masterLogo.appendChild(masterImg);
+            row.appendChild(masterLogo);
+
+            const grid = document.createElement("div");
+            grid.className = "dbus-rer-lines-grid";
+            row.appendChild(grid);
+
+            kindItems.forEach((line) => {
+              const raw = String(line.number || "").trim();
+              const letter = getSpecialBadgeLabel(raw);
+              const logo = makeLineBadge(letter, "#444", "#fff", "36x36");
+              logo.classList.add("dbus-logo", "dbus-logo-rer-square", "badge-rer");
+              if (kind === "metro") logo.classList.add("badge-metro");
+              logo.style.borderRadius = kind === "metro" ? "999px" : "9px";
+              getLineColors(raw).then(([bg, text]) => {
+                logo.style.background = bg;
+                logo.style.color = text;
+              });
+              logo.dataset.lineUid = String(line.uid || "");
+              bindLogoClick(logo, line, sectionId);
+              grid.appendChild(logo);
+            });
+          };
+
+          renderKindRow("rer", byKind.rer);
+          renderKindRow("metro", byKind.metro);
+        }
+
+        if (key === "replacement_bus") renderReplacementBusGrid(body, lines, key);
+        else renderLogoGrid(body, lines, key);
       }
       function getLineId(line, route) {
         if (line.number && line.number !== "?") {
@@ -13105,6 +13854,11 @@
       const badgeRawNumber = needsFallback ? fallbackNumber : parsedNumber;
       const mTitus = /^titus\s*(\d+)/i.exec(String(badgeRawNumber || ""));
       const category = getCategory(line);
+      const isRerLine = category === "Speciaux";
+      const specialKind = isRerLine
+        ? (getSpecialBadgeKind(badgeRawNumber) || getSpecialBadgeKind(String(line?.number || "")) || "rer")
+        : "";
+      if (isRerLine) item.classList.add("dbus-item-rer");
       const routeRaw = String(route?.name || "").trim();
       const routeIsExpressLike =
         /^express\b/i.test(routeRaw) ||
@@ -13122,6 +13876,9 @@
       if (isAutresLike) {
         displayNumber = "Autocar";
       }
+      if (category === "Speciaux") {
+        displayNumber = getSpecialBadgeLabel(displayNumber);
+      }
       if (lengthMode && isExpressItem) {
         const expressNum = String(expressMeta?.number || "").trim();
         if (!expressNum) displayNumber = "Express";
@@ -13131,8 +13888,20 @@
       const effectiveShowLogo = (lengthMode && isExpressItem) ? false : showLogo;
       const forceExpressLengthSize = lengthMode && (isExpressItem || isAutresLike || category === "FlixBus");
       const compactLengthBadge = ((lengthMode && !isExpressItem && !isExpressNumber(badgeRawNumber) && !forceExpressLengthSize) || compactBadges);
-      const badgeSize = forceExpressLengthSize ? routeBadgeSizeFor("Express") : (compactLengthBadge ? "72x28" : routeBadgeSizeFor(displayNumber));
+      const badgeSize = category === "Speciaux"
+        ? getRerRouteBadgeSize()
+        : (forceExpressLengthSize ? routeBadgeSizeFor("Express") : (compactLengthBadge ? "72x28" : routeBadgeSizeFor(displayNumber)));
       const badge = isScolaire ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
+      if (badge && isRerLine) {
+        badge.classList.add("badge-rer");
+        if (specialKind === "metro") badge.classList.add("badge-metro");
+        badge.style.borderRadius = specialKind === "metro" ? "999px" : "5px";
+        const rerBadgeLabel = badge.querySelector(".badge-label");
+        const currentFontSize = rerBadgeLabel ? parseFloat(rerBadgeLabel.style.fontSize || "") : NaN;
+        if (rerBadgeLabel && Number.isFinite(currentFontSize) && currentFontSize > 0) {
+          rerBadgeLabel.style.fontSize = `${(currentFontSize * 1.15).toFixed(2)}px`;
+        }
+      }
       appendRouteLogo(item, line, badgeRawNumber, effectiveShowLogo);
       if (lengthMode && effectiveShowLogo && badge) item.classList.add("logo-badge-tight");
         
@@ -13297,7 +14066,7 @@
           const entries = [];
           Object.values(routeBuckets).forEach(list => entries.push(...list));
           entries.sort((a, b) => {
-            const diff = lengthScoreForLengthMode(b.line, b.route) - lengthScoreForLengthMode(a.line, a.route);
+            const diff = routeDurationForLengthMode(b.route) - routeDurationForLengthMode(a.route);
             if (diff) return diff;
             return String(a.route.name || "").localeCompare(
               String(b.route.name || ""),
@@ -13318,6 +14087,7 @@
         const lineBuckets = buildLineBuckets();
         const extraSourceLines = lineBuckets["Autres"];
         const expressGroups = buildGroupedExpressLines(lineBuckets["Urbain"], extraSourceLines);
+        const specialGroups = buildGroupedSpecialLines(lineBuckets["Speciaux"]);
         const autocarGroupLine = buildGroupedLineFromRoutes("autocar", "Autocar", extraSourceLines, isAutocarRoute);
 
         const urbanLines = lineBuckets["Urbain"].filter(line => !isTitusLine(line) && !isExpress(line));
@@ -13337,6 +14107,7 @@
         renderSectionGrid("urban", urbanLines);
         renderSectionGrid("Express", expressGroups);
         renderSectionGrid("noctilien",  lineBuckets["Noctilien"]);
+        renderSectionGrid("replacement_bus", specialGroups.length ? specialGroups : lineBuckets["Speciaux"]);
         renderSectionGrid("other_networks", titusLines);
         renderSectionGrid("others", others);
       }
