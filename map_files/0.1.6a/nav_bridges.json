@@ -1,0 +1,372 @@
+{
+  "rules": [
+    {
+      "id": "l24_gdl_ratp_to_centre_commercial_fix_01",
+      "enabled": true,
+      "scope": {
+        "line": "24",
+        "direction": "Gare de Lyon - Maison de la RATP > Centre Commercial"
+      },
+      "notes": "Quand le trajet atteint 7121, remplacer le segment jusqu'a 11567 par la chaine forcee.",
+      "replace_between_points": {
+        "from": {
+          "X": -4683.32,
+          "Y": 1726.45
+        },
+        "to": {
+          "X": -4640.92,
+          "Y": 2006.07
+        }
+      },
+      "force_point_chain": [
+        {
+          "X": -4683.32,
+          "Y": 1726.45
+        },
+        {
+          "X": -4769.79,
+          "Y": 1762.21
+        },
+        {
+          "X": -4768.5,
+          "Y": 1786.86
+        },
+        {
+          "X": -4640.92,
+          "Y": 2006.07
+        }
+      ]
+    },
+    {
+      "id": "l109_terroirs_to_centre_commercial_fix_01",
+      "enabled": true,
+      "scope": {
+        "line": "109",
+        "direction": "Terroirs de France > Centre Commercial"
+      },
+      "notes": "Quand le trajet atteint 7121, remplacer le segment jusqu'a 11567 par la chaine forcee.",
+      "replace_between_points": {
+        "from": {
+          "X": -4683.32,
+          "Y": 1726.45
+        },
+        "to": {
+          "X": -4640.92,
+          "Y": 2006.07
+        }
+      },
+      "force_point_chain": [
+        {
+          "X": -4683.32,
+          "Y": 1726.45
+        },
+        {
+          "X": -4769.79,
+          "Y": 1762.21
+        },
+        {
+          "X": -4768.5,
+          "Y": 1786.86
+        },
+        {
+          "X": -4640.92,
+          "Y": 2006.07
+        }
+      ]
+    },
+    {
+      "id": "l112_plaine_to_chateau_ctrl_after_5572_01",
+      "enabled": true,
+      "scope": {
+        "line": "112",
+        "direction": "Plaine de la Faluère > Château de Vincennes",
+        "route_uid": "2"
+      },
+      "insert_control_points_after_node": {
+        "points": [
+          {
+            "X": -838.5,
+            "Y": 523.19
+          },
+          {
+            "X": -754.52,
+            "Y": 524.75
+          },
+          {
+            "X": -745.79,
+            "Y": 531.02
+          },
+          {
+            "X": -755.87,
+            "Y": 540.65
+          },
+          {
+            "X": -821.03,
+            "Y": 544.46
+          }
+        ],
+        "after_point": {
+          "X": -871.51,
+          "Y": 510.73
+        }
+      },
+      "notes": "Apres le node 5572, inserer ces points de controle pour corriger le trace."
+    },
+    {
+      "id": "ln11_pyrenees_to_chateau_ctrl_after_5572_01",
+      "enabled": true,
+      "scope": {
+        "line": "N11",
+        "direction": "Pyrénées – Docteur Netter > Château de Vincennes",
+        "route_uid": "1"
+      },
+      "insert_control_points_after_node": {
+        "points": [
+          {
+            "X": -838.5,
+            "Y": 523.19
+          },
+          {
+            "X": -754.52,
+            "Y": 524.75
+          },
+          {
+            "X": -745.79,
+            "Y": 531.02
+          },
+          {
+            "X": -755.87,
+            "Y": 540.65
+          },
+          {
+            "X": -821.03,
+            "Y": 544.46
+          }
+        ],
+        "after_point": {
+          "X": -871.51,
+          "Y": 510.73
+        }
+      },
+      "notes": "N11 route uid 1: meme regle que la 112 Plaine de la Faluere > Chateau de Vincennes."
+    },
+    {
+      "id": "l114_villemomble_coquetiers_to_neuilly_rer_ctrl_01",
+      "enabled": true,
+      "scope": {
+        "line": "114",
+        "route_uid": "1"
+      },
+      "insert_control_points": [
+        {
+          "position": "before_stop",
+          "stop_number": 11,
+          "points": [
+            {
+              "X": 5284.1,
+              "Y": -2372.23
+            },
+            {
+              "X": 5304.12,
+              "Y": -2404.05
+            },
+            {
+              "X": 5261.55,
+              "Y": -2399.62
+            }
+          ]
+        }
+      ],
+      "notes": "114 route uid 1: avant arret 11 ajouter 10024,10038,10040."
+    },
+    {
+      "id": "l114_le_raincy_to_neuilly_rer_ctrl_01",
+      "enabled": true,
+      "scope": {
+        "line": "114",
+        "route_uid": "2"
+      },
+      "insert_control_points": [
+        {
+          "position": "before_stop",
+          "stop_number": 7,
+          "points": [
+            {
+              "X": 5284.1,
+              "Y": -2372.23
+            },
+            {
+              "X": 5304.12,
+              "Y": -2404.05
+            },
+            {
+              "X": 5261.55,
+              "Y": -2399.62
+            }
+          ]
+        }
+      ],
+      "notes": "114 route uid 2: avant arret 7 ajouter 10024,10038,10040."
+    },
+    {
+      "id": "l114_nogent_pierre_semard_to_chateau_ctrl_01",
+      "enabled": true,
+      "scope": {
+        "line": "114",
+        "route_uid": "258"
+      },
+      "insert_control_points": [
+        {
+          "position": "after_node",
+          "points": [
+            {
+              "X": -871.51,
+              "Y": 510.73
+            }
+          ],
+          "node_point": {
+            "X": -749.03,
+            "Y": 506.61
+          }
+        }
+      ],
+      "notes": "114 route uid 258: apres 5577 ajouter 5572."
+    },
+    {
+      "id": "l210_chateau_to_pierre_semard_ctrl_01",
+      "enabled": true,
+      "scope": {
+        "line": "210",
+        "route_uid": "1"
+      },
+      "insert_control_points": [
+        {
+          "position": "after_stop",
+          "stop_number": 1,
+          "points": [
+            {
+              "X": -797.86,
+              "Y": 508.25
+            }
+          ]
+        }
+      ],
+      "notes": "210 route uid 1: apres arret 1 ajouter le point de controle 5575."
+    },
+    {
+      "id": "l221_gallieni_to_chateau_villemomble_ctrl_01",
+      "enabled": true,
+      "scope": {
+        "line": "221",
+        "route_uid": "2"
+      },
+      "insert_control_points": [
+        {
+          "position": "after_stop",
+          "stop_number": 1,
+          "points": [
+            {
+              "X": -2989.41,
+              "Y": -1527.64
+            },
+            {
+              "X": -3062.85,
+              "Y": -1405.4
+            },
+            {
+              "X": -3009.61,
+              "Y": -1520.74
+            }
+          ]
+        }
+      ],
+      "notes": "221 route uid 2: apres arret 1 ajouter le point de controle 6944."
+    },
+    {
+      "id": "l351_pyrenees_docteur_netter_to_auguste_polissard_ctrl_01",
+      "enabled": true,
+      "scope": {
+        "line": "351",
+        "route_uid": "1"
+      },
+      "insert_control_points": [
+        {
+          "position": "before_stop",
+          "stop_number": 5,
+          "force_direct_links": true,
+          "points": [
+            {
+              "X": -3005.54,
+              "Y": -1602.11
+            }
+          ]
+        },
+        {
+          "position": "after_stop",
+          "stop_number": 5,
+          "points": [
+            {
+              "X": -2989.41,
+              "Y": -1527.64
+            },
+            {
+              "X": -3062.85,
+              "Y": -1405.4
+            },
+            {
+              "X": -3009.61,
+              "Y": -1520.74
+            }
+          ]
+        }
+      ],
+      "notes": "351 route uid 1: avant arret 5 ajouter 6932,11508 puis apres arret 5 ajouter 6944."
+    },
+    {
+      "id": "flixbus_paris_bercy_to_disneyland_ctrl_01",
+      "enabled": true,
+      "scope": {
+        "line": "FLIXBUS",
+        "direction": "Paris Bercy > Disneyland Paris",
+        "route_uid": "1"
+      },
+      "insert_control_points": [
+        {
+          "position": "after_stop",
+          "stop_number": 1,
+          "points": [
+            {
+              "X": -5041.69,
+              "Y": 1108.4
+            },
+            {
+              "X": -5124.16,
+              "Y": 1009.62
+            },
+            {
+              "X": -5455.38,
+              "Y": 126.27
+            },
+            {
+              "X": -5502.64,
+              "Y": -77.41
+            },
+            {
+              "X": -5618.78,
+              "Y": -201.65
+            },
+            {
+              "X": -5332.52,
+              "Y": 524.47
+            },
+            {
+              "X": -5058.7,
+              "Y": 1162.62
+            }
+          ]
+        }
+      ],
+      "notes": "FLIXBUS route uid 1: point force 7366 apres arret 1."
+    }
+  ]
+}

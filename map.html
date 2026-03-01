@@ -2964,6 +2964,15 @@
             </div>
           </section>
           <section class="settings-sec">
+            <h4 class="settings-title" id="settingsNavigationTypeTitle">Type de navigation</h4>
+            <div class="dbus-footer-row">
+              <div class="dbus-modes dbus-sort-modes" id="settingsNavigationTypeModes" role="tablist" aria-label="Type de navigation">
+                <button type="button" class="dbus-mode-btn active" data-nav-type="gps" aria-pressed="true">GPS</button>
+                <button type="button" class="dbus-mode-btn" data-nav-type="legacy" aria-pressed="false">Ancien</button>
+              </div>
+            </div>
+          </section>
+          <section class="settings-sec">
             <h4 class="settings-title" id="settingsPreviewLayoutTitle">Aperçu de ligne</h4>
             <div class="dbus-footer-row">
               <div class="dbus-modes dbus-sort-modes" id="settingsPreviewLayoutModes" role="tablist" aria-label="Orientation de l'aperçu de ligne">
@@ -3264,7 +3273,9 @@
   const LINE_PREVIEW_LAYOUT_KEY = "idf_line_preview_layout";
   const CENTER_ON_LINE_SELECT_KEY = "idf_center_on_line_select";
   const DBUS_STOP_ICONS_KEY = "idf_dbus_stop_icons";
+  const DBUS_NAVIGATION_TYPE_KEY = "idf_dbus_navigation_type";
   const LINE_PREVIEW_LAYOUTS = { VERTICAL: "vertical", HORIZONTAL: "horizontal" };
+  const DBUS_NAVIGATION_TYPES = { GPS: "gps", LEGACY: "legacy" };
   let TRANSLATE_STOP_TYPES = (() => {
     const stored = localStorage.getItem(STOP_TYPE_TRANSLATION_KEY);
     return stored === "1" || stored === "true";
@@ -3292,6 +3303,10 @@
   let DBUS_STOP_ICONS_ENABLED = (() => {
     const stored = localStorage.getItem(DBUS_STOP_ICONS_KEY);
     return stored === "1" || stored === "true";
+  })();
+  let DBUS_NAVIGATION_TYPE = (() => {
+    const stored = String(localStorage.getItem(DBUS_NAVIGATION_TYPE_KEY) || "").toLowerCase().trim();
+    return stored === DBUS_NAVIGATION_TYPES.LEGACY ? DBUS_NAVIGATION_TYPES.LEGACY : DBUS_NAVIGATION_TYPES.GPS;
   })();
   var currentSelectedKey = "";
   var currentSelectedLineUid = "";
@@ -3705,6 +3720,26 @@
       try { renderDbusStopsLayer(); } catch {}
     }
   }
+  function isDbusGpsNavigationMode(){
+    return DBUS_NAVIGATION_TYPE !== DBUS_NAVIGATION_TYPES.LEGACY;
+  }
+  function setDbusNavigationType(mode, { persist = true, apply = true } = {}){
+    const normalized = String(mode || "").toLowerCase().trim();
+    DBUS_NAVIGATION_TYPE = normalized === DBUS_NAVIGATION_TYPES.LEGACY
+      ? DBUS_NAVIGATION_TYPES.LEGACY
+      : DBUS_NAVIGATION_TYPES.GPS;
+    if (persist) {
+      localStorage.setItem(DBUS_NAVIGATION_TYPE_KEY, DBUS_NAVIGATION_TYPE);
+    }
+    document.querySelectorAll("#settingsNavigationTypeModes .dbus-mode-btn[data-nav-type]").forEach(btn => {
+      const active = btn.dataset.navType === DBUS_NAVIGATION_TYPE;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    if (apply && typeof window.refreshSelectedDbusRouteNavigationMode === "function") {
+      try { window.refreshSelectedDbusRouteNavigationMode(); } catch {}
+    }
+  }
   function wikiBase(){ return LANG === "en" ? "https://en.wikipedia.org/wiki/" : "https://fr.wikipedia.org/wiki/"; }
   function buildLangMenu(){
     window.sharedHeader?.buildLangMenu?.();
@@ -3859,6 +3894,18 @@
       settingsCenterLineToggle.title = label;
       settingsCenterLineToggle.checked = !!CENTER_ON_LINE_SELECT;
     }
+    const settingsNavigationTypeTitle = document.getElementById("settingsNavigationTypeTitle");
+    if (settingsNavigationTypeTitle) settingsNavigationTypeTitle.textContent = t("settings_navigation_type_title");
+    const settingsNavigationTypeModes = document.getElementById("settingsNavigationTypeModes");
+    if (settingsNavigationTypeModes) settingsNavigationTypeModes.setAttribute("aria-label", t("settings_navigation_type_label"));
+    document.querySelectorAll("#settingsNavigationTypeModes .dbus-mode-btn[data-nav-type]").forEach(btn => {
+      const mode = String(btn.dataset.navType || "").toLowerCase();
+      if (mode === DBUS_NAVIGATION_TYPES.GPS) btn.textContent = t("settings_navigation_type_gps");
+      if (mode === DBUS_NAVIGATION_TYPES.LEGACY) btn.textContent = t("settings_navigation_type_legacy");
+      const active = mode === DBUS_NAVIGATION_TYPE;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
     const settingsLeafletLegendTitle = document.getElementById("settingsLeafletLegendTitle");
     if (settingsLeafletLegendTitle) settingsLeafletLegendTitle.textContent = t("settings_leaflet_legend_title");
     const settingsLegendMonumentLabel = document.getElementById("settingsLegendMonumentLabel");
@@ -4423,6 +4470,11 @@
       setCenterOnLineSelectEnabled(settingsCenterLineToggleEl.checked);
     });
   }
+  document.querySelectorAll("#settingsNavigationTypeModes .dbus-mode-btn[data-nav-type]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      setDbusNavigationType(btn.dataset.navType);
+    });
+  });
   const settingsBusStopsToggleEl = document.getElementById("settingsBusStopsToggle");
   if (settingsBusStopsToggleEl) {
     settingsBusStopsToggleEl.addEventListener("change", () => {
@@ -4434,12 +4486,15 @@
   setAudioPanelButtonEnabled(AUDIO_PANEL_BUTTON_ENABLED, { persist: false, apply: false });
   setLinePreviewLayout(LINE_PREVIEW_LAYOUT, { persist: false });
   setCenterOnLineSelectEnabled(CENTER_ON_LINE_SELECT, { persist: false });
+  setDbusNavigationType(DBUS_NAVIGATION_TYPE, { persist: false, apply: false });
   setDbusStopIconsEnabled(DBUS_STOP_ICONS_ENABLED, { persist: false, apply: false });
   setLang(LANG, {persist:false, apply:true});
   </script>
 
   <script>
     const QS = new URLSearchParams(location.search);
+    const DEV_GRAPH = QS.has("dev_graph");
+    const DEV_NAV_BRIDGES_DEBUG = DEV_GRAPH || QS.has("dev_bridges");
     const MAP_FILES_ROOT = "./map_files";
     const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
     function parseVersion(value){
@@ -4629,6 +4684,12 @@
     const dbusRoutePane = map.createPane("dbusRoutePane");
     dbusRoutePane.style.zIndex = "320";
     dbusRoutePane.style.pointerEvents = "none";
+    const devGraphEdgePane = map.createPane("devGraphEdgePane");
+    devGraphEdgePane.style.zIndex = "245";
+    devGraphEdgePane.style.pointerEvents = "none";
+    const devGraphNodePane = map.createPane("devGraphNodePane");
+    devGraphNodePane.style.zIndex = "246";
+    devGraphNodePane.style.pointerEvents = "none";
     const dbusRouteDirectionPane = map.createPane("dbusRouteDirectionPane");
     dbusRouteDirectionPane.style.zIndex = "325";
     dbusRouteDirectionPane.style.pointerEvents = "none";
@@ -5792,8 +5853,17 @@
     const DBUS_NAV_MAX_SNAP_DISTANCE = 450;
     const DBUS_NAV_STOP_CANDIDATES = 6;
     let DBUS_NAV_GRAPH = null;
+    let DBUS_NAV_BRIDGES = [];
     const dbusNavNodesByStopId = new Map();
     const dbusNavPathCache = new Map();
+    const DEV_GRAPH_STATE = {
+      enabled: false,
+      edgeLayer: null,
+      nodeLayer: null,
+      nodePoints: [],
+      incomingByNode: new Map(),
+      clickBound: false
+    };
     let linePreviewAudioCheckToken = 0;
     let dbusFisRootLineFolderTokensPromise = null;
     let DBUS_FIS_INDEX = null;
@@ -8845,6 +8915,9 @@
       dbusNavNodesByStopId.clear();
       dbusNavPathCache.clear();
     }
+    function resetDbusNavBridgeState(){
+      DBUS_NAV_BRIDGES = [];
+    }
     function createDbusMinHeap(){
       const arr = [];
       const swap = (a, b) => {
@@ -8914,17 +8987,27 @@
         const x = Number(node?.x);
         const y = Number(node?.y);
         if (!Number.isFinite(id) || !Number.isFinite(x) || !Number.isFinite(y)) return;
-        const rec = { id, x, y };
+        const rec = {
+          id,
+          x,
+          y,
+          kind: String(node?.kind || ""),
+          prefabId: node?.prefab_id ?? null,
+          connectorId: node?.connector_id ?? null
+        };
         nodesById.set(id, rec);
         nodeList.push(rec);
       });
       if (!nodeList.length) return null;
       const adjacency = new Map();
-      const addTransition = (from, to, weight, points, reverse = false) => {
+      const edgeList = [];
+      const edgesById = new Map();
+      const addTransition = (from, to, weight, points, reverse = false, edgeId = null) => {
         if (!adjacency.has(from)) adjacency.set(from, []);
-        adjacency.get(from).push({ from, to, weight, points, reverse });
+        adjacency.get(from).push({ from, to, weight, points, reverse, edgeId });
       };
       edges.forEach((edge) => {
+        const edgeId = Number(edge?.id);
         const from = Number(edge?.from);
         const to = Number(edge?.to);
         const fromNode = nodesById.get(from);
@@ -8934,11 +9017,30 @@
         if (!Number.isFinite(weight) || weight <= 0) {
           weight = Math.hypot(fromNode.x - toNode.x, fromNode.y - toNode.y);
         }
-        const points = Array.isArray(edge?.polyline) ? edge.polyline : [];
-        addTransition(from, to, weight, points, false);
-        if (!edge?.one_way) addTransition(to, from, weight, points, true);
+        const points = Array.isArray(edge?.polyline)
+          ? edge.polyline
+              .map((pt) => ({ x: Number(pt?.x), y: Number(pt?.y) }))
+              .filter((pt) => Number.isFinite(pt.x) && Number.isFinite(pt.y))
+          : [];
+        const safePoints = points.length
+          ? points
+          : [{ x: fromNode.x, y: fromNode.y }, { x: toNode.x, y: toNode.y }];
+        const edgeRec = {
+          id: edgeId,
+          from,
+          to,
+          oneWay: !!edge?.one_way,
+          length: weight,
+          look: String(edge?.look || ""),
+          flags: edge?.flags && typeof edge.flags === "object" ? edge.flags : null,
+          polyline: safePoints
+        };
+        edgeList.push(edgeRec);
+        if (Number.isFinite(edgeId)) edgesById.set(edgeId, edgeRec);
+        addTransition(from, to, weight, points, false, edgeId);
+        if (!edge?.one_way) addTransition(to, from, weight, points, true, edgeId);
       });
-      return { nodesById, nodeList, adjacency };
+      return { nodesById, nodeList, adjacency, edgeList, edgesById };
     }
     async function loadDbusNavGraph(){
       resetDbusNavGraphState();
@@ -8956,6 +9058,197 @@
         console.warn("DBus nav_graph.json invalide", err);
       }
     }
+    function normalizeNavBridgeText(value){
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+    }
+    function debugNavBridgeLog(...args){
+      if (!DEV_NAV_BRIDGES_DEBUG) return;
+      try { console.log("[nav_bridges]", ...args); } catch {}
+    }
+    async function loadDbusNavBridges(){
+      resetDbusNavBridgeState();
+      let res;
+      try {
+        res = await fetch(dataPath("nav_bridges.json"), { cache: "no-store" });
+      } catch {
+        return;
+      }
+      if (!res.ok) return;
+      try {
+        const raw = await res.json();
+        const rules = Array.isArray(raw?.rules) ? raw.rules : [];
+        DBUS_NAV_BRIDGES = rules.filter((rule) => rule && rule.enabled !== false);
+        debugNavBridgeLog("loaded", DBUS_NAV_BRIDGES.length, "rule(s)");
+      } catch (err) {
+        console.warn("DBus nav_bridges.json invalide", err);
+      }
+    }
+    function matchDbusNavBridgeRule(rule, line, route){
+      if (!rule || !line || !route) return false;
+      const scope = rule.scope && typeof rule.scope === "object" ? rule.scope : {};
+      const routeName = String(route?.name || "").trim();
+      const parsed = parseRouteName(routeName);
+      const lineNumber = String(line?.number || "").trim();
+      const parsedLineNumber = String(parsed?.lineNumber || "").trim();
+      const routeTitle = String(parsed?.routeTitle || "").trim();
+      const routeUid = String(route?.uid || "").trim();
+      const lineUid = String(line?.uid || "").trim();
+
+      if (scope.line != null) {
+        const wanted = normalizeNavBridgeText(scope.line);
+        const lineNorm = normalizeNavBridgeText(lineNumber);
+        const parsedLineNorm = normalizeNavBridgeText(parsedLineNumber);
+        const hasLineMatch = wanted && (
+          lineNorm === wanted ||
+          parsedLineNorm === wanted ||
+          lineNorm.includes(wanted) ||
+          parsedLineNorm.includes(wanted)
+        );
+        if (!hasLineMatch) return false;
+      }
+      if (scope.direction != null) {
+        const wanted = normalizeNavBridgeText(scope.direction);
+        const routeTitleNorm = normalizeNavBridgeText(routeTitle);
+        const routeNameNorm = normalizeNavBridgeText(routeName);
+        const hasDirectionMatch = wanted && (
+          routeTitleNorm === wanted ||
+          routeNameNorm === wanted ||
+          routeTitleNorm.includes(wanted) ||
+          routeNameNorm.includes(wanted)
+        );
+        if (!hasDirectionMatch) return false;
+      }
+      if (scope.route_uid != null) {
+        if (normalizeNavBridgeText(scope.route_uid) !== normalizeNavBridgeText(routeUid)) return false;
+      }
+      if (scope.line_uid != null) {
+        if (normalizeNavBridgeText(scope.line_uid) !== normalizeNavBridgeText(lineUid)) return false;
+      }
+      return true;
+    }
+    function getDbusNavBridgeRuleForRoute(line, route){
+      if (!line || !route || !Array.isArray(DBUS_NAV_BRIDGES) || !DBUS_NAV_BRIDGES.length) return null;
+      const parsed = parseRouteName(String(route?.name || ""));
+      const matched = DBUS_NAV_BRIDGES.find((rule) => matchDbusNavBridgeRule(rule, line, route)) || null;
+      debugNavBridgeLog("route check", {
+        lineUid: String(line?.uid || ""),
+        lineNumber: String(line?.number || ""),
+        routeUid: String(route?.uid || ""),
+        routeName: String(route?.name || ""),
+        routeTitle: String(parsed?.routeTitle || ""),
+        matchedRuleId: matched?.id || null
+      });
+      return matched;
+    }
+    function escapeDevGraphHtml(value){
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+    function ensureDevGraphClickBinding(){
+      if (!DEV_GRAPH || DEV_GRAPH_STATE.clickBound) return;
+      map.on("click", onDevGraphMapClick);
+      DEV_GRAPH_STATE.clickBound = true;
+    }
+    function onDevGraphMapClick(e){
+      if (!DEV_GRAPH) return;
+      const clickPx = map.project(e.latlng, map.getZoom());
+      let best = null;
+      let bestDistSq = Number.POSITIVE_INFINITY;
+      for (const rec of DEV_GRAPH_STATE.nodePoints) {
+        const pt = map.project(rec.latlng, map.getZoom());
+        const dx = pt.x - clickPx.x;
+        const dy = pt.y - clickPx.y;
+        const distSq = (dx * dx) + (dy * dy);
+        if (distSq < bestDistSq) {
+          bestDistSq = distSq;
+          best = rec;
+        }
+      }
+      let worldX = 0;
+      let worldY = 0;
+      try {
+        const xy = fromLatLngToXY(e.latlng);
+        worldX = Number(xy?.X) || 0;
+        worldY = Number(xy?.Y) || 0;
+      } catch {}
+      const thresholdPx = 10;
+      if (DBUS_NAV_GRAPH && DEV_GRAPH_STATE.enabled && best && bestDistSq <= (thresholdPx * thresholdPx)) {
+        const node = best.node;
+        const outgoing = (DBUS_NAV_GRAPH.adjacency.get(node.id) || []).length;
+        const incoming = DEV_GRAPH_STATE.incomingByNode.get(node.id) || 0;
+        const html = `
+          <div style="min-width:220px">
+            <div style="font-weight:700;margin-bottom:6px">Point trajectoire</div>
+            <div><b>node_id:</b> ${escapeDevGraphHtml(node.id)}</div>
+            <div><b>x:</b> ${escapeDevGraphHtml(node.x.toFixed(3))}</div>
+            <div><b>y:</b> ${escapeDevGraphHtml(node.y.toFixed(3))}</div>
+            <div><b>kind:</b> ${escapeDevGraphHtml(node.kind || "-")}</div>
+            <div><b>prefab_id:</b> ${escapeDevGraphHtml(node.prefabId ?? "-")}</div>
+            <div><b>connector_id:</b> ${escapeDevGraphHtml(node.connectorId ?? "-")}</div>
+            <div><b>liaisons:</b> out=${escapeDevGraphHtml(outgoing)} in=${escapeDevGraphHtml(incoming)}</div>
+            <div style="margin-top:6px;color:#999"><b>click X/Y:</b> ${escapeDevGraphHtml(worldX.toFixed(2))} / ${escapeDevGraphHtml(worldY.toFixed(2))}</div>
+          </div>`;
+        L.popup({ maxWidth: 420, autoPan: true }).setLatLng(e.latlng).setContent(html).openOn(map);
+        return;
+      }
+      const html = `
+        <div style="min-width:200px">
+          <div style="font-weight:700;margin-bottom:6px">Position</div>
+          <div><b>X:</b> ${escapeDevGraphHtml(worldX.toFixed(2))}</div>
+          <div><b>Y:</b> ${escapeDevGraphHtml(worldY.toFixed(2))}</div>
+        </div>`;
+      L.popup({ maxWidth: 320, autoPan: true }).setLatLng(e.latlng).setContent(html).openOn(map);
+    }
+    function enableDevGraphOverlay(){
+      if (!DEV_GRAPH || DEV_GRAPH_STATE.enabled || !DBUS_NAV_GRAPH) return;
+      DEV_GRAPH_STATE.enabled = true;
+      DEV_GRAPH_STATE.incomingByNode.clear();
+      DEV_GRAPH_STATE.nodePoints = [];
+
+      const edges = Array.isArray(DBUS_NAV_GRAPH.edgeList) ? DBUS_NAV_GRAPH.edgeList : [];
+      const edgeLatLngs = [];
+      edges.forEach((edge) => {
+        DEV_GRAPH_STATE.incomingByNode.set(edge.to, (DEV_GRAPH_STATE.incomingByNode.get(edge.to) || 0) + 1);
+        const path = (Array.isArray(edge.polyline) ? edge.polyline : [])
+          .map((pt) => toLatLng(Number(pt?.x), Number(pt?.y)))
+          .filter(Boolean);
+        if (path.length >= 2) edgeLatLngs.push(path);
+      });
+      DEV_GRAPH_STATE.edgeLayer = L.polyline(edgeLatLngs, {
+        pane: "devGraphEdgePane",
+        color: "#2de2ff",
+        weight: 1.6,
+        opacity: 0.42,
+        interactive: false
+      }).addTo(map);
+
+      const nodeLayer = L.layerGroup().addTo(map);
+      DBUS_NAV_GRAPH.nodeList.forEach((node) => {
+        const latlng = toLatLng(node.x, node.y);
+        DEV_GRAPH_STATE.nodePoints.push({ node, latlng });
+        L.circleMarker(latlng, {
+          pane: "devGraphNodePane",
+          radius: 2,
+          color: "#0b0b0b",
+          weight: 1,
+          fillColor: "#ffe66d",
+          fillOpacity: 0.95,
+          interactive: false
+        }).addTo(nodeLayer);
+      });
+      DEV_GRAPH_STATE.nodeLayer = nodeLayer;
+
+      ensureDevGraphClickBinding();
+    }
     function dbusNavHeuristic(fromId, toId){
       const graph = DBUS_NAV_GRAPH;
       if (!graph) return 0;
@@ -8964,10 +9257,11 @@
       if (!a || !b) return 0;
       return Math.hypot(a.x - b.x, a.y - b.y);
     }
-    function findDbusNavPathTransitions(fromId, toId){
+    function findDbusNavPathTransitions(fromId, toId, options = null){
       if (fromId === toId) return [];
       const graph = DBUS_NAV_GRAPH;
       if (!graph) return null;
+      const blockedEdgeIds = options?.blockedEdgeIds instanceof Set ? options.blockedEdgeIds : null;
       const open = createDbusMinHeap();
       const best = new Map([[fromId, 0]]);
       const prev = new Map();
@@ -8981,6 +9275,7 @@
         if (current.id === toId) break;
         const transitions = graph.adjacency.get(current.id) || [];
         for (const transition of transitions) {
+          if (blockedEdgeIds && Number.isFinite(transition?.edgeId) && blockedEdgeIds.has(transition.edgeId)) continue;
           const nextG = current.g + transition.weight;
           const knownNext = best.get(transition.to);
           if (Number.isFinite(knownNext) && nextG >= knownNext - EPS) continue;
@@ -9021,17 +9316,18 @@
       }
       appendUniqueWorldPoint(target, graph.nodesById.get(transition.to));
     }
-    function getDbusNavPathBetweenNodes(fromId, toId){
-      const key = `${fromId}>${toId}`;
-      if (dbusNavPathCache.has(key)) return dbusNavPathCache.get(key);
+    function getDbusNavPathBetweenNodes(fromId, toId, options = null){
+      const hasBlockedEdges = options?.blockedEdgeIds instanceof Set && options.blockedEdgeIds.size > 0;
+      const key = hasBlockedEdges ? null : `${fromId}>${toId}`;
+      if (key && dbusNavPathCache.has(key)) return dbusNavPathCache.get(key);
       const graph = DBUS_NAV_GRAPH;
       if (!graph) return null;
       const fromNode = graph.nodesById.get(fromId);
       const toNode = graph.nodesById.get(toId);
       if (!fromNode || !toNode) return null;
-      const transitions = findDbusNavPathTransitions(fromId, toId);
+      const transitions = findDbusNavPathTransitions(fromId, toId, options);
       if (!transitions) {
-        dbusNavPathCache.set(key, null);
+        if (key) dbusNavPathCache.set(key, null);
         return null;
       }
       const points = [];
@@ -9042,8 +9338,9 @@
         appendTransitionWorldPoints(points, transition);
       });
       appendUniqueWorldPoint(points, toNode);
-      dbusNavPathCache.set(key, points.length ? { points, cost } : null);
-      return dbusNavPathCache.get(key);
+      const out = points.length ? { points, cost } : null;
+      if (key) dbusNavPathCache.set(key, out);
+      return out;
     }
     function getNearestDbusNavNodesForStop(stop, limit = DBUS_NAV_STOP_CANDIDATES){
       const graph = DBUS_NAV_GRAPH;
@@ -9070,7 +9367,7 @@
       if (Number.isFinite(stopId)) dbusNavNodesByStopId.set(stopId, out);
       return out.slice(0, Math.max(1, limit));
     }
-    function pickBestDbusNavSegment(fromStop, toStop){
+    function pickBestDbusNavSegment(fromStop, toStop, options = null){
       const fromCandidates = getNearestDbusNavNodesForStop(fromStop);
       const toCandidates = getNearestDbusNavNodesForStop(toStop);
       if (!fromCandidates.length || !toCandidates.length) return null;
@@ -9084,7 +9381,7 @@
             if (!node) continue;
             path = { points: [{ x: node.x, y: node.y }], cost: 0 };
           } else {
-            path = getDbusNavPathBetweenNodes(fromCandidate.nodeId, toCandidate.nodeId);
+            path = getDbusNavPathBetweenNodes(fromCandidate.nodeId, toCandidate.nodeId, options);
             if (!path) continue;
           }
           cost = (path?.cost || 0) + fromCandidate.distance + toCandidate.distance;
@@ -9095,32 +9392,690 @@
       }
       return best;
     }
-    function buildDbusRoutePolylineLatLngs(routeStops){
-      const direct = routeStops.map((stop) => stop?.latlng).filter(Boolean);
-      if (direct.length < 2 || !DBUS_NAV_GRAPH) return direct;
+    function getDbusStopWorldPoint(stop){
+      if (!stop) return null;
+      const x = Number(stop.X);
+      const y = Number(stop.Z);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      return { x, y };
+    }
+    function buildDbusWorldPolylineFromStops(routeStops, startIndex, endIndex, options = null){
+      const stops = Array.isArray(routeStops) ? routeStops : [];
+      if (!stops.length) return [];
+      const start = Math.max(0, Math.min(stops.length - 1, Number(startIndex) || 0));
+      const end = Math.max(0, Math.min(stops.length - 1, Number(endIndex) || 0));
+      if (start > end) return [];
       const worldPoints = [];
-      for (let i = 0; i < routeStops.length - 1; i++) {
-        const fromStop = routeStops[i];
-        const toStop = routeStops[i + 1];
+      if (start === end) {
+        appendUniqueWorldPoint(worldPoints, getDbusStopWorldPoint(stops[start]));
+        return worldPoints;
+      }
+      for (let i = start; i < end; i++) {
+        const fromStop = stops[i];
+        const toStop = stops[i + 1];
         if (!fromStop || !toStop) continue;
-        const fromPoint = { x: Number(fromStop.X), y: Number(fromStop.Z) };
-        const toPoint = { x: Number(toStop.X), y: Number(toStop.Z) };
-        const segment = pickBestDbusNavSegment(fromStop, toStop);
-        if (i === 0) appendUniqueWorldPoint(worldPoints, fromPoint);
-        if (segment?.path && Array.isArray(segment.path.points)) {
-          const worldPath = segment.path.points;
-          if (worldPath.length) {
-            worldPath.forEach((point) => appendUniqueWorldPoint(worldPoints, point));
-          } else {
-            appendUniqueWorldPoint(worldPoints, fromPoint);
-            appendUniqueWorldPoint(worldPoints, toPoint);
-          }
+        const fromPoint = getDbusStopWorldPoint(fromStop);
+        const toPoint = getDbusStopWorldPoint(toStop);
+        if (i === start) appendUniqueWorldPoint(worldPoints, fromPoint);
+        const segment = pickBestDbusNavSegment(fromStop, toStop, options);
+        if (segment?.path && Array.isArray(segment.path.points) && segment.path.points.length) {
+          segment.path.points.forEach((point) => appendUniqueWorldPoint(worldPoints, point));
         } else {
           appendUniqueWorldPoint(worldPoints, fromPoint);
           appendUniqueWorldPoint(worldPoints, toPoint);
         }
         appendUniqueWorldPoint(worldPoints, toPoint);
       }
+      return worldPoints;
+    }
+    function buildDbusForcedChainWorldPoints(edgeIdChain, options = null){
+      const graph = DBUS_NAV_GRAPH;
+      if (!graph) return null;
+      const ids = Array.isArray(edgeIdChain) ? edgeIdChain.map((id) => Number(id)).filter((id) => Number.isFinite(id)) : [];
+      if (!ids.length) return null;
+      const anchorStart = options?.anchorStart || null;
+      const anchorEnd = options?.anchorEnd || null;
+      let out = [];
+      let previous = anchorStart;
+      for (const edgeId of ids) {
+        const edge = graph.edgesById?.get(edgeId);
+        if (!edge) return null;
+        const raw = Array.isArray(edge.polyline) ? edge.polyline
+          .map((pt) => ({ x: Number(pt?.x), y: Number(pt?.y) }))
+          .filter((pt) => Number.isFinite(pt.x) && Number.isFinite(pt.y))
+          : [];
+        if (raw.length < 2) continue;
+        const reversed = raw.slice().reverse();
+        let chosen = raw;
+        if (previous) {
+          const distForward = Math.hypot(raw[0].x - previous.x, raw[0].y - previous.y);
+          const distReverse = Math.hypot(reversed[0].x - previous.x, reversed[0].y - previous.y);
+          chosen = distReverse < distForward ? reversed : raw;
+        }
+        chosen.forEach((point) => appendUniqueWorldPoint(out, point));
+        previous = out[out.length - 1] || previous;
+      }
+      if (!out.length) return null;
+      if (anchorStart && anchorEnd && out.length >= 2) {
+        const first = out[0];
+        const last = out[out.length - 1];
+        const directCost = Math.hypot(first.x - anchorStart.x, first.y - anchorStart.y) + Math.hypot(last.x - anchorEnd.x, last.y - anchorEnd.y);
+        const reverseCost = Math.hypot(last.x - anchorStart.x, last.y - anchorStart.y) + Math.hypot(first.x - anchorEnd.x, first.y - anchorEnd.y);
+        if (reverseCost < directCost) out = out.slice().reverse();
+      }
+      if (anchorStart) {
+        const first = out[0];
+        if (!first || Math.hypot(first.x - anchorStart.x, first.y - anchorStart.y) > 0.001) {
+          out.unshift({ x: Number(anchorStart.x), y: Number(anchorStart.y) });
+        }
+      }
+      if (anchorEnd) {
+        const last = out[out.length - 1];
+        if (!last || Math.hypot(last.x - anchorEnd.x, last.y - anchorEnd.y) > 0.001) {
+          out.push({ x: Number(anchorEnd.x), y: Number(anchorEnd.y) });
+        }
+      }
+      return out;
+    }
+    function getDbusGraphNodeWorldPoint(nodeId){
+      const id = Number(nodeId);
+      if (!Number.isFinite(id)) return null;
+      const node = DBUS_NAV_GRAPH?.nodesById?.get(id);
+      if (!node) return null;
+      return { x: Number(node.x), y: Number(node.y) };
+    }
+    function buildDbusForcedNodeChainWorldPoints(nodeIdChain, navOptions = null, options = null){
+      const graph = DBUS_NAV_GRAPH;
+      if (!graph) return null;
+      const ids = Array.isArray(nodeIdChain) ? nodeIdChain.map((id) => Number(id)).filter((id) => Number.isFinite(id)) : [];
+      if (ids.length < 2) return null;
+      const anchorStart = options?.anchorStart || null;
+      const anchorEnd = options?.anchorEnd || null;
+      const out = [];
+      for (let i = 0; i < ids.length - 1; i++) {
+        const fromId = ids[i];
+        const toId = ids[i + 1];
+        const fromNode = graph.nodesById.get(fromId);
+        const toNode = graph.nodesById.get(toId);
+        if (!fromNode || !toNode) return null;
+        if (i === 0) appendUniqueWorldPoint(out, fromNode);
+        const path = getDbusNavPathBetweenNodes(fromId, toId, navOptions);
+        if (path?.points && Array.isArray(path.points) && path.points.length >= 2) {
+          path.points.forEach((point) => appendUniqueWorldPoint(out, point));
+        } else {
+          // Allow explicit overrides across disconnected graph sections.
+          appendUniqueWorldPoint(out, fromNode);
+          appendUniqueWorldPoint(out, toNode);
+        }
+        appendUniqueWorldPoint(out, toNode);
+      }
+      if (!out.length) return null;
+      if (anchorStart) {
+        const first = out[0];
+        if (!first || Math.hypot(first.x - anchorStart.x, first.y - anchorStart.y) > 0.001) {
+          out.unshift({ x: Number(anchorStart.x), y: Number(anchorStart.y) });
+        }
+      }
+      if (anchorEnd) {
+        const last = out[out.length - 1];
+        if (!last || Math.hypot(last.x - anchorEnd.x, last.y - anchorEnd.y) > 0.001) {
+          out.push({ x: Number(anchorEnd.x), y: Number(anchorEnd.y) });
+        }
+      }
+      return out;
+    }
+    function findNearestWorldPointMatch(points, worldPoint, maxDistance = Number.POSITIVE_INFINITY){
+      const list = Array.isArray(points) ? points : [];
+      if (!list.length || !worldPoint) return { index: -1, distance: Number.POSITIVE_INFINITY };
+      let bestIndex = -1;
+      let bestDistance = Number.POSITIVE_INFINITY;
+      for (let i = 0; i < list.length; i++) {
+        const point = list[i];
+        if (!point) continue;
+        const dist = Math.hypot(Number(point.x) - Number(worldPoint.x), Number(point.y) - Number(worldPoint.y));
+        if (dist < bestDistance) {
+          bestDistance = dist;
+          bestIndex = i;
+        }
+      }
+      if (!Number.isFinite(bestDistance) || bestDistance > maxDistance) return { index: -1, distance: bestDistance };
+      return { index: bestIndex, distance: bestDistance };
+    }
+    function parseBridgeControlPoints(rawList){
+      const list = Array.isArray(rawList) ? rawList : [];
+      const out = [];
+      list.forEach((entry) => {
+        const x = Number(entry?.x ?? entry?.X);
+        const y = Number(entry?.y ?? entry?.Y);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+        out.push({ x, y });
+      });
+      return out;
+    }
+    function parseBridgeSinglePoint(value){
+      if (!value || typeof value !== "object") return null;
+      const x = Number(value?.x ?? value?.X);
+      const y = Number(value?.y ?? value?.Y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      return { x, y };
+    }
+    function normalizeBridgePointPair(raw){
+      if (!raw || typeof raw !== "object") return null;
+      const from = parseBridgeSinglePoint(raw.from ?? raw.start ?? raw.a);
+      const to = parseBridgeSinglePoint(raw.to ?? raw.end ?? raw.b);
+      if (!from || !to) return null;
+      return { from, to };
+    }
+    function anchorBridgePointChain(points, options = null){
+      const source = Array.isArray(points) ? points : [];
+      if (!source.length) return [];
+      const out = [];
+      const anchorStart = parseBridgeSinglePoint(options?.anchorStart || null);
+      const anchorEnd = parseBridgeSinglePoint(options?.anchorEnd || null);
+      if (anchorStart) appendUniqueWorldPoint(out, anchorStart);
+      source.forEach((point) => appendUniqueWorldPoint(out, point));
+      if (anchorEnd) appendUniqueWorldPoint(out, anchorEnd);
+      return out;
+    }
+    function getNearestDbusGraphNodeIdForPoint(worldPoint, maxDistance = DBUS_NAV_MAX_SNAP_DISTANCE * 6){
+      const graph = DBUS_NAV_GRAPH;
+      const ref = parseBridgeSinglePoint(worldPoint);
+      if (!graph || !ref) return null;
+      let bestId = null;
+      let bestDist = Number.POSITIVE_INFINITY;
+      for (const node of graph.nodeList || []) {
+        const dist = Math.hypot(Number(node.x) - ref.x, Number(node.y) - ref.y);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestId = Number(node.id);
+        }
+      }
+      if (!Number.isFinite(bestDist) || bestDist > maxDistance) return null;
+      return Number.isFinite(bestId) ? bestId : null;
+    }
+    function resolveBridgeRefPoints(rawValue){
+      const out = [];
+      const pushOne = (value) => {
+        if (value == null) return;
+        if (typeof value === "number" || (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value)))) {
+          const nodePoint = getDbusGraphNodeWorldPoint(Number(value));
+          if (nodePoint) out.push(nodePoint);
+          return;
+        }
+        const point = parseBridgeSinglePoint(value);
+        if (point) out.push(point);
+      };
+      if (Array.isArray(rawValue)) {
+        rawValue.forEach((value) => pushOne(value));
+      } else {
+        pushOne(rawValue);
+      }
+      return out;
+    }
+    function parseBridgeControlNodeIds(rawValue){
+      if (Array.isArray(rawValue)) {
+        return rawValue
+          .map((value) => Number(value))
+          .filter((value) => Number.isFinite(value));
+      }
+      if (Number.isFinite(Number(rawValue))) {
+        return [Number(rawValue)];
+      }
+      const text = String(rawValue || "").trim();
+      if (!text) return [];
+      return text
+        .split(/[;,\s]+/g)
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value));
+    }
+    function buildBridgeControlPoints(entry, navOptions = null, options = null){
+      if (!entry || typeof entry !== "object") return [];
+      const points = parseBridgeControlPoints(entry.points ?? entry.control_points);
+      if (points.length) return points;
+      const nodeIds = parseBridgeControlNodeIds(entry.node_ids ?? entry.control_nodes ?? entry.control_node_ids ?? entry.node_ids_csv);
+      const forceDirectLinks =
+        entry.force_direct_links === true ||
+        entry.force_direct === true ||
+        entry.ignore_existing_paths === true;
+      if (forceDirectLinks) {
+        return nodeIds.map((id) => getDbusGraphNodeWorldPoint(id)).filter(Boolean);
+      }
+      if (nodeIds.length >= 2) {
+        const chain = buildDbusForcedNodeChainWorldPoints(nodeIds, navOptions, {
+          anchorStart: options?.anchorStart || null,
+          anchorEnd: options?.anchorEnd || null
+        });
+        if (chain && chain.length) return chain;
+      }
+      return nodeIds.map((id) => getDbusGraphNodeWorldPoint(id)).filter(Boolean);
+    }
+    function removeBridgeIgnoredNodes(worldPoints, ignoredRefs){
+      const base = Array.isArray(worldPoints) ? worldPoints : [];
+      const ignoredPoints = resolveBridgeRefPoints(ignoredRefs);
+      if (!ignoredPoints.length) return { points: base, removedCount: 0 };
+      const OUT = [];
+      let removedCount = 0;
+      const threshold = 1.5;
+      for (const point of base) {
+        if (!point) continue;
+        let shouldRemove = false;
+        for (const ignored of ignoredPoints) {
+          if (Math.hypot(Number(point.x) - Number(ignored.x), Number(point.y) - Number(ignored.y)) <= threshold) {
+            shouldRemove = true;
+            break;
+          }
+        }
+        if (shouldRemove) {
+          removedCount++;
+          continue;
+        }
+        appendUniqueWorldPoint(OUT, point);
+      }
+      if (OUT.length < 2) return { points: base, removedCount: 0 };
+      return { points: OUT, removedCount };
+    }
+    function insertBridgeControlPointsAtIndex(worldPoints, insertIndex, controlPoints, mode = "after"){
+      const base = Array.isArray(worldPoints) ? worldPoints : [];
+      const points = Array.isArray(controlPoints) ? controlPoints : [];
+      if (!base.length || !points.length) return null;
+      const idx = Math.max(0, Math.min(base.length - 1, Number(insertIndex) || 0));
+      const beforeMode = String(mode || "").toLowerCase() === "before";
+      const merged = [];
+      for (let i = 0; i < base.length; i++) {
+        if (beforeMode && i === idx) points.forEach((point) => appendUniqueWorldPoint(merged, point));
+        appendUniqueWorldPoint(merged, base[i]);
+        if (!beforeMode && i === idx) points.forEach((point) => appendUniqueWorldPoint(merged, point));
+      }
+      if (merged.length < 2) return null;
+      return { points: merged, insertedAtIndex: idx, insertedCount: points.length };
+    }
+    function insertBridgeControlPointsRelativeToPoint(worldPoints, worldPoint, controlPointsEntry, mode = "after", navOptions = null){
+      const base = Array.isArray(worldPoints) ? worldPoints : [];
+      if (!base.length) return null;
+      const refPoint = parseBridgeSinglePoint(worldPoint);
+      if (!refPoint) return null;
+      const match = findNearestWorldPointMatch(base, refPoint, DBUS_NAV_MAX_SNAP_DISTANCE * 10);
+      if (!(match.index >= 0)) return null;
+      const points = buildBridgeControlPoints(controlPointsEntry, navOptions, {
+        anchorStart: mode === "after" ? base[match.index] : null,
+        anchorEnd: mode === "before" ? base[match.index] : null
+      });
+      if (!points.length) return null;
+      const inserted = insertBridgeControlPointsAtIndex(base, match.index, points, mode);
+      if (!inserted) return null;
+      return { ...inserted, matchIndex: match.index, pointDistance: match.distance };
+    }
+    function insertBridgeControlPointsRelativeToNode(worldPoints, nodeId, controlPointsEntry, mode = "after", navOptions = null){
+      const base = Array.isArray(worldPoints) ? worldPoints : [];
+      if (!base.length) return null;
+      const nodePoint = getDbusGraphNodeWorldPoint(nodeId);
+      if (!nodePoint) return null;
+      const inserted = insertBridgeControlPointsRelativeToPoint(base, nodePoint, controlPointsEntry, mode, navOptions);
+      if (!inserted) return null;
+      inserted.nodeDistance = inserted.pointDistance;
+      return inserted;
+    }
+    function insertBridgeControlPointsRelativeToStop(worldPoints, routeStops, stopNumber, controlPointsEntry, mode = "after", navOptions = null){
+      const base = Array.isArray(worldPoints) ? worldPoints : [];
+      const stops = Array.isArray(routeStops) ? routeStops : [];
+      if (!base.length || !stops.length) return null;
+      const stopIndex = Math.floor(Number(stopNumber)) - 1;
+      if (!(stopIndex >= 0 && stopIndex < stops.length)) return null;
+      const stopPoint = getDbusStopWorldPoint(stops[stopIndex]);
+      if (!stopPoint) return null;
+      const match = findNearestWorldPointMatch(base, stopPoint, DBUS_NAV_MAX_SNAP_DISTANCE * 10);
+      if (!(match.index >= 0)) return null;
+      const points = buildBridgeControlPoints(controlPointsEntry, navOptions, {
+        anchorStart: mode === "after" ? base[match.index] : null,
+        anchorEnd: mode === "before" ? base[match.index] : null
+      });
+      if (!points.length) return null;
+      const inserted = insertBridgeControlPointsAtIndex(base, match.index, points, mode);
+      if (!inserted) return null;
+      return { ...inserted, matchIndex: match.index, stopIndex, stopDistance: match.distance };
+    }
+    function applyBridgeInsertionOperation(worldPoints, routeStops, operation, navOptions = null){
+      if (!operation || typeof operation !== "object") return null;
+      const ignoredRefs =
+        operation.ignore_points ??
+        operation.ignore_point ??
+        operation.ignore_node_ids ??
+        operation.ignore_nodes ??
+        operation.ignore_node;
+      const cleaned = removeBridgeIgnoredNodes(worldPoints, ignoredRefs);
+      const basePoints = cleaned.points;
+      const position = String(operation.position || "").trim().toLowerCase();
+      if (position === "after_node") {
+        const nodeRef = operation.node ?? operation.after_node ?? operation.node_point ?? operation.after_point;
+        let inserted = null;
+        const nodeId = Number(nodeRef);
+        if (Number.isFinite(nodeId)) {
+          inserted = insertBridgeControlPointsRelativeToNode(basePoints, nodeId, operation, "after", navOptions);
+        } else {
+          inserted = insertBridgeControlPointsRelativeToPoint(basePoints, parseBridgeSinglePoint(nodeRef), operation, "after", navOptions);
+        }
+        if (!inserted) return null;
+        if (!Number.isFinite(inserted.nodeDistance)) inserted.nodeDistance = inserted.pointDistance;
+        if (inserted && cleaned.removedCount > 0) inserted.ignoredRemovedCount = cleaned.removedCount;
+        return inserted;
+      }
+      if (position === "after_point") {
+        const inserted = insertBridgeControlPointsRelativeToPoint(basePoints, operation.point ?? operation.after_point, operation, "after", navOptions);
+        if (!inserted) return null;
+        if (inserted && cleaned.removedCount > 0) inserted.ignoredRemovedCount = cleaned.removedCount;
+        return inserted;
+      }
+      if (position === "before_node") {
+        const nodeRef = operation.node ?? operation.before_node ?? operation.node_point ?? operation.before_point;
+        let inserted = null;
+        const nodeId = Number(nodeRef);
+        if (Number.isFinite(nodeId)) {
+          inserted = insertBridgeControlPointsRelativeToNode(basePoints, nodeId, operation, "before", navOptions);
+        } else {
+          inserted = insertBridgeControlPointsRelativeToPoint(basePoints, parseBridgeSinglePoint(nodeRef), operation, "before", navOptions);
+        }
+        if (!inserted) return null;
+        if (!Number.isFinite(inserted.nodeDistance)) inserted.nodeDistance = inserted.pointDistance;
+        if (inserted && cleaned.removedCount > 0) inserted.ignoredRemovedCount = cleaned.removedCount;
+        return inserted;
+      }
+      if (position === "before_point") {
+        const inserted = insertBridgeControlPointsRelativeToPoint(basePoints, operation.point ?? operation.before_point, operation, "before", navOptions);
+        if (!inserted) return null;
+        if (inserted && cleaned.removedCount > 0) inserted.ignoredRemovedCount = cleaned.removedCount;
+        return inserted;
+      }
+      if (position === "after_stop") {
+        const stopNumber = Number(operation.stop_number ?? operation.stop ?? operation.after_stop);
+        if (!Number.isFinite(stopNumber)) return null;
+        const inserted = insertBridgeControlPointsRelativeToStop(basePoints, routeStops, stopNumber, operation, "after", navOptions);
+        if (inserted && cleaned.removedCount > 0) inserted.ignoredRemovedCount = cleaned.removedCount;
+        return inserted;
+      }
+      if (position === "before_stop") {
+        const stopNumber = Number(operation.stop_number ?? operation.stop ?? operation.before_stop);
+        if (!Number.isFinite(stopNumber)) return null;
+        const inserted = insertBridgeControlPointsRelativeToStop(basePoints, routeStops, stopNumber, operation, "before", navOptions);
+        if (inserted && cleaned.removedCount > 0) inserted.ignoredRemovedCount = cleaned.removedCount;
+        return inserted;
+      }
+      return null;
+    }
+    function insertBridgeControlPointsAfterNode(worldPoints, afterNodeId, controlPoints){
+      return insertBridgeControlPointsRelativeToNode(
+        worldPoints,
+        afterNodeId,
+        { points: controlPoints },
+        "after"
+      );
+    }
+    function findNearestDbusRouteStopIndex(routeStops, worldPoint, maxDistance = DBUS_NAV_MAX_SNAP_DISTANCE * 3){
+      if (!Array.isArray(routeStops) || !routeStops.length || !worldPoint) return -1;
+      let bestIndex = -1;
+      let bestDistance = Number.POSITIVE_INFINITY;
+      routeStops.forEach((stop, index) => {
+        const stopPoint = getDbusStopWorldPoint(stop);
+        if (!stopPoint) return;
+        const dist = Math.hypot(stopPoint.x - worldPoint.x, stopPoint.y - worldPoint.y);
+        if (dist < bestDistance) {
+          bestDistance = dist;
+          bestIndex = index;
+        }
+      });
+      if (!Number.isFinite(bestDistance) || bestDistance > maxDistance) return -1;
+      return bestIndex;
+    }
+    function buildDbusRoutePolylineLatLngs(routeStops, line = null, route = null){
+      const direct = routeStops.map((stop) => stop?.latlng).filter(Boolean);
+      const gpsNavEnabled = (typeof isDbusGpsNavigationMode === "function")
+        ? !!isDbusGpsNavigationMode()
+        : true;
+      if (!gpsNavEnabled) return direct;
+      if (direct.length < 2 || !DBUS_NAV_GRAPH) return direct;
+      const bridgeRule = getDbusNavBridgeRuleForRoute(line, route);
+      if (bridgeRule) {
+        debugNavBridgeLog("apply rule candidate", {
+          ruleId: bridgeRule.id || null,
+          lineNumber: String(line?.number || ""),
+          routeUid: String(route?.uid || ""),
+          routeName: String(route?.name || "")
+        });
+      }
+      const blockedEdgeIds = new Set(
+        (Array.isArray(bridgeRule?.remove_links) ? bridgeRule.remove_links : [])
+          .map((id) => Number(id))
+          .filter((id) => Number.isFinite(id))
+      );
+      const navOptions = blockedEdgeIds.size ? { blockedEdgeIds } : null;
+      const fallbackWorld = buildDbusWorldPolylineFromStops(routeStops, 0, routeStops.length - 1, navOptions);
+      let worldPoints = fallbackWorld;
+      let forcedNodeChainApplied = false;
+
+      const replaceBetweenNodes = bridgeRule?.replace_between_nodes && typeof bridgeRule.replace_between_nodes === "object"
+        ? bridgeRule.replace_between_nodes
+        : null;
+      const replaceBetweenPoints = normalizeBridgePointPair(bridgeRule?.replace_between_points);
+      let forcedNodeChain = Array.isArray(bridgeRule?.force_node_chain)
+        ? bridgeRule.force_node_chain.map((id) => Number(id)).filter((id) => Number.isFinite(id))
+        : [];
+      const forcedPointChain = parseBridgeControlPoints(bridgeRule?.force_point_chain);
+      if (!forcedNodeChain.length && forcedPointChain.length >= 2) {
+        const mappedNodeIds = forcedPointChain
+          .map((point) => getNearestDbusGraphNodeIdForPoint(point))
+          .filter((id) => Number.isFinite(id));
+        if (mappedNodeIds.length === forcedPointChain.length) forcedNodeChain = mappedNodeIds;
+      }
+      if (forcedNodeChain.length >= 2 || forcedPointChain.length >= 2) {
+        const fromNodeId = Number(replaceBetweenNodes?.from);
+        const toNodeId = Number(replaceBetweenNodes?.to);
+        const effectiveFromNodeId = Number.isFinite(fromNodeId) ? fromNodeId : forcedNodeChain[0];
+        const effectiveToNodeId = Number.isFinite(toNodeId) ? toNodeId : forcedNodeChain[forcedNodeChain.length - 1];
+        const fromNodePoint =
+          replaceBetweenPoints?.from ||
+          getDbusGraphNodeWorldPoint(effectiveFromNodeId) ||
+          forcedPointChain[0] ||
+          null;
+        const toNodePoint =
+          replaceBetweenPoints?.to ||
+          getDbusGraphNodeWorldPoint(effectiveToNodeId) ||
+          forcedPointChain[forcedPointChain.length - 1] ||
+          null;
+        const forcedRawNodes = forcedNodeChain.length >= 2
+          ? buildDbusForcedNodeChainWorldPoints(forcedNodeChain, navOptions)
+          : anchorBridgePointChain(forcedPointChain);
+        if (forcedRawNodes && forcedRawNodes.length >= 2 && fromNodePoint && toNodePoint) {
+          const startMatch = findNearestWorldPointMatch(worldPoints, fromNodePoint);
+          const endMatch = findNearestWorldPointMatch(worldPoints, toNodePoint);
+          const startIdx = startMatch.index;
+          const endIdx = endMatch.index;
+          if (startIdx >= 0 && endIdx > startIdx) {
+            const forcedAnchored = (forcedNodeChain.length >= 2
+              ? buildDbusForcedNodeChainWorldPoints(forcedNodeChain, navOptions, {
+                  anchorStart: worldPoints[startIdx],
+                  anchorEnd: worldPoints[endIdx]
+                })
+              : anchorBridgePointChain(forcedPointChain, {
+                  anchorStart: worldPoints[startIdx],
+                  anchorEnd: worldPoints[endIdx]
+                })) || forcedRawNodes;
+            const merged = [];
+            for (let i = 0; i <= startIdx; i++) appendUniqueWorldPoint(merged, worldPoints[i]);
+            forcedAnchored.forEach((point) => appendUniqueWorldPoint(merged, point));
+            for (let i = endIdx; i < worldPoints.length; i++) appendUniqueWorldPoint(merged, worldPoints[i]);
+            if (merged.length >= 2) {
+              worldPoints = merged;
+              forcedNodeChainApplied = true;
+              debugNavBridgeLog("forced node chain injected", {
+                ruleId: bridgeRule?.id || null,
+                fromNodeId: effectiveFromNodeId,
+                toNodeId: effectiveToNodeId,
+                chain: forcedNodeChain.length >= 2 ? forcedNodeChain : forcedPointChain,
+                chainType: forcedNodeChain.length >= 2 ? "node" : "point",
+                startIdx,
+                endIdx,
+                startDistance: Number(startMatch.distance || 0).toFixed(2),
+                endDistance: Number(endMatch.distance || 0).toFixed(2),
+                mergedPoints: merged.length
+              });
+            }
+          } else {
+            const forcedFullRoute = (forcedNodeChain.length >= 2
+              ? buildDbusForcedNodeChainWorldPoints(forcedNodeChain, navOptions, {
+                  anchorStart: getDbusStopWorldPoint(routeStops[0]),
+                  anchorEnd: getDbusStopWorldPoint(routeStops[routeStops.length - 1])
+                })
+              : anchorBridgePointChain(forcedPointChain, {
+                  anchorStart: getDbusStopWorldPoint(routeStops[0]),
+                  anchorEnd: getDbusStopWorldPoint(routeStops[routeStops.length - 1])
+                })) || forcedRawNodes;
+            if (forcedFullRoute && forcedFullRoute.length >= 2) {
+              worldPoints = forcedFullRoute;
+              forcedNodeChainApplied = true;
+              debugNavBridgeLog("forced node chain fallback applied on full route", {
+                ruleId: bridgeRule?.id || null,
+                fromNodeId: effectiveFromNodeId,
+                toNodeId: effectiveToNodeId,
+                chain: forcedNodeChain.length >= 2 ? forcedNodeChain : forcedPointChain,
+                chainType: forcedNodeChain.length >= 2 ? "node" : "point",
+                startIdx,
+                endIdx,
+                startDistance: Number(startMatch.distance || 0).toFixed(2),
+                endDistance: Number(endMatch.distance || 0).toFixed(2),
+                points: forcedFullRoute.length
+              });
+            } else {
+              debugNavBridgeLog("forced node chain skipped", {
+                ruleId: bridgeRule?.id || null,
+                fromNodeId: effectiveFromNodeId,
+                toNodeId: effectiveToNodeId,
+                chain: forcedNodeChain.length >= 2 ? forcedNodeChain : forcedPointChain,
+                startIdx,
+                endIdx
+              });
+            }
+          }
+        } else {
+          debugNavBridgeLog("forced node chain skipped (invalid nodes)", {
+            ruleId: bridgeRule?.id || null,
+            chain: forcedNodeChain
+          });
+        }
+      }
+
+      const forcedChain = Array.isArray(bridgeRule?.force_link_chain)
+        ? bridgeRule.force_link_chain.map((id) => Number(id)).filter((id) => Number.isFinite(id))
+        : [];
+      if (!forcedNodeChainApplied && forcedChain.length >= 1) {
+        const forcedRaw = buildDbusForcedChainWorldPoints(forcedChain);
+        if (forcedRaw && forcedRaw.length >= 2) {
+          let chainToUse = forcedChain;
+          let chainRawToUse = forcedRaw;
+          let startIdx = findNearestDbusRouteStopIndex(routeStops, chainRawToUse[0]);
+          let endIdx = findNearestDbusRouteStopIndex(routeStops, chainRawToUse[chainRawToUse.length - 1]);
+          if (!(startIdx >= 0 && endIdx > startIdx)) {
+            const reversedRaw = forcedRaw.slice().reverse();
+            const reversedStartIdx = findNearestDbusRouteStopIndex(routeStops, reversedRaw[0]);
+            const reversedEndIdx = findNearestDbusRouteStopIndex(routeStops, reversedRaw[reversedRaw.length - 1]);
+            if (reversedStartIdx >= 0 && reversedEndIdx > reversedStartIdx) {
+              chainToUse = forcedChain.slice().reverse();
+              chainRawToUse = reversedRaw;
+              startIdx = reversedStartIdx;
+              endIdx = reversedEndIdx;
+            }
+          }
+          if (startIdx >= 0 && endIdx > startIdx) {
+            const forcedAnchored = buildDbusForcedChainWorldPoints(chainToUse, {
+              anchorStart: getDbusStopWorldPoint(routeStops[startIdx]),
+              anchorEnd: getDbusStopWorldPoint(routeStops[endIdx])
+            }) || chainRawToUse;
+            const merged = [];
+            const prefixWorld = buildDbusWorldPolylineFromStops(routeStops, 0, startIdx, navOptions);
+            const suffixWorld = buildDbusWorldPolylineFromStops(routeStops, endIdx, routeStops.length - 1, navOptions);
+            prefixWorld.forEach((point) => appendUniqueWorldPoint(merged, point));
+            forcedAnchored.forEach((point) => appendUniqueWorldPoint(merged, point));
+            suffixWorld.forEach((point) => appendUniqueWorldPoint(merged, point));
+            if (merged.length >= 2) {
+              worldPoints = merged;
+              debugNavBridgeLog("forced chain injected", {
+                ruleId: bridgeRule?.id || null,
+                chain: chainToUse,
+                fromStopIndex: startIdx,
+                toStopIndex: endIdx,
+                mergedPoints: merged.length
+              });
+            }
+          } else {
+            const forcedFullRoute = buildDbusForcedChainWorldPoints(chainToUse, {
+              anchorStart: getDbusStopWorldPoint(routeStops[0]),
+              anchorEnd: getDbusStopWorldPoint(routeStops[routeStops.length - 1])
+            }) || chainRawToUse;
+            if (forcedFullRoute && forcedFullRoute.length >= 2) {
+              worldPoints = forcedFullRoute;
+              debugNavBridgeLog("forced chain fallback applied on full route", {
+                ruleId: bridgeRule?.id || null,
+                chain: chainToUse,
+                startIdx,
+                endIdx,
+                points: forcedFullRoute.length
+              });
+            } else {
+              debugNavBridgeLog("forced chain skipped (unable to map on route stops)", {
+                ruleId: bridgeRule?.id || null,
+                chain: forcedChain,
+                startIdx,
+                endIdx
+              });
+            }
+          }
+        } else {
+          debugNavBridgeLog("forced chain skipped (invalid edge ids or no polyline)", {
+            ruleId: bridgeRule?.id || null,
+            chain: forcedChain
+          });
+        }
+      }
+
+      const insertionOps = [];
+      if (bridgeRule?.insert_control_points_after_node && typeof bridgeRule.insert_control_points_after_node === "object") {
+        const legacy = bridgeRule.insert_control_points_after_node;
+        insertionOps.push({
+          position: "after_node",
+          node: legacy.after_node ?? legacy.node ?? legacy.after_point ?? legacy.node_point,
+          points: legacy.points ?? legacy.control_points,
+          node_ids: legacy.node_ids ?? legacy.control_node_ids ?? legacy.control_nodes
+        });
+      }
+      if (Array.isArray(bridgeRule?.insert_control_points)) {
+        bridgeRule.insert_control_points.forEach((operation) => {
+          if (operation && typeof operation === "object") insertionOps.push(operation);
+        });
+      }
+      insertionOps.forEach((operation) => {
+        const injected = applyBridgeInsertionOperation(worldPoints, routeStops, operation, navOptions);
+        if (injected?.points?.length >= 2) {
+          worldPoints = injected.points;
+          debugNavBridgeLog("control points injected", {
+            ruleId: bridgeRule?.id || null,
+            position: String(operation?.position || ""),
+            node: operation?.node ?? operation?.after_node ?? operation?.before_node ?? null,
+            stopNumber: operation?.stop_number ?? operation?.stop ?? operation?.after_stop ?? operation?.before_stop ?? null,
+            insertedCount: injected.insertedCount,
+            insertedAtIndex: injected.insertedAtIndex,
+            matchIndex: injected.matchIndex,
+            ignoredRemovedCount: injected.ignoredRemovedCount ?? 0,
+            nodeDistance: Number(injected.nodeDistance ?? 0).toFixed(2),
+            stopDistance: Number(injected.stopDistance ?? 0).toFixed(2)
+          });
+        } else {
+          debugNavBridgeLog("control points skipped", {
+            ruleId: bridgeRule?.id || null,
+            position: String(operation?.position || ""),
+            node: operation?.node ?? operation?.after_node ?? operation?.before_node ?? null,
+            stopNumber: operation?.stop_number ?? operation?.stop ?? operation?.after_stop ?? operation?.before_stop ?? null
+          });
+        }
+      });
+
       const navLatLngs = worldPoints.map((point) => toLatLng(point.x, point.y)).filter(Boolean);
       return navLatLngs.length >= 2 ? navLatLngs : direct;
     }
@@ -9472,7 +10427,10 @@
       return Math.max(34, Math.min(106, 150 - (zoom * 10)));
     }
     function getRouteDirectionSpeedPx(zoom = map.getZoom()){
-      return Math.max(24, Math.min(96, 28 + (zoom * 6)));
+      return Math.max(12, Math.min(48, 14 + (zoom * 3)));
+    }
+    function normalizeDirectionArrowColor(color){
+      return "#ffffff";
     }
     function buildRouteDirectionGeometry(latlngs){
       if (!Array.isArray(latlngs) || latlngs.length < 2) return null;
@@ -9495,7 +10453,7 @@
     }
     function buildRouteDirectionArrowIcon(angleDeg = 0, color = "#ffffff"){
       const safeAngle = Number.isFinite(angleDeg) ? angleDeg : 0;
-      const safeColor = String(color || "#ffffff");
+      const safeColor = "#ffffff";
       return L.divIcon({
         className: "route-dir-arrow-host",
         html: `<span class="route-dir-arrow-rot" style="--dir-angle:${safeAngle.toFixed(1)}deg;"><span class="route-dir-arrow-glyph" style="--dir-color:${escapeHTML(safeColor)};">➤</span></span>`,
@@ -9537,18 +10495,18 @@
       }
     }
     function updateRouteDirectionMarkerColor(bundle, color){
-      if (!bundle || !color) return;
-      bundle.directionColor = color;
+      if (!bundle) return;
+      bundle.directionColor = "#ffffff";
       const markers = Array.isArray(bundle.directionMarkers) ? bundle.directionMarkers : [];
       markers.forEach((marker) => {
         const el = marker?.getElement?.();
         if (el) {
           const glyph = el.querySelector(".route-dir-arrow-glyph");
-          if (glyph) glyph.style.setProperty("--dir-color", String(color));
+          if (glyph) glyph.style.setProperty("--dir-color", "#ffffff");
           return;
         }
         const angle = Number(marker?._dirAngle) || 0;
-        try { marker.setIcon(buildRouteDirectionArrowIcon(angle, color)); } catch {}
+        try { marker.setIcon(buildRouteDirectionArrowIcon(angle, "#ffffff")); } catch {}
       });
     }
     function resolveRouteDirectionPoint(geom, offsetPx){
@@ -9670,7 +10628,7 @@
       }).addTo(group);
 
       const routeStops = route.stops.map(s => DBUS_STOPS.get(s.uid)).filter(Boolean);
-      const latlngs = buildDbusRoutePolylineLatLngs(routeStops);
+      const latlngs = buildDbusRoutePolylineLatLngs(routeStops, line, route);
 
       if (latlngs.length >= 2){
         poly.setLatLngs(latlngs);
@@ -9678,7 +10636,9 @@
       }
 
       const effNum = getLineNumber(line, route);
-      getLineColors(effNum).then(([bg])=>{
+      const parsedRouteLine = String(parseRouteName(route.name || "").lineNumber || "").trim();
+      const routeColorToken = routeColorKey(line, route, parsedRouteLine || effNum);
+      getLineColors(routeColorToken).then(([bg])=>{
         if(!bg) return;
         poly.setStyle({color:bg});
         if (bundleRef) updateRouteDirectionMarkerColor(bundleRef, bg);
@@ -9705,21 +10665,16 @@
         const cleanDisplayName = stripProvisoire(displayName);
         const translatedDisplayName = translateStopName(cleanDisplayName);
         const stopNameHTML = withRERIconInStop(translatedDisplayName);
-        const fullCoordParts = [st.X, st.Y, st.Z, st.rotX, st.rotY].map(v => (v == null ? "" : String(v)));
-        const fullCoords = fullCoordParts.join(";");
-        const coordsDisplay = escapeHTML(fullCoords);
-        const gotoCmd = `goto ${fullCoords}`;
+        const xyzCoordParts = [st.X, st.Y, st.Z].map(v => (v == null ? "" : String(v)));
+        const xyzCoords = xyzCoordParts.join(";");
+        const coordsDisplay = escapeHTML(xyzCoords);
+        const gotoCmd = `goto ${xyzCoords}`;
 
         const { lineNumber } = parseRouteName(route.name || "");
         let cleanNum = String(lineNumber || "").trim();
         cleanNum = cleanNum.replace(/\s*\([^)]*\)/, "").trim();
 
         const [bg, text] = getLineColorsSync(cleanNum);
-        getLineColors(cleanNum).then(([bg])=>{
-          if(!bg) return;
-          poly.setStyle({color:bg});
-          if (bundleRef) updateRouteDirectionMarkerColor(bundleRef, bg);
-        });
         
         const stopOrderLabel = `${idx+1} / ${arr.length}`;
         const temporaryStopLabel = escapeHTML(t("temporary_stop"));
@@ -9846,7 +10801,7 @@
         return marker;
       }).filter(Boolean);
 
-      const bundle = { group, poly, stops, routeLatLngs: latlngs, directionMarkers: [], directionColor: poly?.options?.color || "#ffffff" };
+      const bundle = { group, poly, stops, routeLatLngs: latlngs, directionMarkers: [], directionColor: "#ffffff" };
       bundleRef = bundle;
       refreshRouteDirectionMarkers(bundle);
       dbusRouteLayers.set(key, bundle);
@@ -9915,6 +10870,34 @@
 
       return bundle;
     }
+    function invalidateDbusRouteCache(){
+      dbusRouteLayers.forEach((bundle) => {
+        if (!bundle) return;
+        stopRouteDirectionAnimation(bundle);
+        clearRouteDirectionMarkers(bundle);
+        try { dbusLayers.removeLayer(bundle.group); } catch {}
+      });
+      dbusRouteLayers.clear();
+      routeAnimHandles.forEach((h) => {
+        try { h.stop(); } catch {}
+      });
+      routeAnimHandles.clear();
+    }
+    function refreshSelectedDbusRouteNavigationMode(){
+      if (!currentSelectedKey || !Array.isArray(DBUS_LINES) || !DBUS_LINES.length) return;
+      const [lineUid, routeUid] = String(currentSelectedKey).split(":");
+      if (!lineUid || !routeUid) return;
+      const lineIdx = DBUS_LINES.findIndex((line) => String(line?.uid || "") === String(lineUid));
+      if (lineIdx < 0) return;
+      const line = DBUS_LINES[lineIdx];
+      const route = (line?.routes || []).find((item) => String(item?.uid || "") === String(routeUid));
+      if (!line || !route) return;
+      hideAllRoutes();
+      invalidateDbusRouteCache();
+      showOnlyRoute(lineIdx, line, route);
+      updateUiOverlays();
+    }
+    window.refreshSelectedDbusRouteNavigationMode = refreshSelectedDbusRouteNavigationMode;
     let routeDirectionRefreshRaf = 0;
     function refreshActiveRouteDirectionMarkers(){
       if (!currentSelectedKey) return;
@@ -11684,6 +12667,9 @@
         await loadStops();
         await loadLines();
         await loadDbusNavGraph();
+        await loadDbusNavBridges();
+        enableDevGraphOverlay();
+        ensureDevGraphClickBinding();
         buildDbusStopLineEntries();
         renderDbusStopsLayer();
       }catch(err){
