@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ETS2/ATS — Télémétrie</title>
+
+<style>
+:root { color-scheme: dark; }
+body {
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background:#0b0f14;
+  color:#e6edf3;
+}
+header {
+  padding:16px 20px;
+  border-bottom:1px solid #223041;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.dot {
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#ff5d5d;
+}
+.dot.ok { background:#3ddc97; }
+
+main {
+  padding:20px;
+  max-width:900px;
+  margin:auto;
+  display:grid;
+  gap:16px;
+}
+
+.card {
+  background:#0f1621;
+  border:1px solid #223041;
+  border-radius:12px;
+  padding:16px;
+}
+
+.row {
+  display:grid;
+  grid-template-columns:140px 1fr;
+  padding:8px 0;
+  border-bottom:1px dashed rgba(255,255,255,.08);
+}
+.row:last-child { border-bottom:none; }
+
+.k { color:#9fb0c0; }
+.v { font-variant-numeric: tabular-nums; font-size:18px; }
+
+.small { font-size:12px; color:#9fb0c0; }
+button {
+  background:#1c2a3b;
+  color:#e6edf3;
+  border:1px solid #2b3f57;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
+}
+button:hover { background:#223247; }
+</style>
+</head>
+
+<body>
+
+<header>
+  <div id="statusDot" class="dot"></div>
+  <div>
+    <div><strong>Télémétrie temps réel</strong></div>
+    <div class="small">
+      État : <span id="statusText">Déconnecté</span>
+      • Dernier paquet : <span id="lastSeen">—</span>
+    </div>
+  </div>
+  <div style="margin-left:auto;">
+    <button onclick="connect()">Reconnecter</button>
+  </div>
+</header>
+
+<main>
+
+<div class="card">
+  <h3>Position (m)</h3>
+  <div class="row"><div class="k">X</div><div class="v" id="x">—</div></div>
+  <div class="row"><div class="k">Y</div><div class="v" id="y">—</div></div>
+  <div class="row"><div class="k">Z</div><div class="v" id="z">—</div></div>
+</div>
+
+<div class="card">
+  <h3>Orientation (°)</h3>
+  <div class="row"><div class="k">Heading</div><div class="v" id="heading">—</div></div>
+  <div class="row"><div class="k">Pitch</div><div class="v" id="pitch">—</div></div>
+  <div class="row"><div class="k">Roll</div><div class="v" id="roll">—</div></div>
+</div>
+
+</main>
+
+<script>
+// =======================
+// CONFIG
+// =======================
+const WS_URL = "ws://localhost:3001";
+
+// =======================
+// ÉTAT
+// =======================
+let ws = null;
+let lastPacketTime = 0;
+let reconnectDelay = 500;
+
+// =======================
+// UTIL
+// =======================
+function fmt(n, digits=2) {
+  if (typeof n !== "number" || !isFinite(n)) return "—";
+  return n.toFixed(digits);
+}
+
+function setStatus(connected) {
+  const dot = document.getElementById("statusDot");
+  const txt = document.getElementById("statusText");
+  if (connected) {
+    dot.classList.add("ok");
+    txt.textContent = "Connecté";
+  } else {
+    dot.classList.remove("ok");
+    txt.textContent = "Déconnecté";
+  }
+}
+
+function updateData(data) {
+  document.getElementById("x").textContent = fmt(data.x);
+  document.getElementById("y").textContent = fmt(data.y);
+  document.getElementById("z").textContent = fmt(data.z);
+
+  document.getElementById("heading").textContent = fmt(data.heading);
+  document.getElementById("pitch").textContent = fmt(data.pitch);
+  document.getElementById("roll").textContent = fmt(data.roll);
+
+  lastPacketTime = Date.now();
+  document.getElementById("lastSeen").textContent =
+    new Date(lastPacketTime).toLocaleTimeString();
+}
+
+// =======================
+// CONNEXION WS
+// =======================
+function connect() {
+
+  if (ws) {
+    try { ws.close(); } catch(e) {}
+  }
+
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    reconnectDelay = 500;
+    setStatus(true);
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      updateData(data);
+    } catch (e) {
+      console.warn("Message non JSON :", event.data);
+    }
+  };
+
+  ws.onclose = () => {
+    setStatus(false);
+    setTimeout(connect, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 1.5, 5000);
+  };
+
+  ws.onerror = () => {
+    setStatus(false);
+  };
+}
+
+// Watchdog (optionnel)
+setInterval(() => {
+  if (!lastPacketTime) return;
+  const delta = Date.now() - lastPacketTime;
+  if (delta > 2000 && ws && ws.readyState === WebSocket.OPEN) {
+    document.getElementById("statusText").textContent =
+      "Connecté (aucune donnée récente)";
+  }
+}, 500);
+
+// Démarrage auto
+connect();
+</script>
+
+</body>
+</html>
