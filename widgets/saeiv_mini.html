@@ -1,0 +1,1633 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SAEIV Mini</title>
+  <style>
+    :root {
+      --hud-scale: 1;
+      --bg: #000;
+      --card-bg: linear-gradient(180deg, rgba(34, 35, 39, 0.98) 0%, rgba(24, 25, 29, 0.99) 100%);
+      --card-border: rgba(148, 163, 184, 0.26);
+      --line-sep: rgba(148, 163, 184, 0.2);
+      --label: #aeb5c1;
+      --value: #f1f5f9;
+      --muted: #949cab;
+      --late: #ef4444;
+      --early: #22c55e;
+      --neutral: #ffffff;
+      --accent: #7aa2d6;
+      --scroll-thumb: rgba(148, 163, 184, 0.46);
+      --scroll-thumb-hover: rgba(203, 213, 225, 0.72);
+      --scroll-track: rgba(15, 17, 21, 0.62);
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--value);
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    }
+
+    .root {
+      width: 100vw;
+      height: 100vh;
+      box-sizing: border-box;
+      padding: 0;
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+      overflow: hidden;
+      background: radial-gradient(95% 70% at 50% -15%, rgba(100, 110, 124, 0.16) 0%, rgba(0, 0, 0, 0) 58%);
+    }
+
+    .card {
+      width: calc(100vw / var(--hud-scale));
+      height: calc(100vh / var(--hud-scale));
+      min-height: 0;
+      border-radius: 0;
+      border: 0;
+      background: var(--card-bg);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      padding: clamp(7px, 1.7vmin, 11px) clamp(8px, 1.9vmin, 12px);
+      box-sizing: border-box;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      transform: scale(var(--hud-scale));
+      transform-origin: top left;
+      will-change: transform;
+    }
+
+    .card,
+    .view,
+    .choice-view,
+    .active-view,
+    .finished-view,
+    .choice-select,
+    .stops {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+    }
+
+    .card::-webkit-scrollbar,
+    .view::-webkit-scrollbar,
+    .choice-view::-webkit-scrollbar,
+    .active-view::-webkit-scrollbar,
+    .finished-view::-webkit-scrollbar,
+    .choice-select::-webkit-scrollbar,
+    .stops::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .card::-webkit-scrollbar-track,
+    .view::-webkit-scrollbar-track,
+    .choice-view::-webkit-scrollbar-track,
+    .active-view::-webkit-scrollbar-track,
+    .finished-view::-webkit-scrollbar-track,
+    .choice-select::-webkit-scrollbar-track,
+    .stops::-webkit-scrollbar-track {
+      background: var(--scroll-track);
+      border-radius: 999px;
+    }
+
+    .card::-webkit-scrollbar-thumb,
+    .view::-webkit-scrollbar-thumb,
+    .choice-view::-webkit-scrollbar-thumb,
+    .active-view::-webkit-scrollbar-thumb,
+    .finished-view::-webkit-scrollbar-thumb,
+    .choice-select::-webkit-scrollbar-thumb,
+    .stops::-webkit-scrollbar-thumb {
+      background: var(--scroll-thumb);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .card::-webkit-scrollbar-thumb:hover,
+    .view::-webkit-scrollbar-thumb:hover,
+    .choice-view::-webkit-scrollbar-thumb:hover,
+    .active-view::-webkit-scrollbar-thumb:hover,
+    .finished-view::-webkit-scrollbar-thumb:hover,
+    .choice-select::-webkit-scrollbar-thumb:hover,
+    .stops::-webkit-scrollbar-thumb:hover {
+      background: var(--scroll-thumb-hover);
+      background-clip: padding-box;
+    }
+
+    .view {
+      width: 100%;
+      min-height: 0;
+    }
+
+    .view[hidden] { display: none !important; }
+
+    .choice-view,
+    .active-view,
+    .finished-view {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      gap: clamp(5px, 1.4vmin, 8px);
+      align-items: stretch;
+      justify-content: flex-start;
+      overflow: auto;
+      min-height: 0;
+    }
+
+    .row {
+      margin: 0 0 clamp(7px, 2.1vmin, 11px);
+    }
+
+    .row:last-child {
+      margin-bottom: 0;
+    }
+
+    .choice-view .row,
+    .active-view .row,
+    .finished-view .row {
+      margin: 0;
+    }
+
+    .label {
+      margin: 0 0 clamp(2px, 0.6vmin, 3px);
+      font-size: clamp(9px, 2.2vmin, 11px);
+      font-weight: 700;
+      color: var(--label);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .value {
+      margin: 0;
+      font-size: clamp(18px, 5.2vmin, 26px);
+      font-weight: 800;
+      line-height: 1.04;
+      color: var(--value);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .value.medium {
+      font-size: clamp(14px, 4.2vmin, 21px);
+      font-weight: 700;
+    }
+
+    .line-main {
+      margin: 0;
+      font-size: clamp(17px, 4.8vmin, 24px);
+      font-weight: 800;
+      line-height: 1;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .line-head {
+      display: flex;
+      align-items: center;
+      gap: clamp(5px, 1.5vmin, 9px);
+      min-width: 0;
+    }
+
+    .line-head .line-main { flex: 1 1 auto; min-width: 0; }
+
+    .line-sub {
+      margin: clamp(2px, 0.8vmin, 4px) 0 0;
+      font-size: clamp(10px, 2.8vmin, 13px);
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .choice-hint {
+      display: none;
+      margin-top: clamp(8px, 2.2vmin, 12px);
+      white-space: pre-line;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.3;
+      min-height: 1.3em;
+    }
+    #choiceView > div:first-child {
+      margin-bottom: clamp(8px, 2.2vmin, 12px);
+    }
+    .choice-view.is-pending-start .choice-hint {
+      display: block;
+    }
+    .choice-hint.is-error {
+      color: #fca5a5;
+    }
+    #lineRoute { display: none !important; }
+
+    .status-neutral { color: var(--neutral); }
+    .status-late { color: var(--late); }
+    .status-early { color: var(--early); }
+
+    .choice-tools {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      gap: clamp(5px, 1.4vmin, 8px);
+      border: 0;
+      border-radius: 0;
+      padding: clamp(5px, 1.4vmin, 8px);
+      background: #121212;
+    }
+
+    .choice-input,
+    .choice-select,
+    .choice-btn,
+    .finish-btn,
+    .cancel-btn {
+      width: 100%;
+      height: clamp(30px, 7.6vmin, 36px);
+      border-radius: 0;
+      border: 0;
+      background: #1a1a1a;
+      color: #f2f2f2;
+      box-sizing: border-box;
+      font-size: clamp(11px, 2.8vmin, 13px);
+      padding: 0 clamp(7px, 2vmin, 10px);
+    }
+
+    .choice-select {
+      flex: 1 1 auto;
+      height: auto;
+      min-height: clamp(78px, 23vmin, 112px);
+      padding: clamp(4px, 1.1vmin, 6px) clamp(5px, 1.4vmin, 8px);
+      outline: none;
+      transition: background 0.12s ease;
+    }
+    .choice-select.has-selection {
+      background: #1a1a1a;
+    }
+
+    .choice-btn,
+    .finish-btn,
+    .cancel-btn {
+      cursor: pointer;
+      font-weight: 700;
+      background: #1a1a1a;
+      color: #b1b1b1;
+    }
+
+    .choice-btn:hover,
+    .finish-btn:hover,
+    .cancel-btn:hover {
+      background: #252525;
+      color: #d0d6e6;
+    }
+
+    .choice-select option {
+      background: #1a1a1a;
+      color: #f2f2f2;
+    }
+    .choice-select option:checked {
+      background: #c2410c;
+      color: #ffffff;
+    }
+
+    .choice-btn:disabled,
+    .finish-btn:disabled,
+    .cancel-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+    }
+
+    .choice-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(5px, 1.4vmin, 8px);
+      margin-top: auto;
+    }
+
+    .choice-view.is-pending-start .choice-input,
+    .choice-view.is-pending-start .choice-label,
+    .choice-view.is-pending-start #lineSelect,
+    .choice-view.is-pending-start #routeSelect {
+      display: none !important;
+    }
+    .choice-view.is-pending-start .choice-tools {
+      flex: 0 0 auto;
+    }
+
+    .choice-view.is-pending-start .choice-buttons {
+      grid-template-columns: 1fr auto;
+    }
+    .choice-view.is-pending-start #startRouteBtn {
+      order: 1;
+    }
+    .choice-view.is-pending-start #backToLinesBtn {
+      order: 2;
+      width: clamp(30px, 8.2vmin, 40px);
+      min-width: clamp(30px, 8.2vmin, 40px);
+      padding: 0;
+      justify-self: end;
+    }
+
+    .choice-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(9px, 2.2vmin, 11px);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .choice-label[hidden],
+    .choice-select[hidden] {
+      display: none !important;
+    }
+
+    .cancel-btn {
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+      background: #201717;
+    }
+    #backToLinesBtn {
+      background: #2a1919;
+      color: #efb0b0;
+    }
+    #backToLinesBtn:hover {
+      background: #332020;
+      color: #f5c2c2;
+    }
+    #startRouteBtn {
+      background: #1b2d20;
+      color: #b9f2c9;
+    }
+    #startRouteBtn:hover {
+      background: #233a29;
+      color: #d2f9dc;
+    }
+    #backToLinesBtn.is-icon {
+      font-size: clamp(13px, 3.5vmin, 18px);
+      line-height: 1;
+      font-weight: 800;
+    }
+
+    .finish-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: clamp(5px, 1.4vmin, 8px) clamp(8px, 2.2vmin, 12px);
+      align-items: center;
+      padding-top: clamp(2px, 1vmin, 4px);
+    }
+
+    .finish-k {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(10px, 2.5vmin, 12px);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .finish-v {
+      margin: 0;
+      color: #f8fafc;
+      font-size: clamp(12px, 3.2vmin, 15px);
+      font-weight: 700;
+      text-align: right;
+      max-width: clamp(120px, 42vmin, 180px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .finish-v.status-late { color: var(--late); }
+    .finish-v.status-early { color: var(--early); }
+    .finish-v.status-neutral { color: var(--neutral); }
+    .value.is-live { color: #ffffff; }
+    .value.is-at-stop { color: #ffffff; }
+    .value.medium.is-warn { color: #ffffff; }
+
+    @media (max-width: 420px) {
+      .value { line-height: 1.06; }
+    }
+  </style>
+</head>
+<body>
+  <div class="root">
+    <article class="card">
+      <section id="choiceView" class="view choice-view">
+        <div>
+          <p id="chooserTitle" class="line-main">Choix ligne/route</p>
+          <p id="choiceHint" class="line-sub choice-hint"></p>
+        </div>
+
+        <div class="row choice-tools">
+          <p id="lineLabel" class="choice-label">Lignes</p>
+          <select id="lineSelect" class="choice-select" size="5" aria-label="Choix ligne"></select>
+          <p id="routeLabel" class="choice-label" hidden>Routes</p>
+          <select id="routeSelect" class="choice-select" size="5" aria-label="Choix route" hidden></select>
+          <div class="choice-buttons">
+            <button id="backToLinesBtn" class="choice-btn" type="button" disabled>Retour</button>
+            <button id="startRouteBtn" class="choice-btn" type="button">Confirmer</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="activeView" class="view active-view" hidden>
+        <section>
+          <div class="line-head">
+            <p id="lineNumber" class="line-main">Ligne -</p>
+          </div>
+          <p id="lineRoute" class="line-sub">Aucune route selectionnee</p>
+        </section>
+
+        <section class="row">
+          <p id="stopLabel" class="label">Prochain Arret</p>
+          <p id="stopName" class="value">-</p>
+        </section>
+
+        <section class="row">
+          <p class="label">Distance Arret</p>
+          <p id="stopDistance" class="value medium">--</p>
+        </section>
+
+        <section class="row">
+          <p id="arrivalLabel" class="label">Arrivee Prevue</p>
+          <p id="arrivalAt" class="value medium">--:--</p>
+        </section>
+
+        <section class="row">
+          <p class="label">Etat Horaire</p>
+          <p id="delayStatus" class="value medium status-neutral">A l'heure</p>
+        </section>
+
+        <section class="row">
+          <button id="cancelRouteBtn" class="cancel-btn" type="button">Annuler la ligne</button>
+        </section>
+      </section>
+
+      <section id="finishedView" class="view finished-view" hidden>
+        <div>
+          <div class="line-head">
+            <p id="doneLineNumber" class="line-main">Ligne -</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <p class="label">Ligne terminee</p>
+          <p class="value medium">Recapitulatif</p>
+        </div>
+
+        <div class="row finish-grid">
+          <p class="finish-k">Etat horaire</p>
+          <p id="doneDelay" class="finish-v">A l'heure</p>
+          <p class="finish-k">Arrets en retard</p>
+          <p id="doneLateStops" class="finish-v">0 / 0</p>
+          <p class="finish-k">Arrets atteints</p>
+          <p id="doneReachedStops" class="finish-v">0</p>
+          <p class="finish-k">Temps de parcours</p>
+          <p id="doneTravelTime" class="finish-v">0 min</p>
+        </div>
+
+        <div class="row">
+          <button id="doneOkBtn" class="finish-btn" type="button">OK</button>
+        </div>
+      </section>
+    </article>
+  </div>
+
+  <script>
+    (function () {
+      var WIDGET_BRIDGE_WS_URL = "ws://localhost:3001";
+      var WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
+      var WIDGET_BRIDGE_CHANNEL = "saeiv";
+      var STOP_AT_THRESHOLD_M = 10;
+      var params = new URLSearchParams(window.location.search || "");
+      var hostParam = String(params.get("host") || "").trim().toLowerCase();
+      var isHostedByGame = hostParam === "game" || hostParam === "1" || hostParam === "true";
+      var sourceId = String(params.get("source") || "game").trim() || "game";
+      var SAEIV_HOST_POLL_INTERVAL_MS = 140;
+      var SAEIV_STATE_REQUEST_INTERVAL_MS = 1000;
+      var widgetBridgeClientId = "saeiv_mini_" + Math.random().toString(36).slice(2, 10);
+      var channel = null;
+      var channelReconnectTimer = 0;
+      var channelReconnectDelayMs = 420;
+      var channelOutbox = [];
+      var channelStopped = false;
+      var hostBridgePollTimer = 0;
+      var hostBridgePollInFlight = false;
+      var hostBridgeLastTs = 0;
+      var stateRequestTimer = 0;
+      var latestState = {};
+      var routeCatalog = [];
+      var lineCatalog = [];
+      var routeByKey = Object.create(null);
+      var hudScaleObserver = null;
+      var hudScaleRaf = 0;
+      var lastHudScale = 0;
+      var selectedLineUid = "";
+      var selectedRouteKey = "";
+      var chooserStep = "line";
+      var chooserConfirmedLineUid = "";
+      var forceChoiceForSelectedKey = "";
+      var catalogLastRequestAtMs = 0;
+      var selectionBusy = false;
+      var hadRouteSelectionOnPreviousRender = false;
+
+      var el = {
+        choiceView: document.getElementById("choiceView"),
+        chooserTitle: document.getElementById("chooserTitle"),
+        choiceHint: document.getElementById("choiceHint"),
+        lineLabel: document.getElementById("lineLabel"),
+        lineSelect: document.getElementById("lineSelect"),
+        routeLabel: document.getElementById("routeLabel"),
+        routeSelect: document.getElementById("routeSelect"),
+        backToLinesBtn: document.getElementById("backToLinesBtn"),
+        startRouteBtn: document.getElementById("startRouteBtn"),
+
+        activeView: document.getElementById("activeView"),
+        lineNumber: document.getElementById("lineNumber"),
+        lineRoute: document.getElementById("lineRoute"),
+        stopLabel: document.getElementById("stopLabel"),
+        stopName: document.getElementById("stopName"),
+        stopDistance: document.getElementById("stopDistance"),
+        arrivalLabel: document.getElementById("arrivalLabel"),
+        arrivalAt: document.getElementById("arrivalAt"),
+        delayStatus: document.getElementById("delayStatus"),
+        cancelRouteBtn: document.getElementById("cancelRouteBtn"),
+
+        finishedView: document.getElementById("finishedView"),
+        doneLineNumber: document.getElementById("doneLineNumber"),
+        doneDelay: document.getElementById("doneDelay"),
+        doneLateStops: document.getElementById("doneLateStops"),
+        doneReachedStops: document.getElementById("doneReachedStops"),
+        doneTravelTime: document.getElementById("doneTravelTime"),
+        doneOkBtn: document.getElementById("doneOkBtn")
+      };
+      var rootEl = document.querySelector(".root");
+
+      function applyHudScale() {
+        if (!rootEl) return;
+        var width = Math.max(1, Number(rootEl.clientWidth) || 0);
+        var scale = Math.max(0.35, Math.min(2.4, width / 679));
+        if (Math.abs(scale - lastHudScale) < 0.002) return;
+        lastHudScale = scale;
+        var doc = rootEl.ownerDocument || document;
+        if (doc && doc.documentElement) {
+          doc.documentElement.style.setProperty("--hud-scale", scale.toFixed(4));
+        }
+      }
+
+      function queueHudScale() {
+        if (hudScaleRaf) return;
+        hudScaleRaf = window.requestAnimationFrame(function () {
+          hudScaleRaf = 0;
+          applyHudScale();
+        });
+      }
+
+      function buildBridgeEnvelope(payload) {
+        return {
+          scope: WIDGET_BRIDGE_SCOPE,
+          channel: WIDGET_BRIDGE_CHANNEL,
+          payload: payload && typeof payload === "object" ? payload : {},
+          clientId: widgetBridgeClientId,
+          ts: Date.now()
+        };
+      }
+      function queueBridgeEnvelope(envelope) {
+        if (!envelope || typeof envelope !== "object") return;
+        channelOutbox.push(envelope);
+        if (channelOutbox.length > 140) channelOutbox.shift();
+      }
+      function flushBridgeOutbox() {
+        if (!channel || channel.readyState !== WebSocket.OPEN) return;
+        if (!channelOutbox.length) return;
+        var pending = channelOutbox.slice();
+        channelOutbox.length = 0;
+        pending.forEach(function (envelope) {
+          try {
+            channel.send(JSON.stringify(envelope));
+          } catch (err0) {
+            queueBridgeEnvelope(envelope);
+          }
+        });
+      }
+      function scheduleBridgeReconnect() {
+        if (channelStopped) return;
+        if (channelReconnectTimer) return;
+        channelReconnectTimer = window.setTimeout(function () {
+          channelReconnectTimer = 0;
+          connectBridgeSocket();
+        }, channelReconnectDelayMs);
+        channelReconnectDelayMs = Math.min(5000, Math.round(channelReconnectDelayMs * 1.6));
+      }
+      function closeBridgeSocket(options) {
+        var opts = options && typeof options === "object" ? options : {};
+        var stop = opts.stop === true;
+        var keepOutbox = opts.keepOutbox === true;
+        if (channelReconnectTimer) {
+          clearTimeout(channelReconnectTimer);
+          channelReconnectTimer = 0;
+        }
+        if (stop) channelStopped = true;
+        if (channel) {
+          try { channel.onopen = null; } catch (err1) {}
+          try { channel.onmessage = null; } catch (err2) {}
+          try { channel.onerror = null; } catch (err3) {}
+          try { channel.onclose = null; } catch (err4) {}
+          try { channel.close(); } catch (err5) {}
+          channel = null;
+        }
+        if (!keepOutbox) channelOutbox = [];
+      }
+      function handleBridgeIncomingMessage(msg) {
+        if (!msg || typeof msg !== "object") return;
+        if (String(msg.sourceId || "") !== sourceId) return;
+        var type = String(msg.type || "");
+        if (type === "saeiv:state") {
+          selectionBusy = false;
+          updateStartButtonState();
+          latestState = msg.payload && typeof msg.payload === "object" ? msg.payload : {};
+          render();
+          return;
+        }
+        if (type === "saeiv:catalog") {
+          var routes = msg.payload && Array.isArray(msg.payload.routes) ? msg.payload.routes : [];
+          applyCatalogFromList(routes);
+          return;
+        }
+        if (type === "saeiv:action_result") {
+          var action = String(msg.action || "").trim();
+          if (action === "select_route" && msg.ok !== true) {
+            selectionBusy = false;
+            updateStartButtonState();
+            setChooserStatus(String(msg.error || "Selection impossible."), true);
+          }
+          if (action === "catalog_request" && msg.ok === false) {
+            setChooserStatus(String(msg.error || "Erreur de chargement."), true);
+          }
+          if (action === "select_route" && msg.ok === true) {
+            selectionBusy = false;
+            updateStartButtonState();
+            setChooserStatus("Route activee", false);
+            post("saeiv:request_state");
+          }
+          if (action === "start_route" && msg.ok !== true) {
+            selectionBusy = false;
+            updateStartButtonState();
+            setChooserStatus(String(msg.error || "Demarrage impossible."), true);
+          }
+          if (action === "start_route" && msg.ok === true) {
+            selectionBusy = false;
+            updateStartButtonState();
+            setChooserStatus("Ligne demarree", false);
+            post("saeiv:request_state");
+          }
+          if (action === "clear_route" && msg.ok === true) {
+            post("saeiv:request_state");
+          }
+        }
+      }
+      function connectBridgeSocket() {
+        if (channelStopped) return;
+        closeBridgeSocket({ keepOutbox: true, stop: false });
+        var socket = null;
+        try { socket = new WebSocket(WIDGET_BRIDGE_WS_URL); } catch (err0) { socket = null; }
+        if (!socket) {
+          scheduleBridgeReconnect();
+          return;
+        }
+        channel = socket;
+        socket.onopen = function () {
+          channelReconnectDelayMs = 420;
+          flushBridgeOutbox();
+          post("saeiv:ready");
+          post("saeiv:request_state");
+          post("saeiv:catalog_request");
+        };
+        socket.onmessage = function (event) {
+          var parsed = null;
+          try { parsed = JSON.parse(event && event.data ? event.data : ""); } catch (err1) { parsed = null; }
+          if (!parsed || typeof parsed !== "object") return;
+          if (String(parsed.scope || "") !== WIDGET_BRIDGE_SCOPE) return;
+          if (String(parsed.clientId || "") === widgetBridgeClientId) return;
+          if (String(parsed.channel || "").trim().toLowerCase() !== WIDGET_BRIDGE_CHANNEL) return;
+          handleBridgeIncomingMessage(parsed.payload && typeof parsed.payload === "object" ? parsed.payload : null);
+        };
+        socket.onerror = function () {};
+        socket.onclose = function () {
+          if (channel === socket) channel = null;
+          scheduleBridgeReconnect();
+        };
+      }
+      function ensureBridgeSocket() {
+        if (channelStopped) return;
+        if (channel && (channel.readyState === WebSocket.OPEN || channel.readyState === WebSocket.CONNECTING)) return;
+        if (channelReconnectTimer) return;
+        connectBridgeSocket();
+      }
+
+      function post(type, extra) {
+        var envelope = buildBridgeEnvelope(Object.assign({ type: type, sourceId: sourceId }, extra || {}));
+        ensureBridgeSocket();
+        if (!channel || channel.readyState !== WebSocket.OPEN) {
+          queueBridgeEnvelope(envelope);
+        } else {
+          try {
+            channel.send(JSON.stringify(envelope));
+          } catch (err) {
+            queueBridgeEnvelope(envelope);
+          }
+        }
+      }
+
+      function getHostApiWindow() {
+        var candidates = [];
+        try { if (window.parent && window.parent !== window) candidates.push(window.parent); } catch (err0) {}
+        try { if (window.opener && window.opener !== window) candidates.push(window.opener); } catch (err1) {}
+        try {
+          if (window.top && window.top.opener && window.top.opener !== window) {
+            candidates.push(window.top.opener);
+          }
+        } catch (err2) {}
+        for (var i = 0; i < candidates.length; i += 1) {
+          var candidate = candidates[i];
+          try {
+            if (
+              candidate &&
+              typeof candidate.gameListLineRoutes === "function" &&
+              typeof candidate.gameSelectLineRouteByUid === "function" &&
+              typeof candidate.gameClearLineRoute === "function"
+            ) {
+              return candidate;
+            }
+          } catch (err3) {}
+        }
+        return null;
+      }
+      function resolveWithTimeout(value, timeoutMs) {
+        if (!value || typeof value.then !== "function") return Promise.resolve(value);
+        return new Promise(function (resolve) {
+          var settled = false;
+          var finish = function (nextValue) {
+            if (settled) return;
+            settled = true;
+            resolve(nextValue);
+          };
+          var timer = window.setTimeout(function () {
+            finish(null);
+          }, Math.max(80, Number(timeoutMs) || 600));
+          Promise.resolve(value)
+            .then(function (resolved) {
+              window.clearTimeout(timer);
+              finish(resolved);
+            })
+            .catch(function () {
+              window.clearTimeout(timer);
+              finish(null);
+            });
+        });
+      }
+      function readHostSaeivStateSnapshot() {
+        if (!isHostedByGame) return Promise.resolve(null);
+        var host = getHostApiWindow();
+        if (!host || typeof host.saeivGetBridgeState !== "function") return Promise.resolve(null);
+        try {
+          return resolveWithTimeout(host.saeivGetBridgeState(), 700);
+        } catch (err) {
+          return Promise.resolve(null);
+        }
+      }
+      function applyHostSaeivStateSnapshot(snapshot) {
+        var raw = snapshot && typeof snapshot === "object" ? snapshot : null;
+        if (!raw) return false;
+        var type = String(raw.type || "").trim();
+        if (type === "saeiv:state") {
+          handleBridgeIncomingMessage(raw);
+          return true;
+        }
+        if (raw.payload && typeof raw.payload === "object") {
+          handleBridgeIncomingMessage({
+            type: "saeiv:state",
+            sourceId: sourceId,
+            payload: raw.payload,
+            ts: Number(raw.ts) || Date.now()
+          });
+          return true;
+        }
+        return false;
+      }
+      function stopHostBridgePolling() {
+        if (!hostBridgePollTimer) return;
+        clearInterval(hostBridgePollTimer);
+        hostBridgePollTimer = 0;
+      }
+      function startHostBridgePolling() {
+        if (!isHostedByGame) return;
+        if (hostBridgePollTimer) return;
+        hostBridgePollTimer = window.setInterval(function () {
+          if (hostBridgePollInFlight) return;
+          hostBridgePollInFlight = true;
+          readHostSaeivStateSnapshot()
+            .then(function (snapshot) {
+              if (!snapshot || typeof snapshot !== "object") return;
+              var ts = Number(snapshot.ts);
+              if (Number.isFinite(ts) && ts > 0) {
+                if (ts <= hostBridgeLastTs) return;
+                hostBridgeLastTs = ts;
+              }
+              applyHostSaeivStateSnapshot(snapshot);
+            })
+            .catch(function () {})
+            .finally(function () {
+              hostBridgePollInFlight = false;
+            });
+        }, SAEIV_HOST_POLL_INTERVAL_MS);
+      }
+      function stopStateRequestPolling() {
+        if (!stateRequestTimer) return;
+        clearInterval(stateRequestTimer);
+        stateRequestTimer = 0;
+      }
+      function startStateRequestPolling() {
+        stopStateRequestPolling();
+        stateRequestTimer = window.setInterval(function () {
+          post("saeiv:request_state");
+          if (!routeCatalog.length) post("saeiv:catalog_request");
+        }, Math.max(600, Number(SAEIV_STATE_REQUEST_INTERVAL_MS) || 1000));
+      }
+
+      function setView(name) {
+        var mode = String(name || "choice").toLowerCase();
+        if (el.choiceView) el.choiceView.hidden = mode !== "choice";
+        if (el.activeView) el.activeView.hidden = mode !== "active";
+        if (el.finishedView) el.finishedView.hidden = mode !== "finished";
+      }
+
+      function setChoiceStep(step) {
+        chooserStep = String(step || "line").toLowerCase() === "route" ? "route" : "line";
+        var showRoutes = chooserStep === "route" && !!chooserConfirmedLineUid;
+        if (el.choiceView) el.choiceView.classList.remove("is-pending-start");
+        if (el.lineLabel) el.lineLabel.hidden = showRoutes;
+        if (el.lineSelect) el.lineSelect.hidden = showRoutes;
+        if (el.routeLabel) el.routeLabel.hidden = !showRoutes;
+        if (el.routeSelect) el.routeSelect.hidden = !showRoutes;
+        if (el.lineSelect) el.lineSelect.disabled = showRoutes;
+        if (el.backToLinesBtn) {
+          el.backToLinesBtn.disabled = !showRoutes;
+          el.backToLinesBtn.textContent = "Retour";
+          el.backToLinesBtn.classList.remove("is-icon");
+          el.backToLinesBtn.title = "";
+        }
+        if (el.startRouteBtn) {
+          el.startRouteBtn.textContent = showRoutes ? "Confirmer" : "Confirmer";
+          el.startRouteBtn.disabled = true;
+        }
+        if (el.chooserTitle) el.chooserTitle.textContent = "Choix de Ligne";
+        setChooserStatus(
+          showRoutes ? "Selectionnez la route puis demarrez" : "",
+          false
+        );
+      }
+
+      function setChooserStatus(text, isError) {
+        if (!el.choiceHint) return;
+        var msg = String(text || "").trim();
+        if (!msg) {
+          msg = chooserStep === "route"
+            ? "Selectionnez une route"
+            : "Selectionnez une ligne";
+        }
+        el.choiceHint.textContent = msg;
+        el.choiceHint.classList.toggle("is-error", !!isError);
+      }
+
+      function normalizeRouteDescriptor(raw) {
+        var lineUid = String(raw && raw.lineUid || "").trim();
+        var routeUid = String(raw && raw.routeUid || "").trim();
+        if (!lineUid || !routeUid) return null;
+        return {
+          lineUid: lineUid,
+          routeUid: routeUid,
+          lineNumber: String(raw && raw.lineNumber || "").trim() || "?",
+          routeName: String(raw && raw.routeName || "").trim() || "Route",
+          stopCount: Math.max(0, Number(raw && raw.stopCount) || 0)
+        };
+      }
+
+      function routeKey(lineUid, routeUid) {
+        return String(lineUid || "") + "::" + String(routeUid || "");
+      }
+
+      function hasRouteSelection(data) {
+        return (
+          data.routeSelected === true ||
+          (data.selected === true && !!String(data.selectedRouteUid || "").trim())
+        );
+      }
+
+      function parseClockToMinutes(value) {
+        var text = String(value || "").trim();
+        var match = /^(\d{1,2}):(\d{2})$/.exec(text);
+        if (!match) return Number.NaN;
+        var hh = Number(match[1]);
+        var mm = Number(match[2]);
+        if (!Number.isFinite(hh) || !Number.isFinite(mm)) return Number.NaN;
+        if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return Number.NaN;
+        return (hh * 60) + mm;
+      }
+
+      function signedMinutesFromNowToRef(refMinutes) {
+        var now = new Date();
+        var nowMinutes = (now.getHours() * 60) + now.getMinutes();
+        var delta = nowMinutes - refMinutes;
+        if (delta > 720) delta -= 1440;
+        if (delta < -720) delta += 1440;
+        return delta;
+      }
+
+      function buildDelayInfo(refTimeText) {
+        var refMinutes = parseClockToMinutes(refTimeText);
+        if (!Number.isFinite(refMinutes)) return { text: "A l'heure", cls: "status-neutral" };
+        var delta = signedMinutesFromNowToRef(refMinutes);
+        var abs = Math.abs(delta);
+        if (abs < 0.5) return { text: "A l'heure", cls: "status-neutral" };
+        var mins = Math.max(1, Math.round(abs));
+        if (delta > 0) return { text: "Retard " + String(mins) + " min", cls: "status-late" };
+        return { text: "Avance " + String(mins) + " min", cls: "status-early" };
+      }
+
+      function buildDelayFromMinutes(delayMinutes) {
+        var delta = Number(delayMinutes);
+        if (!Number.isFinite(delta)) return { text: "A l'heure", cls: "status-neutral" };
+        var abs = Math.abs(delta);
+        if (abs < 0.5) return { text: "A l'heure", cls: "status-neutral" };
+        var mins = Math.max(1, Math.round(abs));
+        if (delta > 0) return { text: "Retard " + String(mins) + " min", cls: "status-late" };
+        return { text: "Avance " + String(mins) + " min", cls: "status-early" };
+      }
+      function buildActiveDelayInfo(data, names, displayIndex, isAtStop) {
+        return buildDelayInfo(String(data && data.refTime || "").trim());
+      }
+
+      function formatDistanceMeters(rawMeters) {
+        var meters = Number(rawMeters);
+        if (!Number.isFinite(meters) || meters < 0) return "--";
+        if (meters <= STOP_AT_THRESHOLD_M) return "a l'arret";
+        if (meters < 1000) return String(Math.round(meters)) + " m";
+        return (meters / 1000).toFixed(2) + " km";
+      }
+
+      function formatDurationMs(rawMs) {
+        var ms = Number(rawMs);
+        if (!Number.isFinite(ms) || ms <= 0) return "0 min";
+        var totalMinutes = Math.max(0, Math.round(ms / 60000));
+        var hh = Math.floor(totalMinutes / 60);
+        var mm = totalMinutes % 60;
+        if (hh <= 0) return String(mm) + " min";
+        if (mm <= 0) return String(hh) + " h";
+        return String(hh) + " h " + String(mm).padStart(2, "0") + " min";
+      }
+      function formatIntegerOrZero(value) {
+        var n = Number(value);
+        if (!Number.isFinite(n)) n = 0;
+        return String(Math.max(0, Math.round(n)));
+      }
+      function formatYesNo(value) {
+        return value === true ? "Oui" : "Non";
+      }
+
+      function clampIndex(raw, lastIndex) {
+        var n = Number(raw);
+        if (!Number.isFinite(n)) n = 0;
+        if (!Number.isFinite(lastIndex) || lastIndex < 0) return 0;
+        return Math.max(0, Math.min(lastIndex, Math.floor(n)));
+      }
+
+      function getDisplayIndex(data, lastIndex) {
+        if (data.vehicleAtStop === true) {
+          var atStop = Number(data.vehicleAtStopIndex);
+          if (Number.isFinite(atStop)) return clampIndex(atStop, lastIndex);
+        }
+        return clampIndex(data.audioCurrentIndex, lastIndex);
+      }
+
+      function resetActiveUi() {
+        if (el.lineNumber) el.lineNumber.textContent = "Ligne -";
+        if (el.lineRoute) el.lineRoute.textContent = "Aucune route selectionnee";
+        if (el.stopLabel) el.stopLabel.textContent = "Prochain Arret";
+        if (el.stopName) el.stopName.textContent = "-";
+        if (el.stopDistance) el.stopDistance.textContent = "--";
+        if (el.arrivalLabel) el.arrivalLabel.textContent = "Arrivee Prevue";
+        if (el.arrivalAt) el.arrivalAt.textContent = "--:--";
+        if (el.stopName) el.stopName.classList.remove("is-live", "is-at-stop");
+        if (el.stopDistance) el.stopDistance.classList.remove("is-live", "is-at-stop");
+        if (el.arrivalAt) el.arrivalAt.classList.remove("is-live", "is-warn");
+        if (el.delayStatus) {
+          el.delayStatus.classList.remove("status-late", "status-early");
+          el.delayStatus.classList.add("status-neutral");
+          el.delayStatus.textContent = "A l'heure";
+        }
+      }
+
+      function normalizeSearchText(value) {
+        return String(value || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .trim();
+      }
+
+      function buildLineCatalogFromRoutes(routes) {
+        var byUid = Object.create(null);
+        var out = [];
+        (Array.isArray(routes) ? routes : []).forEach(function (entry) {
+          var uid = String(entry && entry.lineUid || "").trim();
+          if (!uid) return;
+          var rec = byUid[uid];
+          if (!rec) {
+            rec = {
+              lineUid: uid,
+              lineNumber: String(entry && entry.lineNumber || "").trim() || "?",
+              routeCount: 0
+            };
+            byUid[uid] = rec;
+            out.push(rec);
+          }
+          rec.routeCount += 1;
+        });
+        out.sort(function (a, b) {
+          var la = String(a.lineNumber || "");
+          var lb = String(b.lineNumber || "");
+          var byNumber = la.localeCompare(lb, "fr", {
+            sensitivity: "base",
+            ignorePunctuation: true,
+            numeric: true
+          });
+          if (byNumber !== 0) return byNumber;
+          return String(a.lineUid || "").localeCompare(String(b.lineUid || ""), "fr", {
+            sensitivity: "base",
+            ignorePunctuation: true,
+            numeric: true
+          });
+        });
+        return out;
+      }
+
+      function setSelectedLineUid(lineUid) {
+        var wanted = String(lineUid || "").trim();
+        var exists = lineCatalog.some(function (line) { return String(line.lineUid || "") === wanted; });
+        if (!exists) wanted = "";
+        selectedLineUid = wanted;
+        if (el.lineSelect) el.lineSelect.value = selectedLineUid;
+      }
+      function updateChoiceSelectHighlights() {
+        if (el.lineSelect) {
+          var hasLine = !!String(selectedLineUid || el.lineSelect.value || "").trim();
+          el.lineSelect.classList.toggle("has-selection", hasLine);
+        }
+        if (el.routeSelect) {
+          var hasRoute = chooserStep === "route" && !!String(selectedRouteKey || el.routeSelect.value || "").trim();
+          el.routeSelect.classList.toggle("has-selection", hasRoute);
+        }
+      }
+
+      function updateStartButtonState() {
+        if (!el.startRouteBtn) return;
+        if (latestState && typeof latestState === "object" && latestState.routeWaitingStart === true) {
+          el.startRouteBtn.textContent = "Demarrer";
+          el.startRouteBtn.disabled = selectionBusy || latestState.routeCanStart !== true;
+          updateChoiceSelectHighlights();
+          return;
+        }
+        if (selectionBusy) {
+          el.startRouteBtn.disabled = true;
+          updateChoiceSelectHighlights();
+          return;
+        }
+        if (chooserStep === "route") {
+          var hasRoute = !!String(selectedRouteKey || "").trim();
+          el.startRouteBtn.disabled = !hasRoute;
+          updateChoiceSelectHighlights();
+          return;
+        }
+        el.startRouteBtn.disabled = !String(selectedLineUid || "").trim();
+        updateChoiceSelectHighlights();
+      }
+
+      function refreshRouteOptions() {
+        if (!el.routeSelect) return;
+        el.routeSelect.innerHTML = "";
+        routeByKey = Object.create(null);
+        selectedRouteKey = "";
+
+        if (!chooserConfirmedLineUid || chooserStep !== "route") {
+          var noLine = document.createElement("option");
+          noLine.value = "";
+          noLine.textContent = "Confirmez une ligne";
+          el.routeSelect.appendChild(noLine);
+          el.routeSelect.value = "";
+          updateStartButtonState();
+          return;
+        }
+
+        var filtered = routeCatalog.filter(function (entry) {
+          return String(entry.lineUid || "") === chooserConfirmedLineUid;
+        });
+
+        filtered.forEach(function (entry) {
+          var key = routeKey(entry.lineUid, entry.routeUid);
+          routeByKey[key] = entry;
+          var option = document.createElement("option");
+          option.value = key;
+          option.textContent = entry.routeName + " (" + String(entry.stopCount) + " arrets)";
+          el.routeSelect.appendChild(option);
+        });
+
+        if (!filtered.length) {
+          var empty = document.createElement("option");
+          empty.value = "";
+          empty.textContent = "Aucune route sur cette ligne";
+          el.routeSelect.appendChild(empty);
+          el.routeSelect.value = "";
+          selectedRouteKey = "";
+          updateStartButtonState();
+          return;
+        }
+
+        el.routeSelect.selectedIndex = 0;
+        selectedRouteKey = String(el.routeSelect.value || "").trim();
+        updateStartButtonState();
+      }
+
+      function refreshLineOptions() {
+        if (!el.lineSelect) return;
+        var filtered = lineCatalog.slice();
+
+        el.lineSelect.innerHTML = "";
+        filtered.forEach(function (line) {
+          var option = document.createElement("option");
+          option.value = String(line.lineUid || "");
+          option.textContent = String(line.lineNumber || "?");
+          el.lineSelect.appendChild(option);
+        });
+
+        if (!filtered.length) {
+          selectedLineUid = "";
+          updateStartButtonState();
+          refreshRouteOptions();
+          return;
+        }
+
+        var currentVisible = filtered.some(function (line) {
+          return String(line.lineUid || "") === selectedLineUid;
+        });
+        if (!currentVisible) {
+          selectedLineUid = String(filtered[0] && filtered[0].lineUid || "");
+        }
+        el.lineSelect.value = selectedLineUid || "";
+        updateStartButtonState();
+        refreshRouteOptions();
+      }
+
+      function applyCatalogFromList(rawList) {
+        var list = Array.isArray(rawList) ? rawList : [];
+        var out = [];
+        list.forEach(function (raw) {
+          var item = normalizeRouteDescriptor(raw);
+          if (item) out.push(item);
+        });
+        out.sort(function (a, b) {
+          var la = String(a.lineNumber || "");
+          var lb = String(b.lineNumber || "");
+          if (la < lb) return -1;
+          if (la > lb) return 1;
+          var ra = String(a.routeName || "");
+          var rb = String(b.routeName || "");
+          if (ra < rb) return -1;
+          if (ra > rb) return 1;
+          return 0;
+        });
+        routeCatalog = out;
+        lineCatalog = buildLineCatalogFromRoutes(out);
+        if (!lineCatalog.some(function (line) { return String(line.lineUid || "") === chooserConfirmedLineUid; })) {
+          chooserConfirmedLineUid = "";
+          selectedRouteKey = "";
+          setChoiceStep("line");
+        }
+        setSelectedLineUid(selectedLineUid);
+        refreshLineOptions();
+        refreshRouteOptions();
+        if (lineCatalog.length) {
+          setChooserStatus("", false);
+        } else {
+          setChooserStatus("Aucune ligne disponible", true);
+        }
+      }
+
+      function requestCatalog() {
+        var now = Date.now();
+        if ((now - catalogLastRequestAtMs) < 1200) return;
+        catalogLastRequestAtMs = now;
+        setChooserStatus("Chargement lignes/routes...", false);
+        updateStartButtonState();
+        var host = getHostApiWindow();
+        if (host) {
+          Promise.resolve(host.gameListLineRoutes(""))
+            .then(function (result) {
+              applyCatalogFromList(Array.isArray(result) ? result : []);
+            })
+            .catch(function () {
+              setChooserStatus("Erreur de chargement des lignes/routes", true);
+            });
+          return;
+        }
+        post("saeiv:catalog_request");
+      }
+
+      function confirmSelectedLine() {
+        var lineUid = String(el.lineSelect && el.lineSelect.value || selectedLineUid || "").trim();
+        if (!lineUid) {
+          setChooserStatus("Selectionnez une ligne", true);
+          return false;
+        }
+        chooserConfirmedLineUid = lineUid;
+        selectedLineUid = lineUid;
+        setChoiceStep("route");
+        refreshRouteOptions();
+        updateStartButtonState();
+        setChooserStatus("Selectionnez une route", false);
+        return true;
+      }
+
+      function selectCatalogRoute() {
+        if (chooserStep !== "route") {
+          confirmSelectedLine();
+          return;
+        }
+        var key = String(el.routeSelect && el.routeSelect.value || "").trim();
+        var entry = routeByKey[key];
+        if (!entry) {
+          setChooserStatus("Selection invalide", true);
+          return;
+        }
+        selectedRouteKey = key;
+        selectionBusy = true;
+        updateStartButtonState();
+        setChooserStatus("Activation de la route...", false);
+        var host = getHostApiWindow();
+        if (host) {
+          Promise.resolve(host.gameSelectLineRouteByUid(entry.lineUid, entry.routeUid))
+            .then(function (res) {
+              selectionBusy = false;
+              updateStartButtonState();
+              if (!res || res.ok !== true) {
+                var err = String(res && res.error || "Selection impossible.");
+                setChooserStatus(err, true);
+                return;
+              }
+              forceChoiceForSelectedKey = "";
+              post("saeiv:request_state");
+            })
+            .catch(function () {
+              selectionBusy = false;
+              updateStartButtonState();
+              setChooserStatus("Erreur de selection", true);
+            });
+          return;
+        }
+        post("saeiv:select_route", {
+          lineUid: entry.lineUid,
+          routeUid: entry.routeUid
+        });
+      }
+
+      function clearRouteSelection() {
+        var host = getHostApiWindow();
+        if (host) {
+          Promise.resolve(host.gameClearLineRoute()).then(function () {
+            post("saeiv:request_state");
+          }).catch(function () {});
+          return;
+        }
+        post("saeiv:clear_route");
+      }
+      function requestStartSelectedRoute() {
+        selectionBusy = true;
+        updateStartButtonState();
+        setChooserStatus("Demarrage de la ligne...", false);
+        var host = getHostApiWindow();
+        if (host && typeof host.gameStartSelectedLineRoute === "function") {
+          Promise.resolve(host.gameStartSelectedLineRoute())
+            .then(function (res) {
+              selectionBusy = false;
+              updateStartButtonState();
+              if (!res || res.ok !== true) {
+                setChooserStatus(String(res && res.error || "Demarrage impossible."), true);
+                return;
+              }
+              post("saeiv:request_state");
+            })
+            .catch(function () {
+              selectionBusy = false;
+              updateStartButtonState();
+              setChooserStatus("Erreur de demarrage", true);
+            });
+          return;
+        }
+        post("saeiv:start_route");
+      }
+      function renderPendingStart(data) {
+        if (el.choiceView) el.choiceView.classList.add("is-pending-start");
+        if (el.chooserTitle) el.chooserTitle.textContent = "Rendez-vous à l'arrêt de départ";
+        var startStopName = String(data.startStopName || "").trim() || "Arret de depart";
+        var distM = Number(data.startStopDistanceM);
+        var canStart = data.routeCanStart === true;
+        var distAdj = Number.isFinite(distM) ? Math.max(0, distM - 10) : Number.NaN;
+        var distText = Number.isFinite(distAdj)
+          ? (distAdj < 1000 ? String(Math.round(distAdj)) + " m" : ((distAdj / 1000).toFixed(2) + " km"))
+          : "--";
+        setChooserStatus(
+          "Arret de depart: " + startStopName + "\nDistance restante: " + distText +
+          (canStart ? "\nVous pouvez appuyer sur Demarrer." : ""),
+          !canStart
+        );
+        if (el.startRouteBtn) {
+          el.startRouteBtn.textContent = "Demarrer";
+          el.startRouteBtn.disabled = selectionBusy || !canStart;
+        }
+        if (el.backToLinesBtn) {
+          el.backToLinesBtn.textContent = "X";
+          el.backToLinesBtn.disabled = selectionBusy;
+          el.backToLinesBtn.classList.add("is-icon");
+          el.backToLinesBtn.title = "Annuler la ligne";
+        }
+        if (el.routeLabel) el.routeLabel.hidden = true;
+        if (el.routeSelect) el.routeSelect.hidden = true;
+        setView("choice");
+      }
+
+      function renderActive(data, names) {
+        var lineNumber = String(data.lineNumber || "").trim();
+        var routeName = String(data.routeName || "").trim();
+        var refTime = String(data.refTime || "").trim();
+        var lastIndex = Math.max(0, names.length - 1);
+        var displayIndex = getDisplayIndex(data, lastIndex);
+        var stopName = String(names[displayIndex] || "").trim() || "-";
+        var distanceToStopM = Number(data.distanceToDisplayStopM);
+        var hasDistance = Number.isFinite(distanceToStopM) && distanceToStopM >= 0;
+        var isAtStopByState = data.vehicleAtStop === true;
+        var isAtStopByDistance = hasDistance && distanceToStopM <= STOP_AT_THRESHOLD_M;
+        var isAtStop = isAtStopByState || isAtStopByDistance;
+        var stopLabel = isAtStop ? "Arret actuel" : "Prochain Arret";
+        if (!hasDistance) {
+          var fallbackLabel = String(data.currentStopLabel || "").trim();
+          if (fallbackLabel) stopLabel = fallbackLabel;
+        }
+
+        if (el.lineNumber) el.lineNumber.textContent = routeName || (lineNumber ? ("Ligne " + lineNumber) : "Ligne -");
+        if (el.lineRoute) el.lineRoute.textContent = "";
+        if (el.stopLabel) el.stopLabel.textContent = stopLabel;
+        if (el.stopName) el.stopName.textContent = stopName;
+        if (el.stopDistance) {
+          el.stopDistance.textContent = isAtStop ? "a l'arret" : formatDistanceMeters(distanceToStopM);
+        }
+        if (el.arrivalLabel) el.arrivalLabel.textContent = isAtStop ? "Depart Prevu" : "Arrivee Prevue";
+        if (el.arrivalAt) el.arrivalAt.textContent = refTime || "--:--";
+        if (el.stopName) {
+          el.stopName.classList.toggle("is-at-stop", isAtStop);
+          el.stopName.classList.toggle("is-live", !isAtStop);
+        }
+        if (el.stopDistance) {
+          el.stopDistance.classList.toggle("is-at-stop", isAtStop);
+          el.stopDistance.classList.toggle("is-live", !isAtStop);
+        }
+        if (el.arrivalAt) {
+          el.arrivalAt.classList.toggle("is-live", isAtStop);
+          el.arrivalAt.classList.toggle("is-warn", !isAtStop);
+        }
+
+        if (el.delayStatus) {
+          var delay = buildActiveDelayInfo(data, names, displayIndex, isAtStop);
+          el.delayStatus.classList.remove("status-neutral", "status-late", "status-early");
+          el.delayStatus.classList.add(delay.cls);
+          el.delayStatus.textContent = delay.text;
+        }
+      }
+
+      function renderFinished(data) {
+        var lineNumber = String(data.lineNumber || "").trim();
+        var routeName = String(data.routeName || "").trim();
+        var delayInfo = buildDelayFromMinutes(data.routeFinalDelayMinutes);
+        if (el.doneLineNumber) {
+          var lineText = lineNumber ? ("Ligne " + lineNumber) : "Ligne -";
+          el.doneLineNumber.textContent = routeName ? (lineText + " - " + routeName) : lineText;
+        }
+        if (el.doneDelay) {
+          el.doneDelay.textContent = delayInfo.text;
+          el.doneDelay.classList.remove("status-neutral", "status-late", "status-early");
+          el.doneDelay.classList.add(delayInfo.cls);
+        }
+        var late = Math.max(0, Number(data.routeLateStopsCount) || 0);
+        var reached = Math.max(0, Number(data.routeReachedStopsCount) || 0);
+        var total = Math.max(0, Number(data.routeStopCount) || 0);
+        if (el.doneLateStops) el.doneLateStops.textContent = String(late) + " / " + String(total);
+        if (el.doneReachedStops) el.doneReachedStops.textContent = String(reached);
+        if (el.doneTravelTime) {
+          el.doneTravelTime.textContent = formatDurationMs(data.routeElapsedMs);
+        }
+      }
+
+      function render() {
+        var data = latestState && typeof latestState === "object" ? latestState : {};
+        var hasSelection = hasRouteSelection(data);
+        var justLostSelection = hadRouteSelectionOnPreviousRender === true && hasSelection !== true;
+        hadRouteSelectionOnPreviousRender = hasSelection === true;
+        var selectedKey = String(data.selectedKey || "").trim() || routeKey(data.selectedLineUid, data.selectedRouteUid);
+
+        if (!hasSelection) {
+          if (el.choiceView) el.choiceView.classList.remove("is-pending-start");
+          if (el.chooserTitle) el.chooserTitle.textContent = "Choix de Ligne";
+          forceChoiceForSelectedKey = "";
+          if (justLostSelection) {
+            chooserConfirmedLineUid = "";
+            selectedRouteKey = "";
+            setChoiceStep("line");
+            updateStartButtonState();
+          }
+          resetActiveUi();
+          setView("choice");
+          if (!routeCatalog.length) requestCatalog();
+          return;
+        }
+
+        if (forceChoiceForSelectedKey && forceChoiceForSelectedKey === selectedKey) {
+          if (el.choiceView) el.choiceView.classList.remove("is-pending-start");
+          if (el.chooserTitle) el.chooserTitle.textContent = "Choix de Ligne";
+          setView("choice");
+          return;
+        }
+        if (data.routeWaitingStart === true) {
+          renderPendingStart(data);
+          return;
+        }
+
+        var names = Array.isArray(data.audioStopNames)
+          ? data.audioStopNames.map(function (name) { return String(name || "").trim(); }).filter(Boolean)
+          : [];
+
+        if (!names.length) {
+          if (el.choiceView) el.choiceView.classList.remove("is-pending-start");
+          if (el.chooserTitle) el.chooserTitle.textContent = "Choix de Ligne";
+          resetActiveUi();
+          setView("choice");
+          return;
+        }
+
+        if (data.routeCompleted === true) {
+          renderFinished(data);
+          setView("finished");
+          return;
+        }
+
+        renderActive(data, names);
+        setView("active");
+      }
+
+      if (el.lineSelect) {
+        el.lineSelect.addEventListener("change", function () {
+          selectedLineUid = String(el.lineSelect.value || "").trim();
+          updateStartButtonState();
+        });
+      }
+
+      if (el.backToLinesBtn) {
+        el.backToLinesBtn.addEventListener("click", function () {
+          var state = latestState && typeof latestState === "object" ? latestState : {};
+          if (state.routeWaitingStart === true) {
+            var pendingKey = String(state.selectedKey || "").trim() || routeKey(state.selectedLineUid, state.selectedRouteUid);
+            forceChoiceForSelectedKey = pendingKey;
+            clearRouteSelection();
+            chooserConfirmedLineUid = "";
+            selectedRouteKey = "";
+            setChoiceStep("line");
+            setView("choice");
+            setChooserStatus("Ligne annulee", false);
+            requestCatalog();
+            return;
+          }
+          if (chooserStep !== "route") return;
+          setChoiceStep("line");
+          chooserConfirmedLineUid = "";
+          selectedRouteKey = "";
+          updateStartButtonState();
+          setChooserStatus("Selectionnez une ligne", false);
+        });
+      }
+
+      if (el.startRouteBtn) {
+        el.startRouteBtn.addEventListener("click", function () {
+          var state = latestState && typeof latestState === "object" ? latestState : {};
+          if (state.routeWaitingStart === true) {
+            requestStartSelectedRoute();
+            return;
+          }
+          selectCatalogRoute();
+        });
+      }
+
+      if (el.routeSelect) {
+        el.routeSelect.addEventListener("change", function () {
+          selectedRouteKey = String(el.routeSelect.value || "").trim();
+          updateStartButtonState();
+        });
+        el.routeSelect.addEventListener("dblclick", function () {
+          if (chooserStep === "route") selectCatalogRoute();
+        });
+      }
+
+      if (el.cancelRouteBtn) {
+        el.cancelRouteBtn.addEventListener("click", function () {
+          var data = latestState && typeof latestState === "object" ? latestState : {};
+          var key = String(data.selectedKey || "").trim() || routeKey(data.selectedLineUid, data.selectedRouteUid);
+          forceChoiceForSelectedKey = key;
+          clearRouteSelection();
+          chooserConfirmedLineUid = "";
+          selectedRouteKey = "";
+          setChoiceStep("line");
+          setView("choice");
+          setChooserStatus("Ligne annulee", false);
+          requestCatalog();
+        });
+      }
+
+      if (el.doneOkBtn) {
+        el.doneOkBtn.addEventListener("click", function () {
+          var data = latestState && typeof latestState === "object" ? latestState : {};
+          var key = String(data.selectedKey || "").trim() || routeKey(data.selectedLineUid, data.selectedRouteUid);
+          forceChoiceForSelectedKey = key;
+          clearRouteSelection();
+          selectedRouteKey = "";
+          chooserConfirmedLineUid = "";
+          setChoiceStep("line");
+          setView("choice");
+          setChooserStatus("Ligne terminee", false);
+          requestCatalog();
+        });
+      }
+
+      ensureBridgeSocket();
+      startStateRequestPolling();
+      startHostBridgePolling();
+      readHostSaeivStateSnapshot()
+        .then(function (snapshot) {
+          applyHostSaeivStateSnapshot(snapshot);
+        })
+        .catch(function () {});
+
+      window.addEventListener("pagehide", function () {
+        post("saeiv:closed");
+        stopHostBridgePolling();
+        stopStateRequestPolling();
+        if (hudScaleObserver) {
+          try { hudScaleObserver.disconnect(); } catch (err0) {}
+          hudScaleObserver = null;
+        }
+        if (hudScaleRaf) {
+          try { cancelAnimationFrame(hudScaleRaf); } catch (err1) {}
+          hudScaleRaf = 0;
+        }
+        closeBridgeSocket({ stop: true });
+      });
+      window.addEventListener("beforeunload", function () {
+        stopHostBridgePolling();
+        stopStateRequestPolling();
+        closeBridgeSocket({ stop: true });
+      });
+
+      window.addEventListener("resize", queueHudScale, { passive: true });
+      if (typeof ResizeObserver === "function" && rootEl) {
+        hudScaleObserver = new ResizeObserver(queueHudScale);
+        hudScaleObserver.observe(rootEl);
+      }
+
+      window.setInterval(render, 500);
+      setChoiceStep("line");
+      applyHudScale();
+      render();
+      requestCatalog();
+    })();
+  </script>
+</body>
+</html>
+

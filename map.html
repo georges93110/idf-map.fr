@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8"/>
@@ -15,9 +15,13 @@
   <meta name="twitter:title" content="Ile-de-France Map - Carte Interactive"/>
   <meta name="twitter:description" content="Explorez la carte interactive de la map Ile-de-France."/>
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <script src="config/theme-init.js"></script>
   <style>
     html[data-app-ready="0"] {
       background:#000;
+    }
+    html[data-theme="light"][data-app-ready="0"] {
+      background:#dfe8f3;
     }
     html[data-app-ready="0"] body {
       opacity:0 !important;
@@ -164,7 +168,9 @@
     }
     .map-topbar-row .search-input,
     .map-topbar-row .top-actions,
-    .map-topbar-row .top-actions *{
+    .map-topbar-row .top-actions *,
+    .map-topbar-row #devNavDebugRow,
+    .map-topbar-row #devNavDebugRow *{
       pointer-events:auto;
     }
     .map-topbar-row .search-input{
@@ -176,6 +182,125 @@
       max-width:min(560px, 64vw);
       min-width:220px;
       margin:0;
+    }
+    .dev-waze-mode-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      gap:12px;
+      margin-top:6px;
+      width:100%;
+      max-width:min(560px, 64vw);
+      pointer-events:auto;
+    }
+    .dev-waze-mode-btn{
+      border:none;
+      background:transparent;
+      color:#d8dee9;
+      font:600 13px/1.2 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      padding:0;
+      margin:0;
+      cursor:pointer;
+      text-align:left;
+    }
+    .dev-waze-mode-btn.is-active{
+      color:#56bdf6;
+    }
+    .dev-waze-random-btn{
+      color:#9fd8ff;
+    }
+    #devNavDebugRow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      position:relative;
+      min-width:0;
+    }
+    #devNavDebugRow[hidden]{
+      display:none !important;
+    }
+    #devNavDebugMenu{
+      position:absolute;
+      top:calc(100% + 6px);
+      left:0;
+      z-index:1312;
+      min-width:300px;
+      max-width:min(92vw, 420px);
+      max-height:min(60vh, 420px);
+      overflow:auto;
+      padding:8px;
+      border:1px solid #3a3a3a;
+      border-radius:8px;
+      background:#121212;
+      box-shadow:0 10px 24px rgba(0,0,0,.45);
+    }
+    #devNavDebugMenu[hidden]{
+      display:none !important;
+    }
+    #devNavDebugMenu button{
+      display:block;
+      margin:0 0 6px;
+    }
+    #devSpeedLimitsLegend{
+      display:grid;
+      gap:4px;
+      margin:0 0 8px;
+      padding:6px 8px;
+      border:1px solid #3a3a3a;
+      border-radius:6px;
+      background:#161616;
+    }
+    #devSpeedLimitsLegend[hidden]{
+      display:none !important;
+    }
+    .dev-speed-legend-title{
+      color:#fff;
+      font-weight:700;
+      font-size:12px;
+      margin-bottom:2px;
+    }
+    .dev-speed-legend-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:#fff;
+      font-weight:600;
+      font-size:12px;
+      line-height:1.2;
+    }
+    .dev-speed-legend-swatch{
+      width:12px;
+      height:12px;
+      border-radius:3px;
+      border:1px solid rgba(255,255,255,.35);
+      flex:0 0 auto;
+    }
+    #devNavDebugMenu > details{
+      display:block;
+      margin:0;
+    }
+    #devNavDebugMenu > details + details{
+      margin-top:6px;
+    }
+    #devMapCoordsValue,
+    #devTrafficAreaInfo{
+      color:#fff;
+      font-weight:600;
+      white-space:nowrap;
+    }
+    #devTrafficAreaInfo{
+      max-width:min(52vw, 760px);
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    #devTrafficAreasModeDetails,
+    #devTrafficAreasModeDetails summary,
+    #devTrafficAreasModeDetails label,
+    #devTrafficAreasFilterDetails,
+    #devTrafficAreasFilterDetails summary,
+    #devTrafficAreasFilterDetails label{
+      color:#fff;
+      font-weight:600;
     }
     .search-panel{
       position:fixed;
@@ -2842,6 +2967,9 @@
         flex:1 1 auto;
         order:0;
       }
+      .dev-waze-mode-row{
+        max-width:none;
+      }
       .top-actions{
         order:0;
         margin-left:auto;
@@ -2953,6 +3081,7 @@
       .search-panel{left:0;right:0}
       .map-topbar{padding:0 8px;border-radius:12px}
       .map-topbar-row{gap:6px}
+      .dev-waze-mode-row{margin-top:4px}
       .btn{padding:10px 12px;font-size:13px}
       .search-input{padding:10px 12px;font-size:14px}
       .dbus-panel{padding:10px 12px}
@@ -2997,6 +3126,29 @@
   <div class="map-topbar" id="topBar">
     <div class="map-topbar-row">
       <input id="search" class="search-input" type="search" placeholder="Rechercher..." autocomplete="off" aria-label="Recherche"/>
+      <div id="devNavDebugRow" hidden>
+        <button id="btnDevNavDebugMenuToggle" type="button" aria-expanded="false" aria-controls="devNavDebugMenu">dev menu</button>
+        <div id="devNavDebugMenu" hidden>
+          <button id="btnDevNavPointsToggle" type="button">nav points: off</button>
+          <button id="btnDevSpeedLimitsToggle" type="button">nav speed limits: off</button>
+          <div id="devSpeedLimitsLegend" hidden></div>
+          <button id="btnDevTrafficAreasToggle" type="button">traffic areas: off</button>
+          <button id="btnDevUberRestaurantsToggle" type="button">uber eats restaurants: off</button>
+          <details id="devTrafficAreasModeDetails" hidden>
+            <summary>zones mode</summary>
+            <label><input type="radio" name="devTrafficAreasMode" value="traffic_rule_name" checked/> traffic_rule_name</label>
+            <label><input type="radio" name="devTrafficAreasMode" value="tags"/> tags</label>
+          </details>
+          <details id="devTrafficAreasFilterDetails" hidden>
+            <summary>zones filter</summary>
+            <button id="btnDevTrafficAreasFilterAll" type="button">tout</button>
+            <button id="btnDevTrafficAreasFilterNone" type="button">aucun</button>
+            <div id="devTrafficAreasFilterList"></div>
+          </details>
+        </div>
+        <span id="devMapCoordsValue"></span>
+        <span id="devTrafficAreaInfo"></span>
+      </div>
       <div class="top-actions">
         <button id="btnSaeivPanel" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Ecran SAEIV" title="Ecran SAEIV">
           <svg class="saeiv-panel-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -3392,40 +3544,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="config/translations.js"></script>
   <script src="config/site-nav.js"></script>
+  <script src="config/line-styles.js"></script>
 
   <script>
 
-  const LINE_STYLES = {
-    "24":         ["#ab5798", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-24/","1"],
-    "63":         ["#cdc74f", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-63/","1"],
-    "109":        ["#cdc74f", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-109/","1"],
-    "112":        ["#e69459", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-112/","1"],
-    "114":        ["#8cc299", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-114/","1"],
-    "121":        ["#d63e34", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-121/","1"],
-    "124":        ["#e6a4b2", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-124/","1"],
-    "210":        ["#fecd08", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-210/","1"],
-    "221":        ["#e7a5b3", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-221/","1"],
-    "303":        ["#99974a", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-303/","1"],
-    "325":        ["#9ad1dc", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-325/","1"],
-    "351":        ["#d7b152", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-351/","1"],
-    "FLIXBUS":    ["#a7d245", "#FFFFFF","https://www.flixbus.fr/","9"],
-    "N11":        ["#e9682a", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n11","1,2"],
-    "N23":        ["#d09835", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n23","1,2"],
-    "N33":        ["#e9682a", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n33","1,2"],
-    "Titus 1":    ["#e63b20", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/","1"],
-    "Titus 2":    ["#49713e", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/","1"],
-    "Fictives":   ["#005e2c", "#FFFFFF","","0"],
-    "Autocar":    ["#005e2c", "#FFFFFF","","0"],
-    "Scolaire":   ["#f0c748", "#221f20","","0"],
-    "Express":    ["#6fb2e1", "#FFFFFF","","0"],
-    "Express 75": ["#6fb2e1", "#FFFFFF","","0"],
-    "Express 77": ["#6fb2e1", "#FFFFFF","","0"],
-    "Express 93": ["#6fb2e1", "#FFFFFF","","0"],
-    "Express 94": ["#6fb2e1", "#FFFFFF","","0"],
-    "RER A":      ["#e84528", "#FFFFFF","","1"],
-    "RER E":      ["#af4f8d", "#FFFFFF","","1"],
-    "Métro 1":    ["#f3c043", "#221f20","","1"],
-  };
+  const LINE_STYLES = window.LINE_STYLES || {};
 
   const I18N = window.I18N || {};
   const I18N_COMPAT_PATCH = window.I18N_COMPAT_PATCH || {};
@@ -4764,7 +4887,9 @@
 
   <script>
     const QS = new URLSearchParams(location.search);
+    const DEV_MODE = QS.has("dev");
     const DEV_GRAPH = QS.has("dev_graph");
+    const DEV_NAV_POINTS_DEBUG = DEV_MODE || DEV_GRAPH;
     const DEV_NAV_BRIDGES_DEBUG = DEV_GRAPH || QS.has("dev_bridges");
     const MAP_FILES_ROOT = "./map_files";
     const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
@@ -4987,6 +5112,12 @@
     const devGraphNodePane = map.createPane("devGraphNodePane");
     devGraphNodePane.style.zIndex = "246";
     devGraphNodePane.style.pointerEvents = "none";
+    const devTrafficAreasPane = map.createPane("devTrafficAreasPane");
+    devTrafficAreasPane.style.zIndex = "244";
+    devTrafficAreasPane.style.pointerEvents = "auto";
+    const devUberRestaurantsPane = map.createPane("devUberRestaurantsPane");
+    devUberRestaurantsPane.style.zIndex = "247";
+    devUberRestaurantsPane.style.pointerEvents = "auto";
     const dbusRouteDirectionPane = map.createPane("dbusRouteDirectionPane");
     dbusRouteDirectionPane.style.zIndex = "325";
     dbusRouteDirectionPane.style.pointerEvents = "none";
@@ -5063,6 +5194,25 @@
     const SY = parseFloat(QS.get('sy') ?? '1');
     
     const $search = document.getElementById("search");
+    const $devWazeModeRow = document.getElementById("devWazeModeRow");
+    const $btnDevWazeMode = document.getElementById("btnDevWazeMode");
+    const $btnDevWazeRandom = document.getElementById("btnDevWazeRandom");
+    const $devNavDebugRow = document.getElementById("devNavDebugRow");
+    const $btnDevNavDebugMenuToggle = document.getElementById("btnDevNavDebugMenuToggle");
+    const $devNavDebugMenu = document.getElementById("devNavDebugMenu");
+    const $btnDevNavPointsToggle = document.getElementById("btnDevNavPointsToggle");
+    const $btnDevSpeedLimitsToggle = document.getElementById("btnDevSpeedLimitsToggle");
+    const $devSpeedLimitsLegend = document.getElementById("devSpeedLimitsLegend");
+    const $btnDevTrafficAreasToggle = document.getElementById("btnDevTrafficAreasToggle");
+    const $btnDevUberRestaurantsToggle = document.getElementById("btnDevUberRestaurantsToggle");
+    const $devTrafficAreasModeDetails = document.getElementById("devTrafficAreasModeDetails");
+    const $devTrafficAreasModeInputs = document.querySelectorAll("input[name='devTrafficAreasMode']");
+    const $devTrafficAreasFilterDetails = document.getElementById("devTrafficAreasFilterDetails");
+    const $btnDevTrafficAreasFilterAll = document.getElementById("btnDevTrafficAreasFilterAll");
+    const $btnDevTrafficAreasFilterNone = document.getElementById("btnDevTrafficAreasFilterNone");
+    const $devTrafficAreasFilterList = document.getElementById("devTrafficAreasFilterList");
+    const $devMapCoordsValue = document.getElementById("devMapCoordsValue");
+    const $devTrafficAreaInfo = document.getElementById("devTrafficAreaInfo");
     const $results = document.getElementById("results");
     const $siteTopBar = document.getElementById("siteTopBar");
     const $topBar = document.getElementById("topBar");
@@ -5620,7 +5770,7 @@
           const sufList = (LANG === "en")
             ? [",_Val-de-Marne", ",_Essonne", ",_Hauts-de-Seine", ",_Seine-Saint-Denis",
               ",_Val-d'Oise", ",_Seine-et-Marne", ",_Yvelines"]
-            : ["_(Commune_franà§aise)", "_(Val-de-Marne)", "_(Essonne)", "_(Hauts-de-Seine)",
+            : ["_(Commune_française)", "_(Val-de-Marne)", "_(Essonne)", "_(Hauts-de-Seine)",
               "_(Seine-Saint-Denis)", "_(Val-d'Oise)", "_(Seine-et-Marne)", "_(Yvelines)"];
 
           for (const suf of sufList) {
@@ -5898,7 +6048,7 @@
               L.imageOverlay(overlayPath(`${ov.IconId}.png`), bounds, { interactive: true, bubblingMouseEvents: false }).addTo(map),
               { centerX: ov.X, centerY: ov.Y, width, height }
             );
-            const btxt = brandsText(ov) || '—';
+            const btxt = brandsText(ov) || '?';
 
             const brandKey = dealerBrandKeyFrom(ov);
             const brandLogo = brandKey ? overlayPath(`dealer_${brandKey}.png`) : overlayPath("dealer_ico.png");
@@ -6160,11 +6310,61 @@
     const dbusNavPathCache = new Map();
     const DEV_GRAPH_STATE = {
       enabled: false,
+      pendingEnable: false,
       edgeLayer: null,
       nodeLayer: null,
       nodePoints: [],
       incomingByNode: new Map(),
       clickBound: false
+    };
+    const DEV_TRAFFIC_AREAS_STATE = {
+      enabled: false,
+      loading: false,
+      loaded: false,
+      mode: "traffic_rule_name",
+      filterSelectedByMode: {
+        traffic_rule_name: new Set(),
+        tags: new Set()
+      },
+      areas: [],
+      areaRecords: [],
+      selectedIds: new Set(),
+      hoverId: null,
+      layer: null
+    };
+    const DEV_SPEED_LIMITS_STATE = {
+      enabled: false,
+      loading: false,
+      records: [],
+      layer: null
+    };
+    const DEV_UBER_RESTAURANTS_STATE = {
+      enabled: false,
+      loading: false,
+      loaded: false,
+      available: true,
+      error: "",
+      records: [],
+      layer: null,
+      loadPromise: null
+    };
+    const DEV_WAZE_BRIDGE_KEY = "idf_waze_bridge_v1";
+    const DEV_WAZE_BRIDGE_CHANNEL = "idf_map_waze_bridge_v1";
+    const DEV_WAZE_WINDOW_NAME = "idf_waze_mode";
+    const DEV_WAZE_STATE = {
+      enabled: false,
+      startWorld: null,
+      endWorld: null,
+      startMarker: null,
+      endMarker: null,
+      routeLine: null,
+      routeWorldPoints: [],
+      channel: null,
+      windowRef: null,
+      headingDeg: 0,
+      randomTweenRaf: 0,
+      randomTweenRunning: false,
+      randomLastRouteMs: 0
     };
     let linePreviewAudioCheckToken = 0;
     let dbusFisRootLineFolderTokensPromise = null;
@@ -8637,7 +8837,7 @@
       const centeredTop = Math.round(window.screenY + ((window.outerHeight - height) / 2));
       const left = Math.max(minLeft, Math.min(maxLeft, centeredLeft));
       const top = Math.max(minTop, Math.min(maxTop, centeredTop));
-      const url = new URL("saeiv.html", location.href);
+      const url = new URL("widgets/saeiv_temp.html", location.href);
       url.searchParams.set("source", SAEIV_PANEL_STATE.sourceId);
       if (SAEIV_DEV_MODE) {
         const win = window.open(url.toString(), "_blank");
@@ -9285,14 +9485,50 @@
         }
       };
     }
+    function parseWorldPoint3D(rawPoint){
+      if (!rawPoint || typeof rawPoint !== "object") return null;
+      const hasZKey =
+        Object.prototype.hasOwnProperty.call(rawPoint, "z") ||
+        Object.prototype.hasOwnProperty.call(rawPoint, "Z");
+      const x = Number(rawPoint.x ?? rawPoint.X);
+      const y = Number(hasZKey ? (rawPoint.z ?? rawPoint.Z) : (rawPoint.y ?? rawPoint.Y));
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      let h = Number(rawPoint.h ?? rawPoint.H ?? rawPoint.height ?? rawPoint.alt ?? rawPoint.altitude);
+      if (!Number.isFinite(h) && hasZKey) {
+        h = Number(rawPoint.y ?? rawPoint.Y);
+      }
+      const out = { x, y };
+      if (Number.isFinite(h)) out.h = h;
+      return out;
+    }
+    function worldPointDistance(a, b){
+      const pa = parseWorldPoint3D(a);
+      const pb = parseWorldPoint3D(b);
+      if (!pa || !pb) return Number.POSITIVE_INFINITY;
+      const dx = pa.x - pb.x;
+      const dy = pa.y - pb.y;
+      if (Number.isFinite(pa.h) && Number.isFinite(pb.h)) {
+        return Math.hypot(dx, dy, pa.h - pb.h);
+      }
+      return Math.hypot(dx, dy);
+    }
     function appendUniqueWorldPoint(target, point){
-      if (!point) return;
-      const x = Number(point.x);
-      const y = Number(point.y);
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      const parsed = parseWorldPoint3D(point);
+      if (!parsed) return;
+      const x = parsed.x;
+      const y = parsed.y;
+      const h = parsed.h;
+      const hasH = Number.isFinite(h);
       const last = target[target.length - 1];
-      if (last && Math.abs(last.x - x) < 0.001 && Math.abs(last.y - y) < 0.001) return;
-      target.push({ x, y });
+      if (last) {
+        const sameXY = Math.abs(Number(last.x) - x) < 0.001 && Math.abs(Number(last.y) - y) < 0.001;
+        const lastHasH = Number.isFinite(Number(last.h));
+        const sameH = (!lastHasH && !hasH) || (lastHasH && hasH && Math.abs(Number(last.h) - h) < 0.001);
+        if (sameXY && sameH) return;
+      }
+      const out = { x, y };
+      if (hasH) out.h = h;
+      target.push(out);
     }
     function buildDbusNavGraph(raw){
       const nodes = Array.isArray(raw?.nodes) ? raw.nodes : [];
@@ -9301,10 +9537,11 @@
       const nodesById = new Map();
       const nodeList = [];
       nodes.forEach((node) => {
+        const point = parseWorldPoint3D(node);
         const id = Number(node?.id);
-        const x = Number(node?.x);
-        const y = Number(node?.y);
-        if (!Number.isFinite(id) || !Number.isFinite(x) || !Number.isFinite(y)) return;
+        if (!point || !Number.isFinite(id)) return;
+        const x = point.x;
+        const y = point.y;
         const rec = {
           id,
           x,
@@ -9313,6 +9550,7 @@
           prefabId: node?.prefab_id ?? null,
           connectorId: node?.connector_id ?? null
         };
+        if (Number.isFinite(point.h)) rec.h = point.h;
         nodesById.set(id, rec);
         nodeList.push(rec);
       });
@@ -9337,8 +9575,8 @@
         }
         const points = Array.isArray(edge?.polyline)
           ? edge.polyline
-              .map((pt) => ({ x: Number(pt?.x), y: Number(pt?.y) }))
-              .filter((pt) => Number.isFinite(pt.x) && Number.isFinite(pt.y))
+              .map((pt) => parseWorldPoint3D(pt))
+              .filter(Boolean)
           : [];
         const safePoints = points.length
           ? points
@@ -9351,7 +9589,8 @@
           length: weight,
           look: String(edge?.look || ""),
           flags: edge?.flags && typeof edge.flags === "object" ? edge.flags : null,
-          polyline: safePoints
+          polyline: safePoints,
+          speedLimitKmh: Number.isFinite(Number(edge?.speed_limit_kmh)) ? Number(edge.speed_limit_kmh) : null
         };
         edgeList.push(edgeRec);
         if (Number.isFinite(edgeId)) edgesById.set(edgeId, edgeRec);
@@ -9471,13 +9710,1283 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
     }
+    function setDevWazeModeButtonState(){
+      if (!$btnDevWazeMode) return;
+      $btnDevWazeMode.classList.toggle("is-active", !!DEV_WAZE_STATE.enabled);
+      if ($btnDevWazeRandom) {
+        $btnDevWazeRandom.classList.toggle("is-active", !!DEV_WAZE_STATE.randomTweenRunning);
+      }
+    }
+    function stopDevWazeRandomTween(){
+      if (DEV_WAZE_STATE.randomTweenRaf) cancelAnimationFrame(DEV_WAZE_STATE.randomTweenRaf);
+      DEV_WAZE_STATE.randomTweenRaf = 0;
+      DEV_WAZE_STATE.randomTweenRunning = false;
+      setDevWazeModeButtonState();
+    }
+    function clampDevWazeWorldPoint(point){
+      const x = Number(point?.x);
+      const y = Number(point?.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      if (!TileMapInfo) return { x, y };
+      const minX = Math.min(Number(TileMapInfo.x1), Number(TileMapInfo.x2));
+      const maxX = Math.max(Number(TileMapInfo.x1), Number(TileMapInfo.x2));
+      const minY = Math.min(Number(TileMapInfo.y1), Number(TileMapInfo.y2));
+      const maxY = Math.max(Number(TileMapInfo.y1), Number(TileMapInfo.y2));
+      return {
+        x: Math.max(minX, Math.min(maxX, x)),
+        y: Math.max(minY, Math.min(maxY, y))
+      };
+    }
+    function getHeadingDeg(fromPoint, toPoint){
+      const dx = Number(toPoint?.x) - Number(fromPoint?.x);
+      const dy = Number(toPoint?.y) - Number(fromPoint?.y);
+      if (!Number.isFinite(dx) || !Number.isFinite(dy) || (Math.abs(dx) < 1e-6 && Math.abs(dy) < 1e-6)) {
+        return Number(DEV_WAZE_STATE.headingDeg) || 0;
+      }
+      return Math.atan2(dy, dx) * (180 / Math.PI);
+    }
+    function postDevWazeState(step, { includeRoute = true, forceRoute = false } = {}){
+      const hasStart = !!DEV_WAZE_STATE.startWorld;
+      const hasEnd = !!DEV_WAZE_STATE.endWorld;
+      let routePoints = undefined;
+      let includeRoutePayload = false;
+      if (hasStart && hasEnd && includeRoute) {
+        const now = performance.now();
+        if (forceRoute || (now - DEV_WAZE_STATE.randomLastRouteMs) > 600) {
+          DEV_WAZE_STATE.randomLastRouteMs = now;
+          routePoints = buildDevWazeShortestPathWorldPoints(DEV_WAZE_STATE.startWorld, DEV_WAZE_STATE.endWorld);
+          DEV_WAZE_STATE.routeWorldPoints = Array.isArray(routePoints) ? routePoints : [];
+          const routeLatLngs = worldPointsToLatLngs(routePoints);
+          setDevWazeRoutePreviewLatLngs(routeLatLngs);
+          includeRoutePayload = true;
+        }
+      }
+      const payload = {
+        step,
+        start: hasStart ? DEV_WAZE_STATE.startWorld : null,
+        end: hasEnd ? DEV_WAZE_STATE.endWorld : null,
+        arrow: hasStart ? DEV_WAZE_STATE.startWorld : null,
+        heading: Number(DEV_WAZE_STATE.headingDeg) || 0
+      };
+      if (includeRoutePayload) payload.routePoints = routePoints;
+      postDevWazePayload(payload, {
+        persist: step !== "A_tween"
+      });
+    }
+    function startDevWazeRandomTween(){
+      if (!DEV_GRAPH || !DEV_WAZE_STATE.enabled) return;
+      if (!TileMapInfo) return;
+      if (!DEV_WAZE_STATE.startWorld) {
+        const center = fromLatLngToXY(map.getCenter());
+        const clampedCenter = clampDevWazeWorldPoint({ x: Number(center?.X), y: Number(center?.Y) });
+        if (!clampedCenter) return;
+        DEV_WAZE_STATE.startWorld = clampedCenter;
+        const centerLatLng = toLatLng(clampedCenter.x, clampedCenter.y);
+        if (centerLatLng) setDevWazePointMarker("A", centerLatLng);
+      }
+      stopDevWazeRandomTween();
+      DEV_WAZE_STATE.randomTweenRunning = true;
+      setDevWazeModeButtonState();
+
+      let segFrom = { ...DEV_WAZE_STATE.startWorld };
+      let segTo = segFrom;
+      let segStartTs = 0;
+      let segDurationMs = 0;
+      let segHeadingDeg = Number(DEV_WAZE_STATE.headingDeg) || 0;
+      const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - (Math.pow(-2 * t + 2, 2) / 2));
+      const buildNextSegment = () => {
+        segFrom = { ...DEV_WAZE_STATE.startWorld };
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 60 + (Math.random() * 260);
+        const target = clampDevWazeWorldPoint({
+          x: segFrom.x + (Math.cos(angle) * distance),
+          y: segFrom.y + (Math.sin(angle) * distance)
+        }) || segFrom;
+        segTo = target;
+        segHeadingDeg = getHeadingDeg(segFrom, segTo);
+        segDurationMs = 1200 + Math.random() * 2200;
+        segStartTs = 0;
+      };
+      buildNextSegment();
+
+      const tick = (ts) => {
+        if (!DEV_WAZE_STATE.randomTweenRunning) return;
+        if (!segStartTs) segStartTs = ts;
+        const tRaw = Math.max(0, Math.min(1, (ts - segStartTs) / segDurationMs));
+        const t = easeInOut(tRaw);
+        const current = clampDevWazeWorldPoint({
+          x: segFrom.x + ((segTo.x - segFrom.x) * t),
+          y: segFrom.y + ((segTo.y - segFrom.y) * t)
+        });
+        if (current) {
+          DEV_WAZE_STATE.startWorld = current;
+          DEV_WAZE_STATE.headingDeg = segHeadingDeg;
+          const latlng = toLatLng(current.x, current.y);
+          if (latlng) setDevWazePointMarker("A", latlng);
+          postDevWazeState("A_tween", { includeRoute: true, forceRoute: false });
+        }
+        if (tRaw >= 1) {
+          buildNextSegment();
+        }
+        DEV_WAZE_STATE.randomTweenRaf = requestAnimationFrame(tick);
+      };
+      DEV_WAZE_STATE.randomTweenRaf = requestAnimationFrame(tick);
+    }
+    function createDevWazeMarker(latlng, kind = "A"){
+      const isA = kind === "A";
+      return L.circleMarker(latlng, {
+        pane: "dbusRouteMarkerPane",
+        radius: isA ? 6 : 5,
+        color: isA ? "#8bd3ff" : "#ffd166",
+        weight: 2,
+        fillColor: isA ? "#1d9bf0" : "#f59e0b",
+        fillOpacity: 0.96,
+        interactive: false
+      }).addTo(map);
+    }
+    function clearDevWazeRoutePreview(){
+      if (DEV_WAZE_STATE.routeLine) {
+        try { map.removeLayer(DEV_WAZE_STATE.routeLine); } catch {}
+        DEV_WAZE_STATE.routeLine = null;
+      }
+    }
+    function clearDevWazeSelection(){
+      stopDevWazeRandomTween();
+      clearDevWazeRoutePreview();
+      if (DEV_WAZE_STATE.startMarker) {
+        try { map.removeLayer(DEV_WAZE_STATE.startMarker); } catch {}
+        DEV_WAZE_STATE.startMarker = null;
+      }
+      if (DEV_WAZE_STATE.endMarker) {
+        try { map.removeLayer(DEV_WAZE_STATE.endMarker); } catch {}
+        DEV_WAZE_STATE.endMarker = null;
+      }
+      DEV_WAZE_STATE.startWorld = null;
+      DEV_WAZE_STATE.endWorld = null;
+      DEV_WAZE_STATE.headingDeg = 0;
+      DEV_WAZE_STATE.routeWorldPoints = [];
+    }
+    function setDevWazePointMarker(kind, latlng){
+      if (!latlng) return;
+      if (kind === "A") {
+        if (!DEV_WAZE_STATE.startMarker) DEV_WAZE_STATE.startMarker = createDevWazeMarker(latlng, "A");
+        else DEV_WAZE_STATE.startMarker.setLatLng(latlng);
+        return;
+      }
+      if (!DEV_WAZE_STATE.endMarker) DEV_WAZE_STATE.endMarker = createDevWazeMarker(latlng, "B");
+      else DEV_WAZE_STATE.endMarker.setLatLng(latlng);
+    }
+    function setDevWazeRoutePreviewLatLngs(latlngs){
+      const path = Array.isArray(latlngs) ? latlngs.filter(Boolean) : [];
+      if (path.length < 2) {
+        clearDevWazeRoutePreview();
+        return;
+      }
+      if (!DEV_WAZE_STATE.routeLine) {
+        DEV_WAZE_STATE.routeLine = L.polyline(path, {
+          pane: "dbusRouteMarkerPane",
+          color: "#56bdf6",
+          weight: 5,
+          opacity: 0.92,
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: false
+        }).addTo(map);
+        return;
+      }
+      DEV_WAZE_STATE.routeLine.setLatLngs(path);
+    }
+    function ensureDevWazeBridgeChannel(){
+      if (DEV_WAZE_STATE.channel || !("BroadcastChannel" in window)) return;
+      try { DEV_WAZE_STATE.channel = new BroadcastChannel(DEV_WAZE_BRIDGE_CHANNEL); } catch {}
+    }
+    function postDevWazePayload(payload, options = {}){
+      const body = payload && typeof payload === "object" ? payload : {};
+      const opts = options && typeof options === "object" ? options : {};
+      const persist = opts.persist !== false;
+      const packet = {
+        kind: "waze-dev",
+        source: "map.html",
+        version: SELECTED_VERSION || "",
+        ts: Date.now(),
+        ...body
+      };
+      if (persist) {
+        try { localStorage.setItem(DEV_WAZE_BRIDGE_KEY, JSON.stringify(packet)); } catch {}
+      }
+      try {
+        ensureDevWazeBridgeChannel();
+        DEV_WAZE_STATE.channel?.postMessage(packet);
+      } catch {}
+    }
+    function buildWazeModeUrl(){
+      const next = new URL("./widgets/waze.html", location.href);
+      if (SELECTED_VERSION) next.searchParams.set("version", SELECTED_VERSION);
+      next.searchParams.set("bridge", "1");
+      return next.toString();
+    }
+    function openDevWazeWindow(){
+      let opened = null;
+      try { opened = window.open(buildWazeModeUrl(), DEV_WAZE_WINDOW_NAME); } catch {}
+      if (opened) {
+        DEV_WAZE_STATE.windowRef = opened;
+        try { opened.focus(); } catch {}
+      }
+      return opened;
+    }
+    function buildDevWazeShortestPathWorldPoints(startWorld, endWorld){
+      const start = parseWorldPoint3D(startWorld);
+      const end = parseWorldPoint3D(endWorld);
+      if (!start || !end) return [];
+      const out = [];
+      appendUniqueWorldPoint(out, start);
+      if (DBUS_NAV_GRAPH) {
+        const startNodeId = getNearestDbusGraphNodeIdForPoint(start, DBUS_NAV_MAX_SNAP_DISTANCE * 8);
+        const endNodeId = getNearestDbusGraphNodeIdForPoint(end, DBUS_NAV_MAX_SNAP_DISTANCE * 8);
+        if (Number.isFinite(startNodeId) && Number.isFinite(endNodeId)) {
+          if (startNodeId === endNodeId) {
+            appendUniqueWorldPoint(out, DBUS_NAV_GRAPH.nodesById.get(startNodeId));
+          } else {
+            const graphPath = getDbusNavPathBetweenNodes(startNodeId, endNodeId, null);
+            if (graphPath?.points?.length) {
+              graphPath.points.forEach((point) => appendUniqueWorldPoint(out, point));
+            }
+          }
+        }
+      }
+      appendUniqueWorldPoint(out, end);
+      return out.length >= 2 ? out : [start, end];
+    }
+    function worldPointsToLatLngs(points){
+      return (Array.isArray(points) ? points : [])
+        .map((point) => toLatLng(Number(point?.x), Number(point?.y)))
+        .filter(Boolean);
+    }
+    /* dev_graph + mode waze : clic A = position flèche (envoi live bridge), clic B = itinéraire (plus court sur graphe, envoi bridge) */
+    function handleDevWazeMapClick(e){
+      if (!DEV_GRAPH || !DEV_WAZE_STATE.enabled) return false;
+      if (!TileMapInfo) return true;
+      const clickLatLng = e?.latlng;
+      if (!clickLatLng) return true;
+      const world = fromLatLngToXY(clickLatLng);
+      const worldPoint = {
+        x: Number(world?.X),
+        y: Number(world?.Y)
+      };
+      if (!Number.isFinite(worldPoint.x) || !Number.isFinite(worldPoint.y)) return true;
+
+      const shouldSetStart = !DEV_WAZE_STATE.startWorld || DEV_WAZE_STATE.endWorld;
+      if (shouldSetStart) {
+        /* Clic A : position flèche → envoi live vers waze.html (bridge) */
+        DEV_WAZE_STATE.startWorld = worldPoint;
+        DEV_WAZE_STATE.endWorld = null;
+        DEV_WAZE_STATE.headingDeg = Number(DEV_WAZE_STATE.headingDeg) || 0;
+        stopDevWazeRandomTween();
+        setDevWazePointMarker("A", clickLatLng);
+        if (DEV_WAZE_STATE.endMarker) {
+          try { map.removeLayer(DEV_WAZE_STATE.endMarker); } catch {}
+          DEV_WAZE_STATE.endMarker = null;
+        }
+        clearDevWazeRoutePreview();
+        postDevWazeState("A", { includeRoute: false, forceRoute: true });
+        return true;
+      }
+
+      /* Clic B : calcul itinéraire (trajet le plus court sur graphe) → envoi vers waze.html (bridge) */
+      DEV_WAZE_STATE.endWorld = worldPoint;
+      DEV_WAZE_STATE.headingDeg = getHeadingDeg(DEV_WAZE_STATE.startWorld, DEV_WAZE_STATE.endWorld);
+      setDevWazePointMarker("B", clickLatLng);
+      const routeWorldPoints = buildDevWazeShortestPathWorldPoints(DEV_WAZE_STATE.startWorld, DEV_WAZE_STATE.endWorld);
+      DEV_WAZE_STATE.routeWorldPoints = Array.isArray(routeWorldPoints) ? routeWorldPoints : [];
+      const routeLatLngs = worldPointsToLatLngs(routeWorldPoints);
+      setDevWazeRoutePreviewLatLngs(routeLatLngs);
+      postDevWazePayload({
+        step: "B",
+        start: DEV_WAZE_STATE.startWorld,
+        end: DEV_WAZE_STATE.endWorld,
+        arrow: DEV_WAZE_STATE.startWorld,
+        heading: Number(DEV_WAZE_STATE.headingDeg) || 0,
+        routePoints: routeWorldPoints
+      });
+      return true;
+    }
+    function setDevWazeModeEnabled(enabled){
+      const next = !!enabled && DEV_GRAPH;
+      DEV_WAZE_STATE.enabled = next;
+      setDevWazeModeButtonState();
+      if (!next) {
+        stopDevWazeRandomTween();
+        clearDevWazeSelection();
+        postDevWazePayload({
+          step: "off",
+          start: null,
+          end: null,
+          arrow: null,
+          heading: 0,
+          routePoints: []
+        });
+        return;
+      }
+      clearDevWazeSelection();
+      postDevWazePayload({
+        step: "ready",
+        start: null,
+        end: null,
+        arrow: null,
+        heading: 0,
+        routePoints: []
+      });
+    }
+    function initDevWazeModeUI(){
+      if (!$devWazeModeRow || !$btnDevWazeMode || !$btnDevWazeRandom) return;
+      if (!DEV_GRAPH) {
+        $devWazeModeRow.hidden = true;
+        return;
+      }
+      $devWazeModeRow.hidden = false;
+      setDevWazeModeButtonState();
+      $btnDevWazeMode.addEventListener("click", () => {
+        const nextEnabled = !DEV_WAZE_STATE.enabled;
+        setDevWazeModeEnabled(nextEnabled);
+        if (!nextEnabled) return;
+        openDevWazeWindow();
+      });
+      $btnDevWazeRandom.addEventListener("click", () => {
+        if (!DEV_WAZE_STATE.enabled) {
+          setDevWazeModeEnabled(true);
+          openDevWazeWindow();
+        }
+        if (DEV_WAZE_STATE.randomTweenRunning) {
+          stopDevWazeRandomTween();
+          return;
+        }
+        startDevWazeRandomTween();
+      });
+    }
+    function updateDevNavDebugUIState(){
+      if (!DEV_MODE) {
+        if ($devNavDebugRow) $devNavDebugRow.hidden = true;
+        return;
+      }
+      if ($btnDevNavPointsToggle) {
+        if (DEV_GRAPH_STATE.pendingEnable && !DEV_GRAPH_STATE.enabled) {
+          $btnDevNavPointsToggle.textContent = "nav points: loading";
+        } else {
+          $btnDevNavPointsToggle.textContent = DEV_GRAPH_STATE.enabled ? "nav points: on" : "nav points: off";
+        }
+      }
+      if ($btnDevSpeedLimitsToggle) {
+        if (DEV_SPEED_LIMITS_STATE.loading) {
+          $btnDevSpeedLimitsToggle.textContent = "nav speed limits: loading";
+        } else if (DEV_SPEED_LIMITS_STATE.enabled) {
+          $btnDevSpeedLimitsToggle.textContent = `nav speed limits: on (${DEV_SPEED_LIMITS_STATE.records.length})`;
+        } else {
+          $btnDevSpeedLimitsToggle.textContent = "nav speed limits: off";
+        }
+      }
+      renderDevSpeedLimitsLegend();
+      if ($btnDevTrafficAreasToggle) {
+        if (DEV_TRAFFIC_AREAS_STATE.loading) $btnDevTrafficAreasToggle.textContent = "traffic areas: loading";
+        else $btnDevTrafficAreasToggle.textContent = DEV_TRAFFIC_AREAS_STATE.enabled ? "traffic areas: on" : "traffic areas: off";
+      }
+      if ($btnDevUberRestaurantsToggle) {
+        if (DEV_UBER_RESTAURANTS_STATE.loading) {
+          $btnDevUberRestaurantsToggle.textContent = "uber eats restaurants: loading";
+        } else if (DEV_UBER_RESTAURANTS_STATE.enabled) {
+          $btnDevUberRestaurantsToggle.textContent = `uber eats restaurants: on (${DEV_UBER_RESTAURANTS_STATE.records.length})`;
+        } else if (DEV_UBER_RESTAURANTS_STATE.loaded && !DEV_UBER_RESTAURANTS_STATE.available) {
+          $btnDevUberRestaurantsToggle.textContent = "uber eats restaurants: unavailable";
+        } else {
+          $btnDevUberRestaurantsToggle.textContent = "uber eats restaurants: off";
+        }
+      }
+      const trafficAreasVisible = !!DEV_TRAFFIC_AREAS_STATE.enabled;
+      if ($devTrafficAreasModeDetails) {
+        $devTrafficAreasModeDetails.hidden = !trafficAreasVisible;
+        if (!trafficAreasVisible) $devTrafficAreasModeDetails.open = false;
+      }
+      if ($devTrafficAreasFilterDetails) {
+        $devTrafficAreasFilterDetails.hidden = !trafficAreasVisible;
+        if (!trafficAreasVisible) $devTrafficAreasFilterDetails.open = false;
+      }
+      if ($devTrafficAreasModeInputs && $devTrafficAreasModeInputs.length) {
+        $devTrafficAreasModeInputs.forEach((input) => {
+          input.checked = String(input.value || "") === DEV_TRAFFIC_AREAS_STATE.mode;
+        });
+      }
+      renderDevTrafficAreasFilterChecklist();
+    }
+    function setDevNavDebugMenuOpen(open){
+      if (!$devNavDebugMenu || !$btnDevNavDebugMenuToggle) return;
+      const next = !!open;
+      $devNavDebugMenu.hidden = !next;
+      $btnDevNavDebugMenuToggle.setAttribute("aria-expanded", next ? "true" : "false");
+      $btnDevNavDebugMenuToggle.textContent = next ? "dev menu: on" : "dev menu";
+    }
+    function getSelectedDevTrafficAreas(){
+      const visibleIds = new Set(getFilteredDevTrafficAreaRecords().map((rec) => rec.id));
+      return DEV_TRAFFIC_AREAS_STATE.areaRecords.filter((rec) => visibleIds.has(rec.id) && DEV_TRAFFIC_AREAS_STATE.selectedIds.has(rec.id));
+    }
+    function getDevTrafficAreaFilterSet(key){
+      const normalized = key === "tags" ? "tags" : "traffic_rule_name";
+      const setRef = DEV_TRAFFIC_AREAS_STATE.filterSelectedByMode?.[normalized];
+      if (setRef instanceof Set) return setRef;
+      const next = new Set();
+      if (!DEV_TRAFFIC_AREAS_STATE.filterSelectedByMode) DEV_TRAFFIC_AREAS_STATE.filterSelectedByMode = {};
+      DEV_TRAFFIC_AREAS_STATE.filterSelectedByMode[normalized] = next;
+      return next;
+    }
+    function getDevTrafficAreaFilterOptions(){
+      const tagCounts = new Map();
+      const ruleCounts = new Map();
+      DEV_TRAFFIC_AREAS_STATE.areaRecords.forEach((rec) => {
+        const ruleKey = String(rec?.ruleName || "-");
+        ruleCounts.set(ruleKey, (ruleCounts.get(ruleKey) || 0) + 1);
+        const tags = Array.isArray(rec?.tags) && rec.tags.length ? rec.tags : ["(sans tag)"];
+        tags.forEach((tag) => {
+          const tagKey = String(tag || "").trim() || "(sans tag)";
+          tagCounts.set(tagKey, (tagCounts.get(tagKey) || 0) + 1);
+        });
+      });
+      const sortEntries = (entries) => entries
+        .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0], "fr"))
+        .map(([value, count]) => ({ value, count }));
+      return {
+        tags: sortEntries([...tagCounts.entries()]),
+        rules: sortEntries([...ruleCounts.entries()])
+      };
+    }
+    function getFilteredDevTrafficAreaRecords(){
+      const selectedTags = getDevTrafficAreaFilterSet("tags");
+      const selectedRules = getDevTrafficAreaFilterSet("traffic_rule_name");
+      const hasTagFilter = selectedTags.size > 0;
+      const hasRuleFilter = selectedRules.size > 0;
+      const records = Array.isArray(DEV_TRAFFIC_AREAS_STATE.areaRecords) ? DEV_TRAFFIC_AREAS_STATE.areaRecords : [];
+      if (!hasTagFilter && !hasRuleFilter) return records;
+      return records.filter((rec) => {
+        const ruleMatch = hasRuleFilter && selectedRules.has(String(rec?.ruleName || "-"));
+        const tags = Array.isArray(rec?.tags) && rec.tags.length ? rec.tags : ["(sans tag)"];
+        const tagMatch = hasTagFilter && tags.some((tag) => selectedTags.has(String(tag || "").trim() || "(sans tag)"));
+        return ruleMatch || tagMatch;
+      });
+    }
+    function renderDevTrafficAreasFilterChecklist(){
+      if (!$devTrafficAreasFilterList) return;
+      $devTrafficAreasFilterList.innerHTML = "";
+      if (!DEV_TRAFFIC_AREAS_STATE.enabled) return;
+      if (!DEV_TRAFFIC_AREAS_STATE.loaded) {
+        const loading = document.createElement("div");
+        loading.textContent = DEV_TRAFFIC_AREAS_STATE.loading ? "chargement..." : "aucune zone";
+        loading.style.color = "#fff";
+        loading.style.fontWeight = "600";
+        $devTrafficAreasFilterList.appendChild(loading);
+        return;
+      }
+      const options = getDevTrafficAreaFilterOptions();
+      const selectedTags = getDevTrafficAreaFilterSet("tags");
+      const selectedRules = getDevTrafficAreaFilterSet("traffic_rule_name");
+      if ((!options.tags || !options.tags.length) && (!options.rules || !options.rules.length)) {
+        const empty = document.createElement("div");
+        empty.textContent = "aucune zone";
+        empty.style.color = "#fff";
+        empty.style.fontWeight = "600";
+        $devTrafficAreasFilterList.appendChild(empty);
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      const renderSection = (title, list, selectedSet) => {
+        if (!Array.isArray(list) || !list.length) return;
+        const header = document.createElement("div");
+        header.textContent = title;
+        header.style.color = "#fff";
+        header.style.fontWeight = "700";
+        header.style.marginTop = "6px";
+        frag.appendChild(header);
+        list.forEach((opt) => {
+          const row = document.createElement("label");
+          row.style.display = "block";
+          row.style.color = "#fff";
+          row.style.fontWeight = "600";
+          const box = document.createElement("input");
+          box.type = "checkbox";
+          box.value = opt.value;
+          box.checked = selectedSet.has(opt.value);
+          box.addEventListener("change", () => {
+            if (box.checked) selectedSet.add(opt.value);
+            else selectedSet.delete(opt.value);
+            if (DEV_TRAFFIC_AREAS_STATE.enabled) drawDevTrafficAreasOverlay();
+          });
+          row.appendChild(box);
+          row.append(` ${opt.value} (${opt.count})`);
+          frag.appendChild(row);
+        });
+      };
+      // tags first
+      renderSection("tags", options.tags, selectedTags);
+      renderSection("noms", options.rules, selectedRules);
+      $devTrafficAreasFilterList.appendChild(frag);
+    }
+    function getDevTrafficAreaModeLabel(rec){
+      if (!rec) return "-";
+      if (DEV_TRAFFIC_AREAS_STATE.mode === "tags") {
+        return rec.tagsLabel && rec.tagsLabel !== "-" ? rec.tagsLabel : rec.ruleName;
+      }
+      return rec.ruleName;
+    }
+    function getDevTrafficAreaColorSeed(rec){
+      if (!rec) return "area";
+      if (DEV_TRAFFIC_AREAS_STATE.mode === "tags") {
+        return rec.tags && rec.tags.length ? rec.tags.join("|") : rec.ruleName;
+      }
+      return rec.ruleName;
+    }
+    function refreshDevTrafficAreasModeComputedFields(){
+      DEV_TRAFFIC_AREAS_STATE.areaRecords.forEach((rec) => {
+        rec.modeLabel = getDevTrafficAreaModeLabel(rec);
+        rec.color = getDevTrafficAreaColor(getDevTrafficAreaColorSeed(rec));
+      });
+    }
+    function setDevTrafficAreasMode(mode){
+      const next = String(mode || "").trim() === "tags" ? "tags" : "traffic_rule_name";
+      if (DEV_TRAFFIC_AREAS_STATE.mode === next) return;
+      DEV_TRAFFIC_AREAS_STATE.mode = next;
+      refreshDevTrafficAreasModeComputedFields();
+      renderDevTrafficAreasFilterChecklist();
+      if (DEV_TRAFFIC_AREAS_STATE.enabled) drawDevTrafficAreasOverlay();
+      updateDevNavDebugUIState();
+    }
+    function refreshDevTrafficAreaInfoLabel(){
+      if (!$devTrafficAreaInfo) return;
+      const hover = DEV_TRAFFIC_AREAS_STATE.areaRecords.find((rec) => rec.id === DEV_TRAFFIC_AREAS_STATE.hoverId) || null;
+      if (hover) {
+        $devTrafficAreaInfo.textContent = `hover: ${hover.modeLabel || hover.ruleName} | uid ${hover.uid} | points ${hover.worldPoints.length} | tags ${hover.tagsLabel}`;
+        return;
+      }
+      const selected = getSelectedDevTrafficAreas();
+      if (selected.length) {
+        $devTrafficAreaInfo.textContent = `click: ${selected.length} zone(s)`;
+        return;
+      }
+      $devTrafficAreaInfo.textContent = "";
+    }
+    function getDevTrafficAreaWorldCenter(rec){
+      const pts = Array.isArray(rec?.worldPoints) ? rec.worldPoints : [];
+      if (!pts.length) return { x: NaN, y: NaN };
+      let sx = 0;
+      let sy = 0;
+      pts.forEach((pt) => {
+        sx += Number(pt?.x) || 0;
+        sy += Number(pt?.y) || 0;
+      });
+      return { x: sx / pts.length, y: sy / pts.length };
+    }
+    function setDevTrafficAreasHover(areaId){
+      const next = areaId || null;
+      if (DEV_TRAFFIC_AREAS_STATE.hoverId === next) return;
+      DEV_TRAFFIC_AREAS_STATE.hoverId = next;
+      refreshDevTrafficAreasPolygonStyles();
+      refreshDevTrafficAreaInfoLabel();
+    }
+    function buildDevTrafficAreasPopupContent(records, worldPoint){
+      const rows = Array.isArray(records) ? records : [];
+      const root = document.createElement("div");
+      root.style.minWidth = "300px";
+
+      const title = document.createElement("div");
+      title.style.fontWeight = "700";
+      title.style.marginBottom = "6px";
+      title.textContent = `Traffic Areas (${rows.length})`;
+      root.appendChild(title);
+
+      const safeX = Number(worldPoint?.x);
+      const safeY = Number(worldPoint?.y);
+      if (Number.isFinite(safeX) && Number.isFinite(safeY)) {
+        const coords = document.createElement("div");
+        coords.style.marginBottom = "6px";
+        coords.innerHTML = `<b>X/Y:</b> ${escapeDevGraphHtml(safeX.toFixed(2))} / ${escapeDevGraphHtml(safeY.toFixed(2))}`;
+        root.appendChild(coords);
+      }
+
+      const hint = document.createElement("div");
+      hint.style.marginBottom = "6px";
+      hint.style.color = "#555";
+      hint.textContent = "Survole une ligne pour surbrillance";
+      root.appendChild(hint);
+
+      const list = document.createElement("div");
+      root.appendChild(list);
+
+      const rowButtons = [];
+      const applyPopupRowStyles = () => {
+        rowButtons.forEach(({ btn, rec }) => {
+          const isHover = DEV_TRAFFIC_AREAS_STATE.hoverId === rec.id;
+          const isSelected = DEV_TRAFFIC_AREAS_STATE.selectedIds.has(rec.id);
+          btn.style.display = "block";
+          btn.style.width = "100%";
+          btn.style.textAlign = "left";
+          btn.style.border = "1px solid #888";
+          btn.style.margin = "2px 0";
+          btn.style.padding = "4px 6px";
+          btn.style.background = isHover ? "#fff3bf" : (isSelected ? "#e7f5ff" : "#fff");
+          btn.style.fontWeight = (isHover || isSelected) ? "700" : "400";
+        });
+      };
+
+      rows.forEach((rec, idx) => {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.textContent = `${idx + 1}. ${rec.modeLabel || rec.ruleName} | uid ${rec.uid} | points ${rec.worldPoints.length} | tags ${rec.tagsLabel}`;
+        row.addEventListener("mouseenter", () => {
+          setDevTrafficAreasHover(rec.id);
+          applyPopupRowStyles();
+        });
+        row.addEventListener("mouseleave", () => {
+          setDevTrafficAreasHover(null);
+          applyPopupRowStyles();
+        });
+        row.addEventListener("focus", () => {
+          setDevTrafficAreasHover(rec.id);
+          applyPopupRowStyles();
+        });
+        row.addEventListener("blur", () => {
+          setDevTrafficAreasHover(null);
+          applyPopupRowStyles();
+        });
+        row.addEventListener("click", (ev) => {
+          L.DomEvent.stop(ev);
+          DEV_TRAFFIC_AREAS_STATE.selectedIds = new Set([rec.id]);
+          refreshDevTrafficAreasPolygonStyles();
+          refreshDevTrafficAreaInfoLabel();
+          const centerWorld = getDevTrafficAreaWorldCenter(rec);
+          if ($devMapCoordsValue && Number.isFinite(centerWorld.x) && Number.isFinite(centerWorld.y)) {
+            $devMapCoordsValue.textContent = `X: ${centerWorld.x.toFixed(2)} | Y: ${centerWorld.y.toFixed(2)}`;
+          }
+          applyPopupRowStyles();
+        });
+        rowButtons.push({ btn: row, rec });
+        list.appendChild(row);
+      });
+
+      applyPopupRowStyles();
+      return root;
+    }
+    const DEV_TRAFFIC_AREA_FAMILY_HUES = {
+      ville: 210,
+      stop: 24,
+      route: 185,
+      highway: 8,
+      motorway: 0,
+      village: 145,
+      service: 286,
+      autre: 205
+    };
+    function getDevTrafficAreaFamily(ruleName){
+      const value = String(ruleName || "").toLowerCase().trim();
+      if (!value) return "autre";
+      if (value.startsWith("ville_") || value.startsWith("city_")) return "ville";
+      if (value.startsWith("stop_")) return "stop";
+      if (value.startsWith("route_") || value.startsWith("road_")) return "route";
+      if (value.startsWith("highway_")) return "highway";
+      if (value.startsWith("motorway_") || value.startsWith("autoroute_")) return "motorway";
+      if (value.startsWith("village_")) return "village";
+      if (value.startsWith("service_")) return "service";
+      const token = value.split("_")[0];
+      return token || "autre";
+    }
+    function getDevTrafficAreaColor(seed){
+      const value = String(seed || "area");
+      let hash = 0;
+      for (let i = 0; i < value.length; i += 1) hash = ((hash << 5) - hash) + value.charCodeAt(i);
+      const family = getDevTrafficAreaFamily(value);
+      const hasBase = Object.prototype.hasOwnProperty.call(DEV_TRAFFIC_AREA_FAMILY_HUES, family);
+      const baseHue = hasBase ? DEV_TRAFFIC_AREA_FAMILY_HUES[family] : (Math.abs(hash) % 360);
+      const hueOffset = (Math.abs(hash) % 21) - 10; // same family, slight variants by rule
+      const hue = (baseHue + hueOffset + 360) % 360;
+      const sat = 72 + (Math.abs(hash >> 4) % 12);
+      const light = 48 + (Math.abs(hash >> 8) % 10);
+      return `hsl(${hue} ${sat}% ${light}%)`;
+    }
+    function getDevTrafficAreaWorldPoints(area){
+      const points = Array.isArray(area?.points) ? area.points : [];
+      return points
+        .map((pt) => ({ x: Number(pt?.x), y: Number(pt?.z ?? pt?.y) }))
+        .filter((pt) => Number.isFinite(pt.x) && Number.isFinite(pt.y));
+    }
+    function getDevTrafficAreaLatLngsFromWorldPoints(worldPoints){
+      return (Array.isArray(worldPoints) ? worldPoints : [])
+        .map((pt) => toLatLng(Number(pt?.x), Number(pt?.y)))
+        .filter(Boolean);
+    }
+    function buildDevTrafficAreaRecord(area, index){
+      const worldPoints = getDevTrafficAreaWorldPoints(area);
+      if (worldPoints.length < 3) return null;
+      const latlngs = getDevTrafficAreaLatLngsFromWorldPoints(worldPoints);
+      if (latlngs.length < 3) return null;
+      const uid = String(area?.uid ?? index);
+      const fallbackRuleId = area?.traffic_rule_id != null ? `rule_${String(area.traffic_rule_id)}` : "rule_inconnue";
+      const ruleName = String(area?.traffic_rule_name || area?.rule_name || fallbackRuleId);
+      const tags = Array.isArray(area?.tags)
+        ? area.tags
+            .map((tag) => String(tag?.name ?? tag ?? "").trim())
+            .filter(Boolean)
+        : [];
+      const tagsLabel = tags.length ? tags.join(", ") : "-";
+      return {
+        id: `${uid}-${index}`,
+        uid,
+        ruleName,
+        modeLabel: ruleName,
+        tags,
+        tagsLabel,
+        worldPoints,
+        latlngs,
+        color: getDevTrafficAreaColor(ruleName),
+        area,
+        polygon: null
+      };
+    }
+    function isPointOnSegment(point, a, b, eps = 1e-6){
+      const ax = Number(a?.x), ay = Number(a?.y);
+      const bx = Number(b?.x), by = Number(b?.y);
+      const px = Number(point?.x), py = Number(point?.y);
+      if (!Number.isFinite(ax) || !Number.isFinite(ay) || !Number.isFinite(bx) || !Number.isFinite(by) || !Number.isFinite(px) || !Number.isFinite(py)) return false;
+      const cross = ((bx - ax) * (py - ay)) - ((by - ay) * (px - ax));
+      if (Math.abs(cross) > eps) return false;
+      const dot = ((px - ax) * (px - bx)) + ((py - ay) * (py - by));
+      return dot <= eps;
+    }
+    function isPointInPolygon(point, polygon){
+      const poly = Array.isArray(polygon) ? polygon : [];
+      if (!poly.length) return false;
+      let inside = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const a = poly[i];
+        const b = poly[j];
+        if (isPointOnSegment(point, a, b)) return true;
+        const xi = Number(a?.x), yi = Number(a?.y);
+        const xj = Number(b?.x), yj = Number(b?.y);
+        const intersects = ((yi > point.y) !== (yj > point.y))
+          && (point.x < (((xj - xi) * (point.y - yi)) / ((yj - yi) || 1e-12)) + xi);
+        if (intersects) inside = !inside;
+      }
+      return inside;
+    }
+    function getDevTrafficAreasAtWorldPoint(worldPoint){
+      const x = Number(worldPoint?.x);
+      const y = Number(worldPoint?.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return [];
+      const point = { x, y };
+      return getFilteredDevTrafficAreaRecords().filter((rec) => isPointInPolygon(point, rec.worldPoints));
+    }
+    function applyDevTrafficAreaPolygonStyle(rec){
+      if (!rec?.polygon) return;
+      const isHover = DEV_TRAFFIC_AREAS_STATE.hoverId === rec.id;
+      const isSelected = DEV_TRAFFIC_AREAS_STATE.selectedIds.has(rec.id);
+      rec.polygon.setStyle({
+        color: rec.color,
+        weight: isHover ? 4 : (isSelected ? 3 : 1.5),
+        opacity: isHover ? 1 : 0.92,
+        fillColor: rec.color,
+        fillOpacity: isHover ? 0.44 : (isSelected ? 0.30 : 0.22)
+      });
+    }
+    function refreshDevTrafficAreasPolygonStyles(){
+      DEV_TRAFFIC_AREAS_STATE.areaRecords.forEach((rec) => applyDevTrafficAreaPolygonStyle(rec));
+    }
+    function clearDevTrafficAreasOverlay(){
+      if (DEV_TRAFFIC_AREAS_STATE.layer) {
+        try { map.removeLayer(DEV_TRAFFIC_AREAS_STATE.layer); } catch {}
+        DEV_TRAFFIC_AREAS_STATE.layer = null;
+      }
+      DEV_TRAFFIC_AREAS_STATE.areaRecords.forEach((rec) => { rec.polygon = null; });
+      DEV_TRAFFIC_AREAS_STATE.hoverId = null;
+      DEV_TRAFFIC_AREAS_STATE.selectedIds.clear();
+      refreshDevTrafficAreaInfoLabel();
+    }
+    function drawDevTrafficAreasOverlay(){
+      clearDevTrafficAreasOverlay();
+      const layer = L.layerGroup().addTo(map);
+      getFilteredDevTrafficAreaRecords().forEach((rec) => {
+        const polygon = L.polygon(rec.latlngs, {
+          pane: "devTrafficAreasPane",
+          color: rec.color,
+          weight: 1.5,
+          opacity: 0.92,
+          fillColor: rec.color,
+          fillOpacity: 0.22,
+          interactive: true,
+          bubblingMouseEvents: false
+        }).addTo(layer);
+        rec.polygon = polygon;
+        polygon.on("mouseover", () => {
+          setDevTrafficAreasHover(rec.id);
+        });
+        polygon.on("mouseout", () => {
+          if (DEV_TRAFFIC_AREAS_STATE.hoverId === rec.id) setDevTrafficAreasHover(null);
+        });
+        polygon.on("click", (e) => {
+          L.DomEvent.stop(e);
+          let worldX = NaN;
+          let worldY = NaN;
+          try {
+            const xy = fromLatLngToXY(e.latlng);
+            worldX = Number(xy?.X);
+            worldY = Number(xy?.Y);
+          } catch {}
+          const matches = getDevTrafficAreasAtWorldPoint({ x: worldX, y: worldY });
+          DEV_TRAFFIC_AREAS_STATE.selectedIds = new Set(matches.map((m) => m.id));
+          refreshDevTrafficAreasPolygonStyles();
+          if ($devMapCoordsValue && Number.isFinite(worldX) && Number.isFinite(worldY)) {
+            $devMapCoordsValue.textContent = `X: ${worldX.toFixed(2)} | Y: ${worldY.toFixed(2)}`;
+          }
+          refreshDevTrafficAreaInfoLabel();
+          if (!matches.length) return;
+          const content = buildDevTrafficAreasPopupContent(matches, { x: worldX, y: worldY });
+          L.popup({ maxWidth: 560, autoPan: true }).setLatLng(e.latlng).setContent(content).openOn(map);
+        });
+      });
+      DEV_TRAFFIC_AREAS_STATE.layer = layer;
+      refreshDevTrafficAreasPolygonStyles();
+      refreshDevTrafficAreaInfoLabel();
+    }
+    async function ensureDevTrafficAreasLoaded(){
+      if (DEV_TRAFFIC_AREAS_STATE.loaded) return true;
+      DEV_TRAFFIC_AREAS_STATE.loading = true;
+      updateDevNavDebugUIState();
+      try {
+        const res = await fetch(dataPath("traffic_areas.json"), { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const raw = await res.json();
+        DEV_TRAFFIC_AREAS_STATE.areas = Array.isArray(raw)
+          ? raw
+          : (Array.isArray(raw?.areas) ? raw.areas : []);
+        DEV_TRAFFIC_AREAS_STATE.areaRecords = DEV_TRAFFIC_AREAS_STATE.areas
+          .map((area, idx) => buildDevTrafficAreaRecord(area, idx))
+          .filter(Boolean);
+        refreshDevTrafficAreasModeComputedFields();
+        renderDevTrafficAreasFilterChecklist();
+        DEV_TRAFFIC_AREAS_STATE.loaded = true;
+        return true;
+      } catch (err) {
+        DEV_TRAFFIC_AREAS_STATE.areas = [];
+        DEV_TRAFFIC_AREAS_STATE.areaRecords = [];
+        console.error("Impossible de charger traffic_areas.json", err);
+        return false;
+      } finally {
+        DEV_TRAFFIC_AREAS_STATE.loading = false;
+        updateDevNavDebugUIState();
+      }
+    }
+    async function toggleDevTrafficAreasOverlay(){
+      if (DEV_TRAFFIC_AREAS_STATE.enabled) {
+        DEV_TRAFFIC_AREAS_STATE.enabled = false;
+        clearDevTrafficAreasOverlay();
+        updateDevNavDebugUIState();
+        return;
+      }
+      DEV_TRAFFIC_AREAS_STATE.enabled = true;
+      const loaded = await ensureDevTrafficAreasLoaded();
+      if (!loaded) DEV_TRAFFIC_AREAS_STATE.enabled = false;
+      if (!DEV_TRAFFIC_AREAS_STATE.enabled) return;
+      drawDevTrafficAreasOverlay();
+      updateDevNavDebugUIState();
+    }
+    const DEV_NAV_SPEED_LIMIT_COLOR_BY_KMH = Object.freeze({
+      8: "#00bcd4",
+      20: "#2ecc71",
+      30: "#8bc34a",
+      50: "#f1c40f",
+      70: "#f39c12",
+      80: "#e67e22",
+      90: "#e74c3c",
+      110: "#8e44ad"
+    });
+    function getDevSpeedLimitColor(limitValue){
+      const speed = Number(limitValue);
+      if (!Number.isFinite(speed)) return "#9aa0a6";
+      const key = String(Math.round(speed));
+      return DEV_NAV_SPEED_LIMIT_COLOR_BY_KMH[key] || "#9aa0a6";
+    }
+    function renderDevSpeedLimitsLegend(){
+      if (!$devSpeedLimitsLegend) return;
+      if (!DEV_SPEED_LIMITS_STATE.enabled && !DEV_SPEED_LIMITS_STATE.loading) {
+        $devSpeedLimitsLegend.hidden = true;
+        $devSpeedLimitsLegend.innerHTML = "";
+        return;
+      }
+      $devSpeedLimitsLegend.hidden = false;
+      $devSpeedLimitsLegend.innerHTML = "";
+      const title = document.createElement("div");
+      title.className = "dev-speed-legend-title";
+      title.textContent = "Légende vitesses nav_graph";
+      $devSpeedLimitsLegend.appendChild(title);
+      if (DEV_SPEED_LIMITS_STATE.loading) {
+        const row = document.createElement("div");
+        row.className = "dev-speed-legend-item";
+        row.textContent = "chargement...";
+        $devSpeedLimitsLegend.appendChild(row);
+        return;
+      }
+      const records = Array.isArray(DEV_SPEED_LIMITS_STATE.records) ? DEV_SPEED_LIMITS_STATE.records : [];
+      if (!records.length) {
+        const row = document.createElement("div");
+        row.className = "dev-speed-legend-item";
+        row.textContent = "aucune limite trouvée";
+        $devSpeedLimitsLegend.appendChild(row);
+        return;
+      }
+      const counts = new Map();
+      records.forEach((rec) => {
+        const speed = Math.round(Number(rec?.speedLimitKmh));
+        if (!Number.isFinite(speed)) return;
+        counts.set(speed, (counts.get(speed) || 0) + 1);
+      });
+      [...counts.entries()]
+        .sort((a, b) => a[0] - b[0])
+        .forEach(([speed, count]) => {
+          const row = document.createElement("div");
+          row.className = "dev-speed-legend-item";
+          const swatch = document.createElement("span");
+          swatch.className = "dev-speed-legend-swatch";
+          swatch.style.background = getDevSpeedLimitColor(speed);
+          const label = document.createElement("span");
+          label.textContent = `${speed} km/h (${count})`;
+          row.appendChild(swatch);
+          row.appendChild(label);
+          $devSpeedLimitsLegend.appendChild(row);
+        });
+    }
+    function getDevNavGraphSpeedLimitRecords(){
+      if (!DBUS_NAV_GRAPH || !Array.isArray(DBUS_NAV_GRAPH.edgeList)) return [];
+      return DBUS_NAV_GRAPH.edgeList
+        .map((edge) => {
+          const speed = Number(edge?.speedLimitKmh);
+          if (!Number.isFinite(speed)) return null;
+          const latlngs = (Array.isArray(edge?.polyline) ? edge.polyline : [])
+            .map((pt) => toLatLng(Number(pt?.x), Number(pt?.y)))
+            .filter(Boolean);
+          if (latlngs.length < 2) return null;
+          return {
+            edgeId: edge.id,
+            from: edge.from,
+            to: edge.to,
+            speedLimitKmh: speed,
+            color: getDevSpeedLimitColor(speed),
+            latlngs
+          };
+        })
+        .filter(Boolean);
+    }
+    function clearDevSpeedLimitsOverlay(){
+      if (DEV_SPEED_LIMITS_STATE.layer) {
+        try { map.removeLayer(DEV_SPEED_LIMITS_STATE.layer); } catch {}
+        DEV_SPEED_LIMITS_STATE.layer = null;
+      }
+      DEV_SPEED_LIMITS_STATE.records = [];
+      if (!DEV_TRAFFIC_AREAS_STATE.enabled && $devTrafficAreaInfo) {
+        $devTrafficAreaInfo.textContent = "";
+      }
+    }
+    function drawDevSpeedLimitsOverlay(){
+      clearDevSpeedLimitsOverlay();
+      const records = getDevNavGraphSpeedLimitRecords();
+      const groupedPaths = new Map();
+      records.forEach((rec) => {
+        const key = String(Math.round(rec.speedLimitKmh));
+        if (!groupedPaths.has(key)) groupedPaths.set(key, []);
+        groupedPaths.get(key).push(rec.latlngs);
+      });
+      const layer = L.layerGroup().addTo(map);
+      groupedPaths.forEach((paths, key) => {
+        const speed = Number(key);
+        const color = getDevSpeedLimitColor(speed);
+        L.polyline(paths, {
+          pane: "devGraphEdgePane",
+          color,
+          weight: 3.1,
+          opacity: 0.95,
+          interactive: false
+        }).addTo(layer);
+      });
+      DEV_SPEED_LIMITS_STATE.records = records;
+      DEV_SPEED_LIMITS_STATE.layer = layer;
+      if ($devTrafficAreaInfo) {
+        const uniq = [...new Set(records.map((rec) => String(Math.round(rec.speedLimitKmh))))].sort((a, b) => Number(a) - Number(b));
+        $devTrafficAreaInfo.textContent = `speed limits nav_graph: ${records.length} edge(s) | ${uniq.join(", ")} km/h`;
+      }
+    }
+    function disableDevSpeedLimitsOverlay(){
+      DEV_SPEED_LIMITS_STATE.enabled = false;
+      DEV_SPEED_LIMITS_STATE.loading = false;
+      clearDevSpeedLimitsOverlay();
+      updateDevNavDebugUIState();
+    }
+    async function toggleDevSpeedLimitsOverlay(){
+      if (DEV_SPEED_LIMITS_STATE.enabled) {
+        disableDevSpeedLimitsOverlay();
+        return;
+      }
+      if (DEV_TRAFFIC_AREAS_STATE.enabled) {
+        DEV_TRAFFIC_AREAS_STATE.enabled = false;
+        clearDevTrafficAreasOverlay();
+      }
+      DEV_SPEED_LIMITS_STATE.enabled = true;
+      DEV_SPEED_LIMITS_STATE.loading = true;
+      updateDevNavDebugUIState();
+      if (!DBUS_NAV_GRAPH) {
+        await loadDbusNavGraph();
+      }
+      const loaded = !!DBUS_NAV_GRAPH;
+      DEV_SPEED_LIMITS_STATE.loading = false;
+      if (!loaded) {
+        DEV_SPEED_LIMITS_STATE.enabled = false;
+        updateDevNavDebugUIState();
+        return;
+      }
+      drawDevSpeedLimitsOverlay();
+      updateDevNavDebugUIState();
+    }
+    function parseDevUberRestaurantsPayload(rawText){
+      const text = String(rawText || "").replace(/^\uFEFF/, "").trim();
+      if (!text) return [];
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        const repaired = text.replace(/}\s*{/g, "},{");
+        if (repaired === text) throw err;
+        return JSON.parse(repaired);
+      }
+    }
+    function normalizeDevUberRestaurantRecord(rawEntry, index){
+      if (!rawEntry || typeof rawEntry !== "object") return null;
+      const title = String(
+        rawEntry.Titre
+        ?? rawEntry.title
+        ?? rawEntry.name
+        ?? rawEntry.restaurant
+        ?? `restaurant_${index + 1}`
+      ).trim();
+      const x = Number(rawEntry.x ?? rawEntry.X);
+      const y = Number(rawEntry.y ?? rawEntry.Y ?? rawEntry.z ?? rawEntry.Z);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      const latlng = toLatLng(x, y);
+      if (!latlng) return null;
+      return {
+        id: `${index}-${title}-${x}-${y}`,
+        title,
+        x,
+        y,
+        latlng
+      };
+    }
+    function clearDevUberRestaurantsOverlay(){
+      if (DEV_UBER_RESTAURANTS_STATE.layer) {
+        try { map.removeLayer(DEV_UBER_RESTAURANTS_STATE.layer); } catch {}
+        DEV_UBER_RESTAURANTS_STATE.layer = null;
+      }
+    }
+    function drawDevUberRestaurantsOverlay(){
+      clearDevUberRestaurantsOverlay();
+      const records = Array.isArray(DEV_UBER_RESTAURANTS_STATE.records) ? DEV_UBER_RESTAURANTS_STATE.records : [];
+      if (!records.length) return;
+      const layer = L.layerGroup().addTo(map);
+      records.forEach((rec) => {
+        const marker = L.circleMarker(rec.latlng, {
+          pane: "devUberRestaurantsPane",
+          radius: 4.5,
+          color: "#111",
+          weight: 1,
+          fillColor: "#23d18b",
+          fillOpacity: 0.95
+        }).addTo(layer);
+        const popupHtml = `
+          <div style="min-width:220px">
+            <div style="font-weight:700;margin-bottom:4px">Uber Eats</div>
+            <div><b>titre:</b> ${escapeDevGraphHtml(rec.title)}</div>
+            <div><b>X:</b> ${escapeDevGraphHtml(rec.x.toFixed(2))}</div>
+            <div><b>Y:</b> ${escapeDevGraphHtml(rec.y.toFixed(2))}</div>
+          </div>`;
+        marker.bindPopup(popupHtml, { maxWidth: 460 });
+      });
+      DEV_UBER_RESTAURANTS_STATE.layer = layer;
+    }
+    async function ensureDevUberRestaurantsLoaded(){
+      if (DEV_UBER_RESTAURANTS_STATE.loaded) return DEV_UBER_RESTAURANTS_STATE.available;
+      if (DEV_UBER_RESTAURANTS_STATE.loadPromise) return DEV_UBER_RESTAURANTS_STATE.loadPromise;
+      DEV_UBER_RESTAURANTS_STATE.loading = true;
+      updateDevNavDebugUIState();
+      DEV_UBER_RESTAURANTS_STATE.loadPromise = (async () => {
+        try {
+          const res = await fetch(dataPath("uber_eats_restaurants.json"), { cache: "no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const payloadText = await res.text();
+          const raw = parseDevUberRestaurantsPayload(payloadText);
+          const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.restaurants) ? raw.restaurants : []);
+          DEV_UBER_RESTAURANTS_STATE.records = list
+            .map((entry, idx) => normalizeDevUberRestaurantRecord(entry, idx))
+            .filter(Boolean);
+          DEV_UBER_RESTAURANTS_STATE.available = true;
+          DEV_UBER_RESTAURANTS_STATE.error = "";
+          DEV_UBER_RESTAURANTS_STATE.loaded = true;
+          return true;
+        } catch (err) {
+          DEV_UBER_RESTAURANTS_STATE.records = [];
+          DEV_UBER_RESTAURANTS_STATE.available = false;
+          DEV_UBER_RESTAURANTS_STATE.error = String(err?.message || err || "load error");
+          DEV_UBER_RESTAURANTS_STATE.loaded = true;
+          console.error("Impossible de charger uber_eats_restaurants.json", err);
+          return false;
+        } finally {
+          DEV_UBER_RESTAURANTS_STATE.loading = false;
+          DEV_UBER_RESTAURANTS_STATE.loadPromise = null;
+          updateDevNavDebugUIState();
+        }
+      })();
+      return DEV_UBER_RESTAURANTS_STATE.loadPromise;
+    }
+    function disableDevUberRestaurantsOverlay(){
+      DEV_UBER_RESTAURANTS_STATE.enabled = false;
+      clearDevUberRestaurantsOverlay();
+      updateDevNavDebugUIState();
+    }
+    async function toggleDevUberRestaurantsOverlay(){
+      if (DEV_UBER_RESTAURANTS_STATE.enabled) {
+        disableDevUberRestaurantsOverlay();
+        return;
+      }
+      DEV_UBER_RESTAURANTS_STATE.enabled = true;
+      const loaded = await ensureDevUberRestaurantsLoaded();
+      if (!loaded) {
+        DEV_UBER_RESTAURANTS_STATE.enabled = false;
+        updateDevNavDebugUIState();
+        return;
+      }
+      drawDevUberRestaurantsOverlay();
+      updateDevNavDebugUIState();
+    }
+    function disableDevGraphOverlay(){
+      if (DEV_GRAPH_STATE.edgeLayer) {
+        try { map.removeLayer(DEV_GRAPH_STATE.edgeLayer); } catch {}
+        DEV_GRAPH_STATE.edgeLayer = null;
+      }
+      if (DEV_GRAPH_STATE.nodeLayer) {
+        try { map.removeLayer(DEV_GRAPH_STATE.nodeLayer); } catch {}
+        DEV_GRAPH_STATE.nodeLayer = null;
+      }
+      DEV_GRAPH_STATE.enabled = false;
+      DEV_GRAPH_STATE.pendingEnable = false;
+      DEV_GRAPH_STATE.nodePoints = [];
+      DEV_GRAPH_STATE.incomingByNode.clear();
+      if (DEV_GRAPH_STATE.clickBound) {
+        try { map.off("click", onDevGraphMapClick); } catch {}
+        DEV_GRAPH_STATE.clickBound = false;
+      }
+      if ($devMapCoordsValue) $devMapCoordsValue.textContent = "";
+      updateDevNavDebugUIState();
+    }
+    function initDevNavDebugUI(){
+      if (
+        !$devNavDebugRow
+        || !$btnDevNavDebugMenuToggle
+        || !$devNavDebugMenu
+        || !$btnDevNavPointsToggle
+        || !$btnDevSpeedLimitsToggle
+        || !$btnDevTrafficAreasToggle
+      ) return;
+      if (!DEV_MODE) {
+        $devNavDebugRow.hidden = true;
+        setDevNavDebugMenuOpen(false);
+        return;
+      }
+      $devNavDebugRow.hidden = false;
+      setDevNavDebugMenuOpen(false);
+      updateDevNavDebugUIState();
+      $btnDevNavDebugMenuToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        setDevNavDebugMenuOpen($devNavDebugMenu.hidden);
+      });
+      $devNavDebugMenu.addEventListener("click", (event) => {
+        event.stopPropagation();
+      });
+      document.addEventListener("click", (event) => {
+        if ($devNavDebugMenu.hidden) return;
+        const target = event.target;
+        if (target instanceof Node && !$devNavDebugRow.contains(target)) {
+          setDevNavDebugMenuOpen(false);
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setDevNavDebugMenuOpen(false);
+      });
+      $btnDevNavPointsToggle.addEventListener("click", () => {
+        if (DEV_GRAPH_STATE.enabled || DEV_GRAPH_STATE.pendingEnable) {
+          disableDevGraphOverlay();
+          return;
+        }
+        enableDevGraphOverlay();
+        ensureDevGraphClickBinding();
+        updateDevNavDebugUIState();
+      });
+      $btnDevTrafficAreasToggle.addEventListener("click", () => {
+        if (!DEV_TRAFFIC_AREAS_STATE.enabled && DEV_SPEED_LIMITS_STATE.enabled) {
+          disableDevSpeedLimitsOverlay();
+        }
+        void toggleDevTrafficAreasOverlay();
+      });
+      $btnDevSpeedLimitsToggle.addEventListener("click", () => {
+        void toggleDevSpeedLimitsOverlay();
+      });
+      if ($btnDevUberRestaurantsToggle) {
+        $btnDevUberRestaurantsToggle.addEventListener("click", () => {
+          void toggleDevUberRestaurantsOverlay();
+        });
+      }
+      if ($devTrafficAreasModeInputs && $devTrafficAreasModeInputs.length) {
+        $devTrafficAreasModeInputs.forEach((input) => {
+          input.addEventListener("change", () => {
+            if (!input.checked) return;
+            setDevTrafficAreasMode(input.value);
+          });
+        });
+      }
+      if ($btnDevTrafficAreasFilterAll) {
+        $btnDevTrafficAreasFilterAll.addEventListener("click", () => {
+          const selectedTags = getDevTrafficAreaFilterSet("tags");
+          const selectedRules = getDevTrafficAreaFilterSet("traffic_rule_name");
+          selectedTags.clear();
+          selectedRules.clear();
+          const opts = getDevTrafficAreaFilterOptions();
+          (opts.tags || []).forEach((opt) => selectedTags.add(opt.value));
+          (opts.rules || []).forEach((opt) => selectedRules.add(opt.value));
+          drawDevTrafficAreasOverlay();
+        });
+      }
+      if ($btnDevTrafficAreasFilterNone) {
+        $btnDevTrafficAreasFilterNone.addEventListener("click", () => {
+          getDevTrafficAreaFilterSet("tags").clear();
+          getDevTrafficAreaFilterSet("traffic_rule_name").clear();
+          drawDevTrafficAreasOverlay();
+        });
+      }
+    }
     function ensureDevGraphClickBinding(){
-      if (!DEV_GRAPH || DEV_GRAPH_STATE.clickBound) return;
+      if (!DEV_NAV_POINTS_DEBUG || DEV_GRAPH_STATE.clickBound) return;
       map.on("click", onDevGraphMapClick);
       DEV_GRAPH_STATE.clickBound = true;
     }
     function onDevGraphMapClick(e){
-      if (!DEV_GRAPH) return;
+      if (!DEV_NAV_POINTS_DEBUG || !DEV_GRAPH_STATE.enabled) return;
+      if (handleDevWazeMapClick(e)) return;
+
+      let worldX = 0;
+      let worldY = 0;
+      try {
+        const xy = fromLatLngToXY(e.latlng);
+        worldX = Number(xy?.X) || 0;
+        worldY = Number(xy?.Y) || 0;
+      } catch {}
+      if ($devMapCoordsValue) $devMapCoordsValue.textContent = `X: ${worldX.toFixed(2)} | Y: ${worldY.toFixed(2)}`;
+
       const clickPx = map.project(e.latlng, map.getZoom());
       let best = null;
       let bestDistSq = Number.POSITIVE_INFINITY;
@@ -9491,15 +11000,8 @@
           best = rec;
         }
       }
-      let worldX = 0;
-      let worldY = 0;
-      try {
-        const xy = fromLatLngToXY(e.latlng);
-        worldX = Number(xy?.X) || 0;
-        worldY = Number(xy?.Y) || 0;
-      } catch {}
       const thresholdPx = 10;
-      if (DBUS_NAV_GRAPH && DEV_GRAPH_STATE.enabled && best && bestDistSq <= (thresholdPx * thresholdPx)) {
+      if (DBUS_NAV_GRAPH && best && bestDistSq <= (thresholdPx * thresholdPx)) {
         const node = best.node;
         const outgoing = (DBUS_NAV_GRAPH.adjacency.get(node.id) || []).length;
         const incoming = DEV_GRAPH_STATE.incomingByNode.get(node.id) || 0;
@@ -9527,8 +11029,14 @@
       L.popup({ maxWidth: 320, autoPan: true }).setLatLng(e.latlng).setContent(html).openOn(map);
     }
     function enableDevGraphOverlay(){
-      if (!DEV_GRAPH || DEV_GRAPH_STATE.enabled || !DBUS_NAV_GRAPH) return;
+      if (!DEV_NAV_POINTS_DEBUG || DEV_GRAPH_STATE.enabled) return;
+      if (!DBUS_NAV_GRAPH) {
+        DEV_GRAPH_STATE.pendingEnable = true;
+        updateDevNavDebugUIState();
+        return;
+      }
       DEV_GRAPH_STATE.enabled = true;
+      DEV_GRAPH_STATE.pendingEnable = false;
       DEV_GRAPH_STATE.incomingByNode.clear();
       DEV_GRAPH_STATE.nodePoints = [];
 
@@ -9566,6 +11074,7 @@
       DEV_GRAPH_STATE.nodeLayer = nodeLayer;
 
       ensureDevGraphClickBinding();
+      updateDevNavDebugUIState();
     }
     function dbusNavHeuristic(fromId, toId){
       const graph = DBUS_NAV_GRAPH;
@@ -9668,15 +11177,11 @@
         const cached = dbusNavNodesByStopId.get(stopId) || [];
         return cached.slice(0, Math.max(1, limit));
       }
-      const x = Number(stop.X);
-      const y = Number(stop.Z);
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return [];
+      const stopPoint = getDbusStopWorldPoint(stop);
+      if (!stopPoint) return [];
       const candidates = [];
       for (const node of graph.nodeList) {
-        const dx = node.x - x;
-        const dy = node.y - y;
-        const distSq = (dx * dx) + (dy * dy);
-        const dist = Math.sqrt(distSq);
+        const dist = worldPointDistance(node, stopPoint);
         if (dist > DBUS_NAV_MAX_SNAP_DISTANCE) continue;
         candidates.push({ nodeId: node.id, distance: dist });
       }
@@ -9697,7 +11202,9 @@
           if (fromCandidate.nodeId === toCandidate.nodeId) {
             const node = DBUS_NAV_GRAPH?.nodesById.get(fromCandidate.nodeId);
             if (!node) continue;
-            path = { points: [{ x: node.x, y: node.y }], cost: 0 };
+            const nodePoint = { x: node.x, y: node.y };
+            if (Number.isFinite(Number(node.h))) nodePoint.h = Number(node.h);
+            path = { points: [nodePoint], cost: 0 };
           } else {
             path = getDbusNavPathBetweenNodes(fromCandidate.nodeId, toCandidate.nodeId, options);
             if (!path) continue;
@@ -9713,9 +11220,12 @@
     function getDbusStopWorldPoint(stop){
       if (!stop) return null;
       const x = Number(stop.X);
-      const y = Number(stop.Z);
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-      return { x, y };
+      const z = Number(stop.Z);
+      const h = Number(stop.Y);
+      if (!Number.isFinite(x) || !Number.isFinite(z)) return null;
+      const point = { x, y: z };
+      if (Number.isFinite(h)) point.h = h;
+      return point;
     }
     function buildDbusWorldPolylineFromStops(routeStops, startIndex, endIndex, options = null){
       const stops = Array.isArray(routeStops) ? routeStops : [];
@@ -9751,23 +11261,23 @@
       if (!graph) return null;
       const ids = Array.isArray(edgeIdChain) ? edgeIdChain.map((id) => Number(id)).filter((id) => Number.isFinite(id)) : [];
       if (!ids.length) return null;
-      const anchorStart = options?.anchorStart || null;
-      const anchorEnd = options?.anchorEnd || null;
+      const anchorStart = parseWorldPoint3D(options?.anchorStart || null);
+      const anchorEnd = parseWorldPoint3D(options?.anchorEnd || null);
       let out = [];
       let previous = anchorStart;
       for (const edgeId of ids) {
         const edge = graph.edgesById?.get(edgeId);
         if (!edge) return null;
         const raw = Array.isArray(edge.polyline) ? edge.polyline
-          .map((pt) => ({ x: Number(pt?.x), y: Number(pt?.y) }))
-          .filter((pt) => Number.isFinite(pt.x) && Number.isFinite(pt.y))
+          .map((pt) => parseWorldPoint3D(pt))
+          .filter(Boolean)
           : [];
         if (raw.length < 2) continue;
         const reversed = raw.slice().reverse();
         let chosen = raw;
         if (previous) {
-          const distForward = Math.hypot(raw[0].x - previous.x, raw[0].y - previous.y);
-          const distReverse = Math.hypot(reversed[0].x - previous.x, reversed[0].y - previous.y);
+          const distForward = worldPointDistance(raw[0], previous);
+          const distReverse = worldPointDistance(reversed[0], previous);
           chosen = distReverse < distForward ? reversed : raw;
         }
         chosen.forEach((point) => appendUniqueWorldPoint(out, point));
@@ -9777,21 +11287,22 @@
       if (anchorStart && anchorEnd && out.length >= 2) {
         const first = out[0];
         const last = out[out.length - 1];
-        const directCost = Math.hypot(first.x - anchorStart.x, first.y - anchorStart.y) + Math.hypot(last.x - anchorEnd.x, last.y - anchorEnd.y);
-        const reverseCost = Math.hypot(last.x - anchorStart.x, last.y - anchorStart.y) + Math.hypot(first.x - anchorEnd.x, first.y - anchorEnd.y);
+        const directCost = worldPointDistance(first, anchorStart) + worldPointDistance(last, anchorEnd);
+        const reverseCost = worldPointDistance(last, anchorStart) + worldPointDistance(first, anchorEnd);
         if (reverseCost < directCost) out = out.slice().reverse();
       }
       if (anchorStart) {
         const first = out[0];
-        if (!first || Math.hypot(first.x - anchorStart.x, first.y - anchorStart.y) > 0.001) {
-          out.unshift({ x: Number(anchorStart.x), y: Number(anchorStart.y) });
+        if (!first || worldPointDistance(first, anchorStart) > 0.001) {
+          const nextOut = [];
+          appendUniqueWorldPoint(nextOut, anchorStart);
+          out.forEach((point) => appendUniqueWorldPoint(nextOut, point));
+          out = nextOut;
         }
       }
       if (anchorEnd) {
         const last = out[out.length - 1];
-        if (!last || Math.hypot(last.x - anchorEnd.x, last.y - anchorEnd.y) > 0.001) {
-          out.push({ x: Number(anchorEnd.x), y: Number(anchorEnd.y) });
-        }
+        if (!last || worldPointDistance(last, anchorEnd) > 0.001) appendUniqueWorldPoint(out, anchorEnd);
       }
       return out;
     }
@@ -9800,7 +11311,9 @@
       if (!Number.isFinite(id)) return null;
       const node = DBUS_NAV_GRAPH?.nodesById?.get(id);
       if (!node) return null;
-      return { x: Number(node.x), y: Number(node.y) };
+      const point = { x: Number(node.x), y: Number(node.y) };
+      if (Number.isFinite(Number(node.h))) point.h = Number(node.h);
+      return point;
     }
     function buildDbusForcedNodeChainWorldPoints(nodeIdChain, navOptions = null, options = null){
       const graph = DBUS_NAV_GRAPH;
@@ -9830,27 +11343,30 @@
       if (!out.length) return null;
       if (anchorStart) {
         const first = out[0];
-        if (!first || Math.hypot(first.x - anchorStart.x, first.y - anchorStart.y) > 0.001) {
-          out.unshift({ x: Number(anchorStart.x), y: Number(anchorStart.y) });
+        if (!first || worldPointDistance(first, anchorStart) > 0.001) {
+          const nextOut = [];
+          appendUniqueWorldPoint(nextOut, anchorStart);
+          out.forEach((point) => appendUniqueWorldPoint(nextOut, point));
+          out.length = 0;
+          nextOut.forEach((point) => out.push(point));
         }
       }
       if (anchorEnd) {
         const last = out[out.length - 1];
-        if (!last || Math.hypot(last.x - anchorEnd.x, last.y - anchorEnd.y) > 0.001) {
-          out.push({ x: Number(anchorEnd.x), y: Number(anchorEnd.y) });
-        }
+        if (!last || worldPointDistance(last, anchorEnd) > 0.001) appendUniqueWorldPoint(out, anchorEnd);
       }
       return out;
     }
     function findNearestWorldPointMatch(points, worldPoint, maxDistance = Number.POSITIVE_INFINITY){
       const list = Array.isArray(points) ? points : [];
-      if (!list.length || !worldPoint) return { index: -1, distance: Number.POSITIVE_INFINITY };
+      const refPoint = parseWorldPoint3D(worldPoint);
+      if (!list.length || !refPoint) return { index: -1, distance: Number.POSITIVE_INFINITY };
       let bestIndex = -1;
       let bestDistance = Number.POSITIVE_INFINITY;
       for (let i = 0; i < list.length; i++) {
         const point = list[i];
         if (!point) continue;
-        const dist = Math.hypot(Number(point.x) - Number(worldPoint.x), Number(point.y) - Number(worldPoint.y));
+        const dist = worldPointDistance(point, refPoint);
         if (dist < bestDistance) {
           bestDistance = dist;
           bestIndex = i;
@@ -9863,19 +11379,14 @@
       const list = Array.isArray(rawList) ? rawList : [];
       const out = [];
       list.forEach((entry) => {
-        const x = Number(entry?.x ?? entry?.X);
-        const y = Number(entry?.y ?? entry?.Y);
-        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-        out.push({ x, y });
+        const point = parseWorldPoint3D(entry);
+        if (!point) return;
+        out.push(point);
       });
       return out;
     }
     function parseBridgeSinglePoint(value){
-      if (!value || typeof value !== "object") return null;
-      const x = Number(value?.x ?? value?.X);
-      const y = Number(value?.y ?? value?.Y);
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-      return { x, y };
+      return parseWorldPoint3D(value);
     }
     function normalizeBridgePointPair(raw){
       if (!raw || typeof raw !== "object") return null;
@@ -9905,7 +11416,7 @@
       let bestId = null;
       let bestDist = Number.POSITIVE_INFINITY;
       for (const node of graph.nodeList || []) {
-        const dist = Math.hypot(Number(node.x) - ref.x, Number(node.y) - ref.y);
+        const dist = worldPointDistance(node, ref);
         if (dist <= EXACT_THRESHOLD && dist < exactDist) {
           exactDist = dist;
           exactId = Number(node.id);
@@ -10010,7 +11521,7 @@
         if (!point) continue;
         let shouldRemove = false;
         for (const ignored of ignoredPoints) {
-          if (Math.hypot(Number(point.x) - Number(ignored.x), Number(point.y) - Number(ignored.y)) <= threshold) {
+          if (worldPointDistance(point, ignored) <= threshold) {
             shouldRemove = true;
             break;
           }
@@ -10166,7 +11677,7 @@
       routeStops.forEach((stop, index) => {
         const stopPoint = getDbusStopWorldPoint(stop);
         if (!stopPoint) return;
-        const dist = Math.hypot(stopPoint.x - worldPoint.x, stopPoint.y - worldPoint.y);
+        const dist = worldPointDistance(stopPoint, worldPoint);
         if (dist < bestDistance) {
           bestDistance = dist;
           bestIndex = index;
@@ -13279,8 +14790,10 @@
         await loadLines();
         await loadDbusNavGraph();
         await loadDbusNavBridges();
-        enableDevGraphOverlay();
-        ensureDevGraphClickBinding();
+        if (DEV_GRAPH || DEV_GRAPH_STATE.pendingEnable) {
+          enableDevGraphOverlay();
+          ensureDevGraphClickBinding();
+        }
         buildDbusStopLineEntries();
         renderDbusStopsLayer();
       }catch(err){
@@ -14119,6 +15632,8 @@
       if (currentDbusMode === DBUS_MODES.DEPARTS && dbusDepartPreviewActive) showDbusDepartures();
 
     }
+    initDevNavDebugUI();
+    initDevWazeModeUI();
     initDbusUI().then(()=>renderSelectedChip()).catch(()=>{});
 
     let currentActiveStopId = null;
@@ -14703,6 +16218,9 @@
     </script>
 </body>
 </html>
+
+
+
 
 
 

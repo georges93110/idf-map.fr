@@ -1,0 +1,1937 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="description" content="Retrouvez les actualites de la map Ile-de-France."/>
+  <meta property="og:locale" content="fr_FR"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="Ile-de-France Map - Actualites"/>
+  <meta property="og:title" content="Ile-de-France Map"/>
+  <meta property="og:description" content="Retrouvez les actualites de la map Ile-de-France."/>
+  <meta property="og:url" content="https://idf-map.fr/actualites.html"/>
+  <meta property="og:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Ile-de-France Map - Actualites"/>
+  <meta name="twitter:description" content="Retrouvez les actualites de la map Ile-de-France."/>
+  <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <script src="config/theme-init.js"></script>
+  <style>
+    html[data-app-ready="0"] {
+      background:#0b0b0b;
+    }
+    html[data-theme="light"][data-app-ready="0"] {
+      background:#ecf2f8;
+    }
+    html[data-app-ready="0"] body {
+      opacity:0 !important;
+      visibility:hidden !important;
+      overflow:hidden !important;
+    }
+  </style>
+  <script>
+    (function setupAppReadyGate() {
+      const root = document.documentElement;
+      root.setAttribute("data-app-ready", "0");
+      let done = false;
+      function reveal() {
+        if (done) return;
+        done = true;
+        root.setAttribute("data-app-ready", "1");
+      }
+      window.__setAppReady = function __setAppReady(options) {
+        const cfg = options && typeof options === "object" ? options : {};
+        const minFrames = Math.max(4, Number(cfg.minFrames) || 8);
+        const stableFrames = Math.max(2, Number(cfg.stableFrames) || 3);
+        const maxFrames = Math.max(minFrames + stableFrames, Number(cfg.maxFrames) || 28);
+        let frameCount = 0;
+        let stableCount = 0;
+        let previousKey = "";
+        const step = () => {
+          frameCount += 1;
+          let layoutKey = "";
+          const body = document.body;
+          if (body) {
+            const rect = body.getBoundingClientRect();
+            layoutKey = [
+              Math.round(rect.width),
+              Math.round(rect.height),
+              document.documentElement.scrollWidth,
+              document.documentElement.scrollHeight
+            ].join("x");
+          }
+          stableCount = layoutKey && layoutKey === previousKey ? stableCount + 1 : 0;
+          previousKey = layoutKey;
+          const enoughFrames = frameCount >= minFrames;
+          const visuallyStable = stableCount >= stableFrames;
+          const frameBudgetExceeded = frameCount >= maxFrames;
+          if ((!enoughFrames || !visuallyStable) && !frameBudgetExceeded) {
+            requestAnimationFrame(step);
+            return;
+          }
+          reveal();
+        };
+        const start = () => requestAnimationFrame(step);
+        if (document.fonts && document.fonts.ready) {
+          Promise.race([
+            document.fonts.ready.catch(() => {}),
+            new Promise((resolve) => setTimeout(resolve, 1200))
+          ]).finally(start);
+          return;
+        }
+        start();
+      };
+      window.addEventListener("pageshow", reveal, { once: true });
+      window.setTimeout(reveal, 7000);
+    })();
+  </script>
+  <title>Actualites</title>
+  <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
+  <style>
+    :root{
+      --news-surface:#171717;
+      --news-surface-soft:#141414;
+      --news-border:#2f2f2f;
+      --news-border-soft:#2a2a2a;
+      --news-text:#ececec;
+      --news-muted:#c6c6c6;
+    }
+
+    .news-wrap{
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:calc(var(--sitebar-height, 52px) + 14px) 12px calc(var(--shared-footer-height, 24px) + 16px);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+    }
+
+    .news-card{
+      width:min(1020px, 100%);
+      border:1px solid var(--news-border);
+      border-radius:14px;
+      background:var(--news-surface);
+      color:var(--news-text);
+      box-shadow:0 16px 36px rgba(0,0,0,.35);
+      padding:14px;
+      display:grid;
+      gap:10px;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+
+    .news-title{
+      margin:0;
+      font-size:clamp(20px, 3vw, 28px);
+      line-height:1.15;
+      color:#fff;
+      letter-spacing:-.01em;
+    }
+
+    .news-feedback{
+      margin:2px 0 0;
+      color:#bdbdbd;
+      font-size:12px;
+      line-height:1.4;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .news-feedback.is-loading::before{
+      content:"";
+      width:12px;
+      height:12px;
+      border:2px solid #5f5f5f;
+      border-top-color:#f0f0f0;
+      border-radius:50%;
+      animation:news-spin .75s linear infinite;
+    }
+    .news-feedback.is-error{
+      color:#f4b2b2;
+    }
+    @keyframes news-spin{
+      to{ transform:rotate(360deg); }
+    }
+
+    .news-list{
+      display:grid;
+      gap:10px;
+      grid-template-columns:1fr;
+    }
+    .news-group{
+      border:1px solid var(--news-border-soft);
+      border-radius:12px;
+      background:rgba(14, 14, 14, .76);
+      overflow:hidden;
+    }
+    .news-group-summary{
+      list-style:none;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:11px 12px;
+      background:#151515;
+      color:#f2f2f2;
+      font-size:15px;
+      font-weight:900;
+      line-height:1.25;
+      user-select:none;
+      position:relative;
+    }
+    .news-group-summary::-webkit-details-marker{
+      display:none;
+    }
+    .news-group-summary::after{
+      content:"▸";
+      color:#d8d8d8;
+      font-size:14px;
+      transform:translateY(-1px);
+      transition:transform .18s ease;
+    }
+    .news-group[open] > .news-group-summary::after{
+      transform:rotate(90deg) translateY(0);
+    }
+    .news-group-count{
+      margin-left:auto;
+      margin-right:20px;
+      color:#c8c8c8;
+      font-size:12px;
+      font-weight:700;
+    }
+    .news-group[open] > .news-group-summary .news-group-count{
+      display:none;
+    }
+    .news-group-body{
+      display:grid;
+      gap:10px;
+      padding:10px;
+      border-top:1px solid #292929;
+    }
+
+    .news-item{
+      border:1px solid var(--news-border-soft);
+      border-radius:12px;
+      background:var(--news-surface-soft);
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+    .news-head{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .news-date{
+      color:#f2f2f2;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.03em;
+    }
+    .news-ago{
+      margin-left:auto;
+      color:rgba(236, 236, 236, .52);
+      font-size:11px;
+      font-weight:600;
+      white-space:nowrap;
+    }
+
+    .news-message{
+      margin:0;
+      color:#ececec;
+      font-size:14px;
+      line-height:1.55;
+      white-space:normal;
+      overflow-wrap:anywhere;
+    }
+    .news-message-line{
+      margin:0 0 6px;
+    }
+    .news-message-line:last-child{
+      margin-bottom:0;
+    }
+    .news-list-bullets{
+      margin:0 0 6px 18px;
+      padding:0;
+      color:#ececec;
+    }
+    .news-list-bullets:last-child{
+      margin-bottom:0;
+    }
+    .news-list-bullets li{
+      margin:0 0 4px;
+      line-height:1.5;
+    }
+    .news-list-bullets li:last-child{
+      margin-bottom:0;
+    }
+    .news-heading{
+      margin:0 0 6px;
+      color:#fff;
+      font-size:18px;
+      font-weight:900;
+      line-height:1.22;
+      letter-spacing:-.01em;
+    }
+    .news-message strong{ font-weight:900; }
+    .news-message em{ font-style:italic; }
+    .news-message u{ text-decoration:underline; text-underline-offset:2px; }
+    .news-inline-code{
+      display:inline-block;
+      padding:1px 6px;
+      border:1px solid #464646;
+      border-radius:6px;
+      background:#111;
+      color:#f5f5f5;
+      font-size:.92em;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      line-height:1.4;
+    }
+    .news-update{
+      display:grid;
+      gap:10px;
+    }
+    .news-update-title{
+      margin:0;
+      color:#fff;
+      font-size:22px;
+      font-weight:900;
+      line-height:1.2;
+      letter-spacing:-.01em;
+    }
+    .news-update-meta{
+      margin:0;
+      color:#e8e8e8;
+      font-size:14px;
+      line-height:1.45;
+      font-weight:700;
+    }
+    .news-update-section-title{
+      margin:0;
+      color:#f0f0f0;
+      font-size:14px;
+      font-weight:800;
+      line-height:1.35;
+      letter-spacing:.01em;
+    }
+    .news-update-dlc-box{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .news-update-dlc-chip{
+      display:inline-flex;
+      align-items:center;
+      border:1px solid #654336;
+      border-radius:7px;
+      background:#2a1f1b;
+      color:#ffd6c8;
+      font-size:12px;
+      font-weight:700;
+      line-height:1.2;
+      padding:6px 9px;
+      white-space:nowrap;
+    }
+    .news-update-list{
+      margin:0;
+      padding-left:18px;
+      color:#ececec;
+      font-size:14px;
+      line-height:1.5;
+    }
+    .news-update-list li{
+      margin:0 0 4px;
+    }
+    .news-update-list li:last-child{
+      margin-bottom:0;
+    }
+    .news-update-sublist{
+      margin:5px 0 0 14px;
+      padding-left:12px;
+    }
+    .news-update-sublist li{
+      margin:0 0 3px;
+    }
+    .news-update-sublist li:last-child{
+      margin-bottom:0;
+    }
+    .news-update-label{
+      margin:0;
+      color:#f2f2f2;
+      font-size:16px;
+      font-weight:900;
+      line-height:1.3;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+    .news-update-label-row{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 0 6px;
+    }
+    .news-update-label-version{
+      color:#cfcfcf;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.2;
+      letter-spacing:.02em;
+      white-space:nowrap;
+    }
+    .news-update-table{
+      width:100%;
+      border-collapse:collapse;
+      background:#121212;
+      --news-table-accent:#ff9d77;
+      --news-table-head-bg:linear-gradient(180deg, rgba(53, 35, 28, .94), rgba(33, 24, 20, .94));
+      --news-table-title-bg:linear-gradient(180deg, rgba(40, 30, 25, .92), rgba(24, 19, 16, .92));
+      --news-table-cell-bg:linear-gradient(180deg, rgba(255, 109, 58, .13), rgba(255, 109, 58, .05));
+      --news-table-version:#ffd9ca;
+      --news-table-content:#f7ece6;
+    }
+    .news-update-table th,
+    .news-update-table td{
+      border:0;
+      padding:10px 12px;
+      vertical-align:top;
+      text-align:left;
+    }
+    .news-update-table th{
+      background:var(--news-table-head-bg);
+      color:#f1f1f1;
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+    .news-update-title-row th{
+      background:var(--news-table-title-bg);
+      text-transform:none;
+      padding:9px 12px;
+    }
+    .news-update-title-wrap{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .news-update-title-label{
+      color:var(--news-table-accent);
+      font-size:16px;
+      font-weight:900;
+      line-height:1.25;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+    .news-update-title-version{
+      color:#cfcfcf;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.2;
+      white-space:nowrap;
+    }
+    .news-update-version-cell{
+      width:220px;
+      color:var(--news-table-version);
+      font-size:18px;
+      font-weight:900;
+      line-height:1.2;
+      white-space:nowrap;
+    }
+    .news-update-content-cell{
+      color:var(--news-table-content);
+    }
+    .news-update-table td{
+      background:var(--news-table-cell-bg);
+    }
+    .news-update-table.news-update-table-update{
+      --news-table-accent:#ff9d77;
+      --news-table-head-bg:linear-gradient(180deg, rgba(53, 35, 28, .94), rgba(33, 24, 20, .94));
+      --news-table-title-bg:linear-gradient(180deg, rgba(40, 30, 25, .92), rgba(24, 19, 16, .92));
+      --news-table-cell-bg:linear-gradient(180deg, rgba(255, 109, 58, .13), rgba(255, 109, 58, .05));
+      --news-table-version:#ffd9ca;
+      --news-table-content:#f7ece6;
+    }
+    .news-update-table.news-update-table-devlog{
+      --news-table-accent:#86c8ff;
+      --news-table-head-bg:linear-gradient(180deg, rgba(26, 43, 62, .94), rgba(15, 27, 41, .94));
+      --news-table-title-bg:linear-gradient(180deg, rgba(21, 37, 55, .92), rgba(12, 23, 34, .92));
+      --news-table-cell-bg:linear-gradient(180deg, rgba(69, 146, 255, .14), rgba(69, 146, 255, .06));
+      --news-table-version:#cde9ff;
+      --news-table-content:#eaf5ff;
+    }
+    .news-update-table.news-update-table-latest{
+      --news-table-accent:#8bdc96;
+      --news-table-head-bg:linear-gradient(180deg, rgba(34, 66, 41, .94), rgba(20, 44, 28, .94));
+      --news-table-title-bg:linear-gradient(180deg, rgba(28, 56, 35, .92), rgba(17, 37, 23, .92));
+      --news-table-cell-bg:linear-gradient(180deg, rgba(105, 213, 126, .17), rgba(105, 213, 126, .07));
+      --news-table-version:#c9f6cf;
+      --news-table-content:#e7ffea;
+      box-shadow:none;
+    }
+    .news-update-content-cell .news-update-list{
+      margin:0;
+    }
+    .news-devlog-carousel{
+      width:100%;
+      max-width:100%;
+      display:grid;
+      margin:0 auto;
+      grid-template-columns:40px minmax(0, 1fr) 40px;
+      align-items:center;
+      gap:8px;
+    }
+    .news-devlog-scroller{
+      grid-column:2;
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      overflow-x:hidden;
+      padding:6px;
+      border-radius:10px;
+      border:0;
+      background:transparent;
+      scroll-snap-type:x mandatory;
+      scroll-behavior:smooth;
+    }
+    .news-devlog-slide{
+      flex:0 0 auto;
+      scroll-snap-align:start;
+      border:1px solid #2a2a2a;
+      border-radius:9px;
+      overflow:hidden;
+      background:#0b0b0b;
+      text-decoration:none;
+      width:auto;
+      height:auto;
+    }
+    .news-devlog-slide-image{
+      width:auto;
+      height:auto;
+      max-height:260px;
+      max-width:min(78vw, 520px);
+      object-fit:contain;
+      display:block;
+      background:#0b0b0b;
+    }
+    .news-devlog-carousel-nav{
+      position:static;
+      transform:none;
+      width:36px;
+      height:36px;
+      border:1px solid rgba(255, 255, 255, .26);
+      border-radius:999px;
+      background:linear-gradient(180deg, rgba(26, 26, 26, .92), rgba(10, 10, 10, .92));
+      box-shadow:0 7px 20px rgba(0, 0, 0, .45);
+      color:#f5f5f5;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      padding:0;
+      transition:transform .2s ease, opacity .2s ease, background-color .2s ease, border-color .2s ease;
+    }
+    .news-devlog-carousel-nav:hover:not(:disabled){
+      transform:scale(1.06);
+      border-color:rgba(255, 255, 255, .42);
+      background:linear-gradient(180deg, rgba(43, 43, 43, .95), rgba(18, 18, 18, .95));
+    }
+    .news-devlog-carousel-nav:active:not(:disabled){
+      transform:scale(.98);
+    }
+    .news-devlog-carousel-nav:disabled{
+      opacity:.38;
+      cursor:default;
+    }
+    .news-devlog-carousel-nav.is-disabled{
+      opacity:.28;
+      border-color:rgba(170, 170, 170, .22);
+      background:linear-gradient(180deg, rgba(18, 18, 18, .88), rgba(10, 10, 10, .88));
+      box-shadow:none;
+    }
+    .news-devlog-carousel-nav.prev{
+      grid-column:1;
+      justify-self:center;
+    }
+    .news-devlog-carousel-nav.next{
+      grid-column:3;
+      justify-self:center;
+    }
+    .news-devlog-carousel-nav svg{
+      width:18px;
+      height:18px;
+      fill:none;
+      stroke:currentColor;
+      stroke-width:2.5;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .news-images{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+      gap:10px;
+    }
+
+    .news-image-link{
+      display:block;
+      border:1px solid #333;
+      border-radius:9px;
+      overflow:hidden;
+      background:#0f0f0f;
+      text-decoration:none;
+    }
+
+    .news-image{
+      display:block;
+      width:100%;
+      height:100%;
+      max-height:230px;
+      object-fit:cover;
+    }
+
+    @media (max-width:700px){
+      .news-wrap{
+        padding:calc(var(--sitebar-height, 52px) + 10px) 8px calc(var(--shared-footer-height, 24px) + 12px);
+      }
+      .news-card{
+        padding:11px;
+        border-radius:12px;
+      }
+      .news-update-version-cell{
+        width:160px;
+        white-space:normal;
+      }
+      .news-update-table th,
+      .news-update-table td{
+        padding:8px 9px;
+      }
+      .news-devlog-carousel{
+        max-width:100%;
+      }
+      .news-devlog-carousel-nav{
+        width:30px;
+        height:30px;
+      }
+      .news-devlog-slide-image{
+        max-height:210px;
+        max-width:min(86vw, 420px);
+      }
+      .news-images{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .news-devlog-scroller{
+        scroll-behavior:auto;
+      }
+    }
+  </style>
+</head>
+<body data-bg-opacity="0.24" data-bg-overlay-top="0.74" data-bg-overlay-bottom="0.92">
+  <main class="news-wrap">
+    <section class="news-card" aria-labelledby="actualitesTitle">
+      <h1 class="news-title" id="actualitesTitle" data-i18n="nav_actualites">Actualites</h1>
+      <div class="news-list" id="actualitesList" aria-live="polite"></div>
+      <p class="news-feedback is-loading" id="actualitesFeedback">Chargement</p>
+    </section>
+  </main>
+
+  <script src="config/translations.js"></script>
+  <script src="config/config.js"></script>
+  <script src="config/site-nav.js"></script>
+  <script src="config/shared-header.js"></script>
+  <script>
+    (function initActualitesPage() {
+      const CACHE_KEY = "idf_actualites_sheet_cache_v1";
+      const ENABLE_LOCAL_MODE = true;
+      const DEFAULT_SHEET_NAME = "actualites";
+      const UPDATE_CHANNEL_ID = "998922374504267786";
+      const DEVLOG_CHANNEL_ID = "998922258791804988";
+      const SUPPORTED_LANGS = new Set(["fr", "en", "es", "de", "pl", "pt", "nl", "it", "ru", "zh", "ko", "ja"]);
+      const TABLE_LABELS = {
+        fr: { latestUpdateLabel: "Nouvelle mise a jour", updateLabel: "Mise a jour", devlogLabel: "DEV LOG", versionCol: "Version de la map", contentCol: "Contenu mise a jour", imagesCol: "Images", devlogImageAlt: "Image du dev log" },
+        en: { latestUpdateLabel: "New update", updateLabel: "Update", devlogLabel: "Dev log", versionCol: "Map version", contentCol: "Update content", imagesCol: "Images", devlogImageAlt: "Dev log image" },
+        es: { latestUpdateLabel: "Nueva actualizacion", updateLabel: "Actualizacion", devlogLabel: "Registro de desarrollo", versionCol: "Version del mapa", contentCol: "Contenido de la actualizacion", imagesCol: "Imagenes", devlogImageAlt: "Imagen del registro de desarrollo" },
+        de: { latestUpdateLabel: "Neues Update", updateLabel: "Update", devlogLabel: "Entwicklungsprotokoll", versionCol: "Map-Version", contentCol: "Update-Inhalt", imagesCol: "Bilder", devlogImageAlt: "Bild aus dem Entwicklungsprotokoll" },
+        pl: { latestUpdateLabel: "Nowa aktualizacja", updateLabel: "Aktualizacja", devlogLabel: "Dziennik deweloperski", versionCol: "Wersja mapy", contentCol: "Zawartosc aktualizacji", imagesCol: "Obrazy", devlogImageAlt: "Obraz dziennika deweloperskiego" },
+        pt: { latestUpdateLabel: "Nova atualizacao", updateLabel: "Atualizacao", devlogLabel: "Diario de desenvolvimento", versionCol: "Versao do mapa", contentCol: "Conteudo da atualizacao", imagesCol: "Imagens", devlogImageAlt: "Imagem do diario de desenvolvimento" },
+        nl: { latestUpdateLabel: "Nieuwe update", updateLabel: "Update", devlogLabel: "Ontwikkellogboek", versionCol: "Mapversie", contentCol: "Update-inhoud", imagesCol: "Afbeeldingen", devlogImageAlt: "Afbeelding van ontwikkellogboek" },
+        it: { latestUpdateLabel: "Nuovo aggiornamento", updateLabel: "Aggiornamento", devlogLabel: "Diario di sviluppo", versionCol: "Versione mappa", contentCol: "Contenuto aggiornamento", imagesCol: "Immagini", devlogImageAlt: "Immagine del diario di sviluppo" },
+        ru: { latestUpdateLabel: "Новое обновление", updateLabel: "Обновление", devlogLabel: "Дневник разработки", versionCol: "Версия карты", contentCol: "Содержание обновления", imagesCol: "Изображения", devlogImageAlt: "Изображение из дневника разработки" },
+        zh: { latestUpdateLabel: "新更新", updateLabel: "更新", devlogLabel: "开发日志", versionCol: "地图版本", contentCol: "更新内容", imagesCol: "图片", devlogImageAlt: "开发日志图片" },
+        ko: { latestUpdateLabel: "새 업데이트", updateLabel: "업데이트", devlogLabel: "개발 로그", versionCol: "맵 버전", contentCol: "업데이트 내용", imagesCol: "이미지", devlogImageAlt: "개발 로그 이미지" },
+        ja: { latestUpdateLabel: "新しいアップデート", updateLabel: "アップデート", devlogLabel: "開発ログ", versionCol: "マップバージョン", contentCol: "更新内容", imagesCol: "画像", devlogImageAlt: "開発ログ画像" }
+      };
+
+      function normalizeLangCode(raw) {
+        return String(raw || "").toLowerCase().replace("_", "-").slice(0, 2);
+      }
+      function lang() {
+        const fromStorage = normalizeLangCode(localStorage.getItem("idf_lang") || "");
+        if (SUPPORTED_LANGS.has(fromStorage)) return fromStorage;
+        const fromHtml = normalizeLangCode(document.documentElement.getAttribute("lang") || "");
+        if (SUPPORTED_LANGS.has(fromHtml)) return fromHtml;
+        const fromNav = normalizeLangCode(navigator.language || "");
+        if (SUPPORTED_LANGS.has(fromNav)) return fromNav;
+        return "fr";
+      }
+      function t(key, fallback) {
+        const i18n = window.I18N || {};
+        const code = lang();
+        const fromLang = i18n[code] && i18n[code][key];
+        if (typeof fromLang === "string" && fromLang) return fromLang;
+        const fromFr = i18n.fr && i18n.fr[key];
+        if (typeof fromFr === "string" && fromFr) return fromFr;
+        return fallback;
+      }
+      function tableLabel(key) {
+        const code = lang();
+        const fromLang = TABLE_LABELS[code] && TABLE_LABELS[code][key];
+        if (typeof fromLang === "string" && fromLang) return fromLang;
+        return TABLE_LABELS.fr[key] || "";
+      }
+
+      function normalizeHeader(raw) {
+        return String(raw || "")
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_+|_+$/g, "");
+      }
+      function firstNonEmpty(obj, keys) {
+        for (const key of keys) {
+          const value = String(obj[key] ?? "").trim();
+          if (value) return value;
+        }
+        return "";
+      }
+      function collectMessageTranslations(row) {
+        const byLang = {};
+        const entries = Object.entries(row || {}).map(([key, value]) => ({
+          key: normalizeHeader(key),
+          value: String(value ?? "").trim()
+        }));
+        const pickByLocale = (code) => {
+          const target = `message_${code}`;
+          const exact = entries.find((entry) => entry.key === target && entry.value);
+          if (exact) return exact.value;
+          const prefixed = entries.find((entry) => entry.key.startsWith(`${target}_`) && entry.value);
+          if (prefixed) return prefixed.value;
+          const compact = entries.find((entry) => entry.key === `message${code}` && entry.value);
+          if (compact) return compact.value;
+          const fuzzy = entries.find((entry) => /^message/.test(entry.key) && new RegExp(`(?:_|^)${code}(?:_|$)`).test(entry.key) && entry.value);
+          if (fuzzy) return fuzzy.value;
+          return "";
+        };
+
+        const base = firstNonEmpty(row, ["message_fr", "message", "content", "contenu", "texte"]);
+        if (base) byLang.fr = base;
+
+        const locales = ["en", "es", "de", "pl", "pt", "nl", "it", "ru", "zh", "ko", "ja"];
+        locales.forEach((code) => {
+          const value = pickByLocale(code);
+          if (value) byLang[code] = value;
+        });
+        return byLang;
+      }
+      function pickLocalizedMessage(byLang, localeCode) {
+        const map = byLang && typeof byLang === "object" ? byLang : {};
+        const code = String(localeCode || "fr").toLowerCase().slice(0, 2);
+        if (map[code]) return map[code];
+        if (map.fr) return map.fr;
+        if (map.en) return map.en;
+        const first = Object.values(map).find((value) => String(value || "").trim());
+        return String(first || "");
+      }
+
+      function readCache(maxAgeMs) {
+        if (!ENABLE_LOCAL_MODE) return null;
+        try {
+          const raw = sessionStorage.getItem(CACHE_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return null;
+          const savedAt = Number(parsed.savedAt || 0);
+          if (!savedAt || Date.now() - savedAt > maxAgeMs) return null;
+          return Array.isArray(parsed.rows) ? parsed.rows : null;
+        } catch {
+          return null;
+        }
+      }
+      function writeCache(rows) {
+        if (!ENABLE_LOCAL_MODE) return;
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), rows }));
+        } catch {}
+      }
+
+      function parseGvizResponse(payload) {
+        const text = String(payload || "").trim();
+        const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?\s*$/);
+        if (match && match[1]) return JSON.parse(match[1]);
+        if (text.startsWith("{") && text.endsWith("}")) return JSON.parse(text);
+        throw new Error("Invalid Google Sheet response");
+      }
+
+      function mapGvizTableToRows(data) {
+        const table = data && data.table && typeof data.table === "object" ? data.table : {};
+        const cols = Array.isArray(table.cols) ? table.cols : [];
+        const rows = Array.isArray(table.rows) ? table.rows : [];
+
+        let headers = cols.map((col, index) => {
+          const normalized = normalizeHeader(col && (col.label || col.id || ""));
+          return normalized || `col_${index}`;
+        });
+
+        const labelsMissing = cols.length > 0 && cols.every((col) => !String(col && col.label || "").trim());
+        const headersAreGeneric = headers.every((key) => /^col_\d+$/.test(key));
+
+        let rowStartIndex = 0;
+        if ((labelsMissing || headersAreGeneric) && rows.length) {
+          const firstCells = Array.isArray(rows[0] && rows[0].c) ? rows[0].c : [];
+          const candidateHeaders = firstCells.map((cell, index) => {
+            const value = cell && typeof cell === "object" && "v" in cell ? cell.v : "";
+            const normalized = normalizeHeader(value);
+            return normalized || `col_${index}`;
+          });
+          const nonGenericCount = candidateHeaders.filter((key) => !/^col_\d+$/.test(key)).length;
+          if (nonGenericCount >= 2) {
+            headers = candidateHeaders;
+            rowStartIndex = 1;
+          }
+        }
+
+        const uniqueHeaders = [];
+        const seen = {};
+        headers.forEach((key, index) => {
+          const base = key || `col_${index}`;
+          const count = Number(seen[base] || 0);
+          seen[base] = count + 1;
+          uniqueHeaders.push(count ? `${base}_${count + 1}` : base);
+        });
+
+        return rows
+          .slice(rowStartIndex)
+          .map((row) => {
+            const cells = Array.isArray(row && row.c) ? row.c : [];
+            const out = {};
+            uniqueHeaders.forEach((key, index) => {
+              const cell = cells[index];
+              out[key] = cell && typeof cell === "object" && "v" in cell ? cell.v : "";
+            });
+            return out;
+          })
+          .filter((rowObj) => Object.values(rowObj).some((value) => String(value || "").trim()));
+      }
+
+      function buildSheetUrl(spreadsheetId, gid, sheetName) {
+        const id = encodeURIComponent(spreadsheetId);
+        const params = new URLSearchParams();
+        if (sheetName) {
+          params.set("sheet", sheetName);
+        } else {
+          params.set("gid", String(gid || "0"));
+        }
+        params.set("tqx", "out:json");
+        return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?${params.toString()}`;
+      }
+
+      async function fetchSheetRows(url, timeoutMs) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const response = await fetch(url, { signal: controller.signal });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const text = await response.text();
+          const parsed = parseGvizResponse(text);
+          return mapGvizTableToRows(parsed);
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      function normalizeLinkToken(raw) {
+        return String(raw || "").trim().replace(/[\u0448\u0428]/g, "@");
+      }
+
+      function toHttpUrl(raw) {
+        const value = normalizeLinkToken(raw);
+        if (!value) return "";
+        const lower = value.toLowerCase();
+        if (lower === "x" || lower === "-" || lower === "none" || lower === "n/a") return "";
+        try {
+          const url = new URL(value);
+          if (url.protocol === "http:" || url.protocol === "https:") return url.toString();
+          return "";
+        } catch {
+          if (!value.includes(".")) return "";
+          try {
+            const normalized = new URL(`https://${value.replace(/^\/+/, "")}`);
+            if (normalized.protocol === "http:" || normalized.protocol === "https:") return normalized.toString();
+            return "";
+          } catch {
+            return "";
+          }
+        }
+      }
+
+      function extractUrls(raw) {
+        const value = String(raw || "");
+        if (!value) return [];
+        const matches = value.match(/https?:\/\/[^\s"']+/g) || [];
+        return matches
+          .map((url) => String(url || "").trim().replace(/[),.;]+$/, "").replace(/&+$/, ""))
+          .map((url) => toHttpUrl(url))
+          .filter(Boolean);
+      }
+
+      function uniqueUrls(urls) {
+        const seen = new Set();
+        const out = [];
+        urls.forEach((url) => {
+          const key = String(url || "").trim();
+          if (!key || seen.has(key)) return;
+          seen.add(key);
+          out.push(key);
+        });
+        return out;
+      }
+
+      function isImageUrl(url) {
+        const lower = String(url || "").toLowerCase();
+        if (!lower) return false;
+        if (/\.(png|jpe?g|gif|webp|avif|bmp)(\?|$)/.test(lower)) return true;
+        if (lower.includes("media.discordapp.net/attachments/")) return true;
+        return false;
+      }
+      function parseDiscordChannelId(rawUrl) {
+        const value = toHttpUrl(rawUrl);
+        if (!value) return "";
+        try {
+          const url = new URL(value);
+          const parts = String(url.pathname || "").split("/").filter(Boolean);
+          if (parts.length >= 3 && parts[0] === "channels") return String(parts[2] || "");
+          return "";
+        } catch {
+          return "";
+        }
+      }
+
+      function cleanMessage(raw) {
+        const text = String(raw || "")
+          .replace(/\r\n/g, "\n")
+          .replace(/<@&\d+>/g, "")
+          .replace(/<@!?\d+>/g, "")
+          .replace(/<#\d+>/g, "")
+          .replace(/@everyone/gi, "")
+          .replace(/@here/gi, "");
+        const filtered = text
+          .split("\n")
+          .filter((line) => !/^\s*https?:\/\/\S+\s*$/.test(line))
+          .join("\n")
+          .replace(/\\/g, "")
+          .trim();
+        return filtered;
+      }
+      function escapeHtml(raw) {
+        return String(raw || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+      function renderInlineDiscord(raw) {
+        let text = escapeHtml(raw);
+        const codeChunks = [];
+        text = text.replace(/`([^`\n]+)`/g, (_, codeText) => {
+          const index = codeChunks.push(`<code class="news-inline-code">${codeText}</code>`) - 1;
+          return `%%CODE${index}%%`;
+        });
+        text = text.replace(/__(.+?)__/g, "<u>$1</u>");
+        text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        text = text.replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
+        text = text.replace(/%%CODE(\d+)%%/g, (_, index) => codeChunks[Number(index)] || "");
+        return text;
+      }
+      function renderDiscordMessageHtml(raw) {
+        const lines = String(raw || "").split("\n");
+        const parts = [];
+        let listItems = [];
+        const flushList = () => {
+          if (!listItems.length) return;
+          parts.push(`<ul class="news-list-bullets">${listItems.join("")}</ul>`);
+          listItems = [];
+        };
+        lines.forEach((line) => {
+          const unquoted = String(line || "").replace(/^\s*>+\s?/, "");
+          const trimmed = unquoted.trim();
+          if (!trimmed) {
+            flushList();
+            parts.push("<div class=\"news-message-line\"><br></div>");
+            return;
+          }
+          const heading = trimmed.match(/^#{1,3}\s+(.+)$/);
+          if (heading && heading[1]) {
+            flushList();
+            parts.push(`<h1 class="news-heading">${renderInlineDiscord(heading[1])}</h1>`);
+            return;
+          }
+          const bullet = trimmed.match(/^[*]\s+(.+)$/);
+          if (bullet && bullet[1]) {
+            listItems.push(`<li>${renderInlineDiscord(bullet[1])}</li>`);
+            return;
+          }
+          flushList();
+          parts.push(`<div class="news-message-line">${renderInlineDiscord(unquoted)}</div>`);
+        });
+        flushList();
+        return parts.join("");
+      }
+      function stripDiscordDecor(raw) {
+        return String(raw || "")
+          .replace(/^\s*>+\s?/, "")
+          .replace(/\\-/g, "-")
+          .replace(/[*_`#]/g, "")
+          .replace(/<:[^:>]+:\d+>/g, "")
+          .replace(/:warning:/gi, "")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+      function parseUpdateMessage(raw) {
+        const normalized = String(raw || "")
+          .replace(/\r\n/g, "\n")
+          .replace(/<@&\d+>/g, "")
+          .replace(/<@!?\d+>/g, "")
+          .replace(/<#\d+>/g, "")
+          .replace(/@everyone/gi, "")
+          .replace(/@here/gi, "")
+          .replace(/\\-/g, "-");
+        const lines = normalized
+          .split("\n")
+          .map((line) => String(line || "").trim())
+          .filter(Boolean);
+
+        const toPlain = (line) => String(line || "")
+          .replace(/^\s*>+\s?/, "")
+          .replace(/[*_`]/g, "")
+          .replace(/<:[^:>]+:\d+>/g, "")
+          .replace(/:warning:/gi, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        const toMarkerLine = (line) => String(line || "")
+          .replace(/<:[^:>]+:\d+>/g, "")
+          .replace(/:warning:/gi, "")
+          .replace(/\*\*/g, "")
+          .replace(/__/g, "")
+          .replace(/`/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        const toSearch = (line) => String(line || "")
+          .toLowerCase()
+          .replace(/\s+/g, " ")
+          .trim();
+        const toSearchLatin = (line) => String(line || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        const cleanText = (line) => toPlain(line).replace(/^[-*]\s+/, "").trim();
+        const isUrl = (line) => /^https?:\/\//i.test(String(line || "").trim());
+
+        const minVersionMarkers = [
+          /version du jeu minimale/,
+          /minimum game version/,
+          /version minima del juego/,
+          /mindestspielversion/,
+          /minimalna wersja gry/,
+          /versao minima do jogo/,
+          /minimale spelversie/,
+          /versione minima del gioco/,
+          /минимальная версия игры/,
+          /最低游戏版本/,
+          /최소 게임 버전/,
+          /最小ゲームバージョン/
+        ];
+        const recommendedVersionMarkers = [
+          /version du jeu recommandee/,
+          /recommended game version/,
+          /version recomendada del juego/,
+          /empfohlene spielversion/,
+          /zalecana wersja gry/,
+          /versao recomendada do jogo/,
+          /aanbevolen spelversie/,
+          /versione del gioco consigliata/,
+          /рекомендуемая версия игры/,
+          /推荐游戏版本/,
+          /권장 게임 버전/,
+          /推奨ゲームバージョン/
+        ];
+        const extractAfterColon = (plain) => {
+          const match = String(plain || "").match(/[:：]\s*(.+)$/);
+          return match && match[1] ? match[1].trim() : "";
+        };
+
+        const isDlcHeader = (plain, markerLine) => {
+          if (!plain || isUrl(plain)) return false;
+          if (/^(?:>\s*)?[-*]\s+/.test(markerLine || "")) return false;
+          return /dlc/i.test(plain);
+        };
+        const isContentHeader = (plain, search, searchLatin, markerLine) => {
+          if (!plain || isUrl(plain)) return false;
+          if (/^(?:>\s*)?[-*]\s+/.test(markerLine || "")) return false;
+          const latinPatterns = [
+            /contenu de la mise/,
+            /update content/,
+            /contenido de la actualizacion/,
+            /update-inhalte/,
+            /aktualizacja zawartosci/,
+            /conteudo da atualizacao/,
+            /update-inhoud/,
+            /aggiornamento dei contenuti/,
+            /contenuto dell.?aggiornamento/,
+            /содержани[ея] обновлен/
+          ];
+          if (latinPatterns.some((pattern) => pattern.test(searchLatin || ""))) return true;
+          return /更新内容|업데이트 내용|アップデート内容/.test(search || "");
+        };
+        const isLinkHeader = (plain, search) => {
+          if (!plain || isUrl(plain)) return false;
+          if (/^(lien|link|enlace)\b/i.test(plain)) return true;
+          if (/^(ссылка|链接|링크|リンク)\b/i.test(plain)) return true;
+          if (/^\*\*\s*(lien|link|enlace|ссылка|链接|링크|リンク)/i.test(plain)) return true;
+          return /^enlace\b|^ссылка\b|^链接|^링크|^リンク/.test(search || "");
+        };
+        const isFooterLine = (search) => {
+          return /(merci de suivre|please follow|sigue las instrucciones|bitte folgen|postepuj zgodnie|siga as instrucoes|volg de instructies|segui le istruzioni|следуйте инструкциям|请按照|안내 사항|指示に従って)/i.test(search || "");
+        };
+
+        let version = "";
+        let minVersion = "";
+        let recommendedVersion = "";
+        const dlc = [];
+        const dlcLineIndexes = new Set();
+        const contentItems = [];
+
+        lines.forEach((line) => {
+          const plain = toPlain(line);
+          const search = toSearch(plain);
+          const searchLatin = toSearchLatin(plain);
+          const markerLine = toMarkerLine(line);
+
+          const isMinVersionLine = minVersionMarkers.some((pattern) => pattern.test(searchLatin) || pattern.test(search));
+          const isRecommendedVersionLine = recommendedVersionMarkers.some((pattern) => pattern.test(searchLatin) || pattern.test(search));
+          if (!minVersion && isMinVersionLine) minVersion = extractAfterColon(plain);
+          if (!recommendedVersion && isRecommendedVersionLine) recommendedVersion = extractAfterColon(plain);
+
+          const isGameVersionMeta = isMinVersionLine || isRecommendedVersionLine;
+          if (!version && !isGameVersionMeta && !isDlcHeader(plain, markerLine) && !isContentHeader(plain, search, searchLatin, markerLine)) {
+            const versionPatterns = [
+              /(?:version|versi[oó]n|versione|wersja)\s+v?\s*([0-9][0-9a-zA-Z._-]*)/i,
+              /версия\s+v?\s*([0-9][0-9a-zA-Z._-]*)/i,
+              /版本\s*v?\s*([0-9][0-9a-zA-Z._-]*)/i,
+              /버전\s*v?\s*([0-9][0-9a-zA-Z._-]*)/i,
+              /バージョン\s*v?\s*([0-9][0-9a-zA-Z._-]*)/i
+            ];
+            for (const pattern of versionPatterns) {
+              const match = plain.match(pattern);
+              if (match && match[1]) {
+                version = match[1].trim();
+                break;
+              }
+            }
+          }
+        });
+
+        let dlcStart = -1;
+        let contentStart = -1;
+        for (let i = 0; i < lines.length; i += 1) {
+          const plain = toPlain(lines[i]);
+          const search = toSearch(plain);
+          const searchLatin = toSearchLatin(plain);
+          const markerLine = toMarkerLine(lines[i]);
+          if (dlcStart < 0 && isDlcHeader(plain, markerLine)) dlcStart = i;
+          if (contentStart < 0 && isContentHeader(plain, search, searchLatin, markerLine)) contentStart = i;
+        }
+
+        if (dlcStart >= 0) {
+          for (let i = dlcStart + 1; i < lines.length; i += 1) {
+            const plain = toPlain(lines[i]);
+            const search = toSearch(plain);
+            const searchLatin = toSearchLatin(plain);
+            const markerLine = toMarkerLine(lines[i]);
+            if (contentStart >= 0 && i >= contentStart) break;
+            if (isContentHeader(plain, search, searchLatin, markerLine) || isLinkHeader(plain, search) || isFooterLine(searchLatin) || isFooterLine(search)) break;
+
+            const bullet = markerLine.match(/^(?:>\s*)?[-*]\s+(.+)$/);
+            if (!bullet || !bullet[1]) continue;
+            const text = cleanText(bullet[1]);
+            if (!text) continue;
+            dlc.push(text);
+            dlcLineIndexes.add(i);
+          }
+        }
+
+        if (contentStart >= 0) {
+          for (let i = contentStart + 1; i < lines.length; i += 1) {
+            const plain = toPlain(lines[i]);
+            const search = toSearch(plain);
+            const searchLatin = toSearchLatin(plain);
+            const markerLine = toMarkerLine(lines[i]);
+            if (isLinkHeader(plain, search) || isFooterLine(searchLatin) || isFooterLine(search) || isDlcHeader(plain, markerLine)) break;
+            if (isUrl(plain)) continue;
+
+            const sub = markerLine.match(/^>\s*[-*]\s+(.+)$/);
+            if (sub && sub[1]) {
+              const text = cleanText(sub[1]);
+              if (text) contentItems.push({ text, level: 1 });
+              continue;
+            }
+            const top = markerLine.match(/^[-*]\s+(.+)$/);
+            if (top && top[1]) {
+              const text = cleanText(top[1]);
+              if (text) contentItems.push({ text, level: 0 });
+              continue;
+            }
+            if (plain && contentItems.length && !isContentHeader(plain, search, searchLatin, markerLine)) {
+              const last = contentItems[contentItems.length - 1];
+              last.text = `${last.text} ${plain}`.trim();
+            }
+          }
+        }
+
+        if (!contentItems.length) {
+          for (let i = 0; i < lines.length; i += 1) {
+            if (dlcLineIndexes.has(i)) continue;
+            const plain = toPlain(lines[i]);
+            const search = toSearch(plain);
+            const searchLatin = toSearchLatin(plain);
+            const markerLine = toMarkerLine(lines[i]);
+            if (!plain || isUrl(plain)) continue;
+            if (isDlcHeader(plain, markerLine) || isContentHeader(plain, search, searchLatin, markerLine) || isLinkHeader(plain, search) || isFooterLine(searchLatin) || isFooterLine(search)) continue;
+
+            const sub = markerLine.match(/^>\s*[-*]\s+(.+)$/);
+            if (sub && sub[1]) {
+              const text = cleanText(sub[1]);
+              if (text) contentItems.push({ text, level: 1 });
+              continue;
+            }
+            const top = markerLine.match(/^[-*]\s+(.+)$/);
+            if (top && top[1]) {
+              const text = cleanText(top[1]);
+              if (text) contentItems.push({ text, level: 0 });
+            }
+          }
+        }
+
+        return {
+          versionMap: version || "",
+          title: `Mise-à-jour Version ${version || "X"}`,
+          minVersion,
+          recommendedVersion,
+          dlc,
+          content: contentItems.map((entry) => entry.text),
+          contentItems
+        };
+      }
+      function parseDevLogMessage(raw) {
+        const parsed = parseUpdateMessage(raw);
+        if (Array.isArray(parsed.content) && parsed.content.length) return parsed;
+
+        const normalized = String(raw || "")
+          .replace(/\r\n/g, "\n")
+          .replace(/<@&\d+>/g, "")
+          .replace(/<@!?\d+>/g, "")
+          .replace(/<#\d+>/g, "")
+          .replace(/@everyone/gi, "")
+          .replace(/@here/gi, "")
+          .replace(/\\-/g, "-");
+        const lines = normalized
+          .split("\n")
+          .map((line) => stripDiscordDecor(line).replace(/^[-*]\s+/, "").trim())
+          .filter(Boolean)
+          .filter((line) => !/^https?:\/\//i.test(line))
+          .filter((line) => !/^(developpement|développement)\s+de\s+la\s+version\b/i.test(line))
+          .filter((line) => !/^(version du jeu|dlc requis|contenu de la mise[-\sàa]*jour|lien|merci de suivre)\b/i.test(line));
+
+        parsed.content = lines;
+        return parsed;
+      }
+      function hasParsedUpdateData(parsed) {
+        if (!parsed || typeof parsed !== "object") return false;
+        if (String(parsed.versionMap || "").trim()) return true;
+        if (Array.isArray(parsed.contentItems) && parsed.contentItems.length) return true;
+        if (Array.isArray(parsed.content) && parsed.content.length) return true;
+        return false;
+      }
+      function parseTableMessageByKind(tableKind, raw) {
+        if (tableKind === "devlog") return parseDevLogMessage(raw);
+        return parseUpdateMessage(raw);
+      }
+
+      function parseDateToTimestamp(raw) {
+        if (raw instanceof Date && Number.isFinite(raw.getTime())) return raw.getTime();
+        const value = String(raw || "").trim();
+        if (!value) return 0;
+        const gviz = value.match(/^Date\(([^)]+)\)$/i);
+        if (gviz && gviz[1]) {
+          const parts = gviz[1].split(",").map((part) => Number(String(part || "").trim()));
+          if (parts.length >= 3 && parts.slice(0, 3).every((num) => Number.isFinite(num))) {
+            const [year, monthIndex, day, hour = 0, minute = 0, second = 0] = parts;
+            const dt = new Date(year, monthIndex, day, hour, minute, second);
+            if (Number.isFinite(dt.getTime())) return dt.getTime();
+          }
+        }
+        const m = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) {
+          const day = Number(m[1]);
+          const month = Number(m[2]);
+          const year = Number(m[3]);
+          const dt = new Date(year, month - 1, day);
+          return Number.isFinite(dt.getTime()) ? dt.getTime() : 0;
+        }
+        const dt = new Date(value);
+        return Number.isFinite(dt.getTime()) ? dt.getTime() : 0;
+      }
+      function parseDiscordSnowflakeTimestamp(raw) {
+        const value = String(raw || "").trim();
+        if (!/^\d{17,20}$/.test(value)) return 0;
+        try {
+          const discordEpoch = 1420070400000n;
+          const id = BigInt(value);
+          const ts = Number((id >> 22n) + discordEpoch);
+          return Number.isFinite(ts) ? ts : 0;
+        } catch {
+          return 0;
+        }
+      }
+      function formatAbsoluteDate(timestamp, fallbackRaw) {
+        const ts = Number(timestamp || 0);
+        if (!ts) return String(fallbackRaw || "").trim() || "-";
+        try {
+          return new Intl.DateTimeFormat(lang(), {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          }).format(new Date(ts));
+        } catch {
+          return String(fallbackRaw || "").trim() || "-";
+        }
+      }
+      function formatRelativeDate(timestamp) {
+        const ts = Number(timestamp || 0);
+        if (!ts) return "";
+        const deltaMs = Date.now() - ts;
+        const absMs = Math.abs(deltaMs);
+        const units = [
+          { key: "year", ms: 365 * 24 * 60 * 60 * 1000 },
+          { key: "month", ms: 30 * 24 * 60 * 60 * 1000 },
+          { key: "week", ms: 7 * 24 * 60 * 60 * 1000 },
+          { key: "day", ms: 24 * 60 * 60 * 1000 },
+          { key: "hour", ms: 60 * 60 * 1000 },
+          { key: "minute", ms: 60 * 1000 },
+          { key: "second", ms: 1000 }
+        ];
+        let unit = units[units.length - 1];
+        for (const candidate of units) {
+          if (absMs >= candidate.ms) {
+            unit = candidate;
+            break;
+          }
+        }
+        const signedValue = -Math.round(deltaMs / unit.ms);
+        try {
+          return new Intl.RelativeTimeFormat(lang(), { numeric: "auto" }).format(signedValue, unit.key);
+        } catch {
+          return "";
+        }
+      }
+
+      function actualiteFromRow(row, index) {
+        const messageId = firstNonEmpty(row, ["message_id", "messageid", "id", "post_id"]);
+        const date = firstNonEmpty(row, ["date", "created_at", "posted_at"]);
+        const messagesByLang = collectMessageTranslations(row);
+        const messageRaw = pickLocalizedMessage(messagesByLang, "fr") || firstNonEmpty(row, ["message", "content", "contenu", "texte"]);
+        const imagesRaw = firstNonEmpty(row, ["images", "image", "media"]);
+        const sourceLink = firstNonEmpty(row, ["lien", "link", "url"]);
+        const channelId = parseDiscordChannelId(sourceLink);
+        const isUpdateChannel = channelId === UPDATE_CHANNEL_ID;
+        const isDevLogChannel = channelId === DEVLOG_CHANNEL_ID;
+        const tableKind = isUpdateChannel ? "update" : (isDevLogChannel ? "devlog" : "");
+        const useTable = !!tableKind;
+
+        const fromImagesCol = extractUrls(imagesRaw).filter(isImageUrl);
+        const messagesPool = Object.values(messagesByLang).filter((value) => String(value || "").trim());
+        const fromMessages = messagesPool
+          .flatMap((value) => extractUrls(value))
+          .filter(isImageUrl);
+        const fromMessage = extractUrls(messageRaw).filter(isImageUrl);
+        const images = uniqueUrls([...fromImagesCol, ...fromMessages, ...fromMessage]);
+        const message = cleanMessage(messageRaw);
+        const update = useTable ? parseTableMessageByKind(tableKind, messageRaw) : null;
+        const timestamp = parseDiscordSnowflakeTimestamp(messageId) || parseDateToTimestamp(date) || (Date.now() - index);
+
+        return {
+          messageId,
+          date,
+          messageRaw,
+          messagesByLang,
+          message,
+          images: isUpdateChannel ? [] : images,
+          channelId,
+          tableKind,
+          specialUpdate: useTable,
+          update,
+          timestamp
+        };
+      }
+
+      let FEEDBACK_STATE = { key: "", fallback: "", isError: false, isLoading: false };
+      function setFeedback(message, isError, isLoading) {
+        const feedback = document.getElementById("actualitesFeedback");
+        if (!feedback) return;
+        feedback.textContent = message || "";
+        feedback.classList.toggle("is-error", !!isError);
+        feedback.classList.toggle("is-loading", !!isLoading);
+      }
+      function setFeedbackByKey(key, fallback, isError, isLoading) {
+        FEEDBACK_STATE = {
+          key: String(key || "").trim(),
+          fallback: String(fallback || "").trim(),
+          isError: !!isError,
+          isLoading: !!isLoading
+        };
+        setFeedback(FEEDBACK_STATE.key ? t(FEEDBACK_STATE.key, FEEDBACK_STATE.fallback) : "", FEEDBACK_STATE.isError, FEEDBACK_STATE.isLoading);
+      }
+      function clearFeedback() {
+        FEEDBACK_STATE = { key: "", fallback: "", isError: false, isLoading: false };
+        setFeedback("", false, false);
+      }
+      function refreshFeedbackLocale() {
+        if (!FEEDBACK_STATE.key) return;
+        setFeedback(t(FEEDBACK_STATE.key, FEEDBACK_STATE.fallback), FEEDBACK_STATE.isError, FEEDBACK_STATE.isLoading);
+      }
+      function resolveLocalizedItem(item) {
+        const localizedRaw = pickLocalizedMessage(item.messagesByLang, lang()) || item.messageRaw || "";
+        const message = cleanMessage(localizedRaw);
+        if (!item.specialUpdate) return { message, update: item.update };
+
+        let update = parseTableMessageByKind(item.tableKind, localizedRaw);
+        const fallbackUpdate = item.update && typeof item.update === "object" ? item.update : null;
+        if (fallbackUpdate && update && typeof update === "object") {
+          if (!String(update.versionMap || "").trim() && String(fallbackUpdate.versionMap || "").trim()) update.versionMap = fallbackUpdate.versionMap;
+          if (!String(update.minVersion || "").trim() && String(fallbackUpdate.minVersion || "").trim()) update.minVersion = fallbackUpdate.minVersion;
+          if (!String(update.recommendedVersion || "").trim() && String(fallbackUpdate.recommendedVersion || "").trim()) update.recommendedVersion = fallbackUpdate.recommendedVersion;
+          if ((!Array.isArray(update.dlc) || !update.dlc.length) && Array.isArray(fallbackUpdate.dlc) && fallbackUpdate.dlc.length) update.dlc = [...fallbackUpdate.dlc];
+          if ((!Array.isArray(update.contentItems) || !update.contentItems.length) && Array.isArray(fallbackUpdate.contentItems) && fallbackUpdate.contentItems.length) {
+            update.contentItems = fallbackUpdate.contentItems.map((entry) => ({
+              text: String(entry && entry.text || "").trim(),
+              level: Number(entry && entry.level || 0)
+            })).filter((entry) => entry.text);
+          }
+          if ((!Array.isArray(update.content) || !update.content.length) && Array.isArray(update.contentItems) && update.contentItems.length) {
+            update.content = update.contentItems.map((entry) => entry.text);
+          }
+        }
+        if (!hasParsedUpdateData(update)) {
+          update = item.update;
+        }
+        if (!hasParsedUpdateData(update)) {
+          update = {
+            versionMap: "",
+            title: "",
+            minVersion: "",
+            recommendedVersion: "",
+            dlc: [],
+            content: [],
+            contentItems: []
+          };
+        }
+        return { message, update };
+      }
+      function createUpdateContentList(entries) {
+        const root = document.createElement("ul");
+        root.className = "news-update-list";
+        const items = Array.isArray(entries) ? entries : [];
+        let currentTop = null;
+
+        items.forEach((entry) => {
+          let text = "";
+          let level = 0;
+          if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+            text = String(entry.text || "").trim();
+            level = Number(entry.level || 0);
+          } else {
+            text = String(entry || "").trim();
+          }
+          if (!text) return;
+
+          if (level <= 0 || !currentTop) {
+            const li = document.createElement("li");
+            li.textContent = text;
+            root.appendChild(li);
+            currentTop = li;
+            return;
+          }
+
+          let sub = currentTop.querySelector("ul.news-update-sublist");
+          if (!sub) {
+            sub = document.createElement("ul");
+            sub.className = "news-update-sublist";
+            currentTop.appendChild(sub);
+          }
+          const subLi = document.createElement("li");
+          subLi.textContent = text;
+          sub.appendChild(subLi);
+        });
+
+        if (!root.childElementCount) {
+          const li = document.createElement("li");
+          li.textContent = "-";
+          root.appendChild(li);
+        }
+        return root;
+      }
+      function createDevLogCarousel(urls) {
+        const EDGE_TOLERANCE_PX = 12;
+        const sourceItems = uniqueUrls((Array.isArray(urls) ? urls : []).filter(isImageUrl));
+        if (!sourceItems.length) {
+          const empty = document.createElement("span");
+          empty.textContent = "-";
+          return empty;
+        }
+        const carousel = document.createElement("div");
+        carousel.className = "news-devlog-carousel";
+        const scroller = document.createElement("div");
+        scroller.className = "news-devlog-scroller";
+        const prev = document.createElement("button");
+        prev.type = "button";
+        prev.className = "news-devlog-carousel-nav prev";
+        prev.setAttribute("aria-label", "Previous");
+        prev.innerHTML = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\"></path></svg>";
+        const next = document.createElement("button");
+        next.type = "button";
+        next.className = "news-devlog-carousel-nav next";
+        next.setAttribute("aria-label", "Next");
+        next.innerHTML = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\"></path></svg>";
+        let slidePositions = [];
+        let currentSlideIndex = 0;
+
+        function setNavDisabled(button, disabled) {
+          button.disabled = !!disabled;
+          button.setAttribute("aria-disabled", disabled ? "true" : "false");
+          button.classList.toggle("is-disabled", !!disabled);
+        }
+        function scheduleNavRefresh() {
+          requestAnimationFrame(updateNavState);
+          setTimeout(updateNavState, 80);
+          setTimeout(updateNavState, 260);
+          setTimeout(updateNavState, 460);
+        }
+        function setEmptyState() {
+          scroller.innerHTML = "";
+          const empty = document.createElement("span");
+          empty.textContent = "-";
+          scroller.appendChild(empty);
+          setNavDisabled(prev, true);
+          setNavDisabled(next, true);
+        }
+        function clampIndex(index) {
+          if (!slidePositions.length) return 0;
+          return Math.max(0, Math.min(slidePositions.length - 1, Number(index) || 0));
+        }
+        function refreshSlidePositions() {
+          slidePositions = Array.from(scroller.querySelectorAll(".news-devlog-slide")).map((slide) => Number(slide.offsetLeft || 0));
+          if (!slidePositions.length) currentSlideIndex = 0;
+          currentSlideIndex = clampIndex(currentSlideIndex);
+        }
+        function findNearestSlideIndex(left) {
+          if (!slidePositions.length) return 0;
+          let nearest = 0;
+          let minDist = Infinity;
+          for (let i = 0; i < slidePositions.length; i += 1) {
+            const dist = Math.abs(Number(left || 0) - slidePositions[i]);
+            if (dist < minDist) {
+              minDist = dist;
+              nearest = i;
+            }
+          }
+          return nearest;
+        }
+        function scrollToSlide(index, behavior) {
+          refreshSlidePositions();
+          if (!slidePositions.length) {
+            updateNavState();
+            return;
+          }
+          currentSlideIndex = clampIndex(index);
+          const left = slidePositions[currentSlideIndex] || 0;
+          scroller.scrollTo({ left, behavior: behavior || "smooth" });
+          scheduleNavRefresh();
+        }
+        function updateNavState() {
+          refreshSlidePositions();
+          if (!slidePositions.length) {
+            setNavDisabled(prev, true);
+            setNavDisabled(next, true);
+            return;
+          }
+          currentSlideIndex = findNearestSlideIndex(scroller.scrollLeft || 0);
+          const atLeft = currentSlideIndex <= 0 || (scroller.scrollLeft || 0) <= EDGE_TOLERANCE_PX;
+          const atRight = currentSlideIndex >= slidePositions.length - 1;
+          setNavDisabled(prev, atLeft);
+          setNavDisabled(next, atRight);
+        }
+        function checkImageLoadable(url) {
+          return new Promise((resolve) => {
+            const probe = new Image();
+            let done = false;
+            const timer = setTimeout(() => {
+              if (done) return;
+              done = true;
+              probe.onload = null;
+              probe.onerror = null;
+              resolve(false);
+            }, 7000);
+            probe.onload = () => {
+              if (done) return;
+              done = true;
+              clearTimeout(timer);
+              probe.onload = null;
+              probe.onerror = null;
+              resolve(true);
+            };
+            probe.onerror = () => {
+              if (done) return;
+              done = true;
+              clearTimeout(timer);
+              probe.onload = null;
+              probe.onerror = null;
+              resolve(false);
+            };
+            probe.src = url;
+          });
+        }
+        function buildSlides(validUrls) {
+          scroller.innerHTML = "";
+          validUrls.forEach((url) => {
+            const slide = document.createElement("a");
+            slide.className = "news-devlog-slide";
+            slide.href = url;
+            slide.target = "_blank";
+            slide.rel = "noopener noreferrer";
+
+            const img = document.createElement("img");
+            img.className = "news-devlog-slide-image";
+            img.loading = "lazy";
+            img.alt = tableLabel("devlogImageAlt");
+            img.src = url;
+
+            slide.appendChild(img);
+            scroller.appendChild(slide);
+          });
+          currentSlideIndex = 0;
+          requestAnimationFrame(() => {
+            scrollToSlide(0, "auto");
+            updateNavState();
+          });
+        }
+        async function validateItemsOnLoad() {
+          const checks = await Promise.all(sourceItems.map(async (url) => {
+            const ok = await checkImageLoadable(url);
+            return ok ? url : "";
+          }));
+          const validItems = checks.filter(Boolean);
+          if (!validItems.length) {
+            setEmptyState();
+            return;
+          }
+          buildSlides(validItems);
+        }
+        prev.addEventListener("click", () => {
+          scrollToSlide(currentSlideIndex - 1, "smooth");
+        });
+        next.addEventListener("click", () => {
+          scrollToSlide(currentSlideIndex + 1, "smooth");
+        });
+        scroller.addEventListener("scroll", () => {
+          updateNavState();
+        });
+        scroller.addEventListener("scrollend", () => {
+          updateNavState();
+        });
+        window.addEventListener("resize", () => {
+          updateNavState();
+        });
+
+        carousel.appendChild(prev);
+        carousel.appendChild(scroller);
+        carousel.appendChild(next);
+        setNavDisabled(prev, true);
+        setNavDisabled(next, true);
+        validateItemsOnLoad();
+        return carousel;
+      }
+
+      function renderActualites(items) {
+        const host = document.getElementById("actualitesList");
+        if (!host) return;
+        host.innerHTML = "";
+
+        const sorted = [...items].sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+        const latestItem = sorted.length ? sorted[0] : null;
+        const toBaseVersion = (raw) => {
+          const value = String(raw || "").trim();
+          if (!value) return "";
+          const match = value.match(/(\d+(?:\.\d+){2})/);
+          if (match && match[1]) return match[1];
+          const cleaned = value.replace(/[a-z]+$/i, "");
+          return cleaned || value;
+        };
+        const detectItemBaseVersion = (item) => {
+          const fromUpdate = item && item.update && item.update.versionMap ? String(item.update.versionMap).trim() : "";
+          if (fromUpdate) return toBaseVersion(fromUpdate);
+          const fromMessage = String(item && item.messageRaw || "").match(/(\d+(?:\.\d+){2})/);
+          if (fromMessage && fromMessage[1]) return toBaseVersion(fromMessage[1]);
+          return "";
+        };
+        const groupInfoForItem = (item) => {
+          const base = detectItemBaseVersion(item);
+          if (base) return { key: `version:${base}`, label: `V ${base}` };
+          return { key: "version:other", label: "Autres" };
+        };
+        const buildNewsArticle = (item) => {
+          const localized = resolveLocalizedItem(item);
+          const article = document.createElement("article");
+          article.className = "news-item";
+          const head = document.createElement("div");
+          head.className = "news-head";
+
+          const dateEl = document.createElement("span");
+          dateEl.className = "news-date";
+          dateEl.textContent = formatAbsoluteDate(item.timestamp, item.date);
+          const agoText = formatRelativeDate(item.timestamp);
+          const agoEl = document.createElement("span");
+          agoEl.className = "news-ago";
+          agoEl.textContent = agoText;
+
+          head.appendChild(dateEl);
+          if (agoText) head.appendChild(agoEl);
+          article.appendChild(head);
+
+          if (item.specialUpdate && localized.update) {
+              const updateWrap = document.createElement("section");
+              updateWrap.className = "news-update";
+              const versionRaw = String(localized.update.versionMap || "").trim();
+              const isLatestNews = !!(latestItem && item === latestItem);
+
+              const table = document.createElement("table");
+              table.className = "news-update-table";
+              table.classList.add(item.tableKind === "devlog" ? "news-update-table-devlog" : "news-update-table-update");
+              if (isLatestNews) table.classList.add("news-update-table-latest");
+
+              const thead = document.createElement("thead");
+              const titleRow = document.createElement("tr");
+              titleRow.className = "news-update-title-row";
+              const titleCell = document.createElement("th");
+              titleCell.colSpan = 2;
+              const titleWrap = document.createElement("div");
+              titleWrap.className = "news-update-title-wrap";
+              const titleLabel = document.createElement("span");
+              titleLabel.className = "news-update-title-label";
+              titleLabel.textContent = item.tableKind === "devlog"
+                ? tableLabel("devlogLabel")
+                : (isLatestNews ? tableLabel("latestUpdateLabel") : tableLabel("updateLabel"));
+              titleWrap.appendChild(titleLabel);
+              titleCell.appendChild(titleWrap);
+              titleRow.appendChild(titleCell);
+              thead.appendChild(titleRow);
+
+              const headRow = document.createElement("tr");
+              const versionTh = document.createElement("th");
+              versionTh.textContent = tableLabel("versionCol");
+              const contentTh = document.createElement("th");
+              contentTh.textContent = item.tableKind === "devlog" ? tableLabel("imagesCol") : tableLabel("contentCol");
+              headRow.appendChild(versionTh);
+              headRow.appendChild(contentTh);
+              thead.appendChild(headRow);
+              table.appendChild(thead);
+
+              const tbody = document.createElement("tbody");
+              const row = document.createElement("tr");
+              const versionCell = document.createElement("td");
+              versionCell.className = "news-update-version-cell";
+              versionCell.textContent = versionRaw ? `V ${versionRaw}` : "-";
+
+              const contentCell = document.createElement("td");
+              contentCell.className = "news-update-content-cell";
+              if (item.tableKind === "devlog") {
+                contentCell.appendChild(createDevLogCarousel(item.images));
+              } else {
+                contentCell.appendChild(
+                  createUpdateContentList(
+                    Array.isArray(localized.update.contentItems) ? localized.update.contentItems : localized.update.content
+                  )
+                );
+              }
+
+              row.appendChild(versionCell);
+              row.appendChild(contentCell);
+              tbody.appendChild(row);
+              table.appendChild(tbody);
+              updateWrap.appendChild(table);
+              article.appendChild(updateWrap);
+          } else if (localized.message) {
+              const message = document.createElement("div");
+              message.className = "news-message";
+              message.innerHTML = renderDiscordMessageHtml(localized.message);
+              article.appendChild(message);
+          }
+
+          if (!item.specialUpdate && Array.isArray(item.images) && item.images.length) {
+            const imageGrid = document.createElement("div");
+            imageGrid.className = "news-images";
+            item.images.forEach((url) => {
+              const imageLink = document.createElement("a");
+              imageLink.className = "news-image-link";
+              imageLink.href = url;
+              imageLink.target = "_blank";
+              imageLink.rel = "noopener noreferrer";
+
+              const img = document.createElement("img");
+              img.className = "news-image";
+              img.loading = "lazy";
+              img.src = url;
+              img.alt = "Image actualite";
+
+              imageLink.appendChild(img);
+              imageGrid.appendChild(imageLink);
+            });
+            article.appendChild(imageGrid);
+          }
+          return article;
+        };
+
+        const groups = [];
+        const grouped = new Map();
+        sorted.forEach((item) => {
+          const info = groupInfoForItem(item);
+          if (!grouped.has(info.key)) {
+            const entry = { key: info.key, label: info.label, items: [] };
+            grouped.set(info.key, entry);
+            groups.push(entry);
+          }
+          grouped.get(info.key).items.push(item);
+        });
+
+        const latestGroupKey = groups.length ? groups[0].key : "";
+        groups.forEach((group) => {
+          const details = document.createElement("details");
+          details.className = "news-group";
+          if (group.key === latestGroupKey) details.open = true;
+
+          const summary = document.createElement("summary");
+          summary.className = "news-group-summary";
+          const title = document.createElement("span");
+          title.textContent = group.label;
+          const count = document.createElement("span");
+          count.className = "news-group-count";
+          count.textContent = `${group.items.length}`;
+          summary.appendChild(title);
+          summary.appendChild(count);
+
+          const body = document.createElement("div");
+          body.className = "news-group-body";
+          group.items.forEach((item) => {
+            body.appendChild(buildNewsArticle(item));
+          });
+
+          details.appendChild(summary);
+          details.appendChild(body);
+          host.appendChild(details);
+        });
+      }
+
+      async function loadActualites() {
+        const links = window.SITE_LINKS && typeof window.SITE_LINKS === "object" ? window.SITE_LINKS : {};
+        const actualitesCfg = links.actualites && typeof links.actualites === "object" ? links.actualites : {};
+        const sheetCfg = actualitesCfg.sheet && typeof actualitesCfg.sheet === "object"
+          ? actualitesCfg.sheet
+          : ((links.credits && links.credits.sheet) || {});
+
+        const spreadsheetId = String(sheetCfg.spreadsheet_id || "").trim();
+        const gid = String(sheetCfg.gid || "0").trim() || "0";
+        const sheetName = String(sheetCfg.sheet_name || DEFAULT_SHEET_NAME).trim();
+        const cacheMs = Math.max(60000, Number(sheetCfg.cache_ms) || 180000);
+        const timeoutMs = Math.max(3000, Number(sheetCfg.timeout_ms) || 10000);
+
+        if (!spreadsheetId) {
+          setFeedbackByKey("credits_error", "Erreur", true, false);
+          return [];
+        }
+
+        const cachedRows = readCache(cacheMs);
+        if (cachedRows && cachedRows.length) {
+          const entries = cachedRows.map(actualiteFromRow).filter(Boolean);
+          if (entries.length) return entries;
+        }
+
+        const sheetUrl = buildSheetUrl(spreadsheetId, gid, sheetName);
+        const rows = await fetchSheetRows(sheetUrl, timeoutMs);
+        if (rows.length) writeCache(rows);
+        return rows.map(actualiteFromRow).filter(Boolean);
+      }
+
+      function render() {
+        const pageTitle = t("nav_actualites", "Actualites");
+        const titleEl = document.getElementById("actualitesTitle");
+        if (titleEl) titleEl.textContent = pageTitle;
+        document.title = `Ile-de-France Map | ${pageTitle}`;
+      }
+
+      let CURRENT_ITEMS = [];
+      function applyItems(items) {
+        CURRENT_ITEMS = Array.isArray(items) ? items : [];
+        renderActualites(CURRENT_ITEMS);
+      }
+
+      render();
+      setFeedbackByKey("credits_loading", "Chargement", false, true);
+      loadActualites()
+        .then((items) => {
+          applyItems(items);
+          clearFeedback();
+        })
+        .catch(() => {
+          applyItems([]);
+          setFeedbackByKey("credits_error", "Erreur", true, false);
+        });
+
+      new MutationObserver(() => {
+        render();
+        renderActualites(CURRENT_ITEMS);
+        refreshFeedbackLocale();
+      }).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["lang"]
+      });
+    })();
+  </script>
+  <script>
+    window.__setAppReady?.();
+  </script>
+</body>
+</html>
+
+
+

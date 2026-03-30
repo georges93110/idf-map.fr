@@ -1,4 +1,4 @@
-?<!DOCTYPE html>
+﻿?<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8"/>
@@ -15,9 +15,13 @@
   <meta name="twitter:title" content="Ile-de-France Map - Carte Interactive"/>
   <meta name="twitter:description" content="Explorez la carte interactive de la map Ile-de-France."/>
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <script src="config/theme-init.js"></script>
   <style>
     html[data-app-ready="0"] {
       background:#000;
+    }
+    html[data-theme="light"][data-app-ready="0"] {
+      background:#dfe8f3;
     }
     html[data-app-ready="0"] body {
       opacity:0 !important;
@@ -2687,7 +2691,7 @@
     <div id="dbusDepartIndicatorWrap" class="dbus-depart-indicator-wrap" hidden>
       <div class="dbus-depart-indicator" role="status" aria-live="polite">
         <span id="dbusDepartIndicatorLabel"></span>
-        <button type="button" class="dbus-depart-close" id="dbusDepartIndicatorClose" aria-label="D�sactiver">&times;</button>
+        <button type="button" class="dbus-depart-close" id="dbusDepartIndicatorClose" aria-label="Dï¿½sactiver">&times;</button>
       </div>
     </div>
     
@@ -2742,7 +2746,7 @@
         <div class="dbus-box dbus-routes-box" id="dbusRoutesBox">
           <div class="dbus-box-title" id="dbusRoutesTitle">
             <span class="dbus-box-title-label" id="dbusRoutesTitleLabel">Liste des routes</span>
-            <button type="button" class="dbus-box-clear" id="dbusRoutesClear" aria-label="D�s�lectionner" hidden>&times;</button>
+            <button type="button" class="dbus-box-clear" id="dbusRoutesClear" aria-label="Dï¿½sï¿½lectionner" hidden>&times;</button>
           </div>
           <div class="dbus-content">
             <div id="dbusRoutesList" class="dbus-list"></div>
@@ -2765,7 +2769,7 @@
           <div class="dbus-footer-row">
             <span class="dbus-group-label" id="dbusSortLabel">Trier par (Lignes)</span>
             <div class="dbus-modes dbus-sort-modes" id="dbusSortModes" role="tablist" aria-label="Trier par">
-              <button type="button" class="dbus-mode-btn active" data-mode="lines" aria-pressed="true">Cat�gorie</button>
+              <button type="button" class="dbus-mode-btn active" data-mode="lines" aria-pressed="true">Catï¿½gorie</button>
               <button type="button" class="dbus-mode-btn" data-mode="length" aria-pressed="false">Longueur</button>
             </div>
           </div>
@@ -2789,7 +2793,7 @@
                 <input type="checkbox" id="settingsAnimationsToggle" checked>
               </label>
               <label class="dbus-switch" id="settingsTranslateStopsRow">
-                <span class="dbus-switch-label" id="settingsTranslateStopsLabel">Traduire les arr�ts</span>
+                <span class="dbus-switch-label" id="settingsTranslateStopsLabel">Traduire les arrï¿½ts</span>
                 <input type="checkbox" id="settingsTranslateStopsToggle">
               </label>
             </div>
@@ -2807,15 +2811,15 @@
             <h4 class="settings-title" id="settingsCenteringTitle">General</h4>
             <div class="dbus-filters">
               <label class="dbus-switch">
-                <span class="dbus-switch-label" id="settingsCenterLineLabel">Centrer sur la ligne s�lectionn�e</span>
+                <span class="dbus-switch-label" id="settingsCenterLineLabel">Centrer sur la ligne sï¿½lectionnï¿½e</span>
                 <input type="checkbox" id="settingsCenterLineToggle" checked>
               </label>
             </div>
           </section>
           <section class="settings-sec">
-            <h4 class="settings-title" id="settingsPreviewLayoutTitle">Aper�u de ligne</h4>
+            <h4 class="settings-title" id="settingsPreviewLayoutTitle">Aperï¿½u de ligne</h4>
             <div class="dbus-footer-row">
-              <div class="dbus-modes dbus-sort-modes" id="settingsPreviewLayoutModes" role="tablist" aria-label="Orientation de l'aper�u de ligne">
+              <div class="dbus-modes dbus-sort-modes" id="settingsPreviewLayoutModes" role="tablist" aria-label="Orientation de l'aperï¿½u de ligne">
                 <button type="button" class="dbus-mode-btn active" data-preview-layout="vertical" aria-pressed="true">Vertical</button>
                 <button type="button" class="dbus-mode-btn" data-preview-layout="horizontal" aria-pressed="false">Horizontal</button>
               </div>
@@ -2823,11 +2827,11 @@
           </section>
         </div>
         <div class="settings-legend" id="settingsLeafletLegend" aria-labelledby="settingsLeafletLegendTitle">
-          <h3 class="settings-group-title" id="settingsLeafletLegendTitle">L�gende</h3>
+          <h3 class="settings-group-title" id="settingsLeafletLegendTitle">Lï¿½gende</h3>
           <div class="settings-legend-list">
             <div class="settings-legend-item">
               <img class="settings-legend-icon" data-overlay-src="overlay_monument.png" alt="" aria-hidden="true"/>
-              <span class="settings-legend-label" id="settingsLegendMonumentLabel">Lieux embl�matiques</span>
+              <span class="settings-legend-label" id="settingsLegendMonumentLabel">Lieux emblï¿½matiques</span>
             </div>
             <div class="settings-legend-item">
               <img class="settings-legend-icon" data-overlay-src="overlay_centrecom.png" alt="" aria-hidden="true"/>
@@ -2835,7 +2839,7 @@
             </div>
             <div class="settings-legend-item">
               <img class="settings-legend-icon" data-overlay-src="service_ico.png" alt="" aria-hidden="true"/>
-              <span class="settings-legend-label" id="settingsLegendRepairLabel">Ateliers de r�paration</span>
+              <span class="settings-legend-label" id="settingsLegendRepairLabel">Ateliers de rï¿½paration</span>
             </div>
             <div class="settings-legend-item">
               <img class="settings-legend-icon" data-overlay-src="recruitment_ico.png" alt="" aria-hidden="true"/>
@@ -2855,15 +2859,15 @@
             </div>
             <div class="settings-legend-item">
               <img class="settings-legend-icon" data-overlay-src="bus_ico.png" alt="" aria-hidden="true"/>
-              <span class="settings-legend-label" id="settingsLegendBusStationLabel">Gare routi�re</span>
+              <span class="settings-legend-label" id="settingsLegendBusStationLabel">Gare routiï¿½re</span>
             </div>
             <div class="settings-legend-item">
               <img class="settings-legend-icon" data-overlay-src="border_ico.png" alt="" aria-hidden="true"/>
-              <span class="settings-legend-label" id="settingsLegendBorderLabel">Contr�le d'identit�</span>
+              <span class="settings-legend-label" id="settingsLegendBorderLabel">Contrï¿½le d'identitï¿½</span>
             </div>
             <div class="settings-legend-item">
               <img class="settings-legend-icon" data-overlay-src="toll_ico.png" alt="" aria-hidden="true"/>
-              <span class="settings-legend-label" id="settingsLegendTollLabel">P�age</span>
+              <span class="settings-legend-label" id="settingsLegendTollLabel">Pï¿½age</span>
             </div>
             <div class="settings-legend-item">
               <img class="settings-legend-icon" data-overlay-src="parking_ico.png" alt="" aria-hidden="true"/>
@@ -2872,8 +2876,8 @@
             <div class="settings-legend-item settings-legend-item-toggle">
               <div class="settings-legend-item-main">
                 <img class="settings-legend-icon" data-overlay-src="bus_logo_idfm.png" alt="" aria-hidden="true"/>
-                <span class="settings-legend-label" id="settingsLegendBusStopsLabel">Arr�ts de bus</span>
-                <span class="lang-toggle-badge settings-legend-exp" id="settingsLegendBusStopsBadge">Exp�rimental</span>
+                <span class="settings-legend-label" id="settingsLegendBusStopsLabel">Arrï¿½ts de bus</span>
+                <span class="lang-toggle-badge settings-legend-exp" id="settingsLegendBusStopsBadge">Expï¿½rimental</span>
               </div>
               <label class="dbus-switch settings-legend-switch">
                 <span class="dbus-switch-label" id="settingsLegendBusStopsToggleLabel">Afficher</span>
@@ -2888,7 +2892,7 @@
 
   <div id="dbusStopPanel" class="dbus-stop-panel">
     <div class="dbus-header">
-      <div class="dbus-title" id="dbusStopTitle">Arr�t</div>
+      <div class="dbus-title" id="dbusStopTitle">Arrï¿½t</div>
       <button type="button" class="line-preview-close dbus-close" id="dbusStopClose" aria-label="Fermer">&times;</button>
     </div>
     <div class="dbus-stop-content">
@@ -2906,7 +2910,7 @@
             <div class="line-preview-meta" id="lpRouteMeta">-</div>
           </div>
           <div class="line-preview-actions">
-            <a class="line-preview-link line-preview-audio-link" id="lpAudioLink" href="" target="_blank" rel="noopener" aria-label="Activer le syst�me d'annonces sonores" title="Activer le syst�me d'annonces sonores" hidden>
+            <a class="line-preview-link line-preview-audio-link" id="lpAudioLink" href="" target="_blank" rel="noopener" aria-label="Activer le systï¿½me d'annonces sonores" title="Activer le systï¿½me d'annonces sonores" hidden>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 5 6 9H2v6h4l5 4z"></path>
                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -2924,18 +2928,18 @@
         </div>
       </div>
       <div class="line-preview-stops">
-        <div class="line-preview-scroll-cue top" role="button" tabindex="0" aria-label="Monter d'un arr�t"><span>?</span></div>
+        <div class="line-preview-scroll-cue top" role="button" tabindex="0" aria-label="Monter d'un arrï¿½t"><span>?</span></div>
         <div class="transit-scroll">
           <div class="transit" id="lpTransit"></div>
         </div>
-        <div class="line-preview-scroll-cue bottom" role="button" tabindex="0" aria-label="Descendre d'un arr�t"><span>?</span></div>
+        <div class="line-preview-scroll-cue bottom" role="button" tabindex="0" aria-label="Descendre d'un arrï¿½t"><span>?</span></div>
       </div>
     </div>
   </div>
-  <div id="lpAudioPanel" class="line-preview-audio-panel" role="dialog" aria-hidden="true" aria-label="Syst�me d'annonces sonores">
+  <div id="lpAudioPanel" class="line-preview-audio-panel" role="dialog" aria-hidden="true" aria-label="Systï¿½me d'annonces sonores">
     <div class="line-preview-audio-head" id="lpAudioPanelHead">
       <div class="line-preview-audio-title-row">
-        <div class="line-preview-audio-title" id="lpAudioPanelTitle">Syst�me d'annonces sonores</div>
+        <div class="line-preview-audio-title" id="lpAudioPanelTitle">Systï¿½me d'annonces sonores</div>
         <span class="lang-toggle-badge line-preview-audio-exp-badge">EXPERIMENTAL</span>
       </div>
       <button type="button" class="line-preview-close" id="lpAudioPanelClose" aria-label="Fermer">X</button>
@@ -2950,14 +2954,14 @@
               <div class="line-preview-audio-style-byline" id="lpAudioStyleByline" hidden></div>
             </div>
           </div>
-          <div class="line-preview-audio-now-kicker">Prochain Arr�t :</div>
+          <div class="line-preview-audio-now-kicker">Prochain Arrï¿½t :</div>
           <div class="line-preview-audio-now-row">
             <button type="button" class="line-preview-audio-btn line-preview-audio-nav-btn" id="lpAudioPrevBtn">&lt;</button>
             <div class="line-preview-audio-now" id="lpAudioNowStop">-</div>
             <button type="button" class="line-preview-audio-btn line-preview-audio-nav-btn" id="lpAudioNextBtn">&gt;</button>
           </div>
           <div class="line-preview-audio-actions">
-            <button type="button" class="line-preview-audio-btn" id="lpAudioCurrentBtn">Annonce Arr�t</button>
+            <button type="button" class="line-preview-audio-btn" id="lpAudioCurrentBtn">Annonce Arrï¿½t</button>
             <button type="button" class="line-preview-audio-btn" id="lpAudioTerminusBtn">Annonce Destination</button>
           </div>
         </div>
@@ -2982,7 +2986,7 @@
       </div>
       <div class="line-preview-audio-extension-missing" id="lpAudioExtensionMissing" hidden>
         <div class="line-preview-audio-extension-missing-title" id="lpAudioExtMissingTitle">Raccourcis clavier indisponibles</div>
-        <div class="line-preview-audio-extension-missing-text" id="lpAudioExtMissingText">Les annonces sonores restent utilisables dans ce panneau. Les raccourcis clavier n�cessitent l'extension Chrome.</div>
+        <div class="line-preview-audio-extension-missing-text" id="lpAudioExtMissingText">Les annonces sonores restent utilisables dans ce panneau. Les raccourcis clavier nï¿½cessitent l'extension Chrome.</div>
         <div class="line-preview-audio-extension-missing-note">
           <span class="line-preview-audio-extension-missing-text" id="lpAudioExtUnsupportedHint" hidden>Ce navigateur ne supporte pas les extensions Chrome, veuillez utiliser un navigateur compatible pour utiliser les raccourcis clavier.</span>
         </div>
@@ -2996,22 +3000,22 @@
           <button type="button" class="line-preview-close" id="lpAudioExtGuideClose" aria-label="Fermer">X</button>
         </div>
         <div class="line-preview-audio-extension-dialog-body">
-          <div>T�l�chargez et installez l'extension pour utiliser les annonces avec les raccourcis clavier.</div>
+          <div>Tï¿½lï¿½chargez et installez l'extension pour utiliser les annonces avec les raccourcis clavier.</div>
           <div class="line-preview-audio-extension-dialog-links">
-            <a class="line-preview-audio-extension-link" id="lpAudioExtInstallLink" href="#" target="_blank" rel="noopener">T�l�charger l'extension</a>
+            <a class="line-preview-audio-extension-link" id="lpAudioExtInstallLink" href="#" target="_blank" rel="noopener">Tï¿½lï¿½charger l'extension</a>
           </div>
           <ol class="line-preview-audio-extension-guide">
-          <li>D�compressez le fichier <span class="line-preview-audio-code-badge">.zip</span> que vous avez t�l�charg�</li>
-          <li>Placez le dossier <span class="line-preview-audio-code-badge">idf_annonces_sonores_extension</span> dans un emplacement o� vous serez s�r qu'il ne sera pas d�plac� ou de le supprim�</li>
+          <li>Dï¿½compressez le fichier <span class="line-preview-audio-code-badge">.zip</span> que vous avez tï¿½lï¿½chargï¿½</li>
+          <li>Placez le dossier <span class="line-preview-audio-code-badge">idf_annonces_sonores_extension</span> dans un emplacement oï¿½ vous serez sï¿½r qu'il ne sera pas dï¿½placï¿½ ou de le supprimï¿½</li>
           <li>Ouvrez la page <span class="line-preview-audio-code-badge">chrome://extensions/</span></li>
-          <li>Cliquez sur le bouton <span class="line-preview-audio-code-badge">Charger l�extension non empaquet�e</span> en haut � gauche</li>
-          <li>S�lectionnez le dossier extrait <span class="line-preview-audio-code-badge">idf_annonces_sonores_extension</span>, ouvrez le et cliquez sur le bouton <span class="line-preview-audio-code-badge">S�lectionner un dossier</span></li>
+          <li>Cliquez sur le bouton <span class="line-preview-audio-code-badge">Charger lï¿½extension non empaquetï¿½e</span> en haut ï¿½ gauche</li>
+          <li>Sï¿½lectionnez le dossier extrait <span class="line-preview-audio-code-badge">idf_annonces_sonores_extension</span>, ouvrez le et cliquez sur le bouton <span class="line-preview-audio-code-badge">Sï¿½lectionner un dossier</span></li>
           <li>
           Vous devez maintenant configurer vos raccourcis clavier. Rendez-vous sur 
           <span class="line-preview-audio-code-badge">chrome://extensions/shortcuts</span> 
-          (aucun raccourci n�est d�fini par d�faut).  
-          ATTENTION : pour chaque raccourci, veillez � s�lectionner, � droite de l�ic�ne crayon, l�option 
-          <span class="line-preview-audio-code-badge">Raccourcis globaux</span> dans le menu d�roulant.
+          (aucun raccourci nï¿½est dï¿½fini par dï¿½faut).  
+          ATTENTION : pour chaque raccourci, veillez ï¿½ sï¿½lectionner, ï¿½ droite de lï¿½icï¿½ne crayon, lï¿½option 
+          <span class="line-preview-audio-code-badge">Raccourcis globaux</span> dans le menu dï¿½roulant.
           </li>
           <li>Revenez ensuite ici et rechargez la page</li>
           </ol>
@@ -3030,37 +3034,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="config/translations.js"></script>
   <script src="config/site-nav.js"></script>
+  <script src="config/line-styles.js"></script>
 
   <script>
 
-  const LINE_STYLES = {
-    "24":         ["#ab5798", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-24/","1"],
-    "63":         ["#cdc74f", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-63/","1"],
-    "109":        ["#cdc74f", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-109/","1"],
-    "112":        ["#e69459", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-112/","1"],
-    "114":        ["#8cc299", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-114/","1"],
-    "121":        ["#d63e34", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-121/","1"],
-    "124":        ["#e6a4b2", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-124/","1"],
-    "210":        ["#fecd08", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-210/","1"],
-    "221":        ["#e7a5b3", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-221/","1"],
-    "303":        ["#99974a", "#FFFFFF","https://www.bonjour-ratp.fr/lignes-bus/ligne-303/","1"],
-    "325":        ["#9ad1dc", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-325/","1"],
-    "351":        ["#d7b152", "#221f20","https://www.bonjour-ratp.fr/lignes-bus/ligne-351/","1"],
-    "FLIXBUS":    ["#a7d245", "#FFFFFF","https://www.flixbus.fr/","9"],
-    "N11":        ["#e9682a", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n11","1,2"],
-    "N23":        ["#d09835", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n23","1,2"],
-    "N33":        ["#e9682a", "#221f20","https://www.ratp.fr/plans-lignes/noctilien/n33","1,2"],
-    "Titus 1":    ["#e63b20", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/","1"],
-    "Titus 2":    ["#49713e", "#FFFFFF","https://www.rosnysousbois.fr/mobilites/le-titus/","1"],
-    "Fictives":   ["#cfcfcf", "#221f20","","0"],
-    "Autocar":    ["#cfcfcf", "#221f20","","0"],
-    "Scolaire":   ["#f0c748", "#221f20","","0"],
-    "Express":    ["#6fb2e1", "#FFFFFF","","0"],
-    "Express 75": ["#6fb2e1", "#FFFFFF","","0"],
-    "Express 77": ["#6fb2e1", "#FFFFFF","","0"],
-    "Express 93": ["#6fb2e1", "#FFFFFF","","0"],
-    "Express 94": ["#6fb2e1", "#FFFFFF","","0"],
-  };
+  const LINE_STYLES = window.LINE_STYLES || {};
 
   const I18N = window.I18N || {};
   const I18N_COMPAT_PATCH = window.I18N_COMPAT_PATCH || {};
@@ -3084,12 +3062,12 @@
     });
   });
   const LANG_OPTIONS = [
-    { code: "fr", label: "Fran�ais", flagSrc: "https://flagcdn.com/w40/fr.png" },
+    { code: "fr", label: "Franï¿½ais", flagSrc: "https://flagcdn.com/w40/fr.png" },
     { code: "en", label: "English", flagSrc: "https://flagcdn.com/w40/gb.png" },
-    { code: "es", label: "Espa�ol", flagSrc: "https://flagcdn.com/w40/es.png" },
+    { code: "es", label: "Espaï¿½ol", flagSrc: "https://flagcdn.com/w40/es.png" },
     { code: "de", label: "Deutsch", flagSrc: "https://flagcdn.com/w40/de.png" },
     { code: "pl", label: "Polski", flagSrc: "https://flagcdn.com/w40/pl.png" },
-    { code: "pt", label: "Portugu�s", flagSrc: "https://flagcdn.com/w40/pt.png" },
+    { code: "pt", label: "Portuguï¿½s", flagSrc: "https://flagcdn.com/w40/pt.png" },
     { code: "nl", label: "Nederlands", flagSrc: "https://flagcdn.com/w40/nl.png" },
     { code: "it", label: "Italiano", flagSrc: "https://flagcdn.com/w40/it.png" },
     { code: "ru", label: "???????", flagSrc: "https://flagcdn.com/w40/ru.png" },
@@ -3159,33 +3137,33 @@
     { re: /^centre\s+aquatique\b/i, key: "stop_centre_aquatique" },
     { re: /^centre\s+commercial\b/i, key: "stop_centre_commercial" },
     { re: /^centre\s+municipal\b/i, key: "stop_centre_municipal" },
-    { re: /^march[�e]\s+international\b/i, key: "stop_marche_international" },
+    { re: /^march[ï¿½e]\s+international\b/i, key: "stop_marche_international" },
     { re: /^parc\s+floral\b/i, key: "stop_parc_floral" },
     { re: /^plateau\b/i, key: "stop_plateau" },
-    { re: /^h(?:�|o)tel\s+de\s+ville\b/i, key: "stop_hotel_de_ville" },
-    { re: /^(?:�|e)cole\s+(?:�l�mentaire|elementaire)\b/i, key: "stop_ecole_elementaire" },
-    { re: /^(?:�|e)l[�e]mentaire\b/i, key: "stop_ecole" },
-    { re: /^(?:�|e)cole\s+primaire\b/i, key: "stop_ecole_primaire" },
-    { re: /^(?:�|e)cole\s+maternelle\s+publique\b/i, key: "stop_ecole_maternelle_publique" },
-    { re: /^(?:�|e)cole\s+maternelle\b/i, key: "stop_ecole_maternelle" },
-    { re: /^cit[�e]\s+scolaire\b/i, key: "stop_cite_scolaire" },
-    { re: /^(?:�|e)cole\b/i, key: "stop_ecole" },
-    { re: /^coll[�e]ge\b/i, key: "stop_college" },
-    { re: /^lyc[�e]e\s+polyvalent\b/i, key: "stop_lycee_polyvalent" },
-    { re: /^lyc[�e]e\b/i, key: "stop_lycee" },
-    { re: /^h[�o]pital\b/i, key: "stop_hopital" },
-    { re: /^(?:�|e)glise\b/i, key: "stop_eglise" },
+    { re: /^h(?:ï¿½|o)tel\s+de\s+ville\b/i, key: "stop_hotel_de_ville" },
+    { re: /^(?:ï¿½|e)cole\s+(?:ï¿½lï¿½mentaire|elementaire)\b/i, key: "stop_ecole_elementaire" },
+    { re: /^(?:ï¿½|e)l[ï¿½e]mentaire\b/i, key: "stop_ecole" },
+    { re: /^(?:ï¿½|e)cole\s+primaire\b/i, key: "stop_ecole_primaire" },
+    { re: /^(?:ï¿½|e)cole\s+maternelle\s+publique\b/i, key: "stop_ecole_maternelle_publique" },
+    { re: /^(?:ï¿½|e)cole\s+maternelle\b/i, key: "stop_ecole_maternelle" },
+    { re: /^cit[ï¿½e]\s+scolaire\b/i, key: "stop_cite_scolaire" },
+    { re: /^(?:ï¿½|e)cole\b/i, key: "stop_ecole" },
+    { re: /^coll[ï¿½e]ge\b/i, key: "stop_college" },
+    { re: /^lyc[ï¿½e]e\s+polyvalent\b/i, key: "stop_lycee_polyvalent" },
+    { re: /^lyc[ï¿½e]e\b/i, key: "stop_lycee" },
+    { re: /^h[ï¿½o]pital\b/i, key: "stop_hopital" },
+    { re: /^(?:ï¿½|e)glise\b/i, key: "stop_eglise" },
     { re: /^square\b/i, key: "stop_square" },
-    { re: /^all[�e]e\b/i, key: "stop_allee" },
+    { re: /^all[ï¿½e]e\b/i, key: "stop_allee" },
     { re: /^chemin\b/i, key: "stop_chemin" },
     { re: /^tour\b/i, key: "stop_tour" },
-    { re: /^ferme\s+p[�e]dagogique\b/i, key: "stop_ferme_pedagogique" },
+    { re: /^ferme\s+p[ï¿½e]dagogique\b/i, key: "stop_ferme_pedagogique" },
     { re: /^ferme\b/i, key: "stop_ferme" },
-    { re: /^minist[�e]re\s+de\s+l['�]?(?:�|e)conomie\s+et\s+des\s+finances\b/i, key: "stop_ministere_economie_finances" },
-    { re: /^minist[�e]re\b/i, key: "stop_ministere" },
-    { re: /^(?:�|e)changeur\b/i, key: "stop_echangeur" },
-    { re: /^(?:cimeti�re|cimetiere)\b/i, key: "stop_cimetiere" },
-    { re: /^(?:ch�teau|chateau)\b/i, key: "stop_chateau" },
+    { re: /^minist[ï¿½e]re\s+de\s+l['ï¿½]?(?:ï¿½|e)conomie\s+et\s+des\s+finances\b/i, key: "stop_ministere_economie_finances" },
+    { re: /^minist[ï¿½e]re\b/i, key: "stop_ministere" },
+    { re: /^(?:ï¿½|e)changeur\b/i, key: "stop_echangeur" },
+    { re: /^(?:cimetiï¿½re|cimetiere)\b/i, key: "stop_cimetiere" },
+    { re: /^(?:chï¿½teau|chateau)\b/i, key: "stop_chateau" },
     { re: /^gare\b/i, key: "stop_gare" },
     { re: /^piscine\b/i, key: "stop_piscine" },
     { re: /^stade\b/i, key: "stop_stade" },
@@ -3220,7 +3198,7 @@
     let prev;
     do {
       prev = s;
-      s = s.replace(/^(?:d['�]|de l['�]|de la|du|des|de|l['�]|la|le|les)\s*/i, "").trim();
+      s = s.replace(/^(?:d['ï¿½]|de l['ï¿½]|de la|du|des|de|l['ï¿½]|la|le|les)\s*/i, "").trim();
     } while (s && s !== prev);
     return s;
   }
@@ -3292,10 +3270,10 @@
   function translateStopName(raw){
     const name = String(raw || "").trim();
     if (!name || !TRANSLATE_STOP_TYPES || LANG === "fr") return name;
-    const parts = name.split(/(\s+[��/]\s+|\s+-\s+)/);
+    const parts = name.split(/(\s+[ï¿½ï¿½/]\s+|\s+-\s+)/);
     if (parts.length > 1) {
       const translated = parts.map(part => {
-        if (/^\s*[-��/]\s*$/.test(part)) return part;
+        if (/^\s*[-ï¿½ï¿½/]\s*$/.test(part)) return part;
         return translateStopNameSegment(part, 0);
       }).join("");
       return translateDirectionTokens(translated).replace(/\s+/g, " ").trim();
@@ -3370,7 +3348,7 @@
   }
   const NIGHT_BUS_LABELS = {
     fr: "Noctilien", en: "Night Bus", es: "Bus nocturno", de: "Nachtbus",
-    pl: "Autobus nocny", pt: "�nibus noturno", nl: "Nachtbus", it: "Bus notturno",
+    pl: "Autobus nocny", pt: "ï¿½nibus noturno", nl: "Nachtbus", it: "Bus notturno",
     ru: "?????? ???????", zh: "????", ko: "?? ??", ja: "????"
   };
   const SCHOOL_BADGE_LABELS = {
@@ -3949,8 +3927,8 @@
         const raw = h.textContent.trim().toLowerCase();
         const map = {
           "villes": t("villes"),
-          "lieux embl�matiques": t("emblematic"),
-          "ateliers de r�paration": t("repair_shops"),
+          "lieux emblï¿½matiques": t("emblematic"),
+          "ateliers de rï¿½paration": t("repair_shops"),
           "agences de recrutement": t("agencies"),
           "concessionnaires": t("dealers"),
           "entreprises": t("companies"),
@@ -4790,7 +4768,7 @@
     });
 
     function wikiTitleForCity(name){
-      const m = /^Paris\s+(\d{1,2})(?:er|e|eme|�me|th|st|nd|rd)?$/i.exec(String(name||"").trim());
+      const m = /^Paris\s+(\d{1,2})(?:er|e|eme|ï¿½me|th|st|nd|rd)?$/i.exec(String(name||"").trim());
       if (m){
         const n = parseInt(m[1], 10);
         if (LANG === "en"){
@@ -4868,10 +4846,10 @@
       const txt = String(s || "").trim();
       if (!/\bRER\b/i.test(txt)) return txt;
       if (mode === 'start'){
-        const m = txt.match(/^(.*?)\s*[��-]\s*RER\b/i);
+        const m = txt.match(/^(.*?)\s*[ï¿½ï¿½-]\s*RER\b/i);
         return (m && m[1]) ? m[1].trim() : txt;
       } else {
-        const m = txt.match(/\bRER\b\s*[��-]\s*(.+)$/i);
+        const m = txt.match(/\bRER\b\s*[ï¿½ï¿½-]\s*(.+)$/i);
         return (m && m[1]) ? m[1].trim() : txt;
       }
     }
@@ -4888,8 +4866,8 @@
       return esc
         .replace(new RegExp("(?:\\s*[---]\\s*)?\\bRER\\b(?:\\s*[---]\\s*)?", flags),
                 ' <span class="rer-ico" aria-label="RER"></span> ')
-        .replace(new RegExp("(?:\\s*[---]\\s*)?\\bM[�e]tro\\b(?:\\s*[---]\\s*)?", flags),
-                ' <span class="metro-ico" aria-label="M�tro"></span> ')
+        .replace(new RegExp("(?:\\s*[---]\\s*)?\\bM[ï¿½e]tro\\b(?:\\s*[---]\\s*)?", flags),
+                ' <span class="metro-ico" aria-label="Mï¿½tro"></span> ')
         .replace(/\s{2,}/g, " ")
         .trim();
     }
@@ -4909,7 +4887,7 @@
           const sufList = (LANG === "en")
             ? [",_Val-de-Marne", ",_Essonne", ",_Hauts-de-Seine", ",_Seine-Saint-Denis",
               ",_Val-d'Oise", ",_Seine-et-Marne", ",_Yvelines"]
-            : ["_(Commune_fran�aise)", "_(Val-de-Marne)", "_(Essonne)", "_(Hauts-de-Seine)",
+            : ["_(Commune_franï¿½aise)", "_(Val-de-Marne)", "_(Essonne)", "_(Hauts-de-Seine)",
               "_(Seine-Saint-Denis)", "_(Val-d'Oise)", "_(Seine-et-Marne)", "_(Yvelines)"];
 
           for (const suf of sufList) {
@@ -5066,7 +5044,7 @@
                   if (d0?.type !== "disambiguation") return { title, data: d0 };
                 } catch {}
                 for (const suf of [
-                  "_(Paris)", "_(�le-de-France)", "_(Hauts-de-Seine)", "_(Seine-Saint-Denis)",
+                  "_(Paris)", "_(ï¿½le-de-France)", "_(Hauts-de-Seine)", "_(Seine-Saint-Denis)",
                   "_(Val-de-Marne)", "_(Yvelines)", "_(Val-d'Oise)", "_(Essonne)", "_(Seine-et-Marne)",
                   "_(Centre_commercial)", "_(Centre_commercial_en_France)"
                 ]) {
@@ -5187,7 +5165,7 @@
               L.imageOverlay(overlayPath(`${ov.IconId}.png`), bounds, { interactive: true, bubblingMouseEvents: false }).addTo(map),
               { centerX: ov.X, centerY: ov.Y, width, height }
             );
-            const btxt = brandsText(ov) || '�';
+            const btxt = brandsText(ov) || 'ï¿½';
 
             const brandKey = dealerBrandKeyFrom(ov);
             const brandLogo = brandKey ? overlayPath(`dealer_${brandKey}.png`) : overlayPath("dealer_ico.png");
@@ -5255,7 +5233,7 @@
               overlayPath(`${ov.IconId}.png`);
 
             const keywordName =
-              typeTag === "Atelier" ? `Atelier de r�paration ${ov.City || ""}` :
+              typeTag === "Atelier" ? `Atelier de rï¿½paration ${ov.City || ""}` :
               typeTag === "Agence"  ? `Agence de recrutement ${ov.City || ""}` :
                           `Garage ${ov.City || ""}`;
 
@@ -5334,7 +5312,7 @@
               if (d0?.type !== "disambiguation") return { title: baseTitle, data: d0 };
             } catch {}
             for (const suf of [
-              "_(Paris)", "_(�le-de-France)", "_(Hauts-de-Seine)", "_(Seine-Saint-Denis)",
+              "_(Paris)", "_(ï¿½le-de-France)", "_(Hauts-de-Seine)", "_(Seine-Saint-Denis)",
               "_(Val-de-Marne)", "_(Yvelines)", "_(Val-d'Oise)", "_(Essonne)", "_(Seine-et-Marne)",
               "_(Monument)"
             ]) {
@@ -5444,7 +5422,7 @@
     let linePreviewAudioCheckToken = 0;
     let dbusFisRootLineFolderTokensPromise = null;
     let DBUS_FIS_INDEX = null;
-    const LINE_PREVIEW_AUDIO_STATE = { folderPath: "", stopNames: [], currentIndex: 0, enabled: false, volume: 1, voiceStyles: [], selectedVoiceIndex: 0, departureClipName: "D�part" };
+    const LINE_PREVIEW_AUDIO_STATE = { folderPath: "", stopNames: [], currentIndex: 0, enabled: false, volume: 1, voiceStyles: [], selectedVoiceIndex: 0, departureClipName: "Dï¿½part" };
     const LINE_PREVIEW_AUDIO_GLOBAL_STATE = { folders: [], selectedFolderPath: "", loadPromise: null, profile: "ratp", typeTokens: [] };
     const LINE_PREVIEW_AUDIO_PLAYBACK = { token: 0, audio: null, isPlaying: false, lockNavigation: false, volumeMultiplier: 1 };
     const LINE_PREVIEW_AUDIO_EXTENSION = { nonce: "", checked: false, detected: false, version: "" };
@@ -5604,7 +5582,7 @@
       return out;
     }
     function shouldUseJsonDirectoryManifests(){
-      // Prod: idf-map.fr / github pages / tout h�bergement statique sans listing
+      // Prod: idf-map.fr / github pages / tout hï¿½bergement statique sans listing
       const host = String(location.hostname || "").toLowerCase();
       if (host === "localhost" || host === "127.0.0.1") return false;
 
@@ -5683,8 +5661,8 @@
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/&/g, " et ")
-        .replace(/[�`�']/g, "")
-        .replace(/[--?��--]/g, " ")
+        .replace(/[ï¿½`ï¿½']/g, "")
+        .replace(/[--?ï¿½ï¿½--]/g, " ")
         .replace(/\u00A0/g, " ")
         .replace(/[^a-z0-9\s]/gi, " ")
         .replace(/\s+/g, " ")
@@ -5714,14 +5692,14 @@
       const lineCode = getDbusFisLineCode(line, route);
       const candidates = [];
       if (rawLineLabel) {
-        candidates.push(`D�part_${rawLineLabel}`);
+        candidates.push(`Dï¿½part_${rawLineLabel}`);
         candidates.push(`Depart_${rawLineLabel}`);
       }
       if (lineCode) {
-        candidates.push(`D�part_${lineCode}`);
+        candidates.push(`Dï¿½part_${lineCode}`);
         candidates.push(`Depart_${lineCode}`);
       }
-      candidates.push("D�part");
+      candidates.push("Dï¿½part");
       candidates.push("Depart");
       const out = [];
       const seen = new Set();
@@ -5841,7 +5819,7 @@
       if (!known.size) return true;
       return known.has(token);
     }
-    function collectRequiredAudioTokensForRoute(route, { includeDeparture = true, departureLabel = "D�part" } = {}){
+    function collectRequiredAudioTokensForRoute(route, { includeDeparture = true, departureLabel = "Dï¿½part" } = {}){
       const required = new Set([
         normalizeAudioNameToken("Terminus")
       ]);
@@ -5858,7 +5836,7 @@
       });
       return required;
     }
-    function collectRequiredAudioTokenLabelsForRoute(route, { includeDeparture = true, departureLabel = "D�part" } = {}){
+    function collectRequiredAudioTokenLabelsForRoute(route, { includeDeparture = true, departureLabel = "Dï¿½part" } = {}){
       const labelsByToken = new Map();
       const pushLabel = (label) => {
         const text = String(label || "").trim();
@@ -6288,7 +6266,7 @@
       if (idx < 0) return;
       LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = idx;
       LINE_PREVIEW_AUDIO_STATE.folderPath = ensureTrailingSlash(String(styles[idx]?.path || ""));
-      LINE_PREVIEW_AUDIO_STATE.departureClipName = String(styles[idx]?.departureClipName || "D�part").trim() || "D�part";
+      LINE_PREVIEW_AUDIO_STATE.departureClipName = String(styles[idx]?.departureClipName || "Dï¿½part").trim() || "Dï¿½part";
       if (stopPlayback) stopLinePreviewAudioPlayback();
       updateLinePreviewAudioStyleSelect();
       updateLinePreviewAudioButtonsState();
@@ -6890,8 +6868,8 @@
       LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = 0;
       LINE_PREVIEW_AUDIO_STATE.folderPath = String(normalizedStyles[0]?.path || "");
       LINE_PREVIEW_AUDIO_STATE.departureClipName = String(
-        normalizedStyles[0]?.departureClipName || audioStatus?.departureClipName || "D�part"
-      ).trim() || "D�part";
+        normalizedStyles[0]?.departureClipName || audioStatus?.departureClipName || "Dï¿½part"
+      ).trim() || "Dï¿½part";
       LINE_PREVIEW_AUDIO_STATE.stopNames = collectRouteAudioStopNames(route);
       LINE_PREVIEW_AUDIO_STATE.currentIndex = 0;
       LINE_PREVIEW_AUDIO_STATE.enabled = !!LINE_PREVIEW_AUDIO_STATE.folderPath && LINE_PREVIEW_AUDIO_STATE.stopNames.length > 0;
@@ -6908,7 +6886,7 @@
       LINE_PREVIEW_AUDIO_STATE.enabled = false;
       LINE_PREVIEW_AUDIO_STATE.voiceStyles = [];
       LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex = 0;
-      LINE_PREVIEW_AUDIO_STATE.departureClipName = "D�part";
+      LINE_PREVIEW_AUDIO_STATE.departureClipName = "Dï¿½part";
       updateLinePreviewAudioRouteSectionVisibility();
       updateLinePreviewAudioStyleSelect();
       updateLinePreviewAudioNowLabel();
@@ -7008,7 +6986,7 @@
       const currentIndex = Math.max(0, Math.min(lastIndex, LINE_PREVIEW_AUDIO_STATE.currentIndex || 0));
       const shouldAdvance = currentIndex === 0 && lastIndex > 0;
       const shouldLockNavigation = currentIndex === 0;
-      const departureClip = String(LINE_PREVIEW_AUDIO_STATE.departureClipName || "D�part").trim() || "D�part";
+      const departureClip = String(LINE_PREVIEW_AUDIO_STATE.departureClipName || "Dï¿½part").trim() || "Dï¿½part";
       const clips = [departureClip, LINE_PREVIEW_AUDIO_STATE.stopNames[lastIndex]];
       playLinePreviewAudioSequence(clips, { advanceOnFinish: shouldAdvance, lockNavigation: shouldLockNavigation });
     }
@@ -7016,7 +6994,7 @@
       const lineFolder = getDbusFisLineFolderName(line, route);
       const routeName = String(route?.name || "").trim();
       const departureCandidates = getLinePreviewAudioDepartureClipCandidates(line, route);
-      const preferredDepartureLabel = String(departureCandidates[0] || "D�part").trim() || "D�part";
+      const preferredDepartureLabel = String(departureCandidates[0] || "Dï¿½part").trim() || "Dï¿½part";
       const requiredLabelsByToken = collectRequiredAudioTokenLabelsForRoute(route, { includeDeparture: false });
       const allRequiredStops = [preferredDepartureLabel, ...requiredLabelsByToken.values()];
       const requiredTokens = collectRequiredAudioTokensForRoute(route, { includeDeparture: false });
@@ -7926,8 +7904,8 @@
       const esc = escapeHTML(text ?? "");
       return esc.replace(/\s*[---]?\s*RER\s*[---]?\s*/gi,
         ' <span class="rer-ico" aria-label="RER"></span> ')
-        .replace(/\s*[---]?\s*M[�e]tro\s*[---]?\s*/gi,
-        ' <span class="metro-ico" aria-label="M�tro"></span> ');
+        .replace(/\s*[---]?\s*M[ï¿½e]tro\s*[---]?\s*/gi,
+        ' <span class="metro-ico" aria-label="Mï¿½tro"></span> ');
     }
 
     const PROV_RE = /\bprovisoire\b/i;
@@ -9930,7 +9908,7 @@
         buildDbusStopLineEntries();
         renderDbusStopsLayer();
       }catch(err){
-        console.error("DBus: chargement �chou�", err);
+        console.error("DBus: chargement ï¿½chouï¿½", err);
         return;
       }
 
@@ -10633,7 +10611,7 @@
         {types:["Concessionnaire"], keys:["concessionnaire","dealer","concess"]},
         {types:["Entreprise"],   keys:["entreprise","societe","company"]},
         {types:["Ville"],        keys:["ville","commune","city"]},
-        {types:["Monument"],     keys:["monument","monuments","monu","lieu","lieu embl�matique","lieux embl�matiques","lieux","embl�matique","embl�matiques"]},
+        {types:["Monument"],     keys:["monument","monuments","monu","lieu","lieu emblï¿½matique","lieux emblï¿½matiques","lieux","emblï¿½matique","emblï¿½matiques"]},
       ];
 
       for(const row of MAP){
@@ -10652,8 +10630,8 @@
     
     const ORDER = [
       ["Ville","Villes"],
-      ["Monument","Lieux Embl�matiques"],
-      ["Atelier","Ateliers de r�paration"],
+      ["Monument","Lieux Emblï¿½matiques"],
+      ["Atelier","Ateliers de rï¿½paration"],
       ["Agence","Agences de recrutement"],
       ["Concessionnaire","Concessionnaires"],
       ["Entreprise","Entreprises"]
@@ -10809,7 +10787,7 @@
               wrap.style.gap = '6px';
               const img = document.createElement('img');
               img.src = overlayPath("reseau_titus.png");
-              img.alt = 'R�seau Titus';
+              img.alt = 'Rï¿½seau Titus';
               img.style.height = '22px';
               img.style.width = 'auto';
               const [bg, text] = getLineColorsSync('Titus ' + tnum);
@@ -11063,7 +11041,7 @@
           myExtHandshakeTimeoutId = 0;
         }
         markMyExtDetected(data.version || "");
-        if (!wasDetected) console.log("Extension d�tect�e", data.version);
+        if (!wasDetected) console.log("Extension dï¿½tectï¿½e", data.version);
       }
     };
     window.addEventListener("message", onMyExtHandshakeMessage);
@@ -11174,6 +11152,9 @@
 </script>
 </body>
 </html>
+
+
+
 
 
 

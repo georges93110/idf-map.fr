@@ -16,6 +16,7 @@
   <meta name="twitter:title" content="404 - Page introuvable - Ile-de-France Map"/>
   <meta name="twitter:description" content="Page introuvable sur le site Ile-de-France Map."/>
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <script src="config/theme-init.js"></script>
   <script>
     (function set404BaseHref() {
       function hasConfigAt(basePath) {
@@ -49,6 +50,9 @@
   <style>
     html[data-app-ready="0"] {
       background:#0b0b0b;
+    }
+    html[data-theme="light"][data-app-ready="0"] {
+      background:#ecf2f8;
     }
     html[data-app-ready="0"] body {
       opacity:0 !important;
@@ -239,3 +243,6 @@
   </script>
 </body>
 </html>
+
+
+

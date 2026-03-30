@@ -139,6 +139,32 @@ html.has-shared-page-bg body::after{
   text-decoration:none;
   white-space:nowrap;
 }
+.site-nav-link .site-nav-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:14px;
+  height:14px;
+  margin-right:6px;
+  flex:0 0 auto;
+  opacity:.94;
+}
+.site-nav-link .site-nav-icon svg{
+  width:14px;
+  height:14px;
+  stroke:currentColor;
+  fill:none;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.site-nav-link .site-nav-label{
+  display:inline-block;
+  line-height:1;
+}
+.site-nav-sublink .site-nav-icon{
+  display:none;
+}
 .site-nav-group-trigger{
   gap:6px;
   font-family:inherit;
@@ -552,5 +578,4 @@ html.page-loading, html.page-loading body {
 .shared-site-footer[hidden]{
   display:none !important;
 }
-
 

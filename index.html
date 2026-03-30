@@ -15,9 +15,13 @@
   <meta name="twitter:title" content="Ile-de-France Map - Accueil"/>
   <meta name="twitter:description" content="Site internet de la map Ile-de-France pour Euro Truck Simulator 2."/>
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <script src="config/theme-init.js"></script>
   <style>
     html[data-app-ready="0"] {
       background:#0b0b0b;
+    }
+    html[data-theme="light"][data-app-ready="0"] {
+      background:#ecf2f8;
     }
     html[data-app-ready="0"] body {
       opacity:0 !important;
@@ -91,6 +95,8 @@
       --home-text: #ececec;
       --home-muted: #c9c9c9;
       --home-manual-width: 450px;
+      --home-content-width: 860px;
+      --home-hero-height: clamp(270px, 40vh, 320px);
     }
 
     .home-wrap {
@@ -123,17 +129,294 @@
 
     .home-main {
       display: grid;
-      gap: 16px;
+      gap: 0;
       min-width: 0;
       width: min(1120px, 100%);
+    }
+
+    .home-categories {
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-start;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow: visible;
+      width: min(var(--home-content-width), calc(100% - 24px));
+      margin: 0 auto -1px;
+      padding: 0;
+      position: relative;
+      z-index: 3;
+    }
+
+    .home-category-pill {
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 10px 10px 0 0;
+      border: 1px solid #3b3b3f;
+      border-bottom-color: #27272a;
+      background: linear-gradient(155deg, #252528, #18181b);
+      color: #d8d8da;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      box-shadow: 0 8px 14px rgba(0, 0, 0, 0.22);
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease;
+      white-space: nowrap;
+      box-sizing: border-box;
+      flex: 0 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    button.home-category-pill {
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .home-category-pill:not(.is-active):hover {
+      transform: translateY(-1px);
+      border-color: #66666b;
+      border-bottom-color: #303036;
+      background: linear-gradient(155deg, #2f2f33, #212125);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.32);
+      color: #f0f0f1;
+    }
+
+    .home-category-pill.is-active {
+      transform: none;
+      margin-bottom: -1px;
+      border-color: #65d697;
+      border-bottom-color: transparent;
+      background: linear-gradient(155deg, #37a06a, #246f46);
+      color: #f4fff8;
+      box-shadow: none;
+      z-index: 2;
+    }
+
+    .home-category-pill:focus-visible {
+      outline: 2px solid rgba(119, 229, 168, 0.8);
+      outline-offset: 2px;
+    }
+
+    .home-category-panel {
+      width: 100%;
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .home-category-panel[hidden] {
+      display: none !important;
+    }
+
+    .home-convoy-panel {
+      display: grid;
+      gap: 0;
+      justify-items: center;
+      align-content: center;
+      width: min(var(--home-content-width), 100%);
+      justify-self: center;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .home-convoy-card {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      padding: 8px 0;
+      display: grid;
+      gap: 10px;
+      align-content: center;
+      justify-items: center;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .home-convoy-status-frame {
+      width: min(800px, 100%);
+      max-height: calc(100% - 32px);
+      aspect-ratio: 16 / 5;
+      min-height: clamp(140px, 22vh, 220px);
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .home-convoy-status-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      clip-path: inset(0 round 14px);
+    }
+
+    .home-convoy-status-image[hidden] {
+      display: none;
+    }
+
+    .home-convoy-status-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(165deg, rgba(16, 18, 24, 0.78), rgba(10, 12, 18, 0.86));
+      color: #eef2f8;
+      text-align: center;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    .home-convoy-status-loading[hidden] {
+      display: none;
+    }
+
+    .home-convoy-status-spinner {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 3px solid rgba(255, 255, 255, 0.24);
+      border-top-color: rgba(255, 255, 255, 0.92);
+      animation: homeDownloadSpin 0.9s linear infinite;
+    }
+
+    .home-convoy-status-loading-text {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #eef2f8;
+    }
+
+    .home-convoy-status-summary {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 18px;
+      text-align: center;
+      font-size: clamp(20px, 3.1vw, 36px);
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      color: #eef2f8;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+      text-transform: uppercase;
+      box-sizing: border-box;
+    }
+
+    .home-convoy-status-summary[hidden] {
+      display: none;
+    }
+
+    .home-convoy-status-summary-line {
+      display: block;
+    }
+
+    .home-convoy-status-summary-line.is-online {
+      color: #6bff87;
+    }
+
+    .home-convoy-status-summary-line.is-offline {
+      color: #ff6b6b;
+    }
+
+    .home-convoy-status-summary-count {
+      font-size: clamp(16px, 2.1vw, 24px);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #f1f1f1;
+    }
+
+    .home-convoy-guide-link {
+      position: static;
+      margin: 0;
+    }
+
+    .home-convoy-status-age {
+      margin: 0;
+      min-height: 1.2em;
+      color: #dce2e8;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.2;
+      text-align: center;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+    }
+
+    .home-convoy-status-age.is-error {
+      color: #ffb5b5;
+    }
+
+    .home-shell.is-category-convoy .home-hero-content {
+      height: 100%;
+      padding-bottom: 0;
+    }
+
+    .home-shell.is-category-convoy .home-hero {
+      height: var(--home-hero-height);
+    }
+
+    .home-shell.is-category-convoy .home-hero::before {
+      opacity: 0;
+    }
+
+    .home-shell.is-category-convoy .home-convoy-panel {
+      height: 100%;
+    }
+
+    .home-shell.is-category-convoy .home-convoy-card {
+      height: 100%;
+      min-height: 0;
+    }
+
+    .home-convoy-warning {
+      margin: 0;
+      border: 1px solid #6d5a2c;
+      border-radius: 10px;
+      background: rgba(84, 62, 14, 0.25);
+      color: #ffe6b5;
+      padding: 10px 12px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .home-convoy-warning strong {
+      color: #fff4d7;
+    }
+
+    .home-convoy-warning code {
+      border: 1px solid rgba(255, 230, 181, 0.34);
+      border-radius: 6px;
+      background: rgba(20, 20, 20, 0.55);
+      color: #fff0cf;
+      padding: 1px 6px;
+      font-size: 0.95em;
     }
 
     .home-hero {
       position: relative;
       overflow: hidden;
       border: 1px solid var(--home-border);
-      border-radius: 14px;
-      min-height: 300px;
+      border-radius: 0 14px 14px 14px;
+      min-height: var(--home-hero-height);
+      height: auto;
+      width: min(var(--home-content-width), calc(100% - 24px));
+      margin: 0 auto;
       background: #171717;
       box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
       display: flex;
@@ -159,8 +442,8 @@
       inset: 0;
       z-index: 1;
       background:
-        linear-gradient(90deg, rgba(10, 10, 10, 0.92) 0%, rgba(10, 10, 10, 0.82) 36%, rgba(10, 10, 10, 0.35) 63%, rgba(10, 10, 10, 0.14) 100%),
-        linear-gradient(180deg, rgba(10, 10, 10, 0.28), rgba(10, 10, 10, 0.6));
+        linear-gradient(90deg, rgba(10, 10, 10, 0.86) 0%, rgba(10, 10, 10, 0.74) 36%, rgba(10, 10, 10, 0.3) 63%, rgba(10, 10, 10, 0.12) 100%),
+        linear-gradient(180deg, rgba(10, 10, 10, 0.2), rgba(10, 10, 10, 0.52));
       pointer-events: none;
     }
 
@@ -168,21 +451,67 @@
       position: relative;
       z-index: 2;
       display: grid;
-      align-content: center;
-      gap: 14px;
-      padding: 24px 26px;
-      width: min(760px, 100%);
+      align-content: stretch;
+      gap: 0;
+      padding: 20px 24px 16px;
+      width: 100%;
+      height: auto;
       margin: 0 auto;
-      justify-items: start;
+      box-sizing: border-box;
+      justify-items: stretch;
       text-align: left;
+      overflow: hidden;
+      min-height: 0;
     }
 
     .home-hero-heading {
       display: grid;
-      gap: 14px;
+      gap: 10px;
       justify-items: center;
       text-align: center;
       width: 100%;
+      padding-top: 0;
+    }
+
+    .home-install-panel {
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 12px;
+      align-content: stretch;
+      min-height: 0;
+    }
+
+    .home-install-overview {
+      border: 1px solid rgba(203, 203, 203, 0.16);
+      border-radius: 12px;
+      background: linear-gradient(165deg, rgba(20, 20, 20, 0.78), rgba(14, 14, 14, 0.84));
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+      width: min(var(--home-content-width), 100%);
+      justify-self: center;
+      padding: 30px 34px;
+      overflow: visible;
+      scrollbar-width: thin;
+      scrollbar-color: #6a6a6f rgba(19, 19, 20, 0.56);
+    }
+
+    .home-install-overview-below {
+      margin: 14px auto 0;
+      width: min(var(--home-content-width), calc(100% - 24px));
+      box-sizing: border-box;
+    }
+
+    .home-install-overview::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .home-install-overview::-webkit-scrollbar-track {
+      background: rgba(19, 19, 20, 0.56);
+      border-radius: 6px;
+    }
+
+    .home-install-overview::-webkit-scrollbar-thumb {
+      background: #6a6a6f;
+      border-radius: 6px;
     }
 
     .home-version-pill {
@@ -220,14 +549,14 @@
 
     .home-title-logo {
       display: block;
-      width: min(200px, 84vw);
+      width: min(200px, 52vw);
       height: auto;
       filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.45));
     }
 
     .home-cta-stack {
       display: grid;
-      gap: 8px;
+      gap: 3px;
       width: min(680px, 100%);
       justify-self: center;
       justify-items: center;
@@ -269,12 +598,12 @@
     }
 
     .home-cta-auto {
-      min-height: 54px;
-      width: min(350px, 100%);
+      min-height: 44px;
+      width: min(420px, 100%);
       gap: 12px;
       position: relative;
       justify-content: center;
-      font-size: clamp(15px, 1.7vw, 19px);
+      font-size: clamp(14px, 1.4vw, 16px);
       background: linear-gradient(145deg, #2f8c5a, #1f6440);
       border-color: #58ca8b;
       color: #f4fff8;
@@ -572,20 +901,38 @@
       border: 0;
       background: transparent;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
       width: fit-content;
       color: #d3efdc;
       font-size: 13px;
       font-weight: 700;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      text-decoration-thickness: 1px;
-      text-decoration-color: rgba(211, 239, 220, 0.85);
-      padding: 0 2px;
+      text-decoration: none !important;
+      position: relative;
+      line-height: 1.2;
+      padding: 0 2px 2px;
+    }
+
+    .home-manual-link span {
+      text-decoration: none !important;
+    }
+
+    .home-manual-link::after {
+      content: "";
+      position: absolute;
+      left: 2px;
+      right: 2px;
+      bottom: 0;
+      height: 1px;
+      background: rgba(211, 239, 220, 0.95);
     }
 
     .home-manual-link:hover {
       color: #ecfff2;
-      text-decoration-color: rgba(236, 255, 242, 1);
+    }
+
+    .home-manual-link:hover::after {
+      background: rgba(236, 255, 242, 1);
     }
 
     .home-manual-link:focus-visible {
@@ -600,7 +947,12 @@
       justify-content: center;
       gap: 8px;
       flex-wrap: wrap;
-      margin-top: 10px;
+      margin-top: 6px;
+    }
+
+    .home-mini-actions-overview {
+      margin-top: 0;
+      margin-bottom: 16px;
     }
 
     .home-cta-small {
@@ -901,7 +1253,7 @@
       color: var(--home-muted);
       line-height: 1.6;
       font-size: clamp(15px, 1.6vw, 17px);
-      max-width: 88ch;
+      max-width: none;
     }
 
     @media (min-width: 901px) {
@@ -946,11 +1298,45 @@
     }
 
     @media (max-width: 900px) {
+      :root {
+        --home-hero-height: clamp(250px, 38vh, 300px);
+      }
+
       .home-shell,
       .home-shell.is-manual-open {
         width: 100%;
         grid-template-columns: 1fr;
         gap: 12px;
+      }
+
+      .home-categories {
+        justify-content: flex-start;
+        gap: 8px;
+        width: min(var(--home-content-width), calc(100% - 24px));
+        margin: 0 auto -1px;
+        padding: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: #5a5a60 rgba(16, 16, 17, 0.55);
+      }
+
+      .home-categories::-webkit-scrollbar {
+        height: 7px;
+      }
+
+      .home-categories::-webkit-scrollbar-track {
+        background: rgba(16, 16, 17, 0.55);
+        border-radius: 6px;
+      }
+
+      .home-categories::-webkit-scrollbar-thumb {
+        background: #5a5a60;
+        border-radius: 6px;
+      }
+
+      .home-category-pill {
+        flex: 0 0 auto;
       }
 
       .home-manual-column {
@@ -984,22 +1370,27 @@
         flex: 1 1 calc(50% - 4px);
       }
 
-      .home-panel {
-        padding: 18px;
+      .home-hero-content {
+        padding: 18px 18px 14px;
       }
+
+      .home-install-overview {
+        padding: 24px 24px;
+      }
+
     }
 
     @media (max-width: 720px) {
+      :root {
+        --home-hero-height: clamp(230px, 36vh, 280px);
+      }
+
       .home-wrap {
         padding: calc(var(--sitebar-height, 52px) + 10px) 10px 14px;
       }
 
-      .home-hero {
-        min-height: 320px;
-      }
-
       .home-hero-content {
-        padding: 16px;
+        padding: 16px 14px 12px;
         gap: 12px;
       }
 
@@ -1007,13 +1398,10 @@
         font-size: clamp(34px, 11vw, 42px);
       }
 
-      .home-panel-title {
-        font-size: clamp(28px, 8.4vw, 36px);
+      .home-install-overview {
+        padding: 22px 20px;
       }
 
-      .home-highlight h3 {
-        font-size: 20px;
-      }
     }
   </style>
 </head>
@@ -1021,101 +1409,139 @@
   <main class="home-wrap">
     <section class="home-shell" id="homeShell">
       <div class="home-main">
-        <section class="home-hero" aria-labelledby="homeHeroTitle">
+        <nav class="home-categories" aria-label="Catégories d'accueil">
+          <button
+            type="button"
+            id="homeCategoryInstallationBtn"
+            class="home-category-pill is-active"
+            data-home-category="installation"
+            aria-current="page"
+            aria-pressed="true"
+            data-i18n="home_category_installation"
+          >
+            Installation Map
+          </button>
+          <button
+            type="button"
+            id="homeCategoryConvoyBtn"
+            class="home-category-pill"
+            data-home-category="convoy"
+            aria-current="false"
+            aria-pressed="false"
+            data-i18n="home_category_convoy_server"
+          >
+            Serveur Convoi
+          </button>
+        </nav>
+        <section class="home-hero" aria-label="Contenu d'accueil">
           <div class="home-hero-content">
-            <div class="home-hero-heading">
-              <h1 class="home-title" id="homeHeroTitle">
-                <img class="home-title-logo" src="./images/idf_logo_new.png" alt="IDF Map."/>
-              </h1>
-            </div>
-
-            <div class="home-cta-stack">
-              <a
-                id="homeAutoDownloadBtn"
-                class="home-cta home-cta-auto"
-                href="#"
-                data-offsite-key="download_home_fr"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span class="home-cta-icon-pack" aria-hidden="true">
-                  <svg class="site-icon-download" viewBox="0 0 24 24">
-                    <path d="M12 3v11"></path>
-                    <path d="M8 10l4 4 4-4"></path>
-                    <path d="M5 20h14"></path>
-                  </svg>
-                  <span class="home-cta-icon-sep"></span>
-                  <svg class="site-icon-windows" viewBox="0 0 24 24">
-                    <path d="M2 4.2L10.9 3v8.6H2V4.2zM12.1 2.9L22 1.5v10.1h-9.9V2.9zM2 12.4h8.9V21L2 19.8v-7.4zM12.1 12.4H22v10.1l-9.9-1.3v-8.8z"></path>
-                  </svg>
-                  <span class="home-cta-loading-spinner"></span>
-                </span>
-                <span data-i18n="download_button">Telecharger</span>
-              </a>
-              <p id="homeAutoDownloadAlert" class="home-download-alert" role="status" aria-live="polite" hidden></p>
-
-              <button
-                type="button"
-                class="home-manual-link"
-                id="homeManualToggleBtn"
-                aria-expanded="false"
-                aria-controls="homeManualPanel"
-              >
-                <span data-i18n="downloads_manual_title">Telechargement manuel</span>
-              </button>
-
-              <div class="home-mini-actions">
-                <a class="home-cta home-cta-small home-cta-map" id="homeMapBtn" href="map">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M9 4l6-2 6 2v16l-6-2-6 2-6-2V4l6 2z"></path>
-                    <path d="M9 6v14"></path>
-                    <path d="M15 4v14"></path>
-                  </svg>
-                  <span data-i18n="home_btn_interactive_map">Carte interactive</span>
-                </a>
-
-                <a class="home-cta home-cta-small home-cta-faq" id="homeFaqBtn" href="faq">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9"></circle>
-                    <path d="M9.6 9.2a2.4 2.4 0 1 1 4.8 0c0 1.6-1.8 2.2-2.4 3"></path>
-                    <path d="M12 16.8h.01"></path>
-                  </svg>
-                  <span data-i18n="nav_faq">FAQ</span>
-                </a>
-
-                <a
-                  id="homeDiscordBtn"
-                  class="home-cta home-cta-small home-cta-discord"
-                  href="#"
-                  data-offsite-key="discord"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <svg class="site-icon-discord" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M18.59 5.88997C17.36 5.31997 16.05 4.89997 14.67 4.65997C14.5 4.95997 14.3 5.36997 14.17 5.69997C12.71 5.47997 11.26 5.47997 9.83001 5.69997C9.69001 5.36997 9.49001 4.95997 9.32001 4.65997C7.94001 4.89997 6.63001 5.31997 5.40001 5.88997C2.92001 9.62997 2.25001 13.28 2.58001 16.87C4.23001 18.1 5.82001 18.84 7.39001 19.33C7.78001 18.8 8.12001 18.23 8.42001 17.64C7.85001 17.43 7.31001 17.16 6.80001 16.85C6.94001 16.75 7.07001 16.64 7.20001 16.54C10.33 18 13.72 18 16.81 16.54C16.94 16.65 17.07 16.75 17.21 16.85C16.7 17.16 16.15 17.42 15.59 17.64C15.89 18.23 16.23 18.8 16.62 19.33C18.19 18.84 19.79 18.1 21.43 16.87C21.82 12.7 20.76 9.08997 18.61 5.88997H18.59ZM8.84001 14.67C7.90001 14.67 7.13001 13.8 7.13001 12.73C7.13001 11.66 7.88001 10.79 8.84001 10.79C9.80001 10.79 10.56 11.66 10.55 12.73C10.55 13.79 9.80001 14.67 8.84001 14.67ZM15.15 14.67C14.21 14.67 13.44 13.8 13.44 12.73C13.44 11.66 14.19 10.79 15.15 10.79C16.11 10.79 16.87 11.66 16.86 12.73C16.86 13.79 16.11 14.67 15.15 14.67Z" fill="#000000"></path>
-                  </svg>
-                  <span data-i18n="home_btn_discord">Discord</span>
-                </a>
-
-                <a
-                  id="homeYoutubeBtn"
-                  class="home-cta home-cta-small home-cta-youtube"
-                  href="#"
-                  data-offsite-key="youtube"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <svg class="site-icon-youtube" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"></path>
-                  </svg>
-                  <span>YouTube</span>
-                </a>
+            <section class="home-category-panel home-install-panel" data-home-category-panel="installation">
+              <div class="home-hero-heading">
+                <h1 class="home-title" id="homeHeroTitle">
+                  <img class="home-title-logo" src="./images/idf_logo_new.png" alt="IDF Map."/>
+                </h1>
               </div>
-            </div>
+
+              <div class="home-cta-stack">
+                <a
+                  id="homeAutoDownloadBtn"
+                  class="home-cta home-cta-auto"
+                  href="#"
+                  data-offsite-key="download_home_fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span class="home-cta-icon-pack" aria-hidden="true">
+                    <svg class="site-icon-download" viewBox="0 0 24 24">
+                      <path d="M12 3v11"></path>
+                      <path d="M8 10l4 4 4-4"></path>
+                      <path d="M5 20h14"></path>
+                    </svg>
+                    <span class="home-cta-icon-sep"></span>
+                    <svg class="site-icon-windows" viewBox="0 0 24 24">
+                      <path d="M2 4.2L10.9 3v8.6H2V4.2zM12.1 2.9L22 1.5v10.1h-9.9V2.9zM2 12.4h8.9V21L2 19.8v-7.4zM12.1 12.4H22v10.1l-9.9-1.3v-8.8z"></path>
+                    </svg>
+                    <span class="home-cta-loading-spinner"></span>
+                  </span>
+                  <span data-i18n="download_button">Téléchargement automatique</span>
+                </a>
+                <p id="homeAutoDownloadAlert" class="home-download-alert" role="status" aria-live="polite" hidden></p>
+
+                <button
+                  type="button"
+                  class="home-manual-link"
+                  id="homeManualToggleBtn"
+                  aria-expanded="false"
+                  aria-controls="homeManualPanel"
+                >
+                  <span data-i18n="downloads_manual_title">Telechargement manuel</span>
+                </button>
+              </div>
+
+            </section>
+
+            <section class="home-category-panel home-convoy-panel" data-home-category-panel="convoy" hidden>
+              <article class="home-convoy-card">
+                <div class="home-convoy-status-frame">
+                  <img
+                    id="homeConvoyStatusImage"
+                    class="home-convoy-status-image"
+                    src="./ressources/HS.png"
+                    alt="Statut serveur convoi IDF Map - Hors ligne"
+                  />
+                  <div id="homeConvoyStatusLoading" class="home-convoy-status-loading" hidden aria-live="polite">
+                    <span class="home-convoy-status-spinner" aria-hidden="true"></span>
+                    <span id="homeConvoyStatusLoadingText" class="home-convoy-status-loading-text" data-i18n="home_convoy_status_loading">Chargement des données serveur...</span>
+                  </div>
+                  <p id="homeConvoyStatusSummary" class="home-convoy-status-summary" hidden aria-live="polite"></p>
+                </div>
+                <p id="homeConvoyStatusAge" class="home-convoy-status-age" aria-live="polite"></p>
+                <button
+                  type="button"
+                  class="home-manual-link home-convoy-guide-link"
+                  id="homeConvoyGuideBtn"
+                  aria-expanded="false"
+                  aria-controls="homeManualPanel"
+                  data-i18n="home_convoy_guide_button"
+                >
+                  Guide Convoi
+                </button>
+              </article>
+            </section>
+
           </div>
         </section>
+        <section class="home-install-overview home-install-overview-below" id="homeInstallOverview">
+          <div class="home-mini-actions home-mini-actions-overview">
 
-        <section class="home-panel" aria-labelledby="homePanelTitle">
+            <a
+              id="homeDiscordBtn"
+              class="home-cta home-cta-small home-cta-discord"
+              href="#"
+              data-offsite-key="discord"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg class="site-icon-discord" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M18.59 5.88997C17.36 5.31997 16.05 4.89997 14.67 4.65997C14.5 4.95997 14.3 5.36997 14.17 5.69997C12.71 5.47997 11.26 5.47997 9.83001 5.69997C9.69001 5.36997 9.49001 4.95997 9.32001 4.65997C7.94001 4.89997 6.63001 5.31997 5.40001 5.88997C2.92001 9.62997 2.25001 13.28 2.58001 16.87C4.23001 18.1 5.82001 18.84 7.39001 19.33C7.78001 18.8 8.12001 18.23 8.42001 17.64C7.85001 17.43 7.31001 17.16 6.80001 16.85C6.94001 16.75 7.07001 16.64 7.20001 16.54C10.33 18 13.72 18 16.81 16.54C16.94 16.65 17.07 16.75 17.21 16.85C16.7 17.16 16.15 17.42 15.59 17.64C15.89 18.23 16.23 18.8 16.62 19.33C18.19 18.84 19.79 18.1 21.43 16.87C21.82 12.7 20.76 9.08997 18.61 5.88997H18.59ZM8.84001 14.67C7.90001 14.67 7.13001 13.8 7.13001 12.73C7.13001 11.66 7.88001 10.79 8.84001 10.79C9.80001 10.79 10.56 11.66 10.55 12.73C10.55 13.79 9.80001 14.67 8.84001 14.67ZM15.15 14.67C14.21 14.67 13.44 13.8 13.44 12.73C13.44 11.66 14.19 10.79 15.15 10.79C16.11 10.79 16.87 11.66 16.86 12.73C16.86 13.79 16.11 14.67 15.15 14.67Z" fill="#000000"></path>
+              </svg>
+              <span data-i18n="home_btn_discord">Discord</span>
+            </a>
+
+            <a
+              id="homeYoutubeBtn"
+              class="home-cta home-cta-small home-cta-youtube"
+              href="#"
+              data-offsite-key="youtube"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg class="site-icon-youtube" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"></path>
+              </svg>
+              <span data-i18n="home_btn_youtube">YouTube</span>
+            </a>
+          </div>
           <div class="home-highlights">
             <article class="home-highlight">
               <p data-i18n="home_intro_p1">Ce projet est une recréation de la région parisienne pour Euro Truck Simulator 2, inspirée de la réalité de l’Île-de-France.</p>
@@ -1128,6 +1554,7 @@
             </article>
           </div>
         </section>
+
       </div>
 
       <aside class="home-manual-column" aria-live="polite">
@@ -1135,89 +1562,103 @@
           <button type="button" class="home-manual-close" id="homeManualCloseBtn" aria-label="Fermer le tutoriel" title="Fermer">
             <span aria-hidden="true">&times;</span>
           </button>
-          <h2 class="home-manual-title" data-i18n="downloads_manual_tutorial_title">Tutoriel d'installation manuelle</h2>
+          <h2 class="home-manual-title" id="homeManualPanelTitle" data-i18n="downloads_manual_tutorial_title">Tutoriel d'installation manuelle</h2>
 
-          <section class="home-manual-group">
-            <h3 data-i18n="guide_install_prereq_title">PRÉREQUIS</h3>
-            <ul class="home-manual-list">
-              <li data-i18n="guide_install_prereq_1">Vous devez posséder les DLC requis et la bonne version du jeu.</li>
-              <li>
-                <a class="home-manual-link-inline" id="homeSteamDlcLink" href="#" target="_blank" rel="noopener noreferrer" data-i18n="guide_install_prereq_2">Accéder à la page Steam des DLC</a>
-              </li>
-              <li>
-                <a class="home-manual-link-inline" id="homeManualDepsLink" href="#" data-offsite-key="download" target="_blank" rel="noopener noreferrer" data-i18n="guide_install_prereq_3_link">Voir les DLC requis</a>
-                <span data-i18n="guide_install_prereq_3_note">(Voir dans l'onglet "Dependencies")</span>
-              </li>
-            </ul>
-          </section>
+          <div id="homeManualInstallContent">
+            <section class="home-manual-group">
+              <h3 data-i18n="guide_install_prereq_title">PRÉREQUIS</h3>
+              <ul class="home-manual-list">
+                <li data-i18n="guide_install_prereq_1">Vous devez posséder les DLC requis et la bonne version du jeu.</li>
+                <li>
+                  <a class="home-manual-link-inline" id="homeSteamDlcLink" href="#" target="_blank" rel="noopener noreferrer" data-i18n="guide_install_prereq_2">Accéder à la page Steam des DLC</a>
+                </li>
+                <li>
+                  <a class="home-manual-link-inline" id="homeManualDepsLink" href="#" data-offsite-key="download" target="_blank" rel="noopener noreferrer" data-i18n="guide_install_prereq_3_link">Voir les DLC requis</a>
+                  <span data-i18n="guide_install_prereq_3_note">(Voir dans l'onglet "Dependencies")</span>
+                </li>
+              </ul>
+            </section>
 
-          <section class="home-manual-group">
-            <h3 data-i18n="guide_install_config_title">RÉGLAGE IMPORTANT</h3>
-            <ul class="home-manual-list">
-              <li data-i18n="guide_install_config_1">Accédez à Documents\Euro Truck Simulator 2 et ouvrez le fichier config.cfg</li>
-              <li data-i18n="guide_install_config_2">Recherchez la ligne où se trouve uset r_buffer_page_size</li>
-              <li data-i18n="guide_install_config_3">Modifiez la valeur de uset r_buffer_page_size de 10 à 30</li>
-              <li data-i18n="guide_install_config_4">Enregistrez et fermez le fichier</li>
-            </ul>
-          </section>
+            <section class="home-manual-group">
+              <h3 data-i18n="guide_install_config_title">RÉGLAGE IMPORTANT</h3>
+              <ul class="home-manual-list">
+                <li data-i18n="guide_install_config_1">Accédez à Documents\Euro Truck Simulator 2 et ouvrez le fichier config.cfg</li>
+                <li data-i18n="guide_install_config_2">Recherchez la ligne où se trouve uset r_buffer_page_size</li>
+                <li data-i18n="guide_install_config_3">Modifiez la valeur de uset r_buffer_page_size de 10 à 30</li>
+                <li data-i18n="guide_install_config_4">Enregistrez et fermez le fichier</li>
+              </ul>
+            </section>
 
-          <section class="home-manual-group">
-            <h3 data-i18n="guide_install_map_title">INSTALLATION DE LA MAP</h3>
-            <ul class="home-manual-list">
-              <li>
-                <a class="home-manual-link-inline" id="homeManualMapDownloadLink" href="#" data-offsite-key="download" target="_blank" rel="noopener noreferrer" data-i18n="guide_install_map_1">Téléchargez la map ici</a>
-              </li>
-              <li data-i18n="guide_install_map_2">Placez le fichier .scs dans Documents\Euro Truck Simulator 2\mod</li>
-            </ul>
-          </section>
+            <section class="home-manual-group">
+              <h3 data-i18n="guide_install_map_title">INSTALLATION DE LA MAP</h3>
+              <ul class="home-manual-list">
+                <li>
+                  <a class="home-manual-link-inline" id="homeManualMapDownloadLink" href="#" data-offsite-key="download" target="_blank" rel="noopener noreferrer" data-i18n="guide_install_map_1">Téléchargez la map ici</a>
+                </li>
+                <li data-i18n="guide_install_map_2">Placez le fichier .scs dans Documents\Euro Truck Simulator 2\mod</li>
+              </ul>
+            </section>
 
-          <section class="home-manual-group">
-            <h3 data-i18n="guide_install_launch_title">LANCEMENT DU JEU</h3>
-            <ul class="home-manual-list">
-              <li data-i18n="guide_install_launch_1">Lancez le jeu et créez une nouvelle carrière</li>
-              <li data-i18n="guide_install_launch_2">Ajoutez le mod de la map tout en haut de votre liste de mods activés et enregistrez</li>
-              <li data-i18n="guide_install_launch_3">Sélectionnez le module de carte idf.mbd dans l'onglet de création de profil</li>
-              <li data-i18n="guide_install_launch_4">Créez le profil et jouez !</li>
-            </ul>
-          </section>
+            <section class="home-manual-group">
+              <h3 data-i18n="guide_install_launch_title">LANCEMENT DU JEU</h3>
+              <ul class="home-manual-list">
+                <li data-i18n="guide_install_launch_1">Lancez le jeu et créez une nouvelle carrière</li>
+                <li data-i18n="guide_install_launch_2">Ajoutez le mod de la map tout en haut de votre liste de mods activés et enregistrez</li>
+                <li data-i18n="guide_install_launch_3">Sélectionnez le module de carte idf.mbd dans l'onglet de création de profil</li>
+                <li data-i18n="guide_install_launch_4">Créez le profil et jouez !</li>
+              </ul>
+            </section>
 
-          <section class="home-manual-group" id="homeManualVideoGroup">
-            <h3 data-i18n="guide_install_video">Vidéo d'installation</h3>
-            <div class="home-manual-video-embed">
-              <iframe
-                id="homeManualVideoFrame"
-                src="about:blank"
-                title="Tutoriel d'installation manuelle"
-                loading="lazy"
-                referrerpolicy="strict-origin-when-cross-origin"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-              ></iframe>
-            </div>
-          </section>
+            <section class="home-manual-group" id="homeManualVideoGroup">
+              <h3 data-i18n="guide_install_video">Vidéo d'installation</h3>
+              <div class="home-manual-video-embed">
+                <iframe
+                  id="homeManualVideoFrame"
+                  src="about:blank"
+                  title="Tutoriel d'installation manuelle"
+                  loading="lazy"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                ></iframe>
+              </div>
+            </section>
+          </div>
+
+          <div id="homeManualConvoyContent" hidden>
+            <section class="home-manual-group">
+              <h3 data-i18n="home_manual_convoy_required_title">RÉGLAGE OBLIGATOIRE</h3>
+              <ul class="home-manual-list">
+                <li data-i18n="home_manual_convoy_required_line">Si vous n'avez pas utilisé l'installation automatique, vous devez changer la valeur de uset g_max_convoy_size de 8 en 128 dans votre config.cfg.</li>
+              </ul>
+            </section>
+            <section class="home-manual-group">
+              <h3 data-i18n="home_manual_convoy_collection_title">COLLECTION STEAM</h3>
+              <ul class="home-manual-list">
+                <li>
+                  <a
+                    class="home-manual-link-inline"
+                    href="https://steamcommunity.com/sharedfiles/filedetails/?id=3512827114"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-i18n="home_manual_convoy_collection_link"
+                  >
+                    Ouvrir la collection Steam requise
+                  </a>
+                </li>
+              </ul>
+            </section>
+            <section class="home-manual-group">
+              <h3 data-i18n="home_manual_convoy_name_title">NOM CONVOI</h3>
+              <ul class="home-manual-list">
+                <li><strong>IDF Map</strong></li>
+              </ul>
+            </section>
+          </div>
         </section>
       </aside>
     </section>
   </main>
-  <div id="homeDownloadModal" class="home-download-modal" role="dialog" aria-modal="true" aria-labelledby="homeDownloadModalTitle" hidden>
-    <div class="home-download-modal-panel" role="document">
-      <button type="button" id="homeDownloadModalCloseBtn" class="home-download-modal-close" aria-label="Fermer">&times;</button>
-      <div class="home-download-modal-icon-wrap" aria-hidden="true">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 3v10"></path>
-          <path d="M8.2 9.6L12 13.4l3.8-3.8"></path>
-          <path d="M4 20h16"></path>
-        </svg>
-      </div>
-      <div class="home-download-modal-copy">
-        <h2 id="homeDownloadModalTitle" class="home-download-modal-title">Merci pour votre téléchargement</h2>
-        <p id="homeDownloadModalCountdown" class="home-download-modal-countdown" aria-live="polite"></p>
-        <p class="home-download-modal-text">Après le téléchargement, lancez le fichier <strong>.exe</strong>. Selon votre antivirus, une alerte peut apparaître, c’est généralement un faux positif.</p>
-        <p class="home-download-modal-help">Si le téléchargement ne démarre pas, <a id="homeDownloadModalManualStart" href="#">cliquez ici</a>.</p>
-      </div>
-    </div>
-  </div>
-
   <script src="config/translations.js"></script>
   <script src="config/config.js"></script>
   <script src="config/site-nav.js"></script>
@@ -1228,32 +1669,70 @@
       const homeAutoDownloadBtn = document.getElementById("homeAutoDownloadBtn");
       const homeAutoDownloadAlert = document.getElementById("homeAutoDownloadAlert");
       const homeManualToggleBtn = document.getElementById("homeManualToggleBtn");
+      const homeConvoyGuideBtn = document.getElementById("homeConvoyGuideBtn");
       const homeManualDepsLink = document.getElementById("homeManualDepsLink");
       const homeManualMapDownloadLink = document.getElementById("homeManualMapDownloadLink");
       const homeSteamDlcLink = document.getElementById("homeSteamDlcLink");
       const homeManualVideoGroup = document.getElementById("homeManualVideoGroup");
       const homeManualVideoFrame = document.getElementById("homeManualVideoFrame");
       const homeManualPanel = document.getElementById("homeManualPanel");
+      const homeManualPanelTitle = document.getElementById("homeManualPanelTitle");
+      const homeManualInstallContent = document.getElementById("homeManualInstallContent");
+      const homeManualConvoyContent = document.getElementById("homeManualConvoyContent");
+      const homeInstallOverview = document.getElementById("homeInstallOverview");
+      const homeConvoyStatusImage = document.getElementById("homeConvoyStatusImage");
+      const homeConvoyStatusLoading = document.getElementById("homeConvoyStatusLoading");
+      const homeConvoyStatusLoadingText = document.getElementById("homeConvoyStatusLoadingText");
+      const homeConvoyStatusSummary = document.getElementById("homeConvoyStatusSummary");
+      const homeConvoyStatusAge = document.getElementById("homeConvoyStatusAge");
+      const homeConvoyPlayerCount = document.getElementById("homeConvoyPlayerCount");
+      const homeConvoyPlayerLabel = document.getElementById("homeConvoyPlayerLabel");
       const homeDiscordBtn = document.getElementById("homeDiscordBtn");
       const homeYoutubeBtn = document.getElementById("homeYoutubeBtn");
+      const homeCategoryButtons = Array.from(document.querySelectorAll("[data-home-category]"));
+      const homeCategoryPanels = Array.from(document.querySelectorAll("[data-home-category-panel]"));
+      const homeCategoriesNav = document.querySelector(".home-categories");
+      const homeHeroSection = document.querySelector(".home-hero");
       const homeManualCloseBtn = document.getElementById("homeManualCloseBtn");
       const homeDownloadModal = document.getElementById("homeDownloadModal");
       const homeDownloadModalCloseBtn = document.getElementById("homeDownloadModalCloseBtn");
       const homeDownloadModalManualStart = document.getElementById("homeDownloadModalManualStart");
       const homeDownloadModalCountdown = document.getElementById("homeDownloadModalCountdown");
+      const homeAutoDownloadBtnLabel = homeAutoDownloadBtn
+        ? homeAutoDownloadBtn.querySelector("[data-i18n='download_button']")
+        : null;
       let autoDownloadAlertTimer = 0;
       let autoDownloadAlertHideTimer = 0;
       let autoDownloadAlertToken = 0;
-      let homeDownloadBtnLoadingTimer = 0;
       let homeDownloadModalLastFocus = null;
       let homeDownloadModalCountdownTimer = 0;
       let homeDownloadModalCountdownValue = 0;
       let homeDownloadLauncherFrame = null;
+      let homeDownloadInProgress = false;
+      let homeDownloadProgressState = null;
+      let pendingManualModeSwitchHandler = null;
+      let pendingManualModeSwitchTimer = 0;
+      let activeHomeCategory = "installation";
+      let currentManualPanelMode = "installation";
+      let convoyStatusPollTimer = 0;
+      let convoyStatusRequestId = 0;
+      let convoyStatusAgeTicker = 0;
+      let convoyStatusAgeBaseSeconds = null;
+      let convoyStatusAgeBaseAtMs = 0;
+      let convoyStatusViewState = "loading";
+      let convoyStatusHasSuccessfulFetch = false;
+      let convoyStatusLatest = { online: false, players: 0, ageSeconds: null };
       const HOME_DOWNLOAD_AUTO_DELAY_SECONDS = 6;
-      const HOME_DOWNLOAD_BUTTON_LOCK_MS = 1600;
+      const CONVOY_STATUS_STALE_SECONDS = 300;
+      const CONVOY_STATUS_REFRESH_MS = 5000;
 
       function lang() {
         return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
+      }
+
+      function langTag() {
+        const raw = String(document.documentElement.getAttribute("lang") || "fr").trim();
+        return raw || "fr";
       }
 
       function t(key, fallback) {
@@ -1281,6 +1760,10 @@
       function siteLinks() {
         const links = window.SITE_LINKS;
         return links && typeof links === "object" ? links : {};
+      }
+
+      function isConvoyCategoryActive() {
+        return activeHomeCategory === "convoy";
       }
 
       function applyTexts() {
@@ -1320,15 +1803,48 @@
         });
       }
 
+      function setManualPanelMode(mode) {
+        const normalized = mode === "convoy" ? "convoy" : "installation";
+        currentManualPanelMode = normalized;
+        if (homeManualInstallContent) {
+          const visible = normalized === "installation";
+          homeManualInstallContent.hidden = !visible;
+          homeManualInstallContent.setAttribute("aria-hidden", visible ? "false" : "true");
+        }
+        if (homeManualConvoyContent) {
+          const visible = normalized === "convoy";
+          homeManualConvoyContent.hidden = !visible;
+          homeManualConvoyContent.setAttribute("aria-hidden", visible ? "false" : "true");
+        }
+        if (homeManualPanelTitle) {
+          if (normalized === "convoy") {
+            homeManualPanelTitle.textContent = t("home_convoy_manual_panel_title", "Guide Serveur Convoi");
+            homeManualPanelTitle.setAttribute("data-i18n", "home_convoy_manual_panel_title");
+          } else {
+            homeManualPanelTitle.textContent = t("downloads_manual_tutorial_title", "Tutoriel d'installation manuelle");
+            homeManualPanelTitle.setAttribute("data-i18n", "downloads_manual_tutorial_title");
+          }
+        }
+      }
+
+      function syncManualGuideButtons(open) {
+        if (homeManualToggleBtn) {
+          homeManualToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        }
+        if (homeConvoyGuideBtn) {
+          homeConvoyGuideBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        }
+      }
+
       function setManualPanelOpen(open) {
-        if (!homeShell || !homeManualToggleBtn) return;
+        if (!homeShell) return;
         const wasOpen = homeShell.classList.contains("is-manual-open");
         homeManualVideoFrame.contentWindow?.postMessage(
           '{"event":"command","func":"stopVideo","args":""}',
           "*"
         );
         homeShell.classList.toggle("is-manual-open", !!open);
-        homeManualToggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        syncManualGuideButtons(!!open);
         if (open && !wasOpen && isCompactLayout()) {
           requestAnimationFrame(() => {
             scrollToManualPanel();
@@ -1349,10 +1865,501 @@
         homeManualToggleBtn.setAttribute("tabindex", "-1");
       }
 
+      function parseTransitionTimeMs(raw) {
+        const value = String(raw || "").trim().toLowerCase();
+        if (!value) return 0;
+        if (value.endsWith("ms")) return Number.parseFloat(value) || 0;
+        if (value.endsWith("s")) return (Number.parseFloat(value) || 0) * 1000;
+        return Number.parseFloat(value) || 0;
+      }
+
+      function getTransitionTotalMs(element) {
+        if (!element) return 0;
+        const styles = window.getComputedStyle(element);
+        const durations = String(styles.transitionDuration || "0s").split(",");
+        const delays = String(styles.transitionDelay || "0s").split(",");
+        const total = Math.max(durations.length, delays.length);
+        let maxMs = 0;
+        for (let i = 0; i < total; i += 1) {
+          const duration = parseTransitionTimeMs(durations[i] || durations[durations.length - 1]);
+          const delay = parseTransitionTimeMs(delays[i] || delays[delays.length - 1]);
+          maxMs = Math.max(maxMs, duration + delay);
+        }
+        return maxMs;
+      }
+
+      function clearPendingManualModeSwitch() {
+        if (homeManualPanel && pendingManualModeSwitchHandler) {
+          homeManualPanel.removeEventListener("transitionend", pendingManualModeSwitchHandler);
+        }
+        pendingManualModeSwitchHandler = null;
+        if (pendingManualModeSwitchTimer) {
+          window.clearTimeout(pendingManualModeSwitchTimer);
+          pendingManualModeSwitchTimer = 0;
+        }
+      }
+
+      function scheduleManualModeAfterPanelClose(mode) {
+        clearPendingManualModeSwitch();
+        const applyMode = () => {
+          clearPendingManualModeSwitch();
+          setManualPanelMode(mode);
+        };
+        const transitionMs = getTransitionTotalMs(homeManualPanel);
+        if (!homeManualPanel || transitionMs <= 0) {
+          applyMode();
+          return;
+        }
+        pendingManualModeSwitchHandler = (event) => {
+          if (event && event.target !== homeManualPanel) return;
+          applyMode();
+        };
+        homeManualPanel.addEventListener("transitionend", pendingManualModeSwitchHandler);
+        pendingManualModeSwitchTimer = window.setTimeout(applyMode, Math.ceil(transitionMs) + 40);
+      }
+
+      function setHomeCategory(category) {
+        const next = String(category || "installation").trim().toLowerCase();
+        const normalized = next === "convoy" ? next : "installation";
+        const previousCategory = activeHomeCategory;
+        const categoryChanged = previousCategory !== normalized;
+        const manualPanelVisible = !!(homeManualPanel && homeManualPanel.getBoundingClientRect().height > 0.5);
+        const targetManualMode = normalized === "installation" ? "installation" : "convoy";
+        activeHomeCategory = normalized;
+        if (homeShell) {
+          const isConvoy = normalized === "convoy";
+          homeShell.classList.toggle("is-category-convoy", isConvoy);
+          homeShell.classList.toggle("is-category-installation", !isConvoy);
+        }
+        if (categoryChanged && manualPanelVisible) {
+          setManualPanelOpen(false);
+          scheduleManualModeAfterPanelClose(targetManualMode);
+        } else if (categoryChanged) {
+          clearPendingManualModeSwitch();
+          setManualPanelMode(targetManualMode);
+        } else {
+          clearPendingManualModeSwitch();
+        }
+        homeCategoryButtons.forEach((button) => {
+          const isActive = String(button.dataset.homeCategory || "") === normalized;
+          button.classList.toggle("is-active", isActive);
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+          button.setAttribute("aria-current", isActive ? "page" : "false");
+        });
+        homeCategoryPanels.forEach((panel) => {
+          const isActive = String(panel.dataset.homeCategoryPanel || "") === normalized;
+          panel.hidden = !isActive;
+        });
+        const showInstallation = normalized === "installation";
+        if (homeInstallOverview) {
+          homeInstallOverview.hidden = false;
+          homeInstallOverview.setAttribute("aria-hidden", "false");
+        }
+        setManualToggleVisibility(showInstallation);
+        if (!showInstallation) {
+          hideAutoDownloadAlert(true);
+          closeHomeDownloadModal();
+        }
+        if (normalized === "convoy") {
+          setConvoyStatusVisualState(convoyStatusHasSuccessfulFetch ? convoyStatusViewState : "loading");
+          renderConvoyStatusAge();
+          syncConvoyStatusAgeTicker();
+          startConvoyStatusPolling();
+        } else {
+          stopConvoyStatusPolling();
+          setConvoyStatusVisualState(convoyStatusViewState);
+          syncConvoyStatusAgeTicker();
+        }
+      }
+
+      function convoyStatusImageName(status) {
+        const players = Number.isFinite(status.players) ? Math.max(0, Math.floor(status.players)) : 0;
+        if (!status.online) return "HS.png";
+        if (players >= 16) return "16etplus.png";
+        return `${players}.png`;
+      }
+
+      function normalizeConvoyStatusPayload(payload) {
+        if (!payload || typeof payload !== "object") return null;
+        const playersRaw = Number(payload.players);
+        const players = Number.isFinite(playersRaw) ? Math.max(0, Math.floor(playersRaw)) : 0;
+        const ageRaw = Number(payload.age);
+        const hasAge = Number.isFinite(ageRaw) && ageRaw >= 0;
+        const ageSeconds = hasAge ? Math.max(0, Math.floor(ageRaw)) : null;
+        const onlineFlag = payload.online === true;
+        const freshEnough = !hasAge || ageSeconds <= CONVOY_STATUS_STALE_SECONDS;
+        return {
+          online: !!(onlineFlag && freshEnough),
+          players,
+          ageSeconds
+        };
+      }
+
+      function convoyStatusFromGlobals() {
+        const objectPayload = window.IDF_CONVOY_STATUS;
+        if (objectPayload && typeof objectPayload === "object") {
+          const normalized = normalizeConvoyStatusPayload(objectPayload);
+          if (normalized) return normalized;
+        }
+        const scalarPayload = {
+          online: window.IDF_CONVOY_ONLINE,
+          age: window.IDF_CONVOY_AGE,
+          players: window.IDF_CONVOY_CONNECTED_PLAYERS
+        };
+        const hasScalarData = Object.values(scalarPayload).some((value) => value !== undefined && value !== null && value !== "");
+        if (!hasScalarData) return null;
+        return normalizeConvoyStatusPayload(scalarPayload);
+      }
+
+      function convoyStatusApiUrls() {
+        const links = siteLinks();
+        const fromSiteLinks = links && links.offsite && typeof links.offsite === "object"
+          ? String(links.offsite.convoy_status_api || "").trim()
+          : "";
+        const fromOffsiteMirror = window.SITE_OFFSITE_LINKS && typeof window.SITE_OFFSITE_LINKS === "object"
+          ? String(window.SITE_OFFSITE_LINKS.convoy_status_api || "").trim()
+          : "";
+        const fromGlobal = String(window.IDF_CONVOY_STATUS_URL || "").trim();
+        const primary = fromGlobal || fromOffsiteMirror || fromSiteLinks;
+        const isLocalhost = ["127.0.0.1", "localhost"].includes(window.location.hostname);
+        const proxyOverride = String(window.IDF_CONVOY_STATUS_PROXY_URL || "").trim();
+        const localProxy = proxyOverride || (isLocalhost ? "http://127.0.0.1:8787/convoy-status" : "");
+        const urls = [];
+        if (localProxy) urls.push(localProxy);
+        if (primary) urls.push(primary);
+        return Array.from(new Set(urls));
+      }
+
+      async function fetchConvoyStatusFromUrls(urls) {
+        for (let i = 0; i < urls.length; i += 1) {
+          const url = urls[i];
+          try {
+            const response = await fetch(url, { cache: "no-store" });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const payload = await response.json();
+            return { payload, url };
+          } catch {
+            continue;
+          }
+        }
+        return { payload: null, url: "" };
+      }
+
+      function convoyStatusLoadingText() {
+        return t("home_convoy_status_loading", "Chargement des données serveur...");
+      }
+
+      function convoyStatusErrorText() {
+        return t("home_convoy_status_fetch_error", "Erreur dans l'obtention des données en temps réel");
+      }
+
+      function convoyStatusAltOffline() {
+        return t("home_convoy_status_alt_offline", "Statut serveur convoi IDF Map - Hors ligne");
+      }
+
+      function convoyStatusAltOnline(players) {
+        const raw = Number(players);
+        const count = Number.isFinite(raw) ? Math.max(0, Math.floor(raw)) : 0;
+        const template = t("home_convoy_status_alt_online", "Statut serveur convoi IDF Map - {count} joueur{plural}");
+        return template
+          .replace(/\{count\}/g, String(count))
+          .replace(/\{plural\}/g, isConvoySingularCount(count) ? "" : "s");
+      }
+
+      function useConvoyStatusImage() {
+        return lang() === "fr";
+      }
+
+      function convoyCompactOnlineText(players) {
+        return t("home_convoy_status_online_compact", "SERVEUR EN LIGNE");
+      }
+
+      function convoyCompactOfflineText() {
+        return t("home_convoy_status_offline_compact", "HORS LIGNE");
+      }
+
+      function isConvoySingularCount(count) {
+        const safeCount = Number.isFinite(count) ? Math.abs(count) : 0;
+        if (!Number.isFinite(safeCount)) return false;
+        try {
+          const locale = lang() || "fr";
+          const rule = new Intl.PluralRules(locale);
+          return rule.select(safeCount) === "one";
+        } catch (_) {
+          return safeCount === 1;
+        }
+      }
+
+      function convoyCompactPlayersText(players) {
+        const raw = Number(players);
+        const count = Number.isFinite(raw) ? Math.max(0, Math.floor(raw)) : 0;
+        const templateKey = isConvoySingularCount(count)
+          ? "home_convoy_status_players_singular"
+          : "home_convoy_status_players_plural";
+        const fallback = count === 1 ? "{count} PLAYER" : "{count} PLAYERS";
+        const template = t(templateKey, fallback);
+        return template.replace(/\{count\}/g, String(count));
+      }
+
+      function renderConvoyStatusSummary() {
+        if (!homeConvoyStatusSummary) return;
+        const convoyOpen = isConvoyCategoryActive();
+        const showSummary = convoyOpen
+          && !useConvoyStatusImage()
+          && convoyStatusViewState !== "loading";
+        homeConvoyStatusSummary.hidden = !showSummary;
+        if (!showSummary) {
+          homeConvoyStatusSummary.textContent = "";
+          return;
+        }
+        const players = Number.isFinite(convoyStatusLatest.players) ? Math.max(0, Math.floor(convoyStatusLatest.players)) : 0;
+        const isOnline = convoyStatusViewState === "ready" && convoyStatusLatest.online;
+        const statusLine = isOnline ? convoyCompactOnlineText() : convoyCompactOfflineText();
+        const countLine = isOnline ? convoyCompactPlayersText(players) : "";
+        homeConvoyStatusSummary.innerHTML = [
+          `<span class="home-convoy-status-summary-line ${isOnline ? "is-online" : "is-offline"}">${statusLine}</span>`,
+          countLine ? `<span class="home-convoy-status-summary-count">${countLine}</span>` : ""
+        ].filter(Boolean).join("");
+      }
+
+      function setConvoyStatusVisualState(state) {
+        const normalized = state === "ready" ? "ready" : state === "error" ? "error" : "loading";
+        convoyStatusViewState = normalized;
+        const convoyOpen = isConvoyCategoryActive();
+        const showImage = (normalized === "ready" || !convoyOpen) && useConvoyStatusImage();
+        if (homeConvoyStatusImage) {
+          homeConvoyStatusImage.hidden = !showImage;
+        }
+        if (homeConvoyStatusLoading) {
+          const showLoading = convoyOpen
+            && normalized !== "ready"
+            && (useConvoyStatusImage() || normalized === "loading");
+          homeConvoyStatusLoading.hidden = !showLoading;
+        }
+        if (homeConvoyStatusLoadingText) {
+          homeConvoyStatusLoadingText.textContent = normalized === "error"
+            ? t("home_convoy_status_retrying", "Reconnexion au serveur...")
+            : convoyStatusLoadingText();
+        }
+        renderConvoyStatusSummary();
+      }
+
+      function convoyUpdatedPrefix() {
+        return t("home_convoy_updated_prefix", "Mis à jour il y a ");
+      }
+
+      function convoyUpdatedSuffix() {
+        return t("home_convoy_updated_suffix", "");
+      }
+
+      function formatConvoyAgeDuration(ageSeconds) {
+        const totalSeconds = Number.isFinite(ageSeconds) ? Math.max(0, Math.floor(ageSeconds)) : null;
+        if (!Number.isFinite(totalSeconds)) return "";
+        try {
+          const locale = langTag();
+          const units = [
+            { unit: "year", seconds: 31536000 },
+            { unit: "month", seconds: 2592000 },
+            { unit: "day", seconds: 86400 },
+            { unit: "hour", seconds: 3600 },
+            { unit: "minute", seconds: 60 },
+            { unit: "second", seconds: 1 }
+          ];
+          let remaining = totalSeconds;
+          const chunks = [];
+          for (let i = 0; i < units.length; i += 1) {
+            const entry = units[i];
+            if (remaining < entry.seconds && entry.unit !== "second") continue;
+            const amount = Math.floor(remaining / entry.seconds);
+            if (amount <= 0) continue;
+            chunks.push({ unit: entry.unit, amount });
+            remaining -= amount * entry.seconds;
+            if (chunks.length >= 3) break;
+          }
+          if (chunks.length === 0) {
+            chunks.push({ unit: "second", amount: 0 });
+          }
+          const rendered = chunks.map(({ unit, amount }) => (
+            new Intl.NumberFormat(locale, {
+              style: "unit",
+              unit,
+              unitDisplay: "long"
+            }).format(amount)
+          ));
+          return new Intl.ListFormat(locale, { style: "long", type: "conjunction" }).format(rendered);
+        } catch {
+          const hours = Math.floor(totalSeconds / 3600);
+          const minutes = Math.floor((totalSeconds % 3600) / 60);
+          const seconds = totalSeconds % 60;
+          return `${hours}h ${minutes}m ${seconds}s`;
+        }
+      }
+
+      function convoyAgeSecondsNow() {
+        if (!Number.isFinite(convoyStatusAgeBaseSeconds) || convoyStatusAgeBaseSeconds < 0) return null;
+        const elapsed = Math.max(0, Math.floor((Date.now() - convoyStatusAgeBaseAtMs) / 1000));
+        return Math.max(0, Math.floor(convoyStatusAgeBaseSeconds + elapsed));
+      }
+
+      function renderConvoyStatusAge() {
+        if (!homeConvoyStatusAge) return;
+        if (convoyStatusViewState === "error") {
+          homeConvoyStatusAge.hidden = false;
+          homeConvoyStatusAge.classList.add("is-error");
+          homeConvoyStatusAge.textContent = convoyStatusErrorText();
+          return;
+        }
+        homeConvoyStatusAge.classList.remove("is-error");
+        const ageNow = convoyAgeSecondsNow();
+        if (!Number.isFinite(ageNow)) {
+          homeConvoyStatusAge.textContent = "";
+          homeConvoyStatusAge.hidden = true;
+          return;
+        }
+        const duration = formatConvoyAgeDuration(ageNow);
+        if (!duration) {
+          homeConvoyStatusAge.textContent = "";
+          homeConvoyStatusAge.hidden = true;
+          return;
+        }
+        homeConvoyStatusAge.hidden = false;
+        const prefix = convoyUpdatedPrefix();
+        const suffix = convoyUpdatedSuffix();
+        const spaceBeforeSuffix = suffix && !/\s$/.test(duration) ? " " : "";
+        homeConvoyStatusAge.textContent = `${prefix}${duration}${suffix ? spaceBeforeSuffix + suffix : ""}`;
+      }
+
+      function syncConvoyStatusAgeTicker() {
+        const shouldRun = isConvoyCategoryActive()
+          && convoyStatusViewState !== "error"
+          && !!homeConvoyStatusAge
+          && Number.isFinite(convoyStatusAgeBaseSeconds)
+          && convoyStatusAgeBaseSeconds >= 0;
+        if (!shouldRun) {
+          if (convoyStatusAgeTicker) {
+            window.clearInterval(convoyStatusAgeTicker);
+            convoyStatusAgeTicker = 0;
+          }
+          return;
+        }
+        if (convoyStatusAgeTicker) return;
+        convoyStatusAgeTicker = window.setInterval(renderConvoyStatusAge, 1000);
+      }
+
+      function applyConvoyStatusView(status) {
+        const safeStatus = status || { online: false, players: 0, ageSeconds: null };
+        const parsedPlayers = Number(safeStatus.players);
+        const parsedAge = Number(safeStatus.ageSeconds);
+        convoyStatusLatest = {
+          online: !!safeStatus.online,
+          players: Number.isFinite(parsedPlayers) ? Math.max(0, Math.floor(parsedPlayers)) : 0,
+          ageSeconds: Number.isFinite(parsedAge) ? Math.max(0, Math.floor(parsedAge)) : null
+        };
+        setConvoyStatusVisualState("ready");
+        if (homeConvoyStatusImage) {
+          const imageName = convoyStatusImageName(safeStatus);
+          homeConvoyStatusImage.src = `./ressources/${imageName}`;
+          const players = Number.isFinite(parsedPlayers) ? Math.max(0, Math.floor(parsedPlayers)) : 0;
+          homeConvoyStatusImage.alt = safeStatus.online
+            ? convoyStatusAltOnline(players)
+            : convoyStatusAltOffline();
+        }
+        if (Number.isFinite(parsedAge) && parsedAge >= 0) {
+          const incomingAge = Math.floor(parsedAge);
+          const currentAge = convoyAgeSecondsNow();
+          if (Number.isFinite(currentAge)) {
+            convoyStatusAgeBaseSeconds = Math.max(incomingAge, Math.floor(currentAge));
+          } else {
+            convoyStatusAgeBaseSeconds = incomingAge;
+          }
+          convoyStatusAgeBaseAtMs = Date.now();
+        } else {
+          convoyStatusAgeBaseSeconds = null;
+          convoyStatusAgeBaseAtMs = 0;
+        }
+        renderConvoyStatusAge();
+        syncConvoyStatusAgeTicker();
+        if (homeConvoyPlayerCount) {
+          const players = Number.isFinite(parsedPlayers) ? Math.max(0, Math.floor(parsedPlayers)) : 0;
+          homeConvoyPlayerCount.textContent = String(players);
+          if (homeConvoyPlayerLabel) {
+            homeConvoyPlayerLabel.textContent = isConvoySingularCount(players)
+              ? t("home_convoy_player_singular", "Joueur")
+              : t("home_convoy_player_plural", "Joueurs");
+          }
+        }
+      }
+
+      function applyConvoyStatusErrorState() {
+        convoyStatusLatest = { online: false, players: 0, ageSeconds: null };
+        convoyStatusAgeBaseSeconds = null;
+        convoyStatusAgeBaseAtMs = 0;
+        setConvoyStatusVisualState("error");
+        renderConvoyStatusAge();
+        syncConvoyStatusAgeTicker();
+      }
+
+      async function refreshConvoyStatus() {
+        if (!isConvoyCategoryActive()) return;
+        const fallback = convoyStatusFromGlobals() || { online: false, players: 0, ageSeconds: null };
+        const apiUrls = convoyStatusApiUrls();
+        if (!apiUrls.length) {
+          convoyStatusHasSuccessfulFetch = true;
+          applyConvoyStatusView(fallback);
+          return;
+        }
+        if (!convoyStatusHasSuccessfulFetch) {
+          setConvoyStatusVisualState("loading");
+        }
+        const requestId = ++convoyStatusRequestId;
+        try {
+          const { payload } = await fetchConvoyStatusFromUrls(apiUrls);
+          if (requestId !== convoyStatusRequestId) return;
+          if (!isConvoyCategoryActive()) return;
+          if (!payload) throw new Error("no payload");
+          if (payload && payload.error !== null && payload.error !== undefined && String(payload.error).trim() !== "") {
+            throw new Error(String(payload.error));
+          }
+          const normalized = normalizeConvoyStatusPayload(payload);
+          if (!normalized) throw new Error("invalid payload");
+          convoyStatusHasSuccessfulFetch = true;
+          applyConvoyStatusView(normalized);
+          return;
+        } catch {
+          if (requestId !== convoyStatusRequestId) return;
+          if (!isConvoyCategoryActive()) return;
+          convoyStatusHasSuccessfulFetch = false;
+          applyConvoyStatusErrorState();
+        }
+      }
+
+      function startConvoyStatusPolling() {
+        if (!isConvoyCategoryActive()) return;
+        if (convoyStatusPollTimer) return;
+        setConvoyStatusVisualState("loading");
+        refreshConvoyStatus();
+        convoyStatusPollTimer = window.setInterval(refreshConvoyStatus, CONVOY_STATUS_REFRESH_MS);
+      }
+
+      function stopConvoyStatusPolling() {
+        if (convoyStatusPollTimer) {
+          window.clearInterval(convoyStatusPollTimer);
+          convoyStatusPollTimer = 0;
+        }
+      }
+
       function homeDownloadCountdownText(remainingSeconds) {
         const amount = Math.max(0, Number(remainingSeconds) || 0);
-        if (amount <= 0) return "Lancement du téléchargement...";
-        return "Le téléchargement va se lancer dans " + amount + " seconde" + (amount > 1 ? "s" : "") + "...";
+        if (amount <= 0) {
+          return t("home_download_countdown_start", "Lancement du téléchargement...");
+        }
+        const template = t(
+          "home_download_countdown_template",
+          "Le téléchargement va se lancer dans {count} seconde{plural}..."
+        );
+        return template
+          .replace(/\{count\}/g, String(amount))
+          .replace(/\{plural\}/g, amount > 1 ? "s" : "");
       }
 
       function setHomeDownloadCountdown(remainingSeconds) {
@@ -1360,22 +2367,80 @@
         homeDownloadModalCountdown.textContent = homeDownloadCountdownText(remainingSeconds);
       }
 
+      function homeAutoDownloadBaseLabel() {
+        return t("download_button", "Téléchargement automatique");
+      }
+
+      function setHomeAutoDownloadLabel(text) {
+        const value = String(text || "").trim();
+        if (homeAutoDownloadBtnLabel) {
+          homeAutoDownloadBtnLabel.textContent = value || homeAutoDownloadBaseLabel();
+          return;
+        }
+        if (homeAutoDownloadBtn) {
+          homeAutoDownloadBtn.textContent = value || homeAutoDownloadBaseLabel();
+        }
+      }
+
+      function resetHomeAutoDownloadLabel() {
+        setHomeAutoDownloadLabel(homeAutoDownloadBaseLabel());
+      }
+
+      function formatDownloadBytes(bytes) {
+        const value = Number(bytes);
+        if (!Number.isFinite(value) || value <= 0) return "0 B";
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        const exp = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
+        const scaled = value / (1024 ** exp);
+        const precision = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
+        return `${scaled.toFixed(precision)} ${units[exp]}`;
+      }
+
+      function formatDownloadEta(seconds) {
+        const value = Number(seconds);
+        if (!Number.isFinite(value) || value <= 0) return "00:00";
+        const total = Math.max(0, Math.floor(value));
+        const hours = Math.floor(total / 3600);
+        const minutes = Math.floor((total % 3600) / 60);
+        const secs = total % 60;
+        if (hours > 0) {
+          return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+        }
+        return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+      }
+
+      function renderHomeDownloadProgressLabel() {
+        if (!homeDownloadProgressState) {
+          resetHomeAutoDownloadLabel();
+          return;
+        }
+        const { received, total, startedAt } = homeDownloadProgressState;
+        const base = homeAutoDownloadBaseLabel();
+        if (Number.isFinite(total) && total > 0) {
+          const clampedReceived = Math.min(total, Math.max(0, Math.floor(received)));
+          const remaining = Math.max(0, total - clampedReceived);
+          const percent = Math.min(100, Math.max(0, Math.floor((clampedReceived / total) * 100)));
+          const elapsedSeconds = Math.max(0.001, (Date.now() - startedAt) / 1000);
+          const speed = clampedReceived / elapsedSeconds;
+          const eta = speed > 0 ? remaining / speed : NaN;
+          if (Number.isFinite(eta) && eta >= 0) {
+            setHomeAutoDownloadLabel(`${base} ${percent}% · ${formatDownloadBytes(remaining)} · ${formatDownloadEta(eta)}`);
+            return;
+          }
+          setHomeAutoDownloadLabel(`${base} ${percent}% · ${formatDownloadBytes(remaining)}`);
+          return;
+        }
+        setHomeAutoDownloadLabel(`${base} · ${formatDownloadBytes(received)}`);
+      }
+
       function setHomeAutoDownloadLoading(active) {
         if (!homeAutoDownloadBtn) return;
-        if (homeDownloadBtnLoadingTimer) {
-          window.clearTimeout(homeDownloadBtnLoadingTimer);
-          homeDownloadBtnLoadingTimer = 0;
-        }
         homeAutoDownloadBtn.classList.toggle("is-loading", !!active);
         homeAutoDownloadBtn.setAttribute("aria-busy", active ? "true" : "false");
         homeAutoDownloadBtn.setAttribute("aria-disabled", active ? "true" : "false");
-        if (!active) return;
-        homeDownloadBtnLoadingTimer = window.setTimeout(() => {
-          homeDownloadBtnLoadingTimer = 0;
+        if (!active) {
           homeAutoDownloadBtn.classList.remove("is-loading");
-          homeAutoDownloadBtn.setAttribute("aria-busy", "false");
-          homeAutoDownloadBtn.setAttribute("aria-disabled", "false");
-        }, HOME_DOWNLOAD_BUTTON_LOCK_MS);
+        }
       }
 
       function clearHomeDownloadCountdown() {
@@ -1419,6 +2484,126 @@
         }
       }
 
+      function resolveDownloadUrl(href) {
+        const raw = String(href || "").trim();
+        if (!raw) return null;
+        try {
+          return new URL(raw, window.location.href);
+        } catch {
+          return null;
+        }
+      }
+
+      function extractFilenameFromDisposition(disposition) {
+        const value = String(disposition || "");
+        if (!value) return "";
+        const starMatch = value.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+        if (starMatch && starMatch[1]) {
+          try {
+            return decodeURIComponent(starMatch[1].trim().replace(/^\"|\"$/g, ""));
+          } catch {
+            return starMatch[1].trim().replace(/^\"|\"$/g, "");
+          }
+        }
+        const quotedMatch = value.match(/filename\s*=\s*\"([^\"]+)\"/i);
+        if (quotedMatch && quotedMatch[1]) return quotedMatch[1].trim();
+        const plainMatch = value.match(/filename\s*=\s*([^;]+)/i);
+        return plainMatch && plainMatch[1] ? plainMatch[1].trim().replace(/^\"|\"$/g, "") : "";
+      }
+
+      function inferDownloadFilename(url, response) {
+        const fromHeader = extractFilenameFromDisposition(response && response.headers
+          ? response.headers.get("content-disposition")
+          : "");
+        if (fromHeader) return fromHeader;
+        const fromPath = url && url.pathname ? url.pathname.split("/").pop() : "";
+        if (fromPath) return decodeURIComponent(fromPath);
+        return "IDFMapInstaller.exe";
+      }
+
+      function triggerBlobDownload(blob, filename) {
+        const objectUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = objectUrl;
+        anchor.download = filename || "IDFMapInstaller.exe";
+        anchor.style.display = "none";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 8000);
+      }
+
+      async function downloadWithProgress(url) {
+        const response = await fetch(url.toString(), { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const totalRaw = Number(response.headers.get("content-length"));
+        const total = Number.isFinite(totalRaw) && totalRaw > 0 ? Math.floor(totalRaw) : null;
+        const startedAt = Date.now();
+        let received = 0;
+        homeDownloadProgressState = { received, total, startedAt };
+        renderHomeDownloadProgressLabel();
+
+        const stream = response.body;
+        const canReadStream = !!(stream && typeof stream.getReader === "function");
+        if (!canReadStream) {
+          const blob = await response.blob();
+          received = Number.isFinite(blob.size) ? blob.size : received;
+          homeDownloadProgressState = { received, total: Number.isFinite(blob.size) ? blob.size : total, startedAt };
+          renderHomeDownloadProgressLabel();
+          triggerBlobDownload(blob, inferDownloadFilename(url, response));
+          return;
+        }
+
+        const reader = stream.getReader();
+        const chunks = [];
+        let lastProgressPaint = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (!value) continue;
+          chunks.push(value);
+          received += value.byteLength || value.length || 0;
+          const now = Date.now();
+          if (now - lastProgressPaint >= 120) {
+            lastProgressPaint = now;
+            homeDownloadProgressState = { received, total, startedAt };
+            renderHomeDownloadProgressLabel();
+          }
+        }
+        homeDownloadProgressState = { received, total, startedAt };
+        renderHomeDownloadProgressLabel();
+        const contentType = response.headers.get("content-type") || "application/octet-stream";
+        const blob = new Blob(chunks, { type: contentType });
+        triggerBlobDownload(blob, inferDownloadFilename(url, response));
+      }
+
+      async function startHomeDownload(href) {
+        if (homeDownloadInProgress) return;
+        const url = resolveDownloadUrl(href);
+        if (!url) {
+          showAutoDownloadAlert();
+          return;
+        }
+        homeDownloadInProgress = true;
+        setHomeAutoDownloadLoading(true);
+        try {
+          const sameOriginTrackable = (url.origin === window.location.origin)
+            && (url.protocol === "http:" || url.protocol === "https:");
+          if (sameOriginTrackable) {
+            await downloadWithProgress(url);
+            return;
+          }
+          triggerHomeDownloadWithoutNavigation(url.toString());
+        } catch {
+          showAutoDownloadAlert();
+        } finally {
+          homeDownloadInProgress = false;
+          homeDownloadProgressState = null;
+          setHomeAutoDownloadLoading(false);
+          resetHomeAutoDownloadLabel();
+        }
+      }
+
       function closeHomeDownloadModal() {
         if (!homeDownloadModal) return;
         clearHomeDownloadCountdown();
@@ -1456,7 +2641,7 @@
 
       function launchHomeDownloadFromModal() {
         if (!homeAutoDownloadBtn) return;
-        if (homeAutoDownloadBtn.classList.contains("is-loading")) return;
+        if (homeDownloadInProgress || homeAutoDownloadBtn.classList.contains("is-loading")) return;
         const href = String(homeAutoDownloadBtn.getAttribute("href") || "").trim();
         if (!href || href === "#") {
           setHomeAutoDownloadLoading(false);
@@ -1464,10 +2649,10 @@
           showAutoDownloadAlert();
           return;
         }
-        setHomeAutoDownloadLoading(true);
         clearHomeDownloadCountdown();
         setHomeDownloadCountdown(0);
-        triggerHomeDownloadWithoutNavigation(href);
+        closeHomeDownloadModal();
+        startHomeDownload(href);
       }
 
       function hideAutoDownloadAlert(immediate) {
@@ -1513,7 +2698,10 @@
       function setAutoDownloadMode(mode) {
         if (!homeAutoDownloadBtn) return;
         if (mode === "manual") {
-          setHomeAutoDownloadLoading(false);
+          if (!homeDownloadInProgress) {
+            setHomeAutoDownloadLoading(false);
+            resetHomeAutoDownloadLabel();
+          }
           homeAutoDownloadBtn.dataset.downloadMode = "manual";
           homeAutoDownloadBtn.dataset.downloadLinkReady = "1";
           homeAutoDownloadBtn.setAttribute("href", "#");
@@ -1525,7 +2713,10 @@
           hideAutoDownloadAlert(true);
           return;
         }
-        setHomeAutoDownloadLoading(false);
+        if (!homeDownloadInProgress) {
+          setHomeAutoDownloadLoading(false);
+          resetHomeAutoDownloadLabel();
+        }
         homeAutoDownloadBtn.dataset.downloadMode = "link";
         applyOffsiteHref(homeAutoDownloadBtn);
         const href = String(homeAutoDownloadBtn.getAttribute("href") || "").trim();
@@ -1546,23 +2737,33 @@
       }
 
       function bindEvents() {
+        homeCategoryButtons.forEach((button) => {
+          if (!button || button.dataset.bound === "1") return;
+          button.dataset.bound = "1";
+          button.addEventListener("click", () => {
+            const target = String(button.dataset.homeCategory || "installation");
+            setHomeCategory(target);
+          });
+        });
         if (homeAutoDownloadBtn && homeAutoDownloadBtn.dataset.bound !== "1") {
           homeAutoDownloadBtn.dataset.bound = "1";
           homeAutoDownloadBtn.addEventListener("click", (event) => {
+            if (homeDownloadInProgress) {
+              event.preventDefault();
+              return;
+            }
             if (homeAutoDownloadBtn.dataset.downloadMode === "link") {
               if (homeAutoDownloadBtn.dataset.downloadLinkReady !== "1") {
                 event.preventDefault();
                 showAutoDownloadAlert();
                 return;
               }
-              if (lang() === "fr") {
-                event.preventDefault();
-                launchHomeDownloadFromModal();
-              }
+              hideAutoDownloadAlert(true);
               return;
             }
             if (homeAutoDownloadBtn.dataset.downloadMode !== "manual") return;
             event.preventDefault();
+            setManualPanelMode("installation");
             const isOpen = homeShell && homeShell.classList.contains("is-manual-open");
             setManualPanelOpen(!isOpen);
           });
@@ -1570,6 +2771,15 @@
         if (homeManualToggleBtn && homeManualToggleBtn.dataset.bound !== "1") {
           homeManualToggleBtn.dataset.bound = "1";
           homeManualToggleBtn.addEventListener("click", () => {
+            setManualPanelMode("installation");
+            const isOpen = homeShell && homeShell.classList.contains("is-manual-open");
+            setManualPanelOpen(!isOpen);
+          });
+        }
+        if (homeConvoyGuideBtn && homeConvoyGuideBtn.dataset.bound !== "1") {
+          homeConvoyGuideBtn.dataset.bound = "1";
+          homeConvoyGuideBtn.addEventListener("click", () => {
+            setManualPanelMode("convoy");
             const isOpen = homeShell && homeShell.classList.contains("is-manual-open");
             setManualPanelOpen(!isOpen);
           });
@@ -1594,6 +2804,7 @@
           homeDownloadModalManualStart.dataset.bound = "1";
           homeDownloadModalManualStart.addEventListener("click", (event) => {
             event.preventDefault();
+            if (homeDownloadInProgress) return;
             launchHomeDownloadFromModal();
           });
         }
@@ -1613,15 +2824,27 @@
       function render() {
         const links = siteLinks();
         const guide = links.guide && typeof links.guide === "object" ? links.guide : {};
+        if (homeCategoriesNav) {
+          homeCategoriesNav.setAttribute("aria-label", t("home_categories_aria_label", "Catégories d'accueil"));
+        }
+        if (homeHeroSection) {
+          homeHeroSection.setAttribute("aria-label", t("home_hero_aria_label", "Contenu d'accueil"));
+        }
+        if (homeManualCloseBtn) {
+          const closeLabel = t("close", "Fermer");
+          homeManualCloseBtn.setAttribute("aria-label", closeLabel);
+          homeManualCloseBtn.setAttribute("title", closeLabel);
+        }
         applyOffsiteHref(homeManualDepsLink);
         applyOffsiteHref(homeManualMapDownloadLink);
         applyOffsiteHref(homeDiscordBtn);
         applyOffsiteHref(homeYoutubeBtn);
-        const isFrench = lang() === "fr";
-        setAutoDownloadMode(isFrench ? "link" : "manual");
+        if (homeDownloadModalCloseBtn) {
+          homeDownloadModalCloseBtn.setAttribute("aria-label", t("close", "Fermer"));
+        }
+        setAutoDownloadMode("link");
         syncHomeDownloadManualStartLink();
-        if (!isFrench) closeHomeDownloadModal();
-        setManualToggleVisibility(isFrench);
+        setHomeCategory(activeHomeCategory);
         if (homeSteamDlcLink) {
           const href = String(guide.steam_dlc || "").trim();
           if (href) homeSteamDlcLink.href = href;
@@ -1632,8 +2855,17 @@
             homeManualVideoFrame.setAttribute("src", videoSrc);
             homeManualVideoFrame.dataset.initialSrc = videoSrc;
           }
+          homeManualVideoFrame.setAttribute("title", t("downloads_manual_tutorial_title", "Tutoriel d'installation manuelle"));
         }
         applyTexts();
+        if (homeDownloadInProgress) {
+          renderHomeDownloadProgressLabel();
+        } else {
+          resetHomeAutoDownloadLabel();
+        }
+        setConvoyStatusVisualState(convoyStatusViewState);
+        renderConvoyStatusAge();
+        syncConvoyStatusAgeTicker();
         if (homeManualVideoGroup) {
           const showVideo = lang() === "fr";
           homeManualVideoGroup.hidden = !showVideo;
@@ -1656,3 +2888,6 @@
   </script>
 </body>
 </html>
+
+
+

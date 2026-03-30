@@ -1,4 +1,4 @@
-(function syncSiteNavFromConfig() {
+﻿(function syncSiteNavFromConfig() {
   const links = window.SITE_LINKS && typeof window.SITE_LINKS === "object"
     ? window.SITE_LINKS
     : {};
@@ -10,7 +10,9 @@
         items: [
           { href: "./", labelKey: "nav_accueil" },
           { href: "map.html", labelKey: "nav_carte_interactive" },
+          { href: "actualites.html", labelKey: "nav_actualites" },
           { href: "faq.html", labelKey: "nav_faq" },
+          { href: "credits.html", labelKey: "nav_credits" },
           { href: "mentions_legales.html", labelKey: "nav_mentions_legales", hidden: true },
           { labelKey: "", items: [] }
         ]
@@ -34,3 +36,4 @@
     window.SITE_OFFSITE_LINKS = Object.assign({}, links.offsite);
   }
 })();
+

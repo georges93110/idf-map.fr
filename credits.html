@@ -1,0 +1,935 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="description" content="Credits des contributeurs de la map Ile-de-France."/>
+  <meta property="og:locale" content="fr_FR"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="Ile-de-France Map - Credits"/>
+  <meta property="og:title" content="Ile-de-France Map"/>
+  <meta property="og:description" content="Credits des contributeurs de la map Ile-de-France."/>
+  <meta property="og:url" content="https://idf-map.fr/credits.html"/>
+  <meta property="og:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Ile-de-France Map - Credits"/>
+  <meta name="twitter:description" content="Credits des contributeurs de la map Ile-de-France."/>
+  <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <script src="config/theme-init.js"></script>
+  <style>
+    html[data-app-ready="0"] {
+      background:#0b0b0b;
+    }
+    html[data-theme="light"][data-app-ready="0"] {
+      background:#ecf2f8;
+    }
+    html[data-app-ready="0"] body {
+      opacity:0 !important;
+      visibility:hidden !important;
+      overflow:hidden !important;
+    }
+  </style>
+  <script>
+    (function setupAppReadyGate() {
+      const root = document.documentElement;
+      root.setAttribute("data-app-ready", "0");
+      let done = false;
+      function reveal() {
+        if (done) return;
+        done = true;
+        root.setAttribute("data-app-ready", "1");
+      }
+      window.__setAppReady = function __setAppReady(options) {
+        const cfg = options && typeof options === "object" ? options : {};
+        const minFrames = Math.max(4, Number(cfg.minFrames) || 8);
+        const stableFrames = Math.max(2, Number(cfg.stableFrames) || 3);
+        const maxFrames = Math.max(minFrames + stableFrames, Number(cfg.maxFrames) || 28);
+        let frameCount = 0;
+        let stableCount = 0;
+        let previousKey = "";
+        const step = () => {
+          frameCount += 1;
+          let layoutKey = "";
+          const body = document.body;
+          if (body) {
+            const rect = body.getBoundingClientRect();
+            layoutKey = [
+              Math.round(rect.width),
+              Math.round(rect.height),
+              document.documentElement.scrollWidth,
+              document.documentElement.scrollHeight
+            ].join("x");
+          }
+          stableCount = layoutKey && layoutKey === previousKey ? stableCount + 1 : 0;
+          previousKey = layoutKey;
+          const enoughFrames = frameCount >= minFrames;
+          const visuallyStable = stableCount >= stableFrames;
+          const frameBudgetExceeded = frameCount >= maxFrames;
+          if ((!enoughFrames || !visuallyStable) && !frameBudgetExceeded) {
+            requestAnimationFrame(step);
+            return;
+          }
+          reveal();
+        };
+        const start = () => requestAnimationFrame(step);
+        if (document.fonts && document.fonts.ready) {
+          Promise.race([
+            document.fonts.ready.catch(() => {}),
+            new Promise((resolve) => setTimeout(resolve, 1200))
+          ]).finally(start);
+          return;
+        }
+        start();
+      };
+      window.addEventListener("pageshow", reveal, { once: true });
+      window.setTimeout(reveal, 7000);
+    })();
+  </script>
+  <title>Credits</title>
+  <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
+  <style>
+    :root{
+      --credits-surface:#171717;
+      --credits-surface-soft:#141414;
+      --credits-border:#2f2f2f;
+      --credits-border-soft:#2a2a2a;
+      --credits-text:#ececec;
+      --credits-muted:#c6c6c6;
+    }
+
+    .credits-wrap{
+      min-height:100vh;
+      box-sizing:border-box;
+      padding:calc(var(--sitebar-height, 52px) + 14px) 12px calc(var(--shared-footer-height, 24px) + 16px);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+    }
+
+    .credits-card{
+      width:min(900px, 100%);
+      border:1px solid var(--credits-border);
+      border-radius:14px;
+      background:var(--credits-surface);
+      color:var(--credits-text);
+      box-shadow:0 16px 36px rgba(0,0,0,.35);
+      padding:14px;
+      display:grid;
+      gap:10px;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+
+    .credits-title{
+      margin:0;
+      font-size:clamp(20px, 3vw, 28px);
+      line-height:1.15;
+      color:#fff;
+      letter-spacing:-.01em;
+    }
+
+    .credits-subtitle{
+      margin:0;
+      color:var(--credits-muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+    .credits-feedback{
+      margin:2px 0 0;
+      color:#bdbdbd;
+      font-size:12px;
+      line-height:1.4;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .credits-feedback.is-loading::before{
+      content:"";
+      width:12px;
+      height:12px;
+      border:2px solid #5f5f5f;
+      border-top-color:#f0f0f0;
+      border-radius:50%;
+      animation:credits-spin .75s linear infinite;
+    }
+    .credits-feedback.is-error{
+      color:#f4b2b2;
+    }
+    @keyframes credits-spin{
+      to{
+        transform:rotate(360deg);
+      }
+    }
+
+    .credits-list{
+      display:grid;
+      gap:10px;
+      grid-template-columns:1fr;
+    }
+    .credits-group{
+      border:1px solid #2d2d2d;
+      border-radius:10px;
+      background:#101010;
+      overflow:hidden;
+    }
+    .credits-group-title{
+      margin:0;
+      padding:8px 10px;
+      border-bottom:1px solid #2d2d2d;
+      background:#151515;
+      color:#d7d7d7;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      line-height:1.2;
+    }
+    .credits-group-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      padding:10px;
+    }
+
+    .credit-item{
+      border:1px solid var(--credits-border-soft);
+      border-radius:10px;
+      background:var(--credits-surface-soft);
+      padding:10px;
+      display:grid;
+      gap:10px;
+      grid-template-columns:86px minmax(0, 1fr);
+      align-items:center;
+      transition:border-color .2s ease, box-shadow .2s ease;
+      min-width:290px;
+      max-width:420px;
+      flex:1 1 320px;
+    }
+    .credit-item:hover,
+    .credit-item:focus-within{
+      border-color:#4a4a4a;
+      box-shadow:0 8px 20px rgba(0,0,0,.28);
+    }
+
+    .credit-photo-wrap{
+      width:86px;
+      height:86px;
+      border-radius:10px;
+      overflow:hidden;
+      border:1px solid #3a3a3a;
+      background:#101010;
+      box-shadow:0 8px 18px rgba(0,0,0,.28);
+      flex:0 0 auto;
+    }
+
+    .credit-photo{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .credit-meta{
+      min-width:0;
+      display:grid;
+      gap:6px;
+      align-content:center;
+    }
+
+    .credit-name{
+      margin:0;
+      color:#fff;
+      font-size:clamp(17px, 2.7vw, 22px);
+      font-weight:900;
+      line-height:1.08;
+      letter-spacing:-.01em;
+      display:flex;
+      align-items:flex-end;
+      gap:8px;
+      min-width:0;
+      flex-wrap:wrap;
+    }
+    .credit-name-main{
+      min-width:0;
+      overflow-wrap:anywhere;
+    }
+    .credit-username{
+      margin:0;
+      color:rgba(255, 255, 255, 0.5);
+      font-size:.58em;
+      font-weight:700;
+      line-height:1.1;
+      letter-spacing:0;
+      white-space:nowrap;
+    }
+
+    .credit-status{
+      margin:0;
+      color:#e0e0e0;
+      font-size:13px;
+      font-weight:700;
+      line-height:1.35;
+      white-space:pre-line;
+    }
+
+    .credit-networks-line{
+      display:grid;
+      gap:6px;
+      min-width:0;
+    }
+    .credit-networks-label{
+      margin:0;
+      color:#bdbdbd;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.03em;
+      text-transform:uppercase;
+    }
+
+    .credit-social-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+
+    .credit-social-btn{
+      min-height:24px;
+      padding:0 8px;
+      border-radius:7px;
+      border:1px solid var(--social-border, #414141);
+      background:var(--social-bg, #2a2a2a);
+      color:var(--social-text, #f3f3f3);
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      text-decoration:none;
+      font-size:11px;
+      font-weight:700;
+      box-shadow:0 6px 14px rgba(0,0,0,.28);
+      transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+      white-space:nowrap;
+    }
+    .credit-social-btn:hover{
+      transform:translateY(-1px);
+      border-color:var(--social-hover-border, var(--social-border, #565656));
+      background:var(--social-hover-bg, var(--social-bg, #333333));
+      box-shadow:0 8px 16px rgba(0,0,0,.33);
+    }
+    .credit-social-btn:focus-visible{
+      outline:2px solid #fff;
+      outline-offset:2px;
+    }
+    .credit-social-btn svg{
+      width:12px;
+      height:12px;
+      fill:currentColor;
+      stroke:none;
+      flex:0 0 auto;
+    }
+    .credit-social-btn img{
+      width:12px;
+      height:12px;
+      display:block;
+      object-fit:contain;
+      flex:0 0 auto;
+    }
+    .credit-social-btn .site-icon-email{
+      fill:none;
+      stroke:currentColor;
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .credit-social-btn .site-icon-discord path,
+    .credit-social-btn .site-icon-youtube path{
+      fill:currentColor !important;
+      stroke:none !important;
+    }
+    .credit-social-empty{
+      color:#a9a9a9;
+      font-size:11.5px;
+      font-weight:600;
+    }
+
+    @media (max-width:700px){
+      .credits-wrap{
+        padding:calc(var(--sitebar-height, 52px) + 10px) 8px calc(var(--shared-footer-height, 24px) + 12px);
+      }
+      .credits-card{
+        padding:11px;
+        border-radius:12px;
+      }
+      .credit-item{
+        grid-template-columns:74px minmax(0, 1fr);
+        gap:8px;
+        padding:8px;
+        min-width:0;
+        max-width:none;
+        flex:1 1 100%;
+      }
+      .credit-photo-wrap{
+        width:74px;
+        height:74px;
+      }
+      .credit-social-btn{
+        min-height:22px;
+        padding:0 7px;
+        font-size:10.5px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .credit-item,
+      .credit-social-btn{
+        transition:none;
+      }
+    }
+  </style>
+</head>
+<body data-bg-opacity="0.24" data-bg-overlay-top="0.74" data-bg-overlay-bottom="0.92">
+  <main class="credits-wrap">
+    <section class="credits-card" aria-labelledby="creditsTitle">
+      <h1 class="credits-title" id="creditsTitle">Credits</h1>
+      <div class="credits-list" id="creditsList" aria-live="polite"></div>
+      <p class="credits-feedback is-loading" id="creditsFeedback">Chargement</p>
+    </section>
+  </main>
+
+  <script src="config/translations.js"></script>
+  <script src="config/config.js"></script>
+  <script src="config/social-buttons.js"></script>
+  <script src="config/site-nav.js"></script>
+  <script src="config/shared-header.js"></script>
+  <script>
+    (function initCreditsPage() {
+      const CACHE_KEY = "idf_credits_sheet_cache_v2";
+      const ENABLE_LOCAL_MODE = true;
+
+      function lang() {
+        return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
+      }
+      function t(key, fallback) {
+        const i18n = window.I18N || {};
+        const code = lang();
+        const fromLang = i18n[code] && i18n[code][key];
+        if (typeof fromLang === "string" && fromLang) return fromLang;
+        const fromFr = i18n.fr && i18n.fr[key];
+        if (typeof fromFr === "string" && fromFr) return fromFr;
+        return fallback;
+      }
+      function formatMessage(template, values) {
+        const source = String(template || "");
+        return source.replace(/\{([a-z0-9_]+)\}/gi, (match, key) => {
+          if (!values || typeof values !== "object") return match;
+          const value = values[key];
+          return value == null ? match : String(value);
+        });
+      }
+      function normalizeHeader(raw) {
+        return String(raw || "")
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_+|_+$/g, "");
+      }
+      function firstNonEmpty(obj, keys) {
+        for (const key of keys) {
+          const value = String(obj[key] ?? "").trim();
+          if (value) return value;
+        }
+        return "";
+      }
+      function firstParsedValue(obj, keys, parser) {
+        for (const key of keys) {
+          const parsed = parser(obj[key]);
+          if (parsed) return parsed;
+        }
+        return "";
+      }
+      const SHEET_LANGS = ["fr", "en", "es", "de", "pl", "pt", "nl", "it", "ru", "zh", "ko", "ja"];
+      function collectLocalizedValues(row, prefix) {
+        const out = {};
+        SHEET_LANGS.forEach((code) => {
+          const value = String(row && row[`${prefix}_${code}`] || "").trim();
+          if (value) out[code] = value;
+        });
+        return out;
+      }
+      function resolveLocalizedValue(defaultValue, valuesByLang) {
+        const code = lang();
+        const localized = String(valuesByLang && valuesByLang[code] || "").trim();
+        if (localized) return localized;
+        return String(defaultValue || "").trim();
+      }
+      function normalizeRoleText(raw) {
+        return String(raw || "").replace(/\\+/g, "\n").trim();
+      }
+      function normalizeLinkToken(raw) {
+        return String(raw || "").trim().replace(/[\u0448\u0428]/g, "@");
+      }
+      function readCache(maxAgeMs) {
+        if (!ENABLE_LOCAL_MODE) return null;
+        try {
+          const raw = sessionStorage.getItem(CACHE_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return null;
+          const savedAt = Number(parsed.savedAt || 0);
+          if (!savedAt || Date.now() - savedAt > maxAgeMs) return null;
+          return Array.isArray(parsed.rows) ? parsed.rows : null;
+        } catch {
+          return null;
+        }
+      }
+      function writeCache(rows) {
+        if (!ENABLE_LOCAL_MODE) return;
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+            savedAt: Date.now(),
+            rows
+          }));
+        } catch {}
+      }
+      function parseGvizResponse(payload) {
+        const text = String(payload || "").trim();
+        const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?\s*$/);
+        if (match && match[1]) return JSON.parse(match[1]);
+        if (text.startsWith("{") && text.endsWith("}")) return JSON.parse(text);
+        throw new Error("Invalid Google Sheet response");
+      }
+      function mapGvizTableToRows(data) {
+        const table = data && data.table && typeof data.table === "object"
+          ? data.table
+          : {};
+        const cols = Array.isArray(table.cols) ? table.cols : [];
+        const rows = Array.isArray(table.rows) ? table.rows : [];
+        const labelsMissing = cols.length > 0 && cols.every((col) => {
+          const label = String(col && col.label || "").trim();
+          return !label;
+        });
+
+        let headers = cols.map((col, index) => {
+          const normalized = normalizeHeader(col && (col.label || col.id || ""));
+          return normalized || `col_${index}`;
+        });
+
+        const rowsAreGeneric = headers.every((key) => /^col_\d+$/.test(key));
+        let rowStartIndex = 0;
+        if ((labelsMissing || rowsAreGeneric) && rows.length) {
+          const firstCells = Array.isArray(rows[0] && rows[0].c) ? rows[0].c : [];
+          const candidateHeaders = firstCells.map((cell, index) => {
+            const value = cell && typeof cell === "object" && "v" in cell ? cell.v : "";
+            const normalized = normalizeHeader(value);
+            return normalized || `col_${index}`;
+          });
+          const nonGenericCount = candidateHeaders.filter((key) => !/^col_\d+$/.test(key)).length;
+          if (nonGenericCount >= 2) {
+            headers = candidateHeaders;
+            rowStartIndex = 1;
+          }
+        }
+
+        const uniqueHeaders = [];
+        const seenHeaders = {};
+        headers.forEach((key, index) => {
+          const base = key || `col_${index}`;
+          const count = Number(seenHeaders[base] || 0);
+          seenHeaders[base] = count + 1;
+          uniqueHeaders.push(count ? `${base}_${count + 1}` : base);
+        });
+
+        return rows
+          .slice(rowStartIndex)
+          .map((row) => {
+            const cells = Array.isArray(row && row.c) ? row.c : [];
+            const out = {};
+            uniqueHeaders.forEach((key, index) => {
+              const cell = cells[index];
+              out[key] = cell && typeof cell === "object" && "v" in cell ? cell.v : "";
+            });
+            return out;
+          })
+          .filter((rowObj) => Object.values(rowObj).some((value) => String(value || "").trim()));
+      }
+      function buildSheetUrl(spreadsheetId, gid) {
+        const id = encodeURIComponent(spreadsheetId);
+        const sheetGid = encodeURIComponent(gid || "0");
+        return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?gid=${sheetGid}&tqx=out:json`;
+      }
+      async function fetchSheetRows(url, timeoutMs) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const response = await fetch(url, { signal: controller.signal });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const text = await response.text();
+          const parsed = parseGvizResponse(text);
+          return mapGvizTableToRows(parsed);
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+      function toHttpUrl(raw) {
+        const value = normalizeLinkToken(raw);
+        if (!value) return "";
+        const lower = value.toLowerCase();
+        if (lower === "x" || lower === "-" || lower === "none" || lower === "n/a") return "";
+        try {
+          const url = new URL(value);
+          if (url.protocol === "http:" || url.protocol === "https:") return url.toString();
+          return "";
+        } catch {
+          if (!value.includes(".")) return "";
+          try {
+            const normalized = new URL(`https://${value.replace(/^\/+/, "")}`);
+            if (normalized.protocol === "http:" || normalized.protocol === "https:") return normalized.toString();
+            return "";
+          } catch {
+            return "";
+          }
+        }
+      }
+      function toSocialUrl(raw, network) {
+        const value = normalizeLinkToken(raw);
+        if (!value) return "";
+
+        const direct = toHttpUrl(value);
+        if (direct) return direct;
+
+        const handle = value.replace(/^@+/, "").trim();
+        if (!handle) return "";
+        if (handle.toLowerCase() === "x" || handle === "-") return "";
+
+        if (network === "github") {
+          if (!/^[a-z0-9](?:[a-z0-9-]{0,38})$/i.test(handle)) return "";
+          return `https://github.com/${handle}`;
+        }
+        if (network === "tiktok") {
+          if (/[^a-z0-9._-]/i.test(handle)) return "";
+          return `https://www.tiktok.com/@${handle}`;
+        }
+        if (network === "youtube") {
+          if (/^UC[a-z0-9_-]{10,}$/i.test(handle)) return `https://www.youtube.com/channel/${handle}`;
+          if (/[^a-z0-9._-]/i.test(handle)) return "";
+          return `https://www.youtube.com/@${handle}`;
+        }
+
+        return "";
+      }
+      function toEmail(raw) {
+        const value = normalizeLinkToken(raw);
+        if (!value || !value.includes("@")) return "";
+        return value;
+      }
+      function contributorFromRow(row, index) {
+        const userId = firstNonEmpty(row, ["user_id", "userid", "id", "user"]);
+        const usernameRaw = firstNonEmpty(row, ["username", "pseudo", "user", "id_discord"]);
+        const displayNameRaw = firstNonEmpty(row, ["display_name", "displayname", "display", "nom_affiche", "name", "nom"]);
+        const categoryDefault = firstNonEmpty(row, ["categorie", "category"]);
+        const roleDefault = firstNonEmpty(row, ["role", "rang"]);
+        const avatar = firstParsedValue(row, ["avatar", "avatar_url", "pp"], toHttpUrl);
+        const youtube = firstParsedValue(row, ["ytb", "youtube", "youtube_url"], (value) => toSocialUrl(value, "youtube"));
+        const trucky = firstParsedValue(row, ["trucky", "trucky_url", "trucky_link", "truckymods"], toHttpUrl);
+        const tiktok = firstParsedValue(row, ["tiktok", "tik_tok", "tiktok_url", "tt"], (value) => toSocialUrl(value, "tiktok"));
+        const github = firstParsedValue(row, ["github", "gh", "github_url", "github_link"], (value) => toSocialUrl(value, "github"));
+        const gmail = firstParsedValue(row, ["gmail", "email", "mail"], toEmail);
+        const categoryByLang = collectLocalizedValues(row, "cat");
+        const roleByLang = collectLocalizedValues(row, "role");
+
+        const username = String(usernameRaw || "").trim().replace(/^@+/, "");
+        const contributorLabel = t("credits_contributor_label", "Contributeur");
+        const displayName = String(displayNameRaw || "").trim() || username || `${contributorLabel} ${index + 1}`;
+        const normalizedRole = normalizeRoleText(resolveLocalizedValue(roleDefault, roleByLang));
+        const status = normalizedRole || contributorLabel;
+        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=256&background=2a2f45&color=ffffff`;
+
+        const socialLinks = [];
+        if (userId) socialLinks.push({ key: "discord", href: `https://discord.com/users/${encodeURIComponent(userId)}` });
+        if (github) socialLinks.push({ key: "github", href: github });
+        if (tiktok) socialLinks.push({ key: "tiktok", href: tiktok });
+        if (youtube) socialLinks.push({ key: "youtube", href: youtube });
+        if (trucky) socialLinks.push({ key: "trucky", href: trucky });
+        if (gmail) socialLinks.push({ key: "email", href: `mailto:${gmail}` });
+
+        return {
+          name: displayName,
+          username,
+          category: resolveLocalizedValue(categoryDefault, categoryByLang) || t("credits_category_other", "Autres"),
+          categoryDefault: categoryDefault || "",
+          categoryByLang,
+          role: roleDefault || "",
+          roleDefault: roleDefault || "",
+          roleByLang,
+          status,
+          avatar: avatar || fallbackAvatar,
+          socialLinks
+        };
+      }
+      function localizeContributor(contributor) {
+        const category = resolveLocalizedValue(
+          contributor && (contributor.categoryDefault || contributor.category) || "",
+          contributor && contributor.categoryByLang
+        ) || t("credits_category_other", "Autres");
+        const localizedRole = normalizeRoleText(resolveLocalizedValue(
+          contributor && (contributor.roleDefault || contributor.role) || "",
+          contributor && contributor.roleByLang
+        ));
+        return {
+          ...contributor,
+          category,
+          status: localizedRole || t("credits_contributor_label", "Contributeur")
+        };
+      }
+      function fallbackContributors() {
+        return [
+          
+        ];
+      }
+      function buildSocialButtonElement(socialConfig, socialLink) {
+        if (!socialConfig || typeof socialConfig !== "object") return null;
+        const href = String(socialLink && socialLink.href || "").trim();
+        if (!href) return null;
+
+        const link = document.createElement("a");
+        link.className = "credit-social-btn";
+        link.href = href;
+        if (socialLink.key !== "email") {
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+        }
+
+        if (socialConfig.bg) link.style.setProperty("--social-bg", socialConfig.bg);
+        if (socialConfig.border) link.style.setProperty("--social-border", socialConfig.border);
+        if (socialConfig.hoverBg) link.style.setProperty("--social-hover-bg", socialConfig.hoverBg);
+        if (socialConfig.hoverBorder) link.style.setProperty("--social-hover-border", socialConfig.hoverBorder);
+
+        const label = String(socialConfig.label || socialLink.key || "Link").trim();
+        link.innerHTML = `${socialConfig.icon || ""}<span>${label}</span>`;
+        link.setAttribute("aria-label", label);
+        link.title = label;
+        return link;
+      }
+      function sortSocialLinks(links) {
+        const order = {
+          discord: 0,
+          youtube: 1,
+          tiktok: 2,
+          trucky: 3,
+          github: 4,
+          email: 5
+        };
+        return [...links].sort((a, b) => {
+          const aKey = String(a && a.key || "").toLowerCase();
+          const bKey = String(b && b.key || "").toLowerCase();
+          const aRank = Object.prototype.hasOwnProperty.call(order, aKey) ? order[aKey] : 99;
+          const bRank = Object.prototype.hasOwnProperty.call(order, bKey) ? order[bKey] : 99;
+          return aRank - bRank;
+        });
+      }
+      function buildContributorCard(contributor, socials) {
+        const article = document.createElement("article");
+        article.className = "credit-item";
+
+        const photoWrap = document.createElement("div");
+        photoWrap.className = "credit-photo-wrap";
+        const photo = document.createElement("img");
+        photo.className = "credit-photo";
+        photo.loading = "lazy";
+        photo.src = contributor.avatar;
+        photo.alt = formatMessage(
+          t("credits_avatar_alt_template", "Photo de profil de {name}"),
+          { name: contributor.name }
+        );
+        photoWrap.appendChild(photo);
+
+        const meta = document.createElement("div");
+        meta.className = "credit-meta";
+        const name = document.createElement("h2");
+        name.className = "credit-name";
+        const nameMain = document.createElement("span");
+        nameMain.className = "credit-name-main";
+        nameMain.textContent = contributor.name;
+        name.appendChild(nameMain);
+        const username = String(contributor.username || "").trim().replace(/^@+/, "");
+        if (username) {
+          const usernameEl = document.createElement("span");
+          usernameEl.className = "credit-username";
+          usernameEl.textContent = `@${username}`;
+          name.appendChild(usernameEl);
+        }
+        const status = document.createElement("p");
+        status.className = "credit-status";
+        status.textContent = String(contributor.status || "").trim() || t("credits_contributor_label", "Contributeur");
+
+        const networkLine = document.createElement("div");
+        networkLine.className = "credit-networks-line";
+        const networkList = document.createElement("div");
+        networkList.className = "credit-social-list";
+
+        const links = sortSocialLinks(Array.isArray(contributor.socialLinks) ? contributor.socialLinks : []);
+        links.forEach((socialLink) => {
+          const key = String(socialLink && socialLink.key || "").trim().toLowerCase();
+          if (!key) return;
+          const button = buildSocialButtonElement(socials[key], socialLink);
+          if (button) networkList.appendChild(button);
+        });
+        if (!networkList.childElementCount) {
+          const empty = document.createElement("span");
+          empty.className = "credit-social-empty";
+          empty.textContent = t("credits_no_links", "Aucun lien");
+          networkList.appendChild(empty);
+        }
+
+        networkLine.appendChild(networkList);
+        meta.appendChild(name);
+        meta.appendChild(status);
+        meta.appendChild(networkLine);
+
+        article.appendChild(photoWrap);
+        article.appendChild(meta);
+        return article;
+      }
+      let FEEDBACK_STATE = { key: "", fallback: "", isError: false, isLoading: false };
+      function setFeedback(message, isError, isLoading) {
+        const feedback = document.getElementById("creditsFeedback");
+        if (!feedback) return;
+        feedback.textContent = message || "";
+        feedback.classList.toggle("is-error", !!isError);
+        feedback.classList.toggle("is-loading", !!isLoading);
+      }
+      function setFeedbackByKey(key, fallback, isError, isLoading) {
+        FEEDBACK_STATE = {
+          key: String(key || "").trim(),
+          fallback: String(fallback || "").trim(),
+          isError: !!isError,
+          isLoading: !!isLoading
+        };
+        setFeedback(FEEDBACK_STATE.key ? t(FEEDBACK_STATE.key, FEEDBACK_STATE.fallback) : "", FEEDBACK_STATE.isError, FEEDBACK_STATE.isLoading);
+      }
+      function clearFeedback() {
+        FEEDBACK_STATE = { key: "", fallback: "", isError: false, isLoading: false };
+        setFeedback("", false, false);
+      }
+      function refreshFeedbackLocale() {
+        if (!FEEDBACK_STATE.key) return;
+        setFeedback(t(FEEDBACK_STATE.key, FEEDBACK_STATE.fallback), FEEDBACK_STATE.isError, FEEDBACK_STATE.isLoading);
+      }
+      function renderCredits(contributors) {
+        const host = document.getElementById("creditsList");
+        if (!host) return;
+        host.innerHTML = "";
+        const socials = window.SITE_SOCIAL_BUTTONS && typeof window.SITE_SOCIAL_BUTTONS === "object"
+          ? window.SITE_SOCIAL_BUTTONS
+          : {};
+        const groupsMap = new Map();
+        contributors.forEach((baseContributor) => {
+          const contributor = localizeContributor(baseContributor);
+          const category = String(contributor && contributor.category || "").trim() || t("credits_category_other", "Autres");
+          if (!groupsMap.has(category)) groupsMap.set(category, []);
+          groupsMap.get(category).push(contributor);
+        });
+
+        groupsMap.forEach((items, category) => {
+          const group = document.createElement("section");
+          group.className = "credits-group";
+
+          const title = document.createElement("h2");
+          title.className = "credits-group-title";
+          title.textContent = category;
+
+          const list = document.createElement("div");
+          list.className = "credits-group-list";
+          items.forEach((contributor) => {
+            list.appendChild(buildContributorCard(contributor, socials));
+          });
+
+          group.appendChild(title);
+          group.appendChild(list);
+          host.appendChild(group);
+        });
+      }
+      async function loadContributors() {
+        const links = window.SITE_LINKS && typeof window.SITE_LINKS === "object"
+          ? window.SITE_LINKS
+          : {};
+        const creditsCfg = links.credits && typeof links.credits === "object"
+          ? links.credits
+          : {};
+        const sheetCfg = creditsCfg.sheet && typeof creditsCfg.sheet === "object"
+          ? creditsCfg.sheet
+          : {};
+
+        const spreadsheetId = String(sheetCfg.spreadsheet_id || "").trim();
+        const gid = String(sheetCfg.gid || "0").trim() || "0";
+        const cacheMs = Math.max(60000, Number(sheetCfg.cache_ms) || 180000);
+        const timeoutMs = Math.max(3000, Number(sheetCfg.timeout_ms) || 10000);
+
+        if (!spreadsheetId) {
+          setFeedbackByKey("credits_error", "Erreur", true, false);
+          return ENABLE_LOCAL_MODE ? fallbackContributors() : [];
+        }
+
+        const cachedRows = readCache(cacheMs);
+        if (cachedRows && cachedRows.length) {
+          const contributors = cachedRows.map(contributorFromRow).filter((item) => item && item.name);
+          if (contributors.length) {
+            setFeedbackByKey("credits_cache_local_loaded", "", false, false);
+            return contributors;
+          }
+        }
+
+        const sheetUrl = buildSheetUrl(spreadsheetId, gid);
+        const rows = await fetchSheetRows(sheetUrl, timeoutMs);
+        if (rows.length) writeCache(rows);
+        const contributors = rows.map(contributorFromRow).filter((item) => item && item.name);
+        if (!contributors.length) throw new Error("Sheet is empty");
+        clearFeedback();
+        return contributors;
+      }
+      function render() {
+        const pageTitle = t("nav_credits", "Credits");
+        const titleEl = document.getElementById("creditsTitle");
+        if (titleEl) titleEl.textContent = pageTitle;
+        document.title = `Ile-de-France Map | ${pageTitle}`;
+      }
+      let CURRENT_CONTRIBUTORS = [];
+      function applyContributors(contributors) {
+        CURRENT_CONTRIBUTORS = Array.isArray(contributors) ? contributors : [];
+        renderCredits(CURRENT_CONTRIBUTORS);
+      }
+      render();
+      setFeedbackByKey("credits_loading", "Chargement", false, true);
+      loadContributors()
+        .then((contributors) => {
+          applyContributors(contributors);
+        })
+        .catch(() => {
+          if (ENABLE_LOCAL_MODE) {
+            const fallback = fallbackContributors();
+            applyContributors(fallback);
+            setFeedbackByKey("credits_error", "Erreur", true, false);
+            return;
+          }
+          applyContributors([]);
+          setFeedbackByKey("credits_error", "Erreur", true, false);
+        });
+      new MutationObserver(() => {
+        render();
+        renderCredits(CURRENT_CONTRIBUTORS);
+        refreshFeedbackLocale();
+      }).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["lang"]
+      });
+    })();
+  </script>
+  <script>
+    window.__setAppReady?.();
+  </script>
+</body>
+</html>
+
+
+
+

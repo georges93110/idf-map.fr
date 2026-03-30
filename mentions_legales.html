@@ -15,9 +15,13 @@
   <meta name="twitter:title" content="Ile-de-France Map - Mentions legales"/>
   <meta name="twitter:description" content="Mentions legales"/>
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <script src="config/theme-init.js"></script>
   <style>
     html[data-app-ready="0"] {
       background:#0b0b0b;
+    }
+    html[data-theme="light"][data-app-ready="0"] {
+      background:#ecf2f8;
     }
     html[data-app-ready="0"] body {
       opacity:0 !important;
@@ -131,6 +135,25 @@
     .legal-link:hover{
       border-bottom-color:rgba(236,236,236,.7);
     }
+    .legal-action-row{
+      margin-top:8px;
+    }
+    .legal-copy-toast{
+      display:inline-flex;
+      margin-left:8px;
+      font-size:12px;
+      font-weight:700;
+      color:#9ad3a3;
+      opacity:0;
+      transform:translateX(-4px);
+      transition:opacity .18s ease, transform .18s ease;
+      pointer-events:none;
+      white-space:nowrap;
+    }
+    .legal-copy-toast.is-visible{
+      opacity:1;
+      transform:translateX(0);
+    }
   </style>
 </head>
 <body data-bg-opacity="0.22" data-bg-overlay-top="0.74" data-bg-overlay-bottom="0.92">
@@ -141,7 +164,10 @@
 
       <h2 class="legal-section-title" data-i18n="legal_editor_heading">Editeur du site</h2>
       <p class="legal-text">Georges93</p>
-      <p class="legal-text"><a class="legal-link" id="legalEmailLink" href="#">georges93110@gmail.com</a></p>
+      <p class="legal-text"><a class="legal-link" id="legalEmailLink" href="#">georges93110@gmail.com</a><span class="legal-copy-toast" id="legalEmailCopied" aria-live="polite"></span></p>
+      <p class="legal-text legal-action-row">
+        <a id="legalDiscordLink" class="legal-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Discord</a>
+      </p>
 
       <hr class="legal-sep" aria-hidden="true"/>
 
@@ -169,6 +195,7 @@
   <script src="config/shared-header.js"></script>
   <script>
     (function initLegalPage() {
+      let emailCopyToastTimer = 0;
       function lang() {
         return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
       }
@@ -180,6 +207,63 @@
         const fromFr = i18n.fr && i18n.fr[key];
         if (typeof fromFr === "string" && fromFr) return fromFr;
         return fallback;
+      }
+      function copiedLabelByLang() {
+        const code = lang();
+        const labels = {
+          fr: "Copié !",
+          en: "Copied!",
+          es: "Copiado!",
+          de: "Kopiert!",
+          pl: "Skopiowano!",
+          pt: "Copiado!",
+          nl: "Gekopieerd!",
+          it: "Copiato!",
+          ru: "Скопировано!",
+          zh: "已复制！",
+          ko: "복사됨!",
+          ja: "コピーしました！"
+        };
+        return labels[code] || labels.fr;
+      }
+      function showEmailCopiedToast() {
+        const toast = document.getElementById("legalEmailCopied");
+        if (!toast) return;
+        if (emailCopyToastTimer) {
+          window.clearTimeout(emailCopyToastTimer);
+          emailCopyToastTimer = 0;
+        }
+        toast.textContent = copiedLabelByLang();
+        toast.classList.add("is-visible");
+        emailCopyToastTimer = window.setTimeout(() => {
+          toast.classList.remove("is-visible");
+          emailCopyToastTimer = 0;
+        }, 1200);
+      }
+      function copyToClipboard(text) {
+        const value = String(text || "").trim();
+        if (!value) return Promise.reject(new Error("empty"));
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          return navigator.clipboard.writeText(value);
+        }
+        return new Promise((resolve, reject) => {
+          try {
+            const area = document.createElement("textarea");
+            area.value = value;
+            area.setAttribute("readonly", "true");
+            area.style.position = "fixed";
+            area.style.top = "-9999px";
+            document.body.appendChild(area);
+            area.select();
+            area.setSelectionRange(0, area.value.length);
+            const ok = document.execCommand("copy");
+            area.remove();
+            if (ok) resolve();
+            else reject(new Error("copy failed"));
+          } catch (error) {
+            reject(error);
+          }
+        });
       }
       function render() {
         const links = window.SITE_LINKS && typeof window.SITE_LINKS === "object"
@@ -194,8 +278,36 @@
         const email = String(legal.email || "").trim();
         const emailLink = document.getElementById("legalEmailLink");
         if (emailLink && email) {
-          emailLink.href = `mailto:${email}`;
+          emailLink.href = "#";
           emailLink.textContent = email;
+          emailLink.dataset.emailValue = email;
+          if (emailLink.dataset.copyBound !== "1") {
+            emailLink.dataset.copyBound = "1";
+            emailLink.addEventListener("click", (event) => {
+              event.preventDefault();
+              const value = String(emailLink.dataset.emailValue || emailLink.textContent || "").trim();
+              if (!value) return;
+              copyToClipboard(value).then(() => {
+                showEmailCopiedToast();
+              }).catch(() => {});
+            });
+          }
+        }
+        const discordUserIdRaw = String(legal.discord_user_id || "").trim();
+        const discordUserId = (discordUserIdRaw.match(/\d+/) || [""])[0];
+        const discordProfileUrl = discordUserId
+          ? `https://discord.com/users/${encodeURIComponent(discordUserId)}`
+          : "";
+        const discordUrl = String(discordProfileUrl || offsite.discord_profile || offsite.discord || "").trim();
+        const discordLink = document.getElementById("legalDiscordLink");
+        if (discordLink) {
+          if (discordUrl) {
+            discordLink.href = discordUrl;
+            discordLink.hidden = false;
+          } else {
+            discordLink.href = "#";
+            discordLink.hidden = true;
+          }
         }
         const hostingUrl = String(offsite.legal_hosting || "").trim();
         const hostingLink = document.getElementById("legalHostingLink");
@@ -285,3 +397,6 @@
   </script>
 </body>
 </html>
+
+
+

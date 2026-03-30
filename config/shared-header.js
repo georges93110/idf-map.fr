@@ -527,7 +527,7 @@
     }
     if (link) {
       const label = t("footer_legal_notice");
-      link.href = "mentions_legales.html";
+      link.href = "mentions_legales";
       link.textContent = label && label !== "footer_legal_notice" ? label : "Mentions legales";
       link.setAttribute("aria-label", link.textContent);
       link.title = link.textContent;
@@ -550,6 +550,7 @@
     });
   }
   function buildSubLink(item, currentPage) {
+    const withIcon = !!(arguments[2] && arguments[2].withIcon);
     const href = String(item?.href || "").trim();
     if (!href) return null;
     const disabled = isDisabledEntry(item);
@@ -567,7 +568,18 @@
       link.dataset.page = normalized;
     }
     link.setAttribute("role", "menuitem");
-    link.textContent = navLabel(item);
+    const label = navLabel(item);
+    link.textContent = "";
+    if (withIcon) {
+      const icon = document.createElement("span");
+      icon.className = "site-nav-icon";
+      icon.innerHTML = navPageIconMarkup(href);
+      link.appendChild(icon);
+    }
+    const text = document.createElement("span");
+    text.className = "site-nav-label";
+    text.textContent = label;
+    link.appendChild(text);
     const active = !disabled && canonicalPageName(normalized) === canonicalPageName(currentPage);
     if (active) {
       link.classList.add("is-active");
@@ -610,7 +622,7 @@
         let hasActive = false;
         nestedItems.forEach((child) => {
           if (isHiddenEntry(child)) return;
-          const built = buildSubLink(child, currentPage);
+          const built = buildSubLink(child, currentPage, { withIcon: false });
           if (!built) return;
           if (built.active) hasActive = true;
           submenu.appendChild(built.link);
@@ -630,12 +642,34 @@
         nav.appendChild(groupWrap);
         return;
       }
-      const built = buildSubLink(entry, currentPage);
+      const built = buildSubLink(entry, currentPage, { withIcon: true });
       if (!built) return;
       built.link.classList.remove("site-nav-sublink");
       built.link.removeAttribute("role");
       nav.appendChild(built.link);
     });
+  }
+  function navPageIconMarkup(href) {
+    const key = canonicalPageName(href || "");
+    if (key === "index" || key === "home") {
+      return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5"></path><path d="M6.5 10.5V20h11V10.5"></path></svg>`;
+    }
+    if (key === "map") {
+      return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l6-2 6 2v16l-6-2-6 2-6-2V4l6 2z"></path><path d="M9 6v14"></path><path d="M15 4v14"></path></svg>`;
+    }
+    if (key === "actualites") {
+      return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2.4 2.4 0 0 0 2.4-2.4h-4.8A2.4 2.4 0 0 0 12 22z"></path><path d="M18 16v-5.1a6 6 0 1 0-12 0V16l-1.7 1.8h15.4z"></path></svg>`;
+    }
+    if (key === "faq") {
+      return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.6 9.2a2.6 2.6 0 0 1 4.6 1.4c0 1.8-2.2 2.3-2.2 3.9"></path><path d="M12 17.2h.01"></path></svg>`;
+    }
+    if (key === "credits") {  
+      return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="3"></circle><circle cx="16" cy="9" r="3"></circle><path d="M3.5 20a4.8 4.8 0 0 1 9 0"></path><path d="M11.5 20a4.8 4.8 0 0 1 9 0"></path></svg>`;
+    }
+    if (key === "mentions_legales") {
+      return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"></path><path d="M6 7h12"></path><path d="M6 7l-3 5h6z"></path><path d="M18 7l-3 5h6z"></path></svg>`;
+    }
+    return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle></svg>`;
   }
   function isLangMenuOpen() {
     const menu = document.getElementById("langMenu");
