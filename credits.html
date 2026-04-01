@@ -820,6 +820,67 @@
       user-select:none;
       box-shadow:none;
     }
+    .credit-modal-image-stage{
+      position:relative;
+      width:100%;
+      height:220px;
+      border-radius:10px;
+      overflow:hidden;
+      background:rgba(255,255,255,.03);
+    }
+    .credit-modal-image-stage.is-loaded{
+      background:transparent;
+    }
+    .credit-modal-image-loader{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      background:rgba(12,12,12,.72);
+      pointer-events:none;
+      transition:opacity .22s ease, visibility .22s ease;
+    }
+    .credit-modal-image-loader-spinner{
+      width:22px;
+      height:22px;
+      border:2px solid rgba(255,255,255,.3);
+      border-top-color:#ffffff;
+      border-radius:50%;
+      animation:credit-modal-loader-spin .75s linear infinite;
+    }
+    .credit-modal-image-loader-label{
+      margin:0;
+      color:#dfdfdf;
+      font-size:11px;
+      font-weight:700;
+      line-height:1.2;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+    .credit-modal-image-loader-progress{
+      margin:0;
+      color:#f5f5f5;
+      font-size:14px;
+      font-weight:800;
+      line-height:1;
+      font-variant-numeric:tabular-nums;
+    }
+    .credit-modal-image-stage.is-loaded .credit-modal-image-loader{
+      opacity:0;
+      visibility:hidden;
+    }
+    .credit-modal-image-stage.is-error .credit-modal-image-loader-spinner{
+      display:none;
+    }
+    .credit-modal-image-stage.is-error .credit-modal-image-loader-label{
+      text-transform:none;
+      letter-spacing:0;
+      color:#f4b2b2;
+      font-weight:800;
+    }
     .credit-modal-image-link.is-more-text{
       display:flex;
       align-items:center;
@@ -845,13 +906,18 @@
     }
     .credit-modal-image{
       width:100%;
-      height:220px;
+      height:100%;
       object-fit:contain;
       display:block;
       background:transparent;
       -webkit-user-drag:none;
       user-drag:none;
       pointer-events:none;
+      opacity:0;
+      transition:opacity .22s ease;
+    }
+    .credit-modal-image-stage.is-loaded .credit-modal-image{
+      opacity:1;
     }
     .credit-modal-image-caption{
       margin:6px 0 0;
@@ -938,7 +1004,7 @@
       .credit-modal-image-link{
         flex-basis:min(78vw, 290px);
       }
-      .credit-modal-image{
+      .credit-modal-image-stage{
         height:170px;
       }
       .credit-modal-carousel{
@@ -958,6 +1024,18 @@
       .credit-modal-close,
       .credit-modal-role-btn{
         transition:none;
+      }
+      .credit-modal-image-loader,
+      .credit-modal-image{
+        transition:none;
+      }
+      .credit-modal-image-loader-spinner{
+        animation:none;
+      }
+    }
+    @keyframes credit-modal-loader-spin{
+      to{
+        transform:rotate(360deg);
       }
     }
   </style>
@@ -2741,18 +2819,86 @@
             link.href = item.href;
             link.target = "_blank";
             link.rel = "noopener noreferrer";
+            const stage = document.createElement("div");
+            stage.className = "credit-modal-image-stage is-loading";
+            const loader = document.createElement("div");
+            loader.className = "credit-modal-image-loader";
+            loader.setAttribute("aria-hidden", "true");
+            const loaderSpinner = document.createElement("span");
+            loaderSpinner.className = "credit-modal-image-loader-spinner";
+            const loaderLabel = document.createElement("span");
+            loaderLabel.className = "credit-modal-image-loader-label";
+            loaderLabel.textContent = t("credits_loading", "Loading");
+            const loaderProgress = document.createElement("span");
+            loaderProgress.className = "credit-modal-image-loader-progress";
+            loaderProgress.textContent = "0%";
+            loader.appendChild(loaderSpinner);
+            loader.appendChild(loaderLabel);
+            loader.appendChild(loaderProgress);
             const img = document.createElement("img");
             img.className = "credit-modal-image";
             img.loading = "lazy";
-            img.src = item.href;
             img.alt = formatMessage(
               t("credits_contribution_image_alt", "Contribution image: {name}"),
               { name: item.caption || "Contribution" }
             );
-            img.addEventListener("load", () => {
+            let progressValue = 0;
+            let isSettled = false;
+            let progressTimer = window.setInterval(() => {
+              if (isSettled) {
+                clearInterval(progressTimer);
+                progressTimer = 0;
+                return;
+              }
+              if (progressValue >= 94) {
+                clearInterval(progressTimer);
+                progressTimer = 0;
+                return;
+              }
+              const remaining = 94 - progressValue;
+              const step = remaining > 32 ? 6 : remaining > 18 ? 4 : 2;
+              progressValue = Math.min(94, progressValue + step);
+              loaderProgress.textContent = `${progressValue}%`;
+            }, 120);
+            const stopProgressTimer = () => {
+              if (!progressTimer) return;
+              clearInterval(progressTimer);
+              progressTimer = 0;
+            };
+            const setProgress = (value) => {
+              const next = Math.max(progressValue, Math.min(100, Math.round(Number(value) || 0)));
+              if (next === progressValue) return;
+              progressValue = next;
+              loaderProgress.textContent = `${progressValue}%`;
+            };
+            const markImageLoaded = () => {
+              if (isSettled) return;
+              isSettled = true;
+              stopProgressTimer();
+              setProgress(100);
+              stage.classList.remove("is-loading");
+              stage.classList.add("is-loaded");
               window.requestAnimationFrame(updateCarouselButtons);
-            }, { once: true });
-            link.appendChild(img);
+            };
+            const markImageError = () => {
+              if (isSettled) return;
+              isSettled = true;
+              stopProgressTimer();
+              stage.classList.remove("is-loading");
+              stage.classList.add("is-error");
+              loaderLabel.textContent = t("credits_error", "Error");
+              loaderProgress.textContent = "0%";
+              window.requestAnimationFrame(updateCarouselButtons);
+            };
+            img.addEventListener("load", markImageLoaded, { once: true });
+            img.addEventListener("error", markImageError, { once: true });
+            img.src = item.href;
+            if (img.complete && img.naturalWidth > 0) {
+              markImageLoaded();
+            }
+            stage.appendChild(img);
+            stage.appendChild(loader);
+            link.appendChild(stage);
             if (showCarouselCaptions && item.caption) {
               const captionEl = document.createElement("p");
               captionEl.className = "credit-modal-image-caption";
