@@ -254,6 +254,10 @@
             <nav class="site-nav" id="siteNavLinks" aria-label="Site pages"></nav>
           </div>
           <div class="site-topbar-right">
+            <div class="mobile-nav-wrap" id="mobileNavWrap">
+              <button id="btnMobileNav" class="btn mobile-nav-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Navigation" title="Navigation">\u2630</button>
+              <div id="mobileNavMenu" class="lang-menu mobile-nav-menu" role="menu" aria-hidden="true"></div>
+            </div>
             <nav class="site-quick-links" id="siteQuickLinks" aria-label="Quick links"></nav>
             <div class="lang-switch">
               <button id="btnLang" class="btn lang-btn" type="button" aria-expanded="false" aria-label="Language" title="Language">
@@ -361,6 +365,19 @@
       if (!entry || typeof entry !== "object") return;
       if (String(entry.href || "").trim()) bucket.push(entry);
       if (Array.isArray(entry.items) && entry.items.length) collectNavEntries(entry.items, bucket);
+    });
+  }
+  function collectVisibleNavEntries(items, bucket) {
+    const list = Array.isArray(items) ? items : [];
+    list.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+      if (isHiddenEntry(entry)) return;
+      const href = String(entry.href || "").trim();
+      if (href && !isDisabledEntry(entry)) {
+        const label = navLabel(entry);
+        if (label) bucket.push({ href, label });
+      }
+      if (Array.isArray(entry.items) && entry.items.length) collectVisibleNavEntries(entry.items, bucket);
     });
   }
   function getCurrentPageNavEntry() {
@@ -649,6 +666,68 @@
       nav.appendChild(built.link);
     });
   }
+  function renderMobileNavPicker() {
+    const wrap = document.getElementById("mobileNavWrap");
+    const btn = document.getElementById("btnMobileNav");
+    const menu = document.getElementById("mobileNavMenu");
+    if (!wrap || !btn || !menu) return;
+    const navLabelText = t("nav_label");
+    const resolvedNavLabel = navLabelText && navLabelText !== "nav_label" ? navLabelText : "Navigation";
+    btn.title = resolvedNavLabel;
+    btn.setAttribute("aria-label", resolvedNavLabel);
+    menu.setAttribute("aria-label", resolvedNavLabel);
+    const entries = [];
+    getNavTree().forEach((group) => {
+      collectVisibleNavEntries(group && group.items, entries);
+    });
+    const seenPages = new Set();
+    const normalizedEntries = [];
+    entries.forEach((entry) => {
+      const href = String(entry && entry.href || "").trim();
+      const label = String(entry && entry.label || "").trim();
+      if (!href || !label) return;
+      const pageKey = canonicalPageName(href);
+      if (!pageKey || seenPages.has(pageKey)) return;
+      seenPages.add(pageKey);
+      normalizedEntries.push({ href, label, pageKey });
+    });
+    menu.innerHTML = "";
+    const optionsGrid = document.createElement("div");
+    optionsGrid.className = "lang-options-grid";
+    menu.appendChild(optionsGrid);
+    const currentPage = canonicalPageName(location.pathname);
+    normalizedEntries.forEach((entry) => {
+      const option = document.createElement("button");
+      option.type = "button";
+      option.className = "lang-option mobile-nav-option";
+      option.setAttribute("role", "menuitem");
+      option.textContent = entry.label;
+      const isCurrent = entry.pageKey === currentPage;
+      option.setAttribute("aria-selected", isCurrent ? "true" : "false");
+      if (isCurrent) option.setAttribute("aria-current", "page");
+      option.addEventListener("click", () => {
+        let url;
+        try {
+          url = new URL(entry.href, location.href);
+        } catch {
+          closeMobileNavMenu();
+          return;
+        }
+        const samePath = canonicalPageName(url.pathname) === canonicalPageName(location.pathname);
+        const sameSearch = url.search === location.search;
+        if (samePath && sameSearch) {
+          closeMobileNavMenu();
+          return;
+        }
+        startPageTransition();
+        location.href = url.toString();
+      });
+      optionsGrid.appendChild(option);
+    });
+    const hasOptions = normalizedEntries.length > 0;
+    wrap.hidden = !hasOptions;
+    if (!hasOptions) closeMobileNavMenu();
+  }
   function navPageIconMarkup(href) {
     const key = canonicalPageName(href || "");
     if (key === "index" || key === "home") {
@@ -683,6 +762,7 @@
     if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
   }
   function openLangMenu() {
+    closeMobileNavMenu();
     setLangMenuOpen(true);
     if (typeof window.updateUiOverlays === "function") window.updateUiOverlays();
   }
@@ -693,6 +773,31 @@
   function toggleLangMenu() {
     if (isLangMenuOpen()) closeLangMenu();
     else openLangMenu();
+  }
+  function isMobileNavMenuOpen() {
+    const menu = document.getElementById("mobileNavMenu");
+    return !!menu && menu.getAttribute("aria-hidden") === "false";
+  }
+  function setMobileNavMenuOpen(open) {
+    const menu = document.getElementById("mobileNavMenu");
+    if (!menu) return;
+    menu.setAttribute("aria-hidden", open ? "false" : "true");
+    const btn = document.getElementById("btnMobileNav");
+    if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  function openMobileNavMenu() {
+    closeSiteNavMenus();
+    closeLangMenu();
+    setMobileNavMenuOpen(true);
+    if (typeof window.updateUiOverlays === "function") window.updateUiOverlays();
+  }
+  function closeMobileNavMenu() {
+    setMobileNavMenuOpen(false);
+    if (typeof window.updateUiOverlays === "function") window.updateUiOverlays();
+  }
+  function toggleMobileNavMenu() {
+    if (isMobileNavMenuOpen()) closeMobileNavMenu();
+    else openMobileNavMenu();
   }
   function langLabel(code) {
     if (typeof state.langLabel === "function") {
@@ -800,6 +905,7 @@
   function refresh() {
     applySharedBackgroundOptions();
     renderSiteNav();
+    renderMobileNavPicker();
     renderQuickLinks();
     updateDocumentTitleFromNav();
     buildLangMenu();
@@ -835,6 +941,10 @@
       event.stopPropagation();
       toggleLangMenu();
     });
+    document.getElementById("btnMobileNav")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleMobileNavMenu();
+    });
     document.addEventListener("click", (event) => {
       if (event.defaultPrevented) return;
       if (event.button !== 0) return;
@@ -863,6 +973,7 @@
       if (!(target instanceof Element)) return;
       if (!target.closest("#siteNavLinks .site-nav-group")) closeSiteNavMenus();
       if (!target.closest(".lang-switch")) closeLangMenu();
+      if (!target.closest(".mobile-nav-wrap")) closeMobileNavMenu();
     });
     window.addEventListener("beforeunload", () => {
       startPageTransition();
@@ -871,6 +982,7 @@
       if (event.key === "Escape") {
         closeSiteNavMenus();
         closeLangMenu();
+        closeMobileNavMenu();
       }
     });
   }
@@ -907,6 +1019,10 @@
     openLangMenu,
     closeLangMenu,
     toggleLangMenu,
+    isMobileNavMenuOpen,
+    openMobileNavMenu,
+    closeMobileNavMenu,
+    toggleMobileNavMenu,
     showPageLoader,
     hidePageLoader,
     startPageTransition

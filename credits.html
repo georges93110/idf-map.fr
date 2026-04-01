@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <meta name="description" content="Credits des contributeurs de la map Ile-de-France."/>
+  <meta name="description" content="Contributor credits for the Ile-de-France map."/>
   <meta property="og:locale" content="fr_FR"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="Ile-de-France Map - Credits"/>
   <meta property="og:title" content="Ile-de-France Map"/>
-  <meta property="og:description" content="Credits des contributeurs de la map Ile-de-France."/>
+  <meta property="og:description" content="Contributor credits for the Ile-de-France map."/>
   <meta property="og:url" content="https://idf-map.fr/credits.html"/>
   <meta property="og:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Ile-de-France Map - Credits"/>
-  <meta name="twitter:description" content="Credits des contributeurs de la map Ile-de-France."/>
+  <meta name="twitter:description" content="Contributor credits for the Ile-de-France map."/>
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
   <script src="config/theme-init.js"></script>
   <style>
@@ -137,6 +137,33 @@
       line-height:1.15;
       color:#fff;
       letter-spacing:-.01em;
+    }
+    .credits-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px 16px;
+      flex-wrap:wrap;
+    }
+    .credits-lang-notice{
+      margin:0;
+      color:#efe6bf;
+      font-size:12px;
+      font-weight:700;
+      line-height:1.2;
+      text-align:right;
+      max-width:min(520px, 100%);
+      display:inline-flex;
+      align-items:center;
+      justify-content:flex-end;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid #695b22;
+      background:rgba(125, 104, 27, .22);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+    .credits-lang-notice[hidden]{
+      display:none !important;
     }
 
     .credits-subtitle{
@@ -465,9 +492,9 @@
       white-space:nowrap;
     }
     .credit-modal-close{
-      border:1px solid #4a4a4a;
-      background:#1e1e1e;
-      color:#f2f2f2;
+      border:1px solid #8f2f2f;
+      background:#4a1313;
+      color:#ffe5e5;
       width:30px;
       height:30px;
       border-radius:8px;
@@ -482,8 +509,8 @@
       flex:0 0 auto;
     }
     .credit-modal-close:hover{
-      background:#2a2a2a;
-      border-color:#656565;
+      background:#611919;
+      border-color:#b03b3b;
     }
     .credit-modal-close:focus-visible{
       outline:2px solid #ffffff;
@@ -793,6 +820,29 @@
       user-select:none;
       box-shadow:none;
     }
+    .credit-modal-image-link.is-more-text{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:220px;
+      border:1px dashed #3f3f3f;
+      border-radius:10px;
+      background:rgba(255,255,255,.02);
+      box-sizing:border-box;
+      padding:10px 14px;
+    }
+    .credit-modal-more-text{
+      margin:0;
+      color:#e8e8e8;
+      font-size:21px;
+      font-weight:900;
+      line-height:1.2;
+      text-align:center;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+      overflow-wrap:anywhere;
+      width:100%;
+    }
     .credit-modal-image{
       width:100%;
       height:220px;
@@ -915,16 +965,19 @@
 <body data-bg-opacity="0.24" data-bg-overlay-top="0.74" data-bg-overlay-bottom="0.92">
   <main class="credits-wrap">
     <section class="credits-card" aria-labelledby="creditsTitle">
-      <h1 class="credits-title" id="creditsTitle">Credits</h1>
+      <div class="credits-head">
+        <h1 class="credits-title" id="creditsTitle">Credits</h1>
+        <p class="credits-lang-notice" id="creditsLangNotice" hidden></p>
+      </div>
       <div class="credits-list" id="creditsList" aria-live="polite"></div>
-      <p class="credits-feedback is-loading" id="creditsFeedback">Chargement</p>
+      <p class="credits-feedback is-loading" id="creditsFeedback">Loading</p>
     </section>
   </main>
   <div class="credit-modal-overlay" id="creditDetailModal" hidden aria-hidden="true">
     <section class="credit-modal" role="dialog" aria-modal="true" aria-labelledby="creditDetailTitle">
       <div class="credit-modal-head">
         <h2 class="credit-modal-title" id="creditDetailTitle"></h2>
-        <button class="credit-modal-close" id="creditDetailClose" type="button" aria-label="Fermer">&times;</button>
+        <button class="credit-modal-close" id="creditDetailClose" type="button" aria-label="Close">&times;</button>
       </div>
       <div class="credit-modal-content" id="creditDetailContent"></div>
     </section>
@@ -1100,16 +1153,52 @@
         return entry.files.some((file) => String(file || "").trim().toLowerCase() === "fin");
       }
 
-      function lang() {
+      function rawLang() {
         return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
+      }
+      function lang() {
+        const code = rawLang();
+        return code === "fr" || code === "en" ? code : "en";
+      }
+      function unsupportedLanguageNoticeText() {
+        const code = rawLang();
+        if (code === "fr" || code === "en") return "";
+        const byLang = {
+          es: "Disponible solo en inglés por el momento, disculpa las molestias.",
+          de: "Derzeit nur auf Englisch verfugbar, bitte entschuldige die Unannehmlichkeiten.",
+          pl: "Na razie dostepne tylko po angielsku, przepraszamy za niedogodnosci.",
+          pt: "Disponivel apenas em ingles por enquanto, pedimos desculpa pelo incomodo.",
+          nl: "Momenteel alleen beschikbaar in het Engels, excuses voor het ongemak.",
+          it: "Disponibile solo in inglese per il momento, ci scusiamo per il disagio.",
+          ru: "Пока доступно только на английском, приносим извинения за неудобства.",
+          zh: "目前仅提供英文版本，给您带来不便敬请谅解。",
+          ko: "현재 영어로만 제공됩니다. 불편을 드려 죄송합니다.",
+          ja: "現在は英語のみ対応しています。ご不便をおかけして申し訳ありません。"
+        };
+        return byLang[code] || "Available in English only for now, sorry for the inconvenience.";
+      }
+      function tRaw(key, fallback) {
+        const i18n = window.I18N || {};
+        const code = rawLang();
+        const fromRaw = i18n[code] && i18n[code][key];
+        if (typeof fromRaw === "string" && fromRaw) return fromRaw;
+        const fromEn = i18n.en && i18n.en[key];
+        if (typeof fromEn === "string" && fromEn) return fromEn;
+        const fromFr = i18n.fr && i18n.fr[key];
+        if (typeof fromFr === "string" && fromFr) return fromFr;
+        return fallback;
       }
       function t(key, fallback) {
         const i18n = window.I18N || {};
         const code = lang();
         const fromLang = i18n[code] && i18n[code][key];
         if (typeof fromLang === "string" && fromLang) return fromLang;
-        const fromFr = i18n.fr && i18n.fr[key];
-        if (typeof fromFr === "string" && fromFr) return fromFr;
+        const fromEn = i18n.en && i18n.en[key];
+        if (typeof fromEn === "string" && fromEn) return fromEn;
+        if (code === "fr") {
+          const fromFr = i18n.fr && i18n.fr[key];
+          if (typeof fromFr === "string" && fromFr) return fromFr;
+        }
         return fallback;
       }
       function formatMessage(template, values) {
@@ -1156,7 +1245,12 @@
         const code = lang();
         const localized = String(valuesByLang && valuesByLang[code] || "").trim();
         if (localized) return localized;
-        return String(defaultValue || "").trim();
+        if (code === "fr") return String(defaultValue || "").trim();
+        const english = String(valuesByLang && valuesByLang.en || "").trim();
+        if (english) return english;
+        const forcedEnglish = rawLang() !== "fr" && rawLang() !== "en";
+        if (!forcedEnglish) return String(defaultValue || "").trim();
+        return "";
       }
       function normalizeRoleText(raw) {
         return String(raw || "").replace(/\\+/g, "\n").trim();
@@ -1203,10 +1297,10 @@
       function parseRoleLine(rawLine) {
         const source = String(rawLine || "").trim();
         if (!source) return null;
-        const colorMatch = source.match(/\(#([0-9a-f]{3}|[0-9a-f]{6})\)/i);
+        const colorMatch = source.match(/[\(\uff08]\s*#([0-9a-f]{3}|[0-9a-f]{6})\s*[\)\uff09]/i);
         const bgColor = colorMatch ? normalizeHexColor(colorMatch[1]) : "";
         const label = source
-          .replace(/\(#(?:[0-9a-f]{3}|[0-9a-f]{6})\)/ig, " ")
+          .replace(/[\(\uff08]\s*#(?:[0-9a-f]{3}|[0-9a-f]{6})\s*[\)\uff09]/ig, " ")
           .replace(/\s+/g, " ")
           .trim();
         if (!label) return null;
@@ -1223,7 +1317,7 @@
         if (!source) return [];
         const out = [];
         const seen = new Set();
-        const regex = /([^\\\r\n]+?)\s*\(\s*#([0-9a-f]{3}|[0-9a-f]{6})\s*\)/gi;
+        const regex = /([^\\\r\n]+?)\s*[\(\uff08]\s*#([0-9a-f]{3}|[0-9a-f]{6})\s*[\)\uff09]/gi;
         let match = null;
         while ((match = regex.exec(source)) !== null) {
           const label = String(match[1] || "").replace(/\s+/g, " ").trim();
@@ -1248,7 +1342,63 @@
           .replace(/[^a-z0-9]+/g, " ")
           .trim();
       }
+      function roleTranslationKeyForLabel(rawLabel) {
+        const key = normalizeRoleKey(rawLabel);
+        if (!key) return "";
+        const has = (token) => key.includes(token);
+        if (has("gerant du projet") || has("project manager") || has("project lead")) return "credits_role_manager";
+        if (has("developpeur") || has("developer")) return "credits_role_developer";
+        if (has("administrateur") || has("administrator") || key === "admin") return "credits_role_administrator";
+        if (has("moderateur") || has("moderator")) return "credits_role_moderator";
+        if (has("animateur") || has("animator")) return "credits_role_animator";
+        if (has("server booster")) return "credits_role_server_booster";
+        if (has("supporter")) return "credits_role_supporter";
+        if (has("moddeurs") || has("modders") || has("modder")) return "credits_role_modders";
+        if (has("createur de contenu") || has("content creator")) return "credits_role_content_creator";
+        if (has("contributeur") || has("contributor")) return "credits_role_contributor";
+        if (has("soutien") || key === "support") return "credits_role_support";
+        if (has("acces vocal prive") || has("private voice access")) return "credits_role_private_voice_access";
+        if (has("notification")) {
+          if (has("devlog")) return "credits_role_notification_devlog";
+          if (has("updates mineures") || has("minor updates")) return "credits_role_notification_minor_updates";
+          if (has("updates addons") || has("addon updates")) return "credits_role_notification_addon_updates";
+          if (has("sondage") || has("poll")) return "credits_role_notification_poll";
+          if (has("evenements") || has("events")) return "credits_role_notification_events";
+          if (has("convois") || has("convoys")) return "credits_role_notification_convoys";
+        }
+        return "";
+      }
+      function roleTranslationKeyFromColor(rawColor) {
+        const color = normalizeHexColor(rawColor);
+        if (!color) return "";
+        if (color === "#a9c9ff") return "credits_role_manager";
+        if (color === "#0053a1") return "credits_role_developer";
+        if (color === "#aa3b3b") return "credits_role_administrator";
+        if (color === "#c06824") return "credits_role_moderator";
+        if (color === "#70e1f5" || color === "#ffe300") return "credits_role_animator";
+        if (color === "#ff00d1") return "credits_role_server_booster";
+        if (color === "#1abc9c") return "credits_role_supporter";
+        if (color === "#f6f1a5" || color === "#fff674") return "credits_role_modders";
+        if (color === "#ff0000") return "credits_role_content_creator";
+        if (color === "#4cadd0") return "credits_role_contributor";
+        if (color === "#ff7600") return "credits_role_support";
+        return "";
+      }
+      function translateRoleLabel(rawLabelForLookup, fallbackLabel, rawColor) {
+        const key = roleTranslationKeyForLabel(rawLabelForLookup) || roleTranslationKeyFromColor(rawColor);
+        const fallback = String(fallbackLabel || rawLabelForLookup || "").trim();
+        if (!key) return fallback;
+        const translated = String(t(key, "") || "").trim();
+        return translated || fallback;
+      }
       function rolePriorityIndex(rawRole) {
+        const sourceLower = String(rawRole || "").trim().toLowerCase();
+        if (!sourceLower) return -1;
+        if (/(プロジェクトマネージャー|менеджер проекта|项目经理|projet manager|project manager|project lead|gerant|gérant|owner|founder|responsabile del progetto|menedzer projektu|gerente de proyecto|gerente de projeto|projectmanager)/i.test(sourceLower)) return 0;
+        if (/(開発者|разработчик|开发者|개발자|developpeur|développeur|developer|sviluppatore|deweloper|programista|desarrollador|entwickler|desenvolvedor|ontwikkelaar)/i.test(sourceLower)) return 1;
+        if (/(管理者|администратор|管理员|관리자|administrateur|administrator|admin|amministratore)/i.test(sourceLower)) return 2;
+        if (/(モデレーター|модератор|版主|운영자|moderateur|modérateur|moderator|moderatore)/i.test(sourceLower)) return 3;
+        if (/(アニメーター|аниматор|动画师|애니메이터|animateur|animator|animatore|contributeur|contributor|contrib|creator|createur de contenu|créateur de contenu|content creator)/i.test(sourceLower)) return 4;
         const key = normalizeRoleKey(rawRole);
         if (!key) return -1;
         if (/\b(gerant|fondateur|founder|owner|chef de projet|project lead)\b/.test(key)) return 0;
@@ -1258,11 +1408,45 @@
         if (/\b(animateur|animatrice|animator|contributeur|contributor|contrib|creator|createur de contenu|content creator)\b/.test(key)) return 4;
         return -1;
       }
-      function isAnimateurRole(rawRole) {
+      function rolePriorityFromColor(bgColor) {
+        const color = normalizeHexColor(bgColor);
+        if (!color) return -1;
+        if (color === "#a9c9ff") return 0;
+        if (color === "#0053a1") return 1;
+        if (color === "#aa3b3b") return 2;
+        if (color === "#c06824") return 3;
+        if (color === "#70e1f5") return 4;
+        if (color === "#4cadd0" || color === "#ff0000") return 4;
+        return -1;
+      }
+      function rolePriorityForItem(itemOrRaw) {
+        if (itemOrRaw && typeof itemOrRaw === "object") {
+          const byColor = rolePriorityFromColor(itemOrRaw.bgColor);
+          if (byColor >= 0) return byColor;
+          return rolePriorityIndex(itemOrRaw.label);
+        }
+        return rolePriorityIndex(itemOrRaw);
+      }
+      function isNotificationRole(itemOrRaw) {
+        if (itemOrRaw && typeof itemOrRaw === "object") {
+          const color = normalizeHexColor(itemOrRaw.bgColor);
+          if (color === "#000000") return true;
+          return isNotificationRole(itemOrRaw.label);
+        }
+        const source = String(itemOrRaw || "").trim().toLowerCase();
+        if (!source) return false;
+        if (source.includes("notification")) return true;
+        return /(devlog|updates?|event|convoi|convoy|sondage|poll)/i.test(source);
+      }
+      function isAnimateurRole(rawRole, bgColor) {
+        const color = normalizeHexColor(bgColor);
+        if (color === "#70e1f5" || color === "#ffe300") return true;
+        const source = String(rawRole || "").trim().toLowerCase();
+        if (/(アニメーター|аниматор|动画师|애니메이터|animateur|animator|animatore)/i.test(source)) return true;
         const key = normalizeRoleKey(rawRole);
         return /\b(animateur|animatrice|animator)\b/.test(key);
       }
-      function extractPopupRoleList(rawCategoryText) {
+      function parseRoleItemsOrdered(rawCategoryText) {
         const fromColoredPattern = parseRoleItemsWithColors(rawCategoryText)
           .map((item) => ({
             label: String(item && item.label || "").trim(),
@@ -1280,25 +1464,48 @@
               bgColor: String(item.bgColor || "").trim(),
               textColor: String(item.textColor || "").trim()
             }));
+        return orderedItems;
+      }
+      function extractPopupRoleList(rawCategoryText) {
+        const orderedItems = parseRoleItemsOrdered(rawCategoryText);
         if (!orderedItems.length) return [];
+        const selectedIndices = selectPopupRoleIndices(orderedItems);
+        return selectedIndices
+          .map((index) => orderedItems[index])
+          .filter((item) => item && item.label)
+          .map((item) => ({
+            label: String(item.label || "").trim(),
+            bgColor: String(item.bgColor || "").trim(),
+            textColor: String(item.textColor || "").trim()
+          }));
+      }
+      function selectPopupRoleIndices(orderedItems) {
+        if (!Array.isArray(orderedItems) || !orderedItems.length) return [];
 
-        const animateurIndex = orderedItems.findIndex((item) => isAnimateurRole(item.label));
+        const animateurIndex = orderedItems.findIndex((item) => isAnimateurRole(item && item.label, item && item.bgColor));
         const sliceEnd = animateurIndex >= 0 ? animateurIndex : orderedItems.length - 1;
         const maxAllowedPriority = animateurIndex >= 0 ? 4 : 3;
         const out = [];
         const seen = new Set();
-        orderedItems.slice(0, sliceEnd + 1).forEach((item) => {
-          const priority = rolePriorityIndex(item.label);
+        orderedItems.slice(0, sliceEnd + 1).forEach((item, index) => {
+          if (isNotificationRole(item)) return;
+          const priority = rolePriorityForItem(item);
           if (priority < 0 || priority > maxAllowedPriority) return;
-          const key = item.label.toLowerCase();
+          const key = normalizeRoleKey(item.label) || item.label.toLowerCase();
           if (seen.has(key)) return;
           seen.add(key);
-          out.push({
-            label: item.label,
-            bgColor: item.bgColor,
-            textColor: item.textColor
-          });
+          out.push(index);
         });
+        if (!out.length) {
+          for (let index = 0; index < orderedItems.length; index += 1) {
+            const item = orderedItems[index];
+            if (!item || isNotificationRole(item)) continue;
+            const priority = rolePriorityForItem(item);
+            if (priority < 0 || priority > 4) continue;
+            out.push(index);
+            break;
+          }
+        }
         return out;
       }
       function normalizeUserId(raw) {
@@ -1398,16 +1605,34 @@
         if (yearsFloor > 0) {
           const anniversary = new Date(start.getFullYear() + yearsFloor, start.getMonth(), start.getDate());
           const years = yearsFloor + (anniversary < today ? 1 : 0);
-          return `depuis ${years} ${years > 1 ? "ans" : "an"}`;
+          return formatMessage(
+            t(
+              years > 1 ? "credits_since_year_plural" : "credits_since_year_singular",
+              years > 1 ? "since {count} years" : "since {count} year"
+            ),
+            { count: years }
+          );
         }
         const monthsFloor = monthsBetweenDates(start, today);
         if (monthsFloor > 0) {
           const monthAnniversary = new Date(start.getFullYear(), start.getMonth() + monthsFloor, start.getDate());
           const months = monthsFloor + (monthAnniversary < today ? 1 : 0);
-          return `depuis ${months} mois`;
+          return formatMessage(
+            t(
+              months > 1 ? "credits_since_month_plural" : "credits_since_month_singular",
+              months > 1 ? "since {count} months" : "since {count} month"
+            ),
+            { count: months }
+          );
         }
         const days = Math.max(0, Math.floor((today.getTime() - start.getTime()) / 86400000));
-        return `depuis ${days} ${days > 1 ? "jours" : "jour"}`;
+        return formatMessage(
+          t(
+            days > 1 ? "credits_since_day_plural" : "credits_since_day_singular",
+            days > 1 ? "since {count} days" : "since {count} day"
+          ),
+          { count: days }
+        );
       }
       function readCache(maxAgeMs) {
         if (!ENABLE_LOCAL_MODE) return null;
@@ -1581,7 +1806,7 @@
         const roleByLang = collectLocalizedValues(row, "role");
 
         const username = String(usernameRaw || "").trim().replace(/^@+/, "");
-        const contributorLabel = t("credits_contributor_label", "Contributeur");
+        const contributorLabel = t("credits_contributor_label", "Contributor");
         const displayName = String(displayNameRaw || "").trim() || username || `${contributorLabel} ${index + 1}`;
         const normalizedRole = normalizeRoleText(resolveLocalizedValue(roleDefault, roleByLang));
         const status = normalizedRole || contributorLabel;
@@ -1599,7 +1824,7 @@
           userId: String(userId || "").trim(),
           name: displayName,
           username,
-          category: normalizeCategoryText(resolveLocalizedValue(categoryDefault, categoryByLang)) || t("credits_category_other", "Autres"),
+          category: normalizeCategoryText(resolveLocalizedValue(categoryDefault, categoryByLang)) || t("credits_category_other", "Others"),
           categoryDefault: categoryDefault || "",
           categoryByLang,
           role: roleDefault || "",
@@ -1613,23 +1838,48 @@
         };
       }
       function localizeContributor(contributor) {
+        const canonicalCategoryText = String(contributor && (contributor.categoryDefault || contributor.category) || "");
         const localizedCategoryText = resolveLocalizedValue(
-          contributor && (contributor.categoryDefault || contributor.category) || "",
+          canonicalCategoryText,
           contributor && contributor.categoryByLang
         );
-        const popupRoleCandidates = extractPopupRoleList(localizedCategoryText);
+        const canonicalItems = parseRoleItemsOrdered(canonicalCategoryText);
+        const localizedItems = parseRoleItemsOrdered(localizedCategoryText);
+        const selectionSource = localizedItems.length ? localizedItems : canonicalItems;
+        const selectedIndices = selectPopupRoleIndices(selectionSource);
+        const popupRoleCandidates = selectedIndices
+          .map((index) => {
+            const localizedItem = localizedItems[index] || selectionSource[index] || null;
+            const canonicalItem = canonicalItems[index] || null;
+            if (!localizedItem && !canonicalItem) return null;
+            const lookupLabel = String(canonicalItem && canonicalItem.label || localizedItem && localizedItem.label || "").trim();
+            const fallbackLabel = String(localizedItem && localizedItem.label || canonicalItem && canonicalItem.label || "").trim();
+            const roleColor = String(localizedItem && localizedItem.bgColor || canonicalItem && canonicalItem.bgColor || "").trim();
+            const label = translateRoleLabel(lookupLabel, fallbackLabel, roleColor);
+            if (!label) return null;
+            const bgColor = String(localizedItem && localizedItem.bgColor || canonicalItem && canonicalItem.bgColor || "").trim();
+            const textColor = String(localizedItem && localizedItem.textColor || canonicalItem && canonicalItem.textColor || (bgColor ? contrastTextForHex(bgColor) : "")).trim();
+            return { label, bgColor, textColor };
+          })
+          .filter((item) => item && item.label);
         const firstCategoryItem = popupRoleCandidates.length ? popupRoleCandidates[0] : null;
         const rawCategory = normalizeCategoryText(localizedCategoryText);
         const parsedRawCategory = parseRoleLine(rawCategory);
-        const category = firstCategoryItem
+        const parsedCanonicalRawCategory = parseRoleLine(normalizeCategoryText(canonicalCategoryText));
+        const translatedRawCategory = translateRoleLabel(
+          String(parsedCanonicalRawCategory && parsedCanonicalRawCategory.label || parsedRawCategory && parsedRawCategory.label || rawCategory || "").trim(),
+          String(parsedRawCategory && parsedRawCategory.label || rawCategory || "").trim(),
+          String(parsedCanonicalRawCategory && parsedCanonicalRawCategory.bgColor || parsedRawCategory && parsedRawCategory.bgColor || "").trim()
+        );
+        let category = firstCategoryItem
           ? firstCategoryItem.label
-          : (parsedRawCategory && parsedRawCategory.label) || rawCategory || t("credits_category_other", "Autres");
+          : translatedRawCategory || t("credits_category_other", "Others");
         const localizedRole = normalizeRoleText(resolveLocalizedValue(
           contributor && (contributor.roleDefault || contributor.role) || "",
           contributor && contributor.roleByLang
         ));
-        const popupRoles = firstCategoryItem ? popupRoleCandidates.slice(1) : popupRoleCandidates;
-        const popupCategoryStyle = firstCategoryItem
+        let popupRoles = firstCategoryItem ? popupRoleCandidates.slice(1) : popupRoleCandidates;
+        let popupCategoryStyle = firstCategoryItem
           ? {
             bgColor: firstCategoryItem.bgColor,
             textColor: firstCategoryItem.textColor
@@ -1640,12 +1890,13 @@
               textColor: parsedRawCategory.textColor
             }
             : null);
+
         return {
           ...contributor,
           category,
           popupRoles,
           popupCategoryStyle,
-          status: localizedRole || t("credits_contributor_label", "Contributeur")
+          status: localizedRole || t("credits_contributor_label", "Contributor")
         };
       }
       function fallbackContributors() {
@@ -1925,19 +2176,55 @@
         if (lowered.includes("+")) return true;
         return /(?:^|[\s,;|\\[\]{}()"'`_-])fin(?:$|[\s,;|\\[\]{}()"'`_-])/i.test(text);
       }
+      function splitContributionLines(rawText) {
+        const text = String(rawText || "");
+        const out = [];
+        let current = "";
+        let squareDepth = 0;
+        let braceDepth = 0;
+        for (let i = 0; i < text.length; i += 1) {
+          const ch = text[i];
+          if (ch === "[") {
+            squareDepth += 1;
+            current += ch;
+            continue;
+          }
+          if (ch === "]") {
+            if (squareDepth > 0) squareDepth -= 1;
+            current += ch;
+            continue;
+          }
+          if (ch === "{") {
+            braceDepth += 1;
+            current += ch;
+            continue;
+          }
+          if (ch === "}") {
+            if (braceDepth > 0) braceDepth -= 1;
+            current += ch;
+            continue;
+          }
+          const isTopLevel = squareDepth === 0 && braceDepth === 0;
+          if (isTopLevel && (ch === "\\" || ch === "\n" || ch === "\r")) {
+            const part = current.trim();
+            if (part) out.push(part);
+            current = "";
+            if (ch === "\r" && text[i + 1] === "\n") i += 1;
+            continue;
+          }
+          current += ch;
+        }
+        const tail = current.trim();
+        if (tail) out.push(tail);
+        return out;
+      }
       function parseContributions(rawText) {
-        const text = String(rawText || "")
-          .replace(/\\+\s*(?:\r?\n|$)/g, "\n")
-          .trim();
-        const lines = text
-          ? text
-            .split(/\r?\n+/)
-            .map((line) => String(line || "")
-              .replace(/\s*\\+\s*$/g, "")
-              .replace(/\s*,+\s*$/g, "")
-              .trim())
-            .filter(Boolean)
-          : [];
+        const lines = splitContributionLines(rawText)
+          .map((line) => String(line || "")
+            .replace(/\s*\\+\s*$/g, "")
+            .replace(/\s*,+\s*$/g, "")
+            .trim())
+          .filter(Boolean);
         const usefulLines = lines.filter((line) => !isContributionPlaceholderLine(line));
         if (!usefulLines.length) return [];
         return usefulLines.map(parseContributionEntry);
@@ -2153,7 +2440,7 @@
         photo.loading = "lazy";
         photo.src = contributor.avatar;
         photo.alt = formatMessage(
-          t("credits_avatar_alt_template", "Photo de profil de {name}"),
+          t("credits_avatar_alt_template", "Profile photo of {name}"),
           { name: contributor.name }
         );
         photoWrap.appendChild(photo);
@@ -2215,7 +2502,7 @@
         linksSection.className = "credit-modal-section";
         const linksTitle = document.createElement("h3");
         linksTitle.className = "credit-modal-section-title";
-        linksTitle.textContent = t("credits_networks", "Réseaux");
+        linksTitle.textContent = t("credits_networks", "Networks");
         const linksList = buildSocialListElement(contributor, socials, { showLabel: true, reverseOrder: false });
         linksSection.appendChild(linksTitle);
         if (linksList.childElementCount) {
@@ -2223,7 +2510,7 @@
         } else {
           const empty = document.createElement("p");
           empty.className = "credit-modal-empty";
-          empty.textContent = t("credits_no_links", "Aucun lien");
+          empty.textContent = t("credits_no_links", "No links");
           linksSection.appendChild(empty);
         }
         content.appendChild(linksSection);
@@ -2240,7 +2527,8 @@
         const parsedGroupedImages = [];
         const groupedText = [];
 
-        const parsedEntries = parseContributions(contributor.status);
+        const contributionSourceText = String(contributor && (contributor.status || contributor.roleDefault) || "");
+        const parsedEntries = parseContributions(contributionSourceText);
         parsedEntries.forEach((entry) => {
           const detailLines = String(entry && entry.detail || "")
             .split(/\r?\n+/)
@@ -2295,16 +2583,28 @@
               .forEach((line) => groupedText.push(line));
           }
         });
+        const isFrenchUi = lang() === "fr";
         const hasPlusContributionImage = hasLocalEndMarker(contributor);
         const localGroupedImages = getLocalContributionImages(contributor);
-        const groupedImages = localGroupedImages.length ? localGroupedImages : parsedGroupedImages;
+        let groupedImages = localGroupedImages.length ? [...localGroupedImages] : [...parsedGroupedImages];
+        const isFinPngHref = (href) => /(?:^|\/)fin\.png(?:$|[?#])/i.test(String(href || "").trim());
         if (hasPlusContributionImage) {
           const plusHref = "./images/credits/fin.png";
           const plusAlreadyPresent = groupedImages.some((item) => {
-            const href = String(item && item.href || "").toLowerCase();
-            return href.endsWith("/fin.png");
+            const href = String(item && item.href || "").trim();
+            return isFinPngHref(href);
           });
           if (!plusAlreadyPresent) groupedImages.push({ href: plusHref, caption: "" });
+        }
+        if (!isFrenchUi) {
+          const hadFinMarkerVisual = hasPlusContributionImage || groupedImages.some((item) => isFinPngHref(item && item.href));
+          groupedImages = groupedImages.filter((item) => !isFinPngHref(item && item.href));
+          if (hadFinMarkerVisual) {
+            groupedImages.push({
+              isMoreText: true,
+              text: "AND MUCH MORE!"
+            });
+          }
         }
 
         let initCarouselState = null;
@@ -2317,14 +2617,14 @@
           const prevBtn = document.createElement("button");
           prevBtn.type = "button";
           prevBtn.className = "credit-modal-carousel-btn is-prev";
-          prevBtn.setAttribute("aria-label", t("credits_carousel_prev", "Image precedente"));
+          prevBtn.setAttribute("aria-label", t("credits_carousel_prev", "Previous image"));
           prevBtn.textContent = "‹";
           const images = document.createElement("div");
           images.className = "credit-modal-images";
           const nextBtn = document.createElement("button");
           nextBtn.type = "button";
           nextBtn.className = "credit-modal-carousel-btn is-next";
-          nextBtn.setAttribute("aria-label", t("credits_carousel_next", "Image suivante"));
+          nextBtn.setAttribute("aria-label", t("credits_carousel_next", "Next image"));
           nextBtn.textContent = "›";
 
           const setBtnState = (btn, disabled) => {
@@ -2365,6 +2665,16 @@
           };
 
           groupedImages.forEach((item) => {
+            if (item && item.isMoreText) {
+              const moreItem = document.createElement("div");
+              moreItem.className = "credit-modal-image-link is-more-text";
+              const moreText = document.createElement("p");
+              moreText.className = "credit-modal-more-text";
+              moreText.textContent = String(item.text || "AND MUCH + MORE!");
+              moreItem.appendChild(moreText);
+              images.appendChild(moreItem);
+              return;
+            }
             const link = document.createElement("a");
             link.className = "credit-modal-image-link";
             link.href = item.href;
@@ -2375,7 +2685,7 @@
             img.loading = "lazy";
             img.src = item.href;
             img.alt = formatMessage(
-              t("credits_contribution_image_alt", "Image de contribution: {name}"),
+              t("credits_contribution_image_alt", "Contribution image: {name}"),
               { name: item.caption || "Contribution" }
             );
             img.addEventListener("load", () => {
@@ -2480,7 +2790,7 @@
         article.tabIndex = 0;
         article.setAttribute(
           "aria-label",
-          formatMessage(t("credits_open_details", "Ouvrir le detail de {name}"), { name: contributor.name })
+          formatMessage(t("credits_open_details", "Open details for {name}"), { name: contributor.name })
         );
         article.addEventListener("click", (event) => {
           if (event.target instanceof Element && event.target.closest("a")) return;
@@ -2500,7 +2810,7 @@
         photo.loading = "lazy";
         photo.src = contributor.avatar;
         photo.alt = formatMessage(
-          t("credits_avatar_alt_template", "Photo de profil de {name}"),
+          t("credits_avatar_alt_template", "Profile photo of {name}"),
           { name: contributor.name }
         );
         photoWrap.appendChild(photo);
@@ -2576,18 +2886,37 @@
         const groupsMap = new Map();
         contributors.forEach((baseContributor) => {
           const contributor = localizeContributor(baseContributor);
-          const category = String(contributor && contributor.category || "").trim() || t("credits_category_other", "Autres");
-          if (!groupsMap.has(category)) groupsMap.set(category, []);
-          groupsMap.get(category).push({ base: baseContributor, localized: contributor });
+          const category = String(contributor && contributor.category || "").trim() || t("credits_category_other", "Others");
+          const categoryRank = rolePriorityIndex(category);
+          if (!groupsMap.has(category)) {
+            groupsMap.set(category, {
+              items: [],
+              rank: categoryRank
+            });
+          }
+          const groupRef = groupsMap.get(category);
+          if (groupRef && typeof groupRef === "object") {
+            if (categoryRank >= 0 && (typeof groupRef.rank !== "number" || groupRef.rank < 0 || categoryRank < groupRef.rank)) {
+              groupRef.rank = categoryRank;
+            }
+            groupRef.items.push({ base: baseContributor, localized: contributor });
+          }
         });
 
-        groupsMap.forEach((items, category) => {
+        groupsMap.forEach((groupData, category) => {
+          const items = Array.isArray(groupData && groupData.items) ? groupData.items : [];
           const group = document.createElement("section");
           group.className = "credits-group";
 
           const title = document.createElement("h2");
           title.className = "credits-group-title";
-          title.textContent = category;
+          let categoryLabel = category;
+          if (lang() === "fr" && items.length > 1 && !/[sx]$/i.test(String(category).trim())) {
+            categoryLabel = `${category}s`;
+          }
+          const rank = typeof groupData === "object" ? Number(groupData.rank) : -1;
+          const showCount = rank !== 0;
+          title.textContent = showCount ? `${categoryLabel} (${items.length})` : categoryLabel;
 
           const list = document.createElement("div");
           list.className = "credits-group-list";
@@ -2617,7 +2946,7 @@
         const timeoutMs = Math.max(3000, Number(sheetCfg.timeout_ms) || 10000);
 
         if (!spreadsheetId) {
-          setFeedbackByKey("credits_error", "Erreur", true, false);
+          setFeedbackByKey("credits_error", "Error", true, false);
           return ENABLE_LOCAL_MODE ? fallbackContributors() : [];
         }
 
@@ -2640,9 +2969,30 @@
       }
       function render() {
         const pageTitle = t("nav_credits", "Credits");
+        const visibleTitle = tRaw("nav_credits", pageTitle);
         const titleEl = document.getElementById("creditsTitle");
-        if (titleEl) titleEl.textContent = pageTitle;
-        document.title = `Ile-de-France Map | ${pageTitle}`;
+        if (titleEl) titleEl.textContent = visibleTitle;
+        const langNoticeEl = document.getElementById("creditsLangNotice");
+        if (langNoticeEl) {
+          const langNotice = unsupportedLanguageNoticeText();
+          langNoticeEl.textContent = langNotice;
+          langNoticeEl.hidden = !langNotice;
+        }
+        const closeBtn = document.getElementById("creditDetailClose");
+        if (closeBtn) closeBtn.setAttribute("aria-label", t("close", "Close"));
+        const pageDescription = t("credits_meta_description", "Contributor credits for the Ile-de-France map.");
+        const pageMetaTitle = formatMessage(t("credits_meta_page_title", "Ile-de-France Map - {title}"), { title: pageTitle });
+        document.title = pageMetaTitle;
+        const metaDescription = document.querySelector('meta[name="description"]');
+        if (metaDescription) metaDescription.setAttribute("content", pageDescription);
+        const ogDescription = document.querySelector('meta[property="og:description"]');
+        if (ogDescription) ogDescription.setAttribute("content", pageDescription);
+        const twDescription = document.querySelector('meta[name="twitter:description"]');
+        if (twDescription) twDescription.setAttribute("content", pageDescription);
+        const twTitle = document.querySelector('meta[name="twitter:title"]');
+        if (twTitle) twTitle.setAttribute("content", pageMetaTitle);
+        const ogSiteName = document.querySelector('meta[property="og:site_name"]');
+        if (ogSiteName) ogSiteName.setAttribute("content", pageMetaTitle);
       }
       let CURRENT_CONTRIBUTORS = [];
       function applyContributors(contributors) {
@@ -2653,7 +3003,7 @@
       initCreditsImagesIndex();
       bindContributorModalEvents();
       render();
-      setFeedbackByKey("credits_loading", "Chargement", false, true);
+      setFeedbackByKey("credits_loading", "Loading", false, true);
       loadContributors()
         .then((contributors) => {
           applyContributors(contributors);
@@ -2662,11 +3012,11 @@
           if (ENABLE_LOCAL_MODE) {
             const fallback = fallbackContributors();
             applyContributors(fallback);
-            setFeedbackByKey("credits_error", "Erreur", true, false);
+            setFeedbackByKey("credits_error", "Error", true, false);
             return;
           }
           applyContributors([]);
-          setFeedbackByKey("credits_error", "Erreur", true, false);
+          setFeedbackByKey("credits_error", "Error", true, false);
         });
       new MutationObserver(() => {
         render();
