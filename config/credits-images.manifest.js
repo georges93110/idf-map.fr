@@ -32,36 +32,11 @@ window.CREDITS_IMAGES_MANIFEST = {
     ],
     "hasEndMarker": false
   },
-  "491692233498689536": {
-    "folder": "491692233498689536-FELZOW",
-    "files": [],
-    "hasEndMarker": false
-  },
   "501462784421396510": {
     "folder": "501462784421396510-T24",
     "files": [
       "1_Remorque Colissimo.png"
     ],
-    "hasEndMarker": false
-  },
-  "503370879712100372": {
-    "folder": "503370879712100372-SNEEEZY",
-    "files": [],
-    "hasEndMarker": false
-  },
-  "688850527068618789": {
-    "folder": "688850527068618789-FA",
-    "files": [],
-    "hasEndMarker": false
-  },
-  "743884041652142132": {
-    "folder": "743884041652142132-KOYA",
-    "files": [],
-    "hasEndMarker": false
-  },
-  "800473866404364298": {
-    "folder": "800473866404364298-GRAVITY",
-    "files": [],
     "hasEndMarker": false
   },
   "998344148748873840": {
