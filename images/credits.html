@@ -1,0 +1,2686 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="description" content="Credits des contributeurs de la map Ile-de-France."/>
+  <meta property="og:locale" content="fr_FR"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="Ile-de-France Map - Credits"/>
+  <meta property="og:title" content="Ile-de-France Map"/>
+  <meta property="og:description" content="Credits des contributeurs de la map Ile-de-France."/>
+  <meta property="og:url" content="https://idf-map.fr/credits.html"/>
+  <meta property="og:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Ile-de-France Map - Credits"/>
+  <meta name="twitter:description" content="Credits des contributeurs de la map Ile-de-France."/>
+  <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
+  <script src="config/theme-init.js"></script>
+  <style>
+    html[data-app-ready="0"] {
+      background:#0b0b0b;
+    }
+    html[data-theme="light"][data-app-ready="0"] {
+      background:#ecf2f8;
+    }
+    html[data-app-ready="0"] body {
+      opacity:0 !important;
+      visibility:hidden !important;
+      overflow:hidden !important;
+    }
+  </style>
+  <script>
+    (function setupAppReadyGate() {
+      const root = document.documentElement;
+      root.setAttribute("data-app-ready", "0");
+      let done = false;
+      function reveal() {
+        if (done) return;
+        done = true;
+        root.setAttribute("data-app-ready", "1");
+      }
+      window.__setAppReady = function __setAppReady(options) {
+        const cfg = options && typeof options === "object" ? options : {};
+        const minFrames = Math.max(4, Number(cfg.minFrames) || 8);
+        const stableFrames = Math.max(2, Number(cfg.stableFrames) || 3);
+        const maxFrames = Math.max(minFrames + stableFrames, Number(cfg.maxFrames) || 28);
+        let frameCount = 0;
+        let stableCount = 0;
+        let previousKey = "";
+        const step = () => {
+          frameCount += 1;
+          let layoutKey = "";
+          const body = document.body;
+          if (body) {
+            const rect = body.getBoundingClientRect();
+            layoutKey = [
+              Math.round(rect.width),
+              Math.round(rect.height),
+              document.documentElement.scrollWidth,
+              document.documentElement.scrollHeight
+            ].join("x");
+          }
+          stableCount = layoutKey && layoutKey === previousKey ? stableCount + 1 : 0;
+          previousKey = layoutKey;
+          const enoughFrames = frameCount >= minFrames;
+          const visuallyStable = stableCount >= stableFrames;
+          const frameBudgetExceeded = frameCount >= maxFrames;
+          if ((!enoughFrames || !visuallyStable) && !frameBudgetExceeded) {
+            requestAnimationFrame(step);
+            return;
+          }
+          reveal();
+        };
+        const start = () => requestAnimationFrame(step);
+        if (document.fonts && document.fonts.ready) {
+          Promise.race([
+            document.fonts.ready.catch(() => {}),
+            new Promise((resolve) => setTimeout(resolve, 1200))
+          ]).finally(start);
+          return;
+        }
+        start();
+      };
+      window.addEventListener("pageshow", reveal, { once: true });
+      window.setTimeout(reveal, 7000);
+    })();
+  </script>
+  <title>Credits</title>
+  <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
+  <style>
+    :root{
+      --credits-surface:#171717;
+      --credits-surface-soft:#141414;
+      --credits-border:#2f2f2f;
+      --credits-border-soft:#2a2a2a;
+      --credits-text:#ececec;
+      --credits-muted:#c6c6c6;
+    }
+    html, body{
+      height:100%;
+    }
+    body{
+      overflow-x:hidden;
+      overflow-y:auto;
+    }
+
+    .credits-wrap{
+      min-height:100vh;
+      height:auto;
+      box-sizing:border-box;
+      padding:calc(var(--sitebar-height, 52px) + 14px) 12px calc(var(--shared-footer-height, 24px) + 16px);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      overflow:visible;
+    }
+
+    .credits-card{
+      width:min(900px, 100%);
+      border:1px solid var(--credits-border);
+      border-radius:14px;
+      background:var(--credits-surface);
+      color:var(--credits-text);
+      box-shadow:0 16px 36px rgba(0,0,0,.35);
+      padding:14px;
+      display:grid;
+      grid-template-rows:auto auto auto;
+      gap:10px;
+      min-height:0;
+      overflow:visible;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+
+    .credits-title{
+      margin:0;
+      font-size:clamp(20px, 3vw, 28px);
+      line-height:1.15;
+      color:#fff;
+      letter-spacing:-.01em;
+    }
+
+    .credits-subtitle{
+      margin:0;
+      color:var(--credits-muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+    .credits-feedback{
+      margin:2px 0 0;
+      color:#bdbdbd;
+      font-size:12px;
+      line-height:1.4;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .credits-feedback.is-loading::before{
+      content:"";
+      width:12px;
+      height:12px;
+      border:2px solid #5f5f5f;
+      border-top-color:#f0f0f0;
+      border-radius:50%;
+      animation:credits-spin .75s linear infinite;
+    }
+    .credits-feedback.is-error{
+      color:#f4b2b2;
+    }
+    @keyframes credits-spin{
+      to{
+        transform:rotate(360deg);
+      }
+    }
+
+    .credits-list{
+      display:block;
+      min-height:auto;
+      overflow:visible;
+      padding-right:0;
+    }
+    .credits-list > .credits-group{
+      margin-bottom:10px;
+    }
+    .credits-list > .credits-group:last-child{
+      margin-bottom:0;
+    }
+    .credits-group{
+      border:1px solid #2d2d2d;
+      border-radius:10px;
+      background:#101010;
+      overflow:hidden;
+    }
+    .credits-group-title{
+      margin:0;
+      padding:8px 10px;
+      border-bottom:1px solid #2d2d2d;
+      background:#151515;
+      color:#d7d7d7;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      line-height:1.2;
+    }
+    .credits-group-list{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:10px;
+      padding:10px;
+    }
+
+    .credit-item{
+      border:1px solid var(--credits-border-soft);
+      border-radius:10px;
+      background:var(--credits-surface-soft);
+      padding:10px;
+      display:grid;
+      gap:8px 10px;
+      grid-template-columns:86px minmax(0, 1fr);
+      grid-template-areas:"photo meta";
+      align-items:start;
+      transition:border-color .2s ease, box-shadow .2s ease;
+      box-sizing:border-box;
+      width:100%;
+      min-width:0;
+      max-width:100%;
+      overflow:hidden;
+      cursor:pointer;
+    }
+    .credit-item:hover,
+    .credit-item:focus-within{
+      border-color:#4a4a4a;
+      box-shadow:0 8px 20px rgba(0,0,0,.28);
+    }
+    .credit-item:focus-visible{
+      outline:2px solid #ffffff;
+      outline-offset:2px;
+    }
+    .credit-item.is-modal-open{
+      border-color:#f3d24f;
+      box-shadow:0 0 0 1px rgba(243,210,79,.45), 0 10px 24px rgba(0,0,0,.36);
+    }
+
+    .credit-photo-wrap{
+      grid-area:photo;
+      align-self:start;
+      width:86px;
+      height:86px;
+      border-radius:10px;
+      overflow:hidden;
+      border:1px solid #3a3a3a;
+      background:#101010;
+      box-shadow:0 8px 18px rgba(0,0,0,.28);
+      flex:0 0 auto;
+    }
+
+    .credit-photo{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .credit-meta{
+      grid-area:meta;
+      min-width:0;
+      display:grid;
+      gap:6px;
+      align-content:start;
+    }
+    .credit-head{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .credit-name{
+      margin:0;
+      color:#fff;
+      font-size:clamp(17px, 2.7vw, 22px);
+      font-weight:900;
+      line-height:1.08;
+      letter-spacing:-.01em;
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+      min-width:0;
+      flex:1 1 auto;
+      flex-wrap:wrap;
+    }
+    .credit-name-main{
+      min-width:0;
+      font-size:.9em;
+      overflow-wrap:anywhere;
+    }
+    .credit-name-since-card{
+      color:rgba(255,255,255,.58);
+      font-size:.45em;
+      font-weight:700;
+      line-height:1;
+      white-space:nowrap;
+      margin-left:auto;
+      align-self:flex-start;
+    }
+    .credit-status{
+      margin:0;
+      color:#e0e0e0;
+      font-size:11px;
+      font-weight:700;
+      line-height:1.35;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:2px;
+      width:100%;
+      box-sizing:border-box;
+    }
+    .credit-status-item{
+      min-width:0;
+      font-size:12px;
+      color:#b6b6b6;
+    }
+
+    .credit-networks-line{
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      min-width:0;
+      margin-left:auto;
+    }
+    .credit-networks-label{
+      margin:0;
+      color:#bdbdbd;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.03em;
+      text-transform:uppercase;
+    }
+
+    .credit-social-list{
+      display:flex;
+      flex-wrap:nowrap;
+      gap:6px;
+      justify-content:flex-end;
+    }
+
+    .credit-social-btn{
+      min-width:26px;
+      min-height:26px;
+      padding:0;
+      border-radius:7px;
+      border:1px solid var(--social-border, #414141);
+      background:var(--social-bg, #2a2a2a);
+      color:var(--social-text, #f3f3f3);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:0;
+      text-decoration:none;
+      box-shadow:0 6px 14px rgba(0,0,0,.28);
+      transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+    }
+    .credit-social-btn span{
+      display:none;
+    }
+    .credit-social-btn:hover{
+      transform:translateY(-1px);
+      border-color:var(--social-hover-border, var(--social-border, #565656));
+      background:var(--social-hover-bg, var(--social-bg, #333333));
+      box-shadow:0 8px 16px rgba(0,0,0,.33);
+    }
+    .credit-social-btn:focus-visible{
+      outline:2px solid #fff;
+      outline-offset:2px;
+    }
+    .credit-social-btn svg{
+      width:12px;
+      height:12px;
+      fill:currentColor;
+      stroke:none;
+      flex:0 0 auto;
+    }
+    .credit-social-btn img{
+      width:12px;
+      height:12px;
+      display:block;
+      object-fit:contain;
+      flex:0 0 auto;
+    }
+    .credit-social-btn .site-icon-email{
+      fill:none;
+      stroke:currentColor;
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .credit-social-btn .site-icon-discord path,
+    .credit-social-btn .site-icon-youtube path{
+      fill:currentColor !important;
+      stroke:none !important;
+    }
+    .credit-social-empty{
+      color:#a9a9a9;
+      font-size:11.5px;
+      font-weight:600;
+    }
+    .credit-modal-overlay[hidden]{
+      display:none !important;
+    }
+    .credit-modal-overlay{
+      position:fixed;
+      inset:0;
+      z-index:1800;
+      background:rgba(8,8,8,.76);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px 12px;
+      box-sizing:border-box;
+    }
+    .credit-modal-overlay.is-open{
+      display:flex;
+    }
+    .credit-modal{
+      width:min(720px, 100%);
+      max-height:min(86vh, 760px);
+      overflow:auto;
+      overscroll-behavior:contain;
+      border:1px solid #393939;
+      border-radius:14px;
+      background:#111111;
+      color:#efefef;
+      box-shadow:0 24px 52px rgba(0,0,0,.48);
+      padding:14px;
+      display:grid;
+      gap:12px;
+    }
+    .credit-modal-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .credit-modal-title{
+      margin:0;
+      font-size:clamp(20px, 3.2vw, 28px);
+      line-height:1.1;
+      color:#ffffff;
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .credit-modal-title-main{
+      min-width:0;
+      overflow-wrap:anywhere;
+    }
+    .credit-modal-title-handle{
+      color:rgba(255,255,255,.55);
+      font-size:.58em;
+      font-weight:700;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .credit-modal-close{
+      border:1px solid #4a4a4a;
+      background:#1e1e1e;
+      color:#f2f2f2;
+      width:30px;
+      height:30px;
+      border-radius:8px;
+      font-size:18px;
+      line-height:1;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      flex:0 0 auto;
+    }
+    .credit-modal-close:hover{
+      background:#2a2a2a;
+      border-color:#656565;
+    }
+    .credit-modal-close:focus-visible{
+      outline:2px solid #ffffff;
+      outline-offset:2px;
+    }
+    .credit-modal-content{
+      display:grid;
+      gap:12px;
+    }
+    .credit-modal-top{
+      display:grid;
+      grid-template-columns:112px minmax(0, 1fr);
+      gap:10px;
+      align-items:start;
+    }
+    .credit-modal-photo-wrap{
+      width:112px;
+      height:112px;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid #3a3a3a;
+      background:#171717;
+      box-shadow:0 10px 22px rgba(0,0,0,.35);
+    }
+    .credit-modal-photo{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .credit-modal-identity{
+      min-width:0;
+      display:grid;
+      gap:7px;
+      align-content:start;
+    }
+    .credit-modal-username{
+      margin:0;
+      font-size:12px;
+      font-weight:700;
+      color:#b7b7b7;
+      line-height:1.25;
+      overflow-wrap:anywhere;
+    }
+    .credit-modal-category{
+      margin:0;
+      display:inline-flex;
+      align-items:center;
+      width:max-content;
+      max-width:100%;
+      border:1px solid #444444;
+      border-radius:999px;
+      background:#1a1a1a;
+      color:#dcdcdc;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+      padding:4px 9px;
+      line-height:1.2;
+      box-sizing:border-box;
+    }
+    .credit-modal-category-row{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      width:max-content;
+      max-width:100%;
+    }
+    .credit-modal-category-since{
+      margin:0;
+      font-size:10px;
+      font-weight:700;
+      color:#b7b7b7;
+      line-height:1.2;
+      white-space:nowrap;
+      cursor:help;
+    }
+    .credit-modal-role-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:2px;
+    }
+    .credit-modal-role-pill{
+      display:inline-flex;
+      align-items:center;
+      border:1px solid #3c3c3c;
+      border-radius:999px;
+      background:#191919;
+      color:#cfcfcf;
+      font-size:10px;
+      font-weight:700;
+      line-height:1.2;
+      padding:3px 8px;
+      white-space:nowrap;
+      box-sizing:border-box;
+    }
+    .credit-modal-section{
+      border:1px solid #2f2f2f;
+      border-radius:10px;
+      background:#171717;
+      padding:10px;
+      display:grid;
+      gap:8px;
+    }
+    .credit-modal-section-title{
+      margin:0;
+      color:#f2f2f2;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.2;
+      letter-spacing:.03em;
+      text-transform:uppercase;
+    }
+    .credit-modal-role-buttons{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .credit-modal-role-btn{
+      border:1px solid #454545;
+      background:#1c1c1c;
+      color:#e8e8e8;
+      border-radius:9px;
+      min-height:30px;
+      padding:0 10px;
+      cursor:pointer;
+      font-size:12px;
+      font-weight:700;
+      line-height:1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      transition:background .16s ease, border-color .16s ease, color .16s ease;
+    }
+    .credit-modal-role-btn:hover{
+      background:#262626;
+      border-color:#5a5a5a;
+    }
+    .credit-modal-role-btn.is-static{
+      cursor:help;
+    }
+    .credit-modal-role-btn.is-static:hover{
+      background:#1c1c1c;
+      border-color:#454545;
+      color:#e8e8e8;
+    }
+    .credit-modal-role-btn.is-static:not(.has-tooltip){
+      cursor:default;
+    }
+    .credit-modal-role-btn.is-open{
+      background:#2f3e67;
+      border-color:#6f8ad7;
+      color:#f4f7ff;
+    }
+    .credit-modal-role-btn.is-disabled{
+      opacity:1;
+      cursor:not-allowed;
+      filter:none;
+    }
+    .credit-modal-role-btn.is-disabled:hover{
+      background:#1c1c1c;
+      border-color:#454545;
+      color:#e8e8e8;
+    }
+    .credit-modal-role-btn:focus-visible{
+      outline:2px solid #ffffff;
+      outline-offset:2px;
+    }
+    .credit-modal-role-content{
+      display:grid;
+      gap:10px;
+    }
+    .credit-modal-section.is-roles-collapsed{
+      padding-bottom:4px;
+      gap:6px;
+    }
+    .credit-modal-role-panel{
+      border:1px solid #303030;
+      border-radius:10px;
+      background:#141414;
+      padding:9px;
+      display:grid;
+      gap:8px;
+      box-sizing:border-box;
+    }
+    .credit-modal-role-panel[hidden]{
+      display:none !important;
+    }
+    .credit-modal-contrib-title{
+      margin:0;
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+      width:auto;
+      flex-wrap:wrap;
+      color:#d9d9d9;
+      font-size:13px;
+      font-weight:700;
+      line-height:1.4;
+    }
+    .credit-modal-group-name{
+      color:#ececec;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.35;
+      overflow-wrap:anywhere;
+    }
+    .credit-modal-contrib-main{
+      display:none;
+      overflow-wrap:anywhere;
+      min-width:0;
+      flex:0 1 auto;
+    }
+    .credit-modal-contrib-inline-caption{
+      color:#b9b9b9;
+      font-size:11px;
+      font-weight:600;
+      line-height:1.35;
+      margin-left:0;
+      text-align:left;
+      flex:0 0 auto;
+      white-space:nowrap;
+      max-width:none;
+    }
+    .credit-modal-contrib-detail{
+      margin:0;
+      color:#bbbbbb;
+      font-size:12px;
+      line-height:1.45;
+      white-space:pre-line;
+      overflow-wrap:anywhere;
+    }
+    .credit-modal-carousel{
+      display:grid;
+      grid-template-columns:auto minmax(0, 1fr) auto;
+      align-items:center;
+      gap:8px;
+    }
+    .credit-modal-carousel-btn{
+      width:34px;
+      height:34px;
+      border:1px solid #5f5f5f;
+      background:#242424;
+      color:#f0f0f0;
+      border-radius:8px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      line-height:1;
+      padding:0;
+    }
+    .credit-modal-carousel-btn:hover{
+      background:#242424;
+      border-color:#5a5a5a;
+    }
+    .credit-modal-carousel-btn:disabled{
+      opacity:.28;
+      color:#767676;
+      background:#131313;
+      border-color:#2d2d2d;
+      cursor:default;
+    }
+    .credit-modal-carousel-btn.is-disabled{
+      opacity:.2;
+      color:#5f5f5f !important;
+      background:#111111 !important;
+      border-color:#242424 !important;
+      cursor:default;
+      pointer-events:none;
+      box-shadow:none;
+      filter:grayscale(1);
+    }
+    .credit-modal-images{
+      display:flex;
+      gap:10px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      scroll-snap-type:none;
+      padding:2px 0;
+      scroll-padding-inline-start:0;
+      scrollbar-width:none;
+      -ms-overflow-style:none;
+      cursor:grab;
+      touch-action:none;
+      -webkit-overflow-scrolling:touch;
+      user-select:none;
+    }
+    .credit-modal-images.is-dragging{
+      cursor:grabbing;
+      user-select:none;
+      scroll-snap-type:none;
+    }
+    .credit-modal-images::-webkit-scrollbar{
+      display:none;
+    }
+    .credit-modal-image-link{
+      display:block;
+      flex:0 0 clamp(220px, 58vw, 360px);
+      border-radius:0;
+      overflow:visible;
+      background:transparent;
+      text-decoration:none;
+      user-select:none;
+      box-shadow:none;
+    }
+    .credit-modal-image{
+      width:100%;
+      height:220px;
+      object-fit:contain;
+      display:block;
+      background:transparent;
+      -webkit-user-drag:none;
+      user-drag:none;
+      pointer-events:none;
+    }
+    .credit-modal-image-caption{
+      margin:6px 0 0;
+      color:#bdbdbd;
+      font-size:11px;
+      line-height:1.35;
+      text-align:center;
+      display:block;
+      width:100%;
+      white-space:pre-line;
+      overflow-wrap:anywhere;
+    }
+    .credit-modal .credit-social-list{
+      justify-content:flex-start;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .credit-social-btn.is-labeled{
+      min-width:unset;
+      min-height:28px;
+      padding:0 9px;
+      gap:6px;
+    }
+    .credit-social-btn.is-labeled span{
+      display:inline;
+      font-size:11px;
+      font-weight:700;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .credit-modal-empty{
+      margin:0;
+      color:#a9a9a9;
+      font-size:12px;
+      font-weight:600;
+      line-height:1.35;
+    }
+
+    @media (max-width:700px){
+      .credits-wrap{
+        padding:calc(var(--sitebar-height, 52px) + 10px) 8px calc(var(--shared-footer-height, 24px) + 12px);
+      }
+      .credits-group-list{
+        grid-template-columns:1fr;
+      }
+      .credits-card{
+        padding:11px;
+        border-radius:12px;
+      }
+      .credit-item{
+        grid-template-columns:74px minmax(0, 1fr);
+        grid-template-areas:"photo meta";
+        gap:8px;
+        padding:8px;
+        min-width:0;
+        max-width:100%;
+      }
+      .credit-photo-wrap{
+        width:74px;
+        height:74px;
+      }
+      .credit-social-btn{
+        min-height:22px;
+        padding:0 7px;
+        font-size:10.5px;
+      }
+      .credit-modal-overlay{
+        padding:10px 8px;
+      }
+      .credit-modal{
+        padding:11px;
+        max-height:90vh;
+      }
+      .credit-modal-top{
+        grid-template-columns:84px minmax(0, 1fr);
+      }
+      .credit-modal-photo-wrap{
+        width:84px;
+        height:84px;
+      }
+      .credit-modal-images{
+        gap:8px;
+      }
+      .credit-modal-image-link{
+        flex-basis:min(78vw, 290px);
+      }
+      .credit-modal-image{
+        height:170px;
+      }
+      .credit-modal-carousel{
+        grid-template-columns:30px minmax(0, 1fr) 30px;
+        gap:6px;
+      }
+      .credit-modal-carousel-btn{
+        width:30px;
+        height:30px;
+        font-size:16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .credit-item,
+      .credit-social-btn,
+      .credit-modal-close,
+      .credit-modal-role-btn{
+        transition:none;
+      }
+    }
+  </style>
+</head>
+<body data-bg-opacity="0.24" data-bg-overlay-top="0.74" data-bg-overlay-bottom="0.92">
+  <main class="credits-wrap">
+    <section class="credits-card" aria-labelledby="creditsTitle">
+      <h1 class="credits-title" id="creditsTitle">Credits</h1>
+      <div class="credits-list" id="creditsList" aria-live="polite"></div>
+      <p class="credits-feedback is-loading" id="creditsFeedback">Chargement</p>
+    </section>
+  </main>
+  <div class="credit-modal-overlay" id="creditDetailModal" hidden aria-hidden="true">
+    <section class="credit-modal" role="dialog" aria-modal="true" aria-labelledby="creditDetailTitle">
+      <div class="credit-modal-head">
+        <h2 class="credit-modal-title" id="creditDetailTitle"></h2>
+        <button class="credit-modal-close" id="creditDetailClose" type="button" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="credit-modal-content" id="creditDetailContent"></div>
+    </section>
+  </div>
+
+  <script src="config/translations.js"></script>
+  <script src="config/config.js"></script>
+  <script src="config/credits-images.manifest.js"></script>
+  <script src="config/social-buttons.js"></script>
+  <script src="config/site-nav.js"></script>
+  <script src="config/shared-header.js"></script>
+  <script>
+    (function initCreditsPage() {
+      const CACHE_KEY = "idf_credits_sheet_cache_v2";
+      const ENABLE_LOCAL_MODE = false;
+      let CREDITS_IMAGES_INDEX_CACHE = null;
+      let CREDITS_IMAGES_INIT_PROMISE = null;
+      function getManifestCreditsImagesIndex() {
+        const raw = window.CREDITS_IMAGES_MANIFEST;
+        if (!raw || typeof raw !== "object") return {};
+        return raw;
+      }
+      function isLocalRuntime() {
+        const host = String(window.location.hostname || "").toLowerCase();
+        return window.location.protocol === "file:"
+          || host === "localhost"
+          || host === "127.0.0.1"
+          || host === "::1";
+      }
+      function safeDecode(text) {
+        try {
+          return decodeURIComponent(String(text || ""));
+        } catch {
+          return String(text || "");
+        }
+      }
+      function isImageFileName(fileName) {
+        return /\.(png|jpe?g|webp|gif|avif)$/i.test(String(fileName || ""));
+      }
+      function byNaturalName(a, b) {
+        return String(a || "").localeCompare(String(b || ""), undefined, { numeric: true, sensitivity: "base" });
+      }
+      async function fetchDirectoryListingEntries(baseUrl) {
+        try {
+          const response = await fetch(baseUrl, { cache: "no-store" });
+          if (!response.ok) return [];
+          const html = await response.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, "text/html");
+          const anchors = Array.from(doc.querySelectorAll("a[href]"));
+          const entries = [];
+          anchors.forEach((anchor) => {
+            const href = String(anchor.getAttribute("href") || "").trim();
+            if (!href || href === "." || href === ".." || href === "./" || href === "../") return;
+            let resolved;
+            try {
+              resolved = new URL(href, baseUrl);
+            } catch {
+              return;
+            }
+            const decodedPath = safeDecode(resolved.pathname || "");
+            entries.push({
+              href,
+              isDirectory: /\/$/.test(href),
+              path: decodedPath
+            });
+          });
+          return entries;
+        } catch {
+          return [];
+        }
+      }
+      async function discoverLocalCreditsImagesIndex() {
+        if (!isLocalRuntime()) return {};
+        const rootUrl = new URL("./images/credits/", window.location.href);
+        const rootPath = safeDecode(rootUrl.pathname || "");
+        const rootEntries = await fetchDirectoryListingEntries(rootUrl.toString());
+        const folders = rootEntries
+          .map((entry) => {
+            if (!entry || !entry.path || !entry.path.startsWith(rootPath)) return "";
+            const rel = entry.path.slice(rootPath.length).replace(/\/+$/g, "");
+            if (!rel || rel.includes("/")) return "";
+            return rel;
+          })
+          .filter((folderName) => /^\d{6,}[-_].+/.test(folderName));
+        const uniqueFolders = Array.from(new Set(folders)).sort(byNaturalName);
+        const discovered = {};
+        for (const folderName of uniqueFolders) {
+          const idMatch = String(folderName).match(/^(\d{6,})/);
+          if (!idMatch) continue;
+          const userId = idMatch[1];
+          const folderUrl = new URL(`${encodeURIComponent(folderName)}/`, rootUrl).toString();
+          const folderPath = safeDecode(new URL(`${encodeURIComponent(folderName)}/`, rootUrl).pathname || "");
+          const folderEntries = await fetchDirectoryListingEntries(folderUrl);
+          const folderFileNames = folderEntries
+            .map((entry) => {
+              if (!entry || !entry.path || !entry.path.startsWith(folderPath)) return "";
+              const rel = entry.path.slice(folderPath.length).replace(/\/+$/g, "");
+              if (!rel || rel.includes("/")) return "";
+              return rel;
+            });
+          const files = folderFileNames
+            .filter((fileName) => isImageFileName(fileName))
+            .sort(byNaturalName);
+          const hasEndMarker = folderFileNames.some((fileName) => String(fileName || "").trim().toLowerCase() === "fin");
+          discovered[userId] = { folder: folderName, files, hasEndMarker };
+        }
+        return discovered;
+      }
+      function mergeCreditsImagesIndex(baseIndex, overrideIndex) {
+        const base = baseIndex && typeof baseIndex === "object" ? baseIndex : {};
+        const override = overrideIndex && typeof overrideIndex === "object" ? overrideIndex : {};
+        const merged = { ...base };
+        Object.keys(override).forEach((userId) => {
+          merged[userId] = override[userId];
+        });
+        return merged;
+      }
+      function initCreditsImagesIndex() {
+        if (!CREDITS_IMAGES_INDEX_CACHE) {
+          CREDITS_IMAGES_INDEX_CACHE = getManifestCreditsImagesIndex();
+        }
+        if (!isLocalRuntime()) {
+          return Promise.resolve(CREDITS_IMAGES_INDEX_CACHE);
+        }
+        if (CREDITS_IMAGES_INIT_PROMISE) return CREDITS_IMAGES_INIT_PROMISE;
+        CREDITS_IMAGES_INIT_PROMISE = discoverLocalCreditsImagesIndex()
+          .then((autoIndex) => {
+            if (autoIndex && Object.keys(autoIndex).length) {
+              CREDITS_IMAGES_INDEX_CACHE = mergeCreditsImagesIndex(CREDITS_IMAGES_INDEX_CACHE, autoIndex);
+              refreshContributorModalLocale();
+            }
+            return CREDITS_IMAGES_INDEX_CACHE;
+          })
+          .catch(() => CREDITS_IMAGES_INDEX_CACHE);
+        return CREDITS_IMAGES_INIT_PROMISE;
+      }
+      function getCreditsImagesIndex() {
+        if (!CREDITS_IMAGES_INDEX_CACHE) {
+          CREDITS_IMAGES_INDEX_CACHE = getManifestCreditsImagesIndex();
+        }
+        return CREDITS_IMAGES_INDEX_CACHE;
+      }
+      function fileCaptionFromName(fileName) {
+        const rawBase = String(fileName || "")
+          .replace(/\.[^.]+$/g, "");
+        const withoutOrderPrefix = rawBase.replace(/^\d+[_-]+/, "");
+        const source = withoutOrderPrefix || rawBase;
+        return source
+          .replace(/[_-]+/g, " ")
+          .trim();
+      }
+      function getLocalContributionImages(contributor) {
+        const userId = String(contributor && contributor.userId || "").trim();
+        if (!userId) return [];
+        const entry = getCreditsImagesIndex()[userId];
+        if (!entry || !entry.folder || !Array.isArray(entry.files) || !entry.files.length) return [];
+        return entry.files
+          .map((file) => String(file || "").trim())
+          .filter(Boolean)
+          .map((file) => ({
+            href: `./images/credits/${encodeURIComponent(entry.folder)}/${encodeURIComponent(file)}`,
+            caption: fileCaptionFromName(file)
+          }));
+      }
+      function hasLocalEndMarker(contributor) {
+        const userId = String(contributor && contributor.userId || "").trim();
+        if (!userId) return false;
+        const entry = getCreditsImagesIndex()[userId];
+        if (!entry || !entry.folder) return false;
+        if (typeof entry.hasEndMarker === "boolean") return entry.hasEndMarker;
+        if (!Array.isArray(entry.files)) return false;
+        return entry.files.some((file) => String(file || "").trim().toLowerCase() === "fin");
+      }
+
+      function lang() {
+        return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
+      }
+      function t(key, fallback) {
+        const i18n = window.I18N || {};
+        const code = lang();
+        const fromLang = i18n[code] && i18n[code][key];
+        if (typeof fromLang === "string" && fromLang) return fromLang;
+        const fromFr = i18n.fr && i18n.fr[key];
+        if (typeof fromFr === "string" && fromFr) return fromFr;
+        return fallback;
+      }
+      function formatMessage(template, values) {
+        const source = String(template || "");
+        return source.replace(/\{([a-z0-9_]+)\}/gi, (match, key) => {
+          if (!values || typeof values !== "object") return match;
+          const value = values[key];
+          return value == null ? match : String(value);
+        });
+      }
+      function normalizeHeader(raw) {
+        return String(raw || "")
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_+|_+$/g, "");
+      }
+      function firstNonEmpty(obj, keys) {
+        for (const key of keys) {
+          const value = String(obj[key] ?? "").trim();
+          if (value) return value;
+        }
+        return "";
+      }
+      function firstParsedValue(obj, keys, parser) {
+        for (const key of keys) {
+          const parsed = parser(obj[key]);
+          if (parsed) return parsed;
+        }
+        return "";
+      }
+      const SHEET_LANGS = ["fr", "en", "es", "de", "pl", "pt", "nl", "it", "ru", "zh", "ko", "ja"];
+      function collectLocalizedValues(row, prefix) {
+        const out = {};
+        SHEET_LANGS.forEach((code) => {
+          const value = String(row && row[`${prefix}_${code}`] || "").trim();
+          if (value) out[code] = value;
+        });
+        return out;
+      }
+      function resolveLocalizedValue(defaultValue, valuesByLang) {
+        const code = lang();
+        const localized = String(valuesByLang && valuesByLang[code] || "").trim();
+        if (localized) return localized;
+        return String(defaultValue || "").trim();
+      }
+      function normalizeRoleText(raw) {
+        return String(raw || "").replace(/\\+/g, "\n").trim();
+      }
+      function normalizeCategoryText(raw) {
+        const source = String(raw || "")
+          .replace(/\\+/g, "\n")
+          .trim();
+        if (!source) return "";
+        const parts = source
+          .split(/\r?\n+/)
+          .map((line) => String(line || "").trim())
+          .filter(Boolean);
+        return parts[0] || "";
+      }
+      function splitMultilineValues(raw) {
+        const source = String(raw || "")
+          .replace(/\\+/g, "\n")
+          .trim();
+        if (!source) return [];
+        return source
+          .split(/\r?\n+/)
+          .map((line) => String(line || "").trim())
+          .filter(Boolean);
+      }
+      function normalizeHexColor(raw) {
+        const match = String(raw || "").trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+        if (!match) return "";
+        const hex = String(match[1] || "").toLowerCase();
+        if (hex.length === 3) {
+          return `#${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`;
+        }
+        return `#${hex}`;
+      }
+      function contrastTextForHex(hexColor) {
+        const hex = normalizeHexColor(hexColor);
+        if (!hex) return "#ffffff";
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness >= 145 ? "#000000" : "#ffffff";
+      }
+      function parseRoleLine(rawLine) {
+        const source = String(rawLine || "").trim();
+        if (!source) return null;
+        const colorMatch = source.match(/\(#([0-9a-f]{3}|[0-9a-f]{6})\)/i);
+        const bgColor = colorMatch ? normalizeHexColor(colorMatch[1]) : "";
+        const label = source
+          .replace(/\(#(?:[0-9a-f]{3}|[0-9a-f]{6})\)/ig, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (!label) return null;
+        return {
+          label,
+          bgColor,
+          textColor: bgColor ? contrastTextForHex(bgColor) : ""
+        };
+      }
+      function parseRoleItemsWithColors(rawText) {
+        const source = String(rawText || "")
+          .replace(/\\+/g, "\n")
+          .trim();
+        if (!source) return [];
+        const out = [];
+        const seen = new Set();
+        const regex = /([^\\\r\n]+?)\s*\(\s*#([0-9a-f]{3}|[0-9a-f]{6})\s*\)/gi;
+        let match = null;
+        while ((match = regex.exec(source)) !== null) {
+          const label = String(match[1] || "").replace(/\s+/g, " ").trim();
+          const bgColor = normalizeHexColor(match[2] || "");
+          if (!label || !bgColor) continue;
+          const key = `${label.toLowerCase()}|${bgColor}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push({
+            label,
+            bgColor,
+            textColor: contrastTextForHex(bgColor)
+          });
+        }
+        return out;
+      }
+      function normalizeRoleKey(raw) {
+        return String(raw || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim();
+      }
+      function rolePriorityIndex(rawRole) {
+        const key = normalizeRoleKey(rawRole);
+        if (!key) return -1;
+        if (/\b(gerant|fondateur|founder|owner|chef de projet|project lead)\b/.test(key)) return 0;
+        if (/\b(developpeur|developpeuse|developer|dev)\b/.test(key)) return 1;
+        if (/\b(admin|administrateur|administrator)\b/.test(key)) return 2;
+        if (/\b(moderateur|moderator)\b/.test(key)) return 3;
+        if (/\b(animateur|animatrice|animator|contributeur|contributor|contrib|creator|createur de contenu|content creator)\b/.test(key)) return 4;
+        return -1;
+      }
+      function isAnimateurRole(rawRole) {
+        const key = normalizeRoleKey(rawRole);
+        return /\b(animateur|animatrice|animator)\b/.test(key);
+      }
+      function extractPopupRoleList(rawCategoryText) {
+        const fromColoredPattern = parseRoleItemsWithColors(rawCategoryText)
+          .map((item) => ({
+            label: String(item && item.label || "").trim(),
+            bgColor: String(item && item.bgColor || "").trim(),
+            textColor: String(item && item.textColor || "").trim()
+          }))
+          .filter((item) => item.label);
+        const orderedItems = fromColoredPattern.length
+          ? fromColoredPattern
+          : splitMultilineValues(rawCategoryText)
+            .map((line) => parseRoleLine(line))
+            .filter((item) => item && item.label)
+            .map((item) => ({
+              label: String(item.label || "").trim(),
+              bgColor: String(item.bgColor || "").trim(),
+              textColor: String(item.textColor || "").trim()
+            }));
+        if (!orderedItems.length) return [];
+
+        const animateurIndex = orderedItems.findIndex((item) => isAnimateurRole(item.label));
+        const sliceEnd = animateurIndex >= 0 ? animateurIndex : orderedItems.length - 1;
+        const maxAllowedPriority = animateurIndex >= 0 ? 4 : 3;
+        const out = [];
+        const seen = new Set();
+        orderedItems.slice(0, sliceEnd + 1).forEach((item) => {
+          const priority = rolePriorityIndex(item.label);
+          if (priority < 0 || priority > maxAllowedPriority) return;
+          const key = item.label.toLowerCase();
+          if (seen.has(key)) return;
+          seen.add(key);
+          out.push({
+            label: item.label,
+            bgColor: item.bgColor,
+            textColor: item.textColor
+          });
+        });
+        return out;
+      }
+      function normalizeUserId(raw) {
+        const source = String(raw || "").trim();
+        if (!source) return "";
+        const match = source.match(/\d{6,}/);
+        return match ? match[0] : source;
+      }
+      function normalizeLinkToken(raw) {
+        return String(raw || "").trim().replace(/[\u0448\u0428]/g, "@");
+      }
+      function parseContributorDate(raw) {
+        if (raw instanceof Date && !Number.isNaN(raw.getTime())) {
+          const day = raw.getDate();
+          const month = raw.getMonth() + 1;
+          const year = raw.getFullYear();
+          return {
+            date: new Date(year, month - 1, day),
+            display: `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${String(year).padStart(4, "0")}`
+          };
+        }
+        const source = String(raw || "").trim();
+        if (!source) return null;
+        const gvizDateMatch = source.match(/^Date\(\s*(\d{4})\s*,\s*(\d{1,2})\s*,\s*(\d{1,2})\s*(?:,[^)]+)?\)$/i);
+        if (gvizDateMatch) {
+          const year = Number(gvizDateMatch[1]);
+          const monthZeroBased = Number(gvizDateMatch[2]);
+          const day = Number(gvizDateMatch[3]);
+          const date = new Date(year, monthZeroBased, day);
+          if (
+            date.getFullYear() === year
+            && date.getMonth() === monthZeroBased
+            && date.getDate() === day
+          ) {
+            const month = monthZeroBased + 1;
+            return {
+              date,
+              display: `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${String(year).padStart(4, "0")}`
+            };
+          }
+        }
+        const dmyMatch = source.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+        if (dmyMatch) {
+          const day = Number(dmyMatch[1]);
+          const month = Number(dmyMatch[2]);
+          const year = Number(dmyMatch[3]);
+          const date = new Date(year, month - 1, day);
+          if (
+            date.getFullYear() === year
+            && date.getMonth() === month - 1
+            && date.getDate() === day
+          ) {
+            return {
+              date,
+              display: `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${String(year).padStart(4, "0")}`
+            };
+          }
+        }
+        const isoMatch = source.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (isoMatch) {
+          const year = Number(isoMatch[1]);
+          const month = Number(isoMatch[2]);
+          const day = Number(isoMatch[3]);
+          const date = new Date(year, month - 1, day);
+          if (
+            date.getFullYear() === year
+            && date.getMonth() === month - 1
+            && date.getDate() === day
+          ) {
+            return {
+              date,
+              display: `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${String(year).padStart(4, "0")}`
+            };
+          }
+        }
+        return null;
+      }
+      function monthsBetweenDates(start, end) {
+        let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+        if (end.getDate() < start.getDate()) months -= 1;
+        return Math.max(0, months);
+      }
+      function yearsBetweenDates(start, end) {
+        let years = end.getFullYear() - start.getFullYear();
+        if (end.getMonth() < start.getMonth() || (end.getMonth() === start.getMonth() && end.getDate() < start.getDate())) {
+          years -= 1;
+        }
+        return Math.max(0, years);
+      }
+      function formatSinceDate(dateValue) {
+        if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) return "";
+        const now = new Date();
+        const start = new Date(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate());
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        if (start > today) return "";
+        const yearsFloor = yearsBetweenDates(start, today);
+        if (yearsFloor > 0) {
+          const anniversary = new Date(start.getFullYear() + yearsFloor, start.getMonth(), start.getDate());
+          const years = yearsFloor + (anniversary < today ? 1 : 0);
+          return `depuis ${years} ${years > 1 ? "ans" : "an"}`;
+        }
+        const monthsFloor = monthsBetweenDates(start, today);
+        if (monthsFloor > 0) {
+          const monthAnniversary = new Date(start.getFullYear(), start.getMonth() + monthsFloor, start.getDate());
+          const months = monthsFloor + (monthAnniversary < today ? 1 : 0);
+          return `depuis ${months} mois`;
+        }
+        const days = Math.max(0, Math.floor((today.getTime() - start.getTime()) / 86400000));
+        return `depuis ${days} ${days > 1 ? "jours" : "jour"}`;
+      }
+      function readCache(maxAgeMs) {
+        if (!ENABLE_LOCAL_MODE) return null;
+        try {
+          const raw = sessionStorage.getItem(CACHE_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return null;
+          const savedAt = Number(parsed.savedAt || 0);
+          if (!savedAt || Date.now() - savedAt > maxAgeMs) return null;
+          return Array.isArray(parsed.rows) ? parsed.rows : null;
+        } catch {
+          return null;
+        }
+      }
+      function writeCache(rows) {
+        if (!ENABLE_LOCAL_MODE) return;
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+            savedAt: Date.now(),
+            rows
+          }));
+        } catch {}
+      }
+      function parseGvizResponse(payload) {
+        const text = String(payload || "").trim();
+        const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?\s*$/);
+        if (match && match[1]) return JSON.parse(match[1]);
+        if (text.startsWith("{") && text.endsWith("}")) return JSON.parse(text);
+        throw new Error("Invalid Google Sheet response");
+      }
+      function mapGvizTableToRows(data) {
+        const table = data && data.table && typeof data.table === "object"
+          ? data.table
+          : {};
+        const cols = Array.isArray(table.cols) ? table.cols : [];
+        const rows = Array.isArray(table.rows) ? table.rows : [];
+        const labelsMissing = cols.length > 0 && cols.every((col) => {
+          const label = String(col && col.label || "").trim();
+          return !label;
+        });
+
+        let headers = cols.map((col, index) => {
+          const normalized = normalizeHeader(col && (col.label || col.id || ""));
+          return normalized || `col_${index}`;
+        });
+
+        const rowsAreGeneric = headers.every((key) => /^col_\d+$/.test(key));
+        let rowStartIndex = 0;
+        if ((labelsMissing || rowsAreGeneric) && rows.length) {
+          const firstCells = Array.isArray(rows[0] && rows[0].c) ? rows[0].c : [];
+          const candidateHeaders = firstCells.map((cell, index) => {
+            const value = cell && typeof cell === "object" && "v" in cell ? cell.v : "";
+            const normalized = normalizeHeader(value);
+            return normalized || `col_${index}`;
+          });
+          const nonGenericCount = candidateHeaders.filter((key) => !/^col_\d+$/.test(key)).length;
+          if (nonGenericCount >= 2) {
+            headers = candidateHeaders;
+            rowStartIndex = 1;
+          }
+        }
+
+        const uniqueHeaders = [];
+        const seenHeaders = {};
+        headers.forEach((key, index) => {
+          const base = key || `col_${index}`;
+          const count = Number(seenHeaders[base] || 0);
+          seenHeaders[base] = count + 1;
+          uniqueHeaders.push(count ? `${base}_${count + 1}` : base);
+        });
+
+        return rows
+          .slice(rowStartIndex)
+          .map((row) => {
+            const cells = Array.isArray(row && row.c) ? row.c : [];
+            const out = {};
+            uniqueHeaders.forEach((key, index) => {
+              const cell = cells[index];
+              out[key] = cell && typeof cell === "object" && "v" in cell ? cell.v : "";
+            });
+            return out;
+          })
+          .filter((rowObj) => Object.values(rowObj).some((value) => String(value || "").trim()));
+      }
+      function buildSheetUrl(spreadsheetId, gid) {
+        const id = encodeURIComponent(spreadsheetId);
+        const sheetGid = encodeURIComponent(gid || "0");
+        return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?gid=${sheetGid}&tqx=out:json`;
+      }
+      async function fetchSheetRows(url, timeoutMs) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const response = await fetch(url, { signal: controller.signal });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const text = await response.text();
+          const parsed = parseGvizResponse(text);
+          return mapGvizTableToRows(parsed);
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+      function toHttpUrl(raw) {
+        const value = normalizeLinkToken(raw);
+        if (!value) return "";
+        const lower = value.toLowerCase();
+        if (lower === "x" || lower === "-" || lower === "none" || lower === "n/a") return "";
+        try {
+          const url = new URL(value);
+          if (url.protocol === "http:" || url.protocol === "https:") return url.toString();
+          return "";
+        } catch {
+          if (!value.includes(".")) return "";
+          try {
+            const normalized = new URL(`https://${value.replace(/^\/+/, "")}`);
+            if (normalized.protocol === "http:" || normalized.protocol === "https:") return normalized.toString();
+            return "";
+          } catch {
+            return "";
+          }
+        }
+      }
+      function toSocialUrl(raw, network) {
+        const value = normalizeLinkToken(raw);
+        if (!value) return "";
+
+        const direct = toHttpUrl(value);
+        if (direct) return direct;
+
+        const handle = value.replace(/^@+/, "").trim();
+        if (!handle) return "";
+        if (handle.toLowerCase() === "x" || handle === "-") return "";
+
+        if (network === "github") {
+          if (!/^[a-z0-9](?:[a-z0-9-]{0,38})$/i.test(handle)) return "";
+          return `https://github.com/${handle}`;
+        }
+        if (network === "tiktok") {
+          if (/[^a-z0-9._-]/i.test(handle)) return "";
+          return `https://www.tiktok.com/@${handle}`;
+        }
+        if (network === "youtube") {
+          if (/^UC[a-z0-9_-]{10,}$/i.test(handle)) return `https://www.youtube.com/channel/${handle}`;
+          if (/[^a-z0-9._-]/i.test(handle)) return "";
+          return `https://www.youtube.com/@${handle}`;
+        }
+
+        return "";
+      }
+      function toEmail(raw) {
+        const value = normalizeLinkToken(raw);
+        if (!value || !value.includes("@")) return "";
+        return value;
+      }
+      function contributorFromRow(row, index) {
+        const userId = normalizeUserId(firstNonEmpty(row, ["user_id", "userid", "id", "user"]));
+        const usernameRaw = firstNonEmpty(row, ["username", "pseudo", "user", "id_discord"]);
+        const displayNameRaw = firstNonEmpty(row, ["display_name", "displayname", "display", "nom_affiche", "name", "nom"]);
+        const categoryDefault = firstNonEmpty(row, ["categorie", "category"]);
+        const roleDefault = firstNonEmpty(row, ["role", "rang"]);
+        const joinedDateRaw = firstNonEmpty(row, ["date", "joined", "join_date", "since"]);
+        const parsedJoinDate = parseContributorDate(joinedDateRaw);
+        const avatar = firstParsedValue(row, ["avatar", "avatar_url", "pp"], toHttpUrl);
+        const youtube = firstParsedValue(row, ["ytb", "youtube", "youtube_url"], (value) => toSocialUrl(value, "youtube"));
+        const trucky = firstParsedValue(row, ["trucky", "trucky_url", "trucky_link", "truckymods"], toHttpUrl);
+        const tiktok = firstParsedValue(row, ["tiktok", "tik_tok", "tiktok_url", "tt"], (value) => toSocialUrl(value, "tiktok"));
+        const github = firstParsedValue(row, ["github", "gh", "github_url", "github_link"], (value) => toSocialUrl(value, "github"));
+        const gmail = firstParsedValue(row, ["gmail", "email", "mail"], toEmail);
+        const categoryByLang = collectLocalizedValues(row, "cat");
+        const roleByLang = collectLocalizedValues(row, "role");
+
+        const username = String(usernameRaw || "").trim().replace(/^@+/, "");
+        const contributorLabel = t("credits_contributor_label", "Contributeur");
+        const displayName = String(displayNameRaw || "").trim() || username || `${contributorLabel} ${index + 1}`;
+        const normalizedRole = normalizeRoleText(resolveLocalizedValue(roleDefault, roleByLang));
+        const status = normalizedRole || contributorLabel;
+        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=256&background=2a2f45&color=ffffff`;
+
+        const socialLinks = [];
+        if (userId) socialLinks.push({ key: "discord", href: `https://discord.com/users/${encodeURIComponent(userId)}` });
+        if (github) socialLinks.push({ key: "github", href: github });
+        if (tiktok) socialLinks.push({ key: "tiktok", href: tiktok });
+        if (youtube) socialLinks.push({ key: "youtube", href: youtube });
+        if (trucky) socialLinks.push({ key: "trucky", href: trucky });
+        if (gmail) socialLinks.push({ key: "email", href: `mailto:${gmail}` });
+
+        return {
+          userId: String(userId || "").trim(),
+          name: displayName,
+          username,
+          category: normalizeCategoryText(resolveLocalizedValue(categoryDefault, categoryByLang)) || t("credits_category_other", "Autres"),
+          categoryDefault: categoryDefault || "",
+          categoryByLang,
+          role: roleDefault || "",
+          roleDefault: roleDefault || "",
+          roleByLang,
+          status,
+          joinedDateDisplay: parsedJoinDate ? parsedJoinDate.display : "",
+          joinedDateIso: parsedJoinDate ? parsedJoinDate.date.toISOString().slice(0, 10) : "",
+          avatar: avatar || fallbackAvatar,
+          socialLinks
+        };
+      }
+      function localizeContributor(contributor) {
+        const localizedCategoryText = resolveLocalizedValue(
+          contributor && (contributor.categoryDefault || contributor.category) || "",
+          contributor && contributor.categoryByLang
+        );
+        const popupRoleCandidates = extractPopupRoleList(localizedCategoryText);
+        const firstCategoryItem = popupRoleCandidates.length ? popupRoleCandidates[0] : null;
+        const rawCategory = normalizeCategoryText(localizedCategoryText);
+        const parsedRawCategory = parseRoleLine(rawCategory);
+        const category = firstCategoryItem
+          ? firstCategoryItem.label
+          : (parsedRawCategory && parsedRawCategory.label) || rawCategory || t("credits_category_other", "Autres");
+        const localizedRole = normalizeRoleText(resolveLocalizedValue(
+          contributor && (contributor.roleDefault || contributor.role) || "",
+          contributor && contributor.roleByLang
+        ));
+        const popupRoles = firstCategoryItem ? popupRoleCandidates.slice(1) : popupRoleCandidates;
+        const popupCategoryStyle = firstCategoryItem
+          ? {
+            bgColor: firstCategoryItem.bgColor,
+            textColor: firstCategoryItem.textColor
+          }
+          : (parsedRawCategory && parsedRawCategory.bgColor
+            ? {
+              bgColor: parsedRawCategory.bgColor,
+              textColor: parsedRawCategory.textColor
+            }
+            : null);
+        return {
+          ...contributor,
+          category,
+          popupRoles,
+          popupCategoryStyle,
+          status: localizedRole || t("credits_contributor_label", "Contributeur")
+        };
+      }
+      function fallbackContributors() {
+        return [
+          
+        ];
+      }
+      function buildSocialButtonElement(socialConfig, socialLink) {
+        if (!socialConfig || typeof socialConfig !== "object") return null;
+        const href = String(socialLink && socialLink.href || "").trim();
+        if (!href) return null;
+
+        const link = document.createElement("a");
+        link.className = "credit-social-btn";
+        link.href = href;
+        if (socialLink.key !== "email") {
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+        }
+
+        if (socialConfig.bg) link.style.setProperty("--social-bg", socialConfig.bg);
+        if (socialConfig.border) link.style.setProperty("--social-border", socialConfig.border);
+        if (socialConfig.hoverBg) link.style.setProperty("--social-hover-bg", socialConfig.hoverBg);
+        if (socialConfig.hoverBorder) link.style.setProperty("--social-hover-border", socialConfig.hoverBorder);
+
+        const label = String(socialConfig.label || socialLink.key || "Link").trim();
+        link.innerHTML = `${socialConfig.icon || ""}<span>${label}</span>`;
+        link.setAttribute("aria-label", label);
+        return link;
+      }
+      function sortSocialLinks(links) {
+        const order = {
+          discord: 0,
+          youtube: 1,
+          tiktok: 2,
+          trucky: 3,
+          github: 4,
+          email: 5
+        };
+        return [...links].sort((a, b) => {
+          const aKey = String(a && a.key || "").toLowerCase();
+          const bKey = String(b && b.key || "").toLowerCase();
+          const aRank = Object.prototype.hasOwnProperty.call(order, aKey) ? order[aKey] : 99;
+          const bRank = Object.prototype.hasOwnProperty.call(order, bKey) ? order[bKey] : 99;
+          return aRank - bRank;
+        });
+      }
+      function extractTopLevelSquareBlocks(rawText) {
+        const text = String(rawText || "");
+        const blocks = [];
+        let depth = 0;
+        let start = -1;
+        for (let i = 0; i < text.length; i += 1) {
+          const ch = text[i];
+          if (ch === "[") {
+            if (depth === 0) start = i;
+            depth += 1;
+            continue;
+          }
+          if (ch === "]" && depth > 0) {
+            depth -= 1;
+            if (depth === 0 && start >= 0) {
+              blocks.push({
+                start,
+                end: i,
+                content: text.slice(start + 1, i)
+              });
+              start = -1;
+            }
+          }
+        }
+        return blocks;
+      }
+      function splitByTopLevelSeparators(rawText) {
+        const text = String(rawText || "");
+        const out = [];
+        let current = "";
+        let depth = 0;
+        for (let i = 0; i < text.length; i += 1) {
+          const ch = text[i];
+          if (ch === "[") {
+            depth += 1;
+            current += ch;
+            continue;
+          }
+          if (ch === "]") {
+            if (depth > 0) depth -= 1;
+            current += ch;
+            continue;
+          }
+          if ((ch === "," || ch === ";") && depth === 0) {
+            if (current.trim()) out.push(current.trim());
+            current = "";
+            continue;
+          }
+          current += ch;
+        }
+        if (current.trim()) out.push(current.trim());
+        return out;
+      }
+      function stripRanges(text, ranges) {
+        const source = String(text || "");
+        const segments = Array.isArray(ranges) ? ranges : [];
+        if (!segments.length) return source;
+        const ordered = [...segments]
+          .filter((part) => part && Number.isInteger(part.start) && Number.isInteger(part.end) && part.end >= part.start)
+          .sort((a, b) => a.start - b.start);
+        let output = "";
+        let cursor = 0;
+        ordered.forEach((part) => {
+          if (part.start > cursor) output += source.slice(cursor, part.start);
+          output += " ";
+          cursor = Math.max(cursor, part.end + 1);
+        });
+        if (cursor < source.length) output += source.slice(cursor);
+        return output;
+      }
+      function safeDecodeURIComponent(value) {
+        const text = String(value || "");
+        try {
+          return decodeURIComponent(text);
+        } catch {
+          return text;
+        }
+      }
+      function normalizeUrlScheme(raw) {
+        return String(raw || "")
+          .trim()
+          .replace(/^https\/\//i, "https://")
+          .replace(/^http\/\//i, "http://");
+      }
+      function extractLastUrlCandidate(raw) {
+        const source = safeDecodeURIComponent(raw);
+        const matches = source.match(/https?:\/\/[^\s]+|https\/\/[^\s]+|http\/\/[^\s]+/gi);
+        if (!matches || !matches.length) return "";
+        const candidate = String(matches[matches.length - 1] || "")
+          .trim()
+          .replace(/[),.;]+$/g, "");
+        return normalizeUrlScheme(candidate);
+      }
+      function parseImageSpec(rawSpec) {
+        const source = safeDecodeURIComponent(rawSpec).trim();
+        if (!source) return null;
+        let linkPart = source;
+        let caption = "";
+        const openIdx = source.indexOf("[");
+        const closeIdx = source.lastIndexOf("]");
+        if (openIdx > 0 && closeIdx > openIdx) {
+          linkPart = source.slice(0, openIdx).trim();
+          caption = source.slice(openIdx + 1, closeIdx).trim();
+        }
+        if (!caption) {
+          const braceCaption = source.match(/\{([^{}]+)\}/);
+          if (braceCaption && braceCaption[1]) caption = String(braceCaption[1]).trim();
+        }
+        caption = String(caption || "")
+          .replace(/^\{+|\}+$/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+        const cleanedLinkPart = normalizeUrlScheme(
+          linkPart
+            .replace(/\{[^{}]*\}/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+        );
+        let url = toHttpUrl(cleanedLinkPart);
+        if (!url) {
+          const fallbackCandidate = extractLastUrlCandidate(source);
+          if (fallbackCandidate) url = toHttpUrl(fallbackCandidate);
+        }
+        if (!url) return null;
+        return { url, caption };
+      }
+      function parseContributionEntry(rawLine) {
+        const source = String(rawLine || "")
+          .replace(/\s*\\+\s*$/g, "")
+          .replace(/\s*,+\s*$/g, "")
+          .trim();
+        const detailParts = [];
+        const imageItems = [];
+        const inlineNotes = [];
+        const imageBlocks = extractTopLevelSquareBlocks(source);
+        const outsideImageBlocks = stripRanges(
+          source,
+          imageBlocks.map((block) => ({ start: block.start, end: block.end }))
+        );
+        Array.from(outsideImageBlocks.matchAll(/\{([^{}]+)\}/g)).forEach((match) => {
+          const value = String(match && match[1] || "").trim();
+          if (value) detailParts.push(value);
+        });
+        imageBlocks.forEach((block) => {
+          const blockSource = safeDecodeURIComponent(block.content || "");
+          const blockImages = [];
+          const blockNotes = [];
+          const consumedRanges = [];
+
+          const captionedPattern = /\{([^{}]+)\}\s*(https?:\/\/[^\s\]\[\{]+|https\/\/[^\s\]\[\{]+|http\/\/[^\s\]\[\{]+)/gi;
+          let captionedMatch = null;
+          while ((captionedMatch = captionedPattern.exec(blockSource)) !== null) {
+            const parsed = parseImageSpec(`{${String(captionedMatch[1] || "").trim()}} ${String(captionedMatch[2] || "").trim()}`);
+            if (!parsed) continue;
+            blockImages.push(parsed);
+            consumedRanges.push({ start: captionedMatch.index, end: captionedPattern.lastIndex - 1 });
+          }
+
+          const withoutCaptioned = stripRanges(blockSource, consumedRanges);
+          const plainUrlPattern = /https?:\/\/[^\s\]\[\{]+|https\/\/[^\s\]\[\{]+|http\/\/[^\s\]\[\{]+/gi;
+          const plainRanges = [];
+          let plainMatch = null;
+          while ((plainMatch = plainUrlPattern.exec(withoutCaptioned)) !== null) {
+            const parsed = parseImageSpec(String(plainMatch[0] || "").trim());
+            if (!parsed) continue;
+            blockImages.push(parsed);
+            plainRanges.push({ start: plainMatch.index, end: plainUrlPattern.lastIndex - 1 });
+          }
+
+          const noteSource = stripRanges(withoutCaptioned, plainRanges)
+            .replace(/\{[^{}]*\}/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+          if (noteSource) blockNotes.push(noteSource);
+
+          if (!blockImages.length) {
+            const tokens = splitByTopLevelSeparators(blockSource);
+            tokens.forEach((token) => {
+              const parsed = parseImageSpec(token);
+              if (parsed) {
+                blockImages.push(parsed);
+                return;
+              }
+              const note = String(token || "").trim();
+              if (note) blockNotes.push(note);
+            });
+          }
+          if (blockImages.length) {
+            blockImages.forEach((item) => imageItems.push(item));
+            blockNotes.forEach((note) => inlineNotes.push(note));
+          } else {
+            const note = String(block.content || "").trim();
+            if (note) inlineNotes.push(note);
+          }
+        });
+
+        const parsedImages = imageItems.filter((item) => item && item.url);
+        const title = stripRanges(source, imageBlocks.map((block) => ({ start: block.start, end: block.end })))
+          .replace(/\{[^{}]*\}/g, " ")
+          .replace(/\s+/g, " ")
+          .replace(/\s*\\+\s*$/g, "")
+          .replace(/\s*,+\s*$/g, "")
+          .trim() || t("credits_contribution_item", "Contribution");
+        const detail = detailParts.join("\n").trim();
+        const sideLabel = inlineNotes.join(" | ").trim();
+        return {
+          title,
+          detail,
+          sideLabel,
+          tooltipText: String(detailParts[0] || inlineNotes[0] || "").trim(),
+          imageItems: parsedImages,
+          imageUrls: parsedImages.map((item) => item.url)
+        };
+      }
+      function isContributionPlaceholderLine(rawLine) {
+        const normalized = String(rawLine || "")
+          .replace(/^[-\s]+/g, "")
+          .replace(/^["'`]+|["'`]+$/g, "")
+          .replace(/[;,|]+$/g, "")
+          .trim()
+          .toLowerCase();
+        return normalized === "x" || normalized === "+" || normalized === "fin";
+      }
+      function hasEndContributionMarker(rawText) {
+        const text = String(rawText || "")
+          .replace(/\\+/g, "\n")
+          .trim();
+        if (!text) return false;
+        const lowered = text.toLowerCase();
+        if (lowered.includes("+")) return true;
+        return /(?:^|[\s,;|\\[\]{}()"'`_-])fin(?:$|[\s,;|\\[\]{}()"'`_-])/i.test(text);
+      }
+      function parseContributions(rawText) {
+        const text = String(rawText || "")
+          .replace(/\\+\s*(?:\r?\n|$)/g, "\n")
+          .trim();
+        const lines = text
+          ? text
+            .split(/\r?\n+/)
+            .map((line) => String(line || "")
+              .replace(/\s*\\+\s*$/g, "")
+              .replace(/\s*,+\s*$/g, "")
+              .trim())
+            .filter(Boolean)
+          : [];
+        const usefulLines = lines.filter((line) => !isContributionPlaceholderLine(line));
+        if (!usefulLines.length) return [];
+        return usefulLines.map(parseContributionEntry);
+      }
+      function contributionTitlesFromText(rawText) {
+        return parseContributions(rawText)
+          .map((entry) => String(entry && entry.title || "").trim())
+          .filter(Boolean);
+      }
+      function buildSocialListElement(contributor, socials, options) {
+        const config = options && typeof options === "object" ? options : {};
+        const list = document.createElement("div");
+        list.className = "credit-social-list";
+        const showLabel = !!config.showLabel;
+        const reverseOrder = config.reverseOrder !== false;
+        let links = sortSocialLinks(Array.isArray(contributor && contributor.socialLinks) ? contributor.socialLinks : []);
+        if (reverseOrder) links = links.reverse();
+        links.forEach((socialLink) => {
+          const key = String(socialLink && socialLink.key || "").trim().toLowerCase();
+          if (!key) return;
+          const button = buildSocialButtonElement(socials[key], socialLink);
+          if (!button) return;
+          if (showLabel) button.classList.add("is-labeled");
+          list.appendChild(button);
+        });
+        return list;
+      }
+      function enableHorizontalDragScroll(scroller) {
+        if (!(scroller instanceof HTMLElement)) return;
+        let pointerDown = false;
+        let startX = 0;
+        let startScroll = 0;
+        let moved = false;
+        let dragActivated = false;
+        let previousScrollBehavior = "";
+        let latestDelta = 0;
+        let rafId = 0;
+        let pressedLink = null;
+        const DRAG_ACTIVATE_THRESHOLD = 3;
+
+        function applyDragFrame() {
+          rafId = 0;
+          scroller.scrollLeft = startScroll - latestDelta;
+        }
+
+        function stopDrag(event) {
+          if (!pointerDown) return;
+          pointerDown = false;
+          if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = 0;
+          }
+          scroller.classList.remove("is-dragging");
+          scroller.style.scrollBehavior = previousScrollBehavior || "";
+          const shouldOpenLink = !!event
+            && event.type === "pointerup"
+            && !dragActivated
+            && !moved
+            && !!pressedLink
+            && String(event.pointerType || "") === "mouse"
+            && Number(event.button) === 0;
+          if (dragActivated || moved) {
+            scroller.setAttribute("data-drag-click-block", "1");
+            setTimeout(() => scroller.removeAttribute("data-drag-click-block"), 0);
+          }
+          if (shouldOpenLink) {
+            scroller.setAttribute("data-drag-click-block", "1");
+            setTimeout(() => scroller.removeAttribute("data-drag-click-block"), 0);
+            try {
+              window.open(pressedLink.href, "_blank", "noopener,noreferrer");
+            } catch {
+              pressedLink.click();
+            }
+          }
+          dragActivated = false;
+          moved = false;
+          pressedLink = null;
+          latestDelta = 0;
+        }
+
+        scroller.addEventListener("pointerdown", (event) => {
+          if (event.isPrimary === false) return;
+          if (event.pointerType === "mouse" && event.button !== 0) return;
+          pointerDown = true;
+          moved = false;
+          pressedLink = event.target instanceof Element ? event.target.closest("a[href]") : null;
+          startX = event.clientX;
+          startScroll = scroller.scrollLeft;
+          previousScrollBehavior = scroller.style.scrollBehavior || "";
+          scroller.style.scrollBehavior = "auto";
+          scroller.classList.add("is-dragging");
+        });
+        scroller.addEventListener("pointermove", (event) => {
+          if (!pointerDown) return;
+          const delta = event.clientX - startX;
+          if (!dragActivated && Math.abs(delta) >= DRAG_ACTIVATE_THRESHOLD) {
+            dragActivated = true;
+            moved = true;
+          }
+          if (!dragActivated) return;
+          latestDelta = delta;
+          if (!rafId) rafId = requestAnimationFrame(applyDragFrame);
+          event.preventDefault();
+        }, { passive: false });
+        scroller.addEventListener("pointerup", (event) => stopDrag(event));
+        scroller.addEventListener("pointercancel", (event) => stopDrag(event));
+        scroller.addEventListener("click", (event) => {
+          if (scroller.getAttribute("data-drag-click-block") !== "1") return;
+          event.preventDefault();
+          event.stopPropagation();
+        }, true);
+        scroller.addEventListener("dragstart", (event) => {
+          event.preventDefault();
+        });
+      }
+      let ACTIVE_MODAL_CONTRIBUTOR = null;
+      let ACTIVE_MODAL_TRIGGER = null;
+      let LOCKED_SCROLL_Y = 0;
+      let ENFORCE_MODAL_SCROLL_LOCK = false;
+      const MODAL_SCROLL_BLOCK_KEYS = new Set([" ", "Spacebar", "PageUp", "PageDown", "Home", "End", "ArrowUp", "ArrowDown"]);
+      function enforceLockedBackgroundScroll() {
+        if (!ENFORCE_MODAL_SCROLL_LOCK) return;
+        const currentY = window.scrollY || window.pageYOffset || 0;
+        if (Math.abs(currentY - LOCKED_SCROLL_Y) <= 0) return;
+        window.scrollTo({ top: LOCKED_SCROLL_Y, left: 0, behavior: "auto" });
+      }
+      function isEventInsideModal(event) {
+        const overlay = document.getElementById("creditDetailModal");
+        if (!overlay || overlay.hidden) return false;
+        const modal = overlay.querySelector(".credit-modal");
+        if (!modal) return false;
+        const target = event && event.target;
+        return target instanceof Element && modal.contains(target);
+      }
+      function preventBackgroundWheel(event) {
+        if (isEventInsideModal(event)) return;
+        event.preventDefault();
+      }
+      function preventBackgroundTouchMove(event) {
+        if (isEventInsideModal(event)) return;
+        event.preventDefault();
+      }
+      function preventBackgroundKeyScroll(event) {
+        if (!MODAL_SCROLL_BLOCK_KEYS.has(event.key)) return;
+        if (isEventInsideModal(event)) return;
+        event.preventDefault();
+      }
+      function lockPageScrollForModal() {
+        if (document.body.classList.contains("credits-modal-open")) return;
+        LOCKED_SCROLL_Y = window.scrollY || window.pageYOffset || 0;
+        ENFORCE_MODAL_SCROLL_LOCK = true;
+        document.documentElement.classList.add("credits-modal-open");
+        document.body.classList.add("credits-modal-open");
+        document.addEventListener("wheel", preventBackgroundWheel, { passive: false, capture: true });
+        document.addEventListener("touchmove", preventBackgroundTouchMove, { passive: false, capture: true });
+        document.addEventListener("keydown", preventBackgroundKeyScroll, true);
+        window.addEventListener("scroll", enforceLockedBackgroundScroll, { passive: true });
+      }
+      function unlockPageScrollForModal() {
+        ENFORCE_MODAL_SCROLL_LOCK = false;
+        document.documentElement.classList.remove("credits-modal-open");
+        document.body.classList.remove("credits-modal-open");
+        document.removeEventListener("wheel", preventBackgroundWheel, true);
+        document.removeEventListener("touchmove", preventBackgroundTouchMove, true);
+        document.removeEventListener("keydown", preventBackgroundKeyScroll, true);
+        window.removeEventListener("scroll", enforceLockedBackgroundScroll);
+      }
+      function closeContributorModal() {
+        const overlay = document.getElementById("creditDetailModal");
+        if (!overlay || overlay.hidden) return;
+        overlay.classList.remove("is-open");
+        overlay.hidden = true;
+        overlay.setAttribute("aria-hidden", "true");
+        unlockPageScrollForModal();
+        document.querySelectorAll(".credit-item.is-modal-open").forEach((item) => {
+          item.classList.remove("is-modal-open");
+        });
+        const trigger = ACTIVE_MODAL_TRIGGER;
+        ACTIVE_MODAL_CONTRIBUTOR = null;
+        ACTIVE_MODAL_TRIGGER = null;
+      }
+      function renderContributorModalContent(baseContributor) {
+        const overlay = document.getElementById("creditDetailModal");
+        const titleEl = document.getElementById("creditDetailTitle");
+        const content = document.getElementById("creditDetailContent");
+        if (!overlay || !titleEl || !content || !baseContributor) return;
+        const contributor = localizeContributor(baseContributor);
+        const socials = window.SITE_SOCIAL_BUTTONS && typeof window.SITE_SOCIAL_BUTTONS === "object"
+          ? window.SITE_SOCIAL_BUTTONS
+          : {};
+        content.innerHTML = "";
+        titleEl.textContent = "";
+        const titleMain = document.createElement("span");
+        titleMain.className = "credit-modal-title-main";
+        titleMain.textContent = contributor.name;
+        titleEl.appendChild(titleMain);
+        const joinedDateInfo = parseContributorDate(contributor && contributor.joinedDateDisplay || contributor && contributor.joinedDateIso || "");
+        const sinceText = joinedDateInfo && joinedDateInfo.date ? formatSinceDate(joinedDateInfo.date) : "";
+        const headerUsername = String(contributor.username || "").trim().replace(/^@+/, "");
+        if (headerUsername) {
+          const titleHandle = document.createElement("span");
+          titleHandle.className = "credit-modal-title-handle";
+          titleHandle.textContent = `@${headerUsername}`;
+          titleEl.appendChild(titleHandle);
+        }
+
+        const top = document.createElement("div");
+        top.className = "credit-modal-top";
+        const photoWrap = document.createElement("div");
+        photoWrap.className = "credit-modal-photo-wrap";
+        const photo = document.createElement("img");
+        photo.className = "credit-modal-photo";
+        photo.loading = "lazy";
+        photo.src = contributor.avatar;
+        photo.alt = formatMessage(
+          t("credits_avatar_alt_template", "Photo de profil de {name}"),
+          { name: contributor.name }
+        );
+        photoWrap.appendChild(photo);
+
+        const identity = document.createElement("div");
+        identity.className = "credit-modal-identity";
+        const category = String(contributor.category || "").trim();
+        if (category) {
+          const categoryRow = document.createElement("div");
+          categoryRow.className = "credit-modal-category-row";
+          const categoryEl = document.createElement("p");
+          categoryEl.className = "credit-modal-category";
+          categoryEl.textContent = category.toUpperCase();
+          const categoryStyle = contributor && contributor.popupCategoryStyle && typeof contributor.popupCategoryStyle === "object"
+            ? contributor.popupCategoryStyle
+            : null;
+          const bgColor = String(categoryStyle && categoryStyle.bgColor || "").trim();
+          const textColor = String(categoryStyle && categoryStyle.textColor || "").trim();
+          if (bgColor) {
+            categoryEl.style.background = bgColor;
+            categoryEl.style.borderColor = bgColor;
+            categoryEl.style.color = textColor || "#ffffff";
+          }
+          categoryRow.appendChild(categoryEl);
+          if (sinceText) {
+            const sinceEl = document.createElement("span");
+            sinceEl.className = "credit-modal-category-since";
+            sinceEl.textContent = sinceText;
+            sinceEl.title = joinedDateInfo.display;
+            sinceEl.setAttribute("aria-label", joinedDateInfo.display);
+            categoryRow.appendChild(sinceEl);
+          }
+          identity.appendChild(categoryRow);
+        }
+        const popupRoles = Array.isArray(contributor.popupRoles) ? contributor.popupRoles : [];
+        if (popupRoles.length) {
+          const roleList = document.createElement("div");
+          roleList.className = "credit-modal-role-list";
+          popupRoles.forEach((roleItem) => {
+            const rolePill = document.createElement("span");
+            rolePill.className = "credit-modal-role-pill";
+            rolePill.textContent = String(roleItem && roleItem.label || "").trim().toUpperCase();
+            const bgColor = String(roleItem && roleItem.bgColor || "").trim();
+            const textColor = String(roleItem && roleItem.textColor || "").trim();
+            if (bgColor) {
+              rolePill.style.background = bgColor;
+              rolePill.style.borderColor = bgColor;
+              rolePill.style.color = textColor || "#ffffff";
+            }
+            roleList.appendChild(rolePill);
+          });
+          identity.appendChild(roleList);
+        }
+        top.appendChild(photoWrap);
+        top.appendChild(identity);
+        content.appendChild(top);
+
+        const linksSection = document.createElement("section");
+        linksSection.className = "credit-modal-section";
+        const linksTitle = document.createElement("h3");
+        linksTitle.className = "credit-modal-section-title";
+        linksTitle.textContent = t("credits_networks", "Réseaux");
+        const linksList = buildSocialListElement(contributor, socials, { showLabel: true, reverseOrder: false });
+        linksSection.appendChild(linksTitle);
+        if (linksList.childElementCount) {
+          linksSection.appendChild(linksList);
+        } else {
+          const empty = document.createElement("p");
+          empty.className = "credit-modal-empty";
+          empty.textContent = t("credits_no_links", "Aucun lien");
+          linksSection.appendChild(empty);
+        }
+        content.appendChild(linksSection);
+
+        const statusSection = document.createElement("section");
+        statusSection.className = "credit-modal-section";
+        const statusTitle = document.createElement("h3");
+        statusTitle.className = "credit-modal-section-title";
+        statusTitle.textContent = t("credits_contributions", "Contributions");
+        const roleButtons = document.createElement("div");
+        roleButtons.className = "credit-modal-role-buttons";
+        const roleContent = document.createElement("div");
+        roleContent.className = "credit-modal-role-content";
+        const parsedGroupedImages = [];
+        const groupedText = [];
+
+        const parsedEntries = parseContributions(contributor.status);
+        parsedEntries.forEach((entry) => {
+          const detailLines = String(entry && entry.detail || "")
+            .split(/\r?\n+/)
+            .map((line) => line.trim())
+            .filter(Boolean);
+          const explicitSideLabel = String(entry && entry.sideLabel || "").trim();
+          const inlineLabel = explicitSideLabel || (detailLines.length ? detailLines[0] : "");
+          const detailText = explicitSideLabel
+            ? detailLines.join("\n")
+            : detailLines.slice(1).join("\n");
+          const hasImages = Array.isArray(entry.imageItems) && entry.imageItems.length > 0;
+          const roleBtn = document.createElement("button");
+          roleBtn.type = "button";
+          roleBtn.className = "credit-modal-role-btn is-static";
+          roleBtn.textContent = entry.title;
+          roleBtn.setAttribute("aria-disabled", "true");
+          roleBtn.tabIndex = -1;
+          const tooltipText = String(entry && entry.tooltipText || "").trim();
+          if (tooltipText) {
+            roleBtn.title = tooltipText;
+            roleBtn.classList.add("has-tooltip");
+            roleBtn.setAttribute("aria-label", tooltipText);
+          } else {
+            roleBtn.setAttribute("aria-label", entry.title);
+          }
+          roleButtons.appendChild(roleBtn);
+
+          const fallbackCaptionLines = [];
+          if (inlineLabel) fallbackCaptionLines.push(inlineLabel);
+          detailLines.forEach((line) => fallbackCaptionLines.push(line));
+
+          if (hasImages) {
+            entry.imageItems.forEach((imageItem, imageIndex) => {
+              const href = String(imageItem && imageItem.url || "").trim();
+              if (!href) return;
+              const explicitCaption = String(imageItem && imageItem.caption || "").trim();
+              const fallbackCaption = fallbackCaptionLines[imageIndex] || fallbackCaptionLines[0] || "";
+              parsedGroupedImages.push({
+                href,
+                caption: explicitCaption || fallbackCaption
+              });
+            });
+            return;
+          }
+
+          if (inlineLabel) groupedText.push(inlineLabel);
+          if (detailText) {
+            String(detailText)
+              .split(/\r?\n+/)
+              .map((line) => line.trim())
+              .filter(Boolean)
+              .forEach((line) => groupedText.push(line));
+          }
+        });
+        const hasPlusContributionImage = hasLocalEndMarker(contributor);
+        const localGroupedImages = getLocalContributionImages(contributor);
+        const groupedImages = localGroupedImages.length ? localGroupedImages : parsedGroupedImages;
+        if (hasPlusContributionImage) {
+          const plusHref = "./images/credits/fin.png";
+          const plusAlreadyPresent = groupedImages.some((item) => {
+            const href = String(item && item.href || "").toLowerCase();
+            return href.endsWith("/fin.png");
+          });
+          if (!plusAlreadyPresent) groupedImages.push({ href: plusHref, caption: "" });
+        }
+
+        let initCarouselState = null;
+        if (groupedImages.length) {
+          const showCarouselCaptions = lang() === "fr";
+          const panel = document.createElement("div");
+          panel.className = "credit-modal-role-panel";
+          const carousel = document.createElement("div");
+          carousel.className = "credit-modal-carousel";
+          const prevBtn = document.createElement("button");
+          prevBtn.type = "button";
+          prevBtn.className = "credit-modal-carousel-btn is-prev";
+          prevBtn.setAttribute("aria-label", t("credits_carousel_prev", "Image precedente"));
+          prevBtn.textContent = "‹";
+          const images = document.createElement("div");
+          images.className = "credit-modal-images";
+          const nextBtn = document.createElement("button");
+          nextBtn.type = "button";
+          nextBtn.className = "credit-modal-carousel-btn is-next";
+          nextBtn.setAttribute("aria-label", t("credits_carousel_next", "Image suivante"));
+          nextBtn.textContent = "›";
+
+          const setBtnState = (btn, disabled) => {
+            btn.disabled = !!disabled;
+            btn.setAttribute("aria-disabled", disabled ? "true" : "false");
+            btn.classList.toggle("is-disabled", !!disabled);
+          };
+          const updateCarouselButtons = () => {
+            const maxScroll = Math.max(0, images.scrollWidth - images.clientWidth);
+            const hideButtons = maxScroll <= 2;
+            prevBtn.hidden = hideButtons;
+            nextBtn.hidden = hideButtons;
+            if (hideButtons) {
+              setBtnState(prevBtn, true);
+              setBtnState(nextBtn, true);
+              return;
+            }
+            const firstItem = images.firstElementChild;
+            const firstDelta = firstItem
+              ? firstItem.getBoundingClientRect().left - images.getBoundingClientRect().left
+              : 0;
+            const atStart = images.scrollLeft <= 1 || firstDelta >= -2;
+            setBtnState(prevBtn, atStart);
+            setBtnState(nextBtn, images.scrollLeft >= maxScroll - 1);
+          };
+          initCarouselState = () => {
+            images.scrollTo({ left: 0, top: 0, behavior: "auto" });
+            images.scrollLeft = 0;
+            const firstItem = images.firstElementChild;
+            if (firstItem && typeof firstItem.scrollIntoView === "function") {
+              try {
+                firstItem.scrollIntoView({ inline: "start", block: "nearest", behavior: "auto" });
+              } catch {}
+            }
+            setBtnState(prevBtn, true);
+            setBtnState(nextBtn, false);
+            updateCarouselButtons();
+          };
+
+          groupedImages.forEach((item) => {
+            const link = document.createElement("a");
+            link.className = "credit-modal-image-link";
+            link.href = item.href;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            const img = document.createElement("img");
+            img.className = "credit-modal-image";
+            img.loading = "lazy";
+            img.src = item.href;
+            img.alt = formatMessage(
+              t("credits_contribution_image_alt", "Image de contribution: {name}"),
+              { name: item.caption || "Contribution" }
+            );
+            img.addEventListener("load", () => {
+              window.requestAnimationFrame(updateCarouselButtons);
+            }, { once: true });
+            link.appendChild(img);
+            if (showCarouselCaptions && item.caption) {
+              const captionEl = document.createElement("p");
+              captionEl.className = "credit-modal-image-caption";
+              captionEl.textContent = item.caption;
+              link.appendChild(captionEl);
+            }
+            images.appendChild(link);
+          });
+
+          const stepSize = () => Math.max(220, Math.round(images.clientWidth * 0.85));
+          prevBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            images.scrollBy({ left: -stepSize(), behavior: "smooth" });
+          });
+          nextBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            images.scrollBy({ left: stepSize(), behavior: "smooth" });
+          });
+          images.addEventListener("scroll", updateCarouselButtons, { passive: true });
+          enableHorizontalDragScroll(images);
+
+          carousel.appendChild(prevBtn);
+          carousel.appendChild(images);
+          carousel.appendChild(nextBtn);
+          panel.appendChild(carousel);
+          roleContent.appendChild(panel);
+        }
+
+        if (!groupedImages.length && groupedText.length) {
+          groupedText.forEach((line) => {
+            const detail = document.createElement("p");
+            detail.className = "credit-modal-contrib-detail";
+            detail.textContent = line;
+            roleContent.appendChild(detail);
+          });
+        }
+
+        const hasRoleButtons = roleButtons.childElementCount > 0;
+        const hasRoleContent = roleContent.childElementCount > 0;
+        if (hasRoleButtons || hasRoleContent) {
+          statusSection.appendChild(statusTitle);
+          if (hasRoleButtons) statusSection.appendChild(roleButtons);
+          if (hasRoleContent) statusSection.appendChild(roleContent);
+          content.appendChild(statusSection);
+        }
+        if (typeof initCarouselState === "function") {
+          try {
+            window.requestAnimationFrame(() => {
+              initCarouselState();
+              window.requestAnimationFrame(initCarouselState);
+            });
+            setTimeout(initCarouselState, 80);
+          } catch {}
+        }
+      }
+      function openContributorModal(baseContributor, triggerEl) {
+        const overlay = document.getElementById("creditDetailModal");
+        const closeBtn = document.getElementById("creditDetailClose");
+        if (!overlay || !baseContributor) return;
+        ACTIVE_MODAL_CONTRIBUTOR = baseContributor;
+        ACTIVE_MODAL_TRIGGER = triggerEl || null;
+        document.querySelectorAll(".credit-item.is-modal-open").forEach((item) => {
+          item.classList.remove("is-modal-open");
+        });
+        if (triggerEl && triggerEl.classList) triggerEl.classList.add("is-modal-open");
+        renderContributorModalContent(baseContributor);
+        overlay.hidden = false;
+        overlay.classList.add("is-open");
+        overlay.setAttribute("aria-hidden", "false");
+        lockPageScrollForModal();
+      }
+      function refreshContributorModalLocale() {
+        if (!ACTIVE_MODAL_CONTRIBUTOR) return;
+        renderContributorModalContent(ACTIVE_MODAL_CONTRIBUTOR);
+      }
+      function bindContributorModalEvents() {
+        const overlay = document.getElementById("creditDetailModal");
+        const closeBtn = document.getElementById("creditDetailClose");
+        if (!overlay || !closeBtn) return;
+        closeBtn.addEventListener("click", closeContributorModal);
+        overlay.addEventListener("click", (event) => {
+          if (event.target === overlay) closeContributorModal();
+        });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && !overlay.hidden) {
+            event.preventDefault();
+            closeContributorModal();
+          }
+        });
+      }
+      function buildContributorCard(contributor, baseContributor, socials) {
+        const article = document.createElement("article");
+        article.className = "credit-item";
+        article.tabIndex = 0;
+        article.setAttribute(
+          "aria-label",
+          formatMessage(t("credits_open_details", "Ouvrir le detail de {name}"), { name: contributor.name })
+        );
+        article.addEventListener("click", (event) => {
+          if (event.target instanceof Element && event.target.closest("a")) return;
+          openContributorModal(baseContributor, article);
+        });
+        article.addEventListener("keydown", (event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          if (event.target instanceof Element && event.target.closest("a")) return;
+          event.preventDefault();
+          openContributorModal(baseContributor, article);
+        });
+
+        const photoWrap = document.createElement("div");
+        photoWrap.className = "credit-photo-wrap";
+        const photo = document.createElement("img");
+        photo.className = "credit-photo";
+        photo.loading = "lazy";
+        photo.src = contributor.avatar;
+        photo.alt = formatMessage(
+          t("credits_avatar_alt_template", "Photo de profil de {name}"),
+          { name: contributor.name }
+        );
+        photoWrap.appendChild(photo);
+
+        const meta = document.createElement("div");
+        meta.className = "credit-meta";
+        const name = document.createElement("h2");
+        name.className = "credit-name";
+        const nameMain = document.createElement("span");
+        nameMain.className = "credit-name-main";
+        nameMain.textContent = contributor.name;
+        name.appendChild(nameMain);
+        const joinedDateInfo = parseContributorDate(contributor && contributor.joinedDateDisplay || contributor && contributor.joinedDateIso || "");
+        const sinceText = joinedDateInfo && joinedDateInfo.date ? formatSinceDate(joinedDateInfo.date) : "";
+        if (sinceText) {
+          const sinceEl = document.createElement("span");
+          sinceEl.className = "credit-name-since-card";
+          sinceEl.textContent = sinceText;
+          name.appendChild(sinceEl);
+        }
+        const status = document.createElement("p");
+        status.className = "credit-status";
+        const statusTitles = contributionTitlesFromText(contributor.status);
+        statusTitles.forEach((line) => {
+          const statusItem = document.createElement("span");
+          statusItem.className = "credit-status-item";
+          statusItem.textContent = line;
+          status.appendChild(statusItem);
+        });
+
+        const head = document.createElement("div");
+        head.className = "credit-head";
+        head.appendChild(name);
+        meta.appendChild(head);
+        if (statusTitles.length) meta.appendChild(status);
+
+        article.appendChild(photoWrap);
+        article.appendChild(meta);
+        return article;
+      }
+      let FEEDBACK_STATE = { key: "", fallback: "", isError: false, isLoading: false };
+      function setFeedback(message, isError, isLoading) {
+        const feedback = document.getElementById("creditsFeedback");
+        if (!feedback) return;
+        feedback.textContent = message || "";
+        feedback.classList.toggle("is-error", !!isError);
+        feedback.classList.toggle("is-loading", !!isLoading);
+      }
+      function setFeedbackByKey(key, fallback, isError, isLoading) {
+        FEEDBACK_STATE = {
+          key: String(key || "").trim(),
+          fallback: String(fallback || "").trim(),
+          isError: !!isError,
+          isLoading: !!isLoading
+        };
+        setFeedback(FEEDBACK_STATE.key ? t(FEEDBACK_STATE.key, FEEDBACK_STATE.fallback) : "", FEEDBACK_STATE.isError, FEEDBACK_STATE.isLoading);
+      }
+      function clearFeedback() {
+        FEEDBACK_STATE = { key: "", fallback: "", isError: false, isLoading: false };
+        setFeedback("", false, false);
+      }
+      function refreshFeedbackLocale() {
+        if (!FEEDBACK_STATE.key) return;
+        setFeedback(t(FEEDBACK_STATE.key, FEEDBACK_STATE.fallback), FEEDBACK_STATE.isError, FEEDBACK_STATE.isLoading);
+      }
+      function renderCredits(contributors) {
+        const host = document.getElementById("creditsList");
+        if (!host) return;
+        host.innerHTML = "";
+        const socials = window.SITE_SOCIAL_BUTTONS && typeof window.SITE_SOCIAL_BUTTONS === "object"
+          ? window.SITE_SOCIAL_BUTTONS
+          : {};
+        const groupsMap = new Map();
+        contributors.forEach((baseContributor) => {
+          const contributor = localizeContributor(baseContributor);
+          const category = String(contributor && contributor.category || "").trim() || t("credits_category_other", "Autres");
+          if (!groupsMap.has(category)) groupsMap.set(category, []);
+          groupsMap.get(category).push({ base: baseContributor, localized: contributor });
+        });
+
+        groupsMap.forEach((items, category) => {
+          const group = document.createElement("section");
+          group.className = "credits-group";
+
+          const title = document.createElement("h2");
+          title.className = "credits-group-title";
+          title.textContent = category;
+
+          const list = document.createElement("div");
+          list.className = "credits-group-list";
+          items.forEach((entry) => {
+            list.appendChild(buildContributorCard(entry.localized, entry.base, socials));
+          });
+
+          group.appendChild(title);
+          group.appendChild(list);
+          host.appendChild(group);
+        });
+      }
+      async function loadContributors() {
+        const links = window.SITE_LINKS && typeof window.SITE_LINKS === "object"
+          ? window.SITE_LINKS
+          : {};
+        const creditsCfg = links.credits && typeof links.credits === "object"
+          ? links.credits
+          : {};
+        const sheetCfg = creditsCfg.sheet && typeof creditsCfg.sheet === "object"
+          ? creditsCfg.sheet
+          : {};
+
+        const spreadsheetId = String(sheetCfg.spreadsheet_id || "").trim();
+        const gid = String(sheetCfg.gid || "0").trim() || "0";
+        const cacheMs = Math.max(60000, Number(sheetCfg.cache_ms) || 180000);
+        const timeoutMs = Math.max(3000, Number(sheetCfg.timeout_ms) || 10000);
+
+        if (!spreadsheetId) {
+          setFeedbackByKey("credits_error", "Erreur", true, false);
+          return ENABLE_LOCAL_MODE ? fallbackContributors() : [];
+        }
+
+        const cachedRows = readCache(cacheMs);
+        if (cachedRows && cachedRows.length) {
+          const contributors = cachedRows.map(contributorFromRow).filter((item) => item && item.name);
+          if (contributors.length) {
+            setFeedbackByKey("credits_cache_local_loaded", "", false, false);
+            return contributors;
+          }
+        }
+
+        const sheetUrl = buildSheetUrl(spreadsheetId, gid);
+        const rows = await fetchSheetRows(sheetUrl, timeoutMs);
+        if (rows.length) writeCache(rows);
+        const contributors = rows.map(contributorFromRow).filter((item) => item && item.name);
+        if (!contributors.length) throw new Error("Sheet is empty");
+        clearFeedback();
+        return contributors;
+      }
+      function render() {
+        const pageTitle = t("nav_credits", "Credits");
+        const titleEl = document.getElementById("creditsTitle");
+        if (titleEl) titleEl.textContent = pageTitle;
+        document.title = `Ile-de-France Map | ${pageTitle}`;
+      }
+      let CURRENT_CONTRIBUTORS = [];
+      function applyContributors(contributors) {
+        CURRENT_CONTRIBUTORS = Array.isArray(contributors) ? contributors : [];
+        renderCredits(CURRENT_CONTRIBUTORS);
+        refreshContributorModalLocale();
+      }
+      initCreditsImagesIndex();
+      bindContributorModalEvents();
+      render();
+      setFeedbackByKey("credits_loading", "Chargement", false, true);
+      loadContributors()
+        .then((contributors) => {
+          applyContributors(contributors);
+        })
+        .catch(() => {
+          if (ENABLE_LOCAL_MODE) {
+            const fallback = fallbackContributors();
+            applyContributors(fallback);
+            setFeedbackByKey("credits_error", "Erreur", true, false);
+            return;
+          }
+          applyContributors([]);
+          setFeedbackByKey("credits_error", "Erreur", true, false);
+        });
+      new MutationObserver(() => {
+        render();
+        renderCredits(CURRENT_CONTRIBUTORS);
+        refreshContributorModalLocale();
+        refreshFeedbackLocale();
+      }).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["lang"]
+      });
+    })();
+  </script>
+  <script>
+    window.__setAppReady?.();
+  </script>
+</body>
+</html>
