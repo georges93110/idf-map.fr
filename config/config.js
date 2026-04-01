@@ -45,7 +45,7 @@
       labelKey: "nav_group_maps",
       items: [
         { href: "./", labelKey: "nav_accueil" },
-        { href: "actualites", labelKey: "nav_actualites" },
+       //  { href: "actualites", labelKey: "nav_actualites" },
         { href: "map", labelKey: "nav_carte_interactive" },
         { href: "faq", labelKey: "nav_faq" },
         { href: "credits", labelKey: "nav_credits" },

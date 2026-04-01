@@ -1158,24 +1158,11 @@
       }
       function lang() {
         const code = rawLang();
-        return code === "fr" || code === "en" ? code : "en";
+        const supported = new Set(["fr", "en", "es", "de", "pl", "pt", "nl", "it", "ru", "zh", "ko", "ja"]);
+        return supported.has(code) ? code : "en";
       }
       function unsupportedLanguageNoticeText() {
-        const code = rawLang();
-        if (code === "fr" || code === "en") return "";
-        const byLang = {
-          es: "Disponible solo en inglés por el momento, disculpa las molestias.",
-          de: "Derzeit nur auf Englisch verfugbar, bitte entschuldige die Unannehmlichkeiten.",
-          pl: "Na razie dostepne tylko po angielsku, przepraszamy za niedogodnosci.",
-          pt: "Disponivel apenas em ingles por enquanto, pedimos desculpa pelo incomodo.",
-          nl: "Momenteel alleen beschikbaar in het Engels, excuses voor het ongemak.",
-          it: "Disponibile solo in inglese per il momento, ci scusiamo per il disagio.",
-          ru: "Пока доступно только на английском, приносим извинения за неудобства.",
-          zh: "目前仅提供英文版本，给您带来不便敬请谅解。",
-          ko: "현재 영어로만 제공됩니다. 불편을 드려 죄송합니다.",
-          ja: "現在は英語のみ対応しています。ご不便をおかけして申し訳ありません。"
-        };
-        return byLang[code] || "Available in English only for now, sorry for the inconvenience.";
+        return "";
       }
       function tRaw(key, fallback) {
         const i18n = window.I18N || {};
@@ -1248,9 +1235,7 @@
         if (code === "fr") return String(defaultValue || "").trim();
         const english = String(valuesByLang && valuesByLang.en || "").trim();
         if (english) return english;
-        const forcedEnglish = rawLang() !== "fr" && rawLang() !== "en";
-        if (!forcedEnglish) return String(defaultValue || "").trim();
-        return "";
+        return String(defaultValue || "").trim();
       }
       function normalizeRoleText(raw) {
         return String(raw || "").replace(/\\+/g, "\n").trim();
@@ -1346,25 +1331,42 @@
         const key = normalizeRoleKey(rawLabel);
         if (!key) return "";
         const has = (token) => key.includes(token);
-        if (has("gerant du projet") || has("project manager") || has("project lead")) return "credits_role_manager";
-        if (has("developpeur") || has("developer")) return "credits_role_developer";
-        if (has("administrateur") || has("administrator") || key === "admin") return "credits_role_administrator";
-        if (has("moderateur") || has("moderator")) return "credits_role_moderator";
-        if (has("animateur") || has("animator")) return "credits_role_animator";
-        if (has("server booster")) return "credits_role_server_booster";
-        if (has("supporter")) return "credits_role_supporter";
-        if (has("moddeurs") || has("modders") || has("modder")) return "credits_role_modders";
-        if (has("createur de contenu") || has("content creator")) return "credits_role_content_creator";
-        if (has("contributeur") || has("contributor")) return "credits_role_contributor";
-        if (has("soutien") || key === "support") return "credits_role_support";
-        if (has("acces vocal prive") || has("private voice access")) return "credits_role_private_voice_access";
-        if (has("notification")) {
-          if (has("devlog")) return "credits_role_notification_devlog";
-          if (has("updates mineures") || has("minor updates")) return "credits_role_notification_minor_updates";
-          if (has("updates addons") || has("addon updates")) return "credits_role_notification_addon_updates";
-          if (has("sondage") || has("poll")) return "credits_role_notification_poll";
-          if (has("evenements") || has("events")) return "credits_role_notification_events";
-          if (has("convois") || has("convoys")) return "credits_role_notification_convoys";
+        const hasAny = (tokens) => tokens.some((token) => has(token));
+        const hasWord = (word) => new RegExp(`(?:^|\\s)${word}(?:\\s|$)`).test(key);
+        const hasTexture = hasAny(["texture", "textures"]);
+        const hasVehicle = hasAny(["vehicule", "vehicules", "vehicle", "vehicles", "veicoli", "pojazd"]);
+        const hasTrailer = hasAny(["remorque", "remorques", "trailer", "trailers", "rimorchio", "rimorchi", "reboque", "reboques", "naczepa", "naczep"]);
+
+        if (hasAny(["gerant du projet", "project manager", "project lead"])) return "credits_role_manager";
+        if (hasAny(["developpeur", "developer", "developpeuse"])) return "credits_role_developer";
+        if (hasAny(["administrateur", "administrator"]) || hasWord("admin")) return "credits_role_administrator";
+        if (hasAny(["moderateur", "moderator"]) || hasWord("modo")) return "credits_role_moderator";
+        if (hasAny(["animateur", "animator"])) return "credits_role_animator";
+        if (hasAny(["contributeur", "contributor"])) return "credits_role_contributor";
+        if (hasAny([
+          "server booster",
+          "supporter",
+          "moddeurs",
+          "modders",
+          "modder",
+          "createur de contenu",
+          "content creator",
+          "soutien",
+          "support",
+          "acces vocal prive",
+          "private voice access",
+          "notification"
+        ])) return "credits_role_contributor";
+
+        if (hasAny(["mapping", "cartographie", "mappeo", "mapeamento", "mapowanie", "mappatura"])) return "credits_term_mapping";
+        if (hasAny(["modeles 3d", "modele 3d", "3d models", "3d model", "modelli 3d", "modelos 3d", "modelle 3d", "modele 3 d"])) return "credits_term_3d_models";
+        if (hasAny(["logiciels", "logiciel", "software", "softwares", "programme", "programmes", "programa", "programas", "oprogramowanie"])) return "credits_term_software";
+        if (has("dbus world") && hasAny(["ligne", "lignes", "line", "lines", "linhas", "linie", "linee"])) return "credits_term_dbus_world_lines";
+        if (hasTexture && hasVehicle && (hasWord("ia") || hasWord("ai"))) return "credits_term_ai_vehicle_textures";
+        if (hasTexture && hasVehicle && hasAny(["modde", "modded", "moddees", "moddes", "modados", "moddati", "modyfikowanych", "gemodde"])) return "credits_term_modded_vehicle_textures";
+        if (hasTexture && hasTrailer) {
+          const singularPattern = /(?:^|\s)(texture)\s+(remorque|trailer|rimorchio|reboque|naczepa)(?:\s|$)/;
+          return singularPattern.test(key) ? "credits_term_trailer_texture" : "credits_term_trailer_textures";
         }
         return "";
       }
@@ -1376,20 +1378,14 @@
         if (color === "#aa3b3b") return "credits_role_administrator";
         if (color === "#c06824") return "credits_role_moderator";
         if (color === "#70e1f5" || color === "#ffe300") return "credits_role_animator";
-        if (color === "#ff00d1") return "credits_role_server_booster";
-        if (color === "#1abc9c") return "credits_role_supporter";
-        if (color === "#f6f1a5" || color === "#fff674") return "credits_role_modders";
-        if (color === "#ff0000") return "credits_role_content_creator";
-        if (color === "#4cadd0") return "credits_role_contributor";
-        if (color === "#ff7600") return "credits_role_support";
+        if (color === "#ff0000" || color === "#4cadd0") return "credits_role_contributor";
         return "";
       }
       function translateRoleLabel(rawLabelForLookup, fallbackLabel, rawColor) {
         const key = roleTranslationKeyForLabel(rawLabelForLookup) || roleTranslationKeyFromColor(rawColor);
         const fallback = String(fallbackLabel || rawLabelForLookup || "").trim();
         if (!key) return fallback;
-        const translated = String(t(key, "") || "").trim();
-        return translated || fallback;
+        return String(t(key, fallback) || "").trim() || fallback;
       }
       function rolePriorityIndex(rawRole) {
         const sourceLower = String(rawRole || "").trim().toLowerCase();
@@ -1595,44 +1591,62 @@
         }
         return Math.max(0, years);
       }
+      const SINCE_PLURAL_RULES = new Map();
+      function pluralCategoryForCount(count) {
+        const value = Math.max(0, Math.floor(Number(count) || 0));
+        const locale = lang();
+        let rules = SINCE_PLURAL_RULES.get(locale);
+        if (!rules) {
+          try {
+            rules = new Intl.PluralRules(locale);
+          } catch {
+            rules = new Intl.PluralRules("en");
+          }
+          SINCE_PLURAL_RULES.set(locale, rules);
+        }
+        try {
+          return String(rules.select(value) || "other");
+        } catch {
+          return "other";
+        }
+      }
+      function formatSinceUnit(unit, count) {
+        const safeCount = Math.max(0, Math.floor(Number(count) || 0));
+        const category = pluralCategoryForCount(safeCount);
+        const preferredKey = `credits_since_${unit}_${category}`;
+        const fallbackKey = `credits_since_${unit}_other`;
+        const legacyKey = safeCount === 1
+          ? `credits_since_${unit}_singular`
+          : `credits_since_${unit}_plural`;
+        const candidates = [preferredKey, fallbackKey, legacyKey];
+        for (const key of candidates) {
+          const template = String(t(key, "") || "").trim();
+          if (!template) continue;
+          return formatMessage(template, { count: safeCount });
+        }
+        const fallbackUnit = unit === "year" ? "year" : unit === "month" ? "month" : "day";
+        return `for ${safeCount} ${fallbackUnit}${safeCount === 1 ? "" : "s"}`;
+      }
       function formatSinceDate(dateValue) {
         if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) return "";
         const now = new Date();
         const start = new Date(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate());
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         if (start > today) return "";
-        const yearsFloor = yearsBetweenDates(start, today);
-        if (yearsFloor > 0) {
-          const anniversary = new Date(start.getFullYear() + yearsFloor, start.getMonth(), start.getDate());
-          const years = yearsFloor + (anniversary < today ? 1 : 0);
-          return formatMessage(
-            t(
-              years > 1 ? "credits_since_year_plural" : "credits_since_year_singular",
-              years > 1 ? "since {count} years" : "since {count} year"
-            ),
-            { count: years }
-          );
+        const years = yearsBetweenDates(start, today);
+        if (years > 0) {
+          return formatSinceUnit("year", years);
         }
-        const monthsFloor = monthsBetweenDates(start, today);
-        if (monthsFloor > 0) {
-          const monthAnniversary = new Date(start.getFullYear(), start.getMonth() + monthsFloor, start.getDate());
-          const months = monthsFloor + (monthAnniversary < today ? 1 : 0);
-          return formatMessage(
-            t(
-              months > 1 ? "credits_since_month_plural" : "credits_since_month_singular",
-              months > 1 ? "since {count} months" : "since {count} month"
-            ),
-            { count: months }
-          );
+        const months = monthsBetweenDates(start, today);
+        if (months > 0) {
+          return formatSinceUnit("month", months);
         }
         const days = Math.max(0, Math.floor((today.getTime() - start.getTime()) / 86400000));
-        return formatMessage(
-          t(
-            days > 1 ? "credits_since_day_plural" : "credits_since_day_singular",
-            days > 1 ? "since {count} days" : "since {count} day"
-          ),
-          { count: days }
-        );
+        if (days === 0) {
+          const todayLabel = String(t("credits_since_today", "") || "").trim();
+          if (todayLabel) return todayLabel;
+        }
+        return formatSinceUnit("day", days);
       }
       function readCache(maxAgeMs) {
         if (!ENABLE_LOCAL_MODE) return null;
@@ -1874,6 +1888,9 @@
         let category = firstCategoryItem
           ? firstCategoryItem.label
           : translatedRawCategory || t("credits_category_other", "Others");
+        const canonicalRole = normalizeRoleText(
+          contributor && (contributor.roleDefault || contributor.role) || ""
+        );
         const localizedRole = normalizeRoleText(resolveLocalizedValue(
           contributor && (contributor.roleDefault || contributor.role) || "",
           contributor && contributor.roleByLang
@@ -1896,7 +1913,7 @@
           category,
           popupRoles,
           popupCategoryStyle,
-          status: localizedRole || t("credits_contributor_label", "Contributor")
+          status: canonicalRole || localizedRole || t("credits_contributor_label", "Contributor")
         };
       }
       function fallbackContributors() {
@@ -2141,12 +2158,13 @@
         });
 
         const parsedImages = imageItems.filter((item) => item && item.url);
-        const title = stripRanges(source, imageBlocks.map((block) => ({ start: block.start, end: block.end })))
+        const rawTitle = stripRanges(source, imageBlocks.map((block) => ({ start: block.start, end: block.end })))
           .replace(/\{[^{}]*\}/g, " ")
           .replace(/\s+/g, " ")
           .replace(/\s*\\+\s*$/g, "")
           .replace(/\s*,+\s*$/g, "")
-          .trim() || t("credits_contribution_item", "Contribution");
+          .trim();
+        const title = translateRoleLabel(rawTitle, rawTitle, "") || t("credits_contribution_item", "Contribution");
         const detail = detailParts.join("\n").trim();
         const sideLabel = inlineNotes.join(" | ").trim();
         return {
@@ -2345,6 +2363,9 @@
       let LOCKED_SCROLL_Y = 0;
       let ENFORCE_MODAL_SCROLL_LOCK = false;
       const MODAL_SCROLL_BLOCK_KEYS = new Set([" ", "Spacebar", "PageUp", "PageDown", "Home", "End", "ArrowUp", "ArrowDown"]);
+      const MODAL_QUERY_PARAM = "profil";
+      let CONTRIBUTOR_BY_QUERY_ID = new Map();
+      let CONTRIBUTOR_TRIGGER_BY_QUERY_ID = new Map();
       function enforceLockedBackgroundScroll() {
         if (!ENFORCE_MODAL_SCROLL_LOCK) return;
         const currentY = window.scrollY || window.pageYOffset || 0;
@@ -2372,6 +2393,45 @@
         if (isEventInsideModal(event)) return;
         event.preventDefault();
       }
+      function getContributorQueryId(baseContributor) {
+        return normalizeUserId(baseContributor && baseContributor.userId || "");
+      }
+      function getRequestedContributorQueryId() {
+        try {
+          const searchParams = new URLSearchParams(window.location.search || "");
+          return normalizeUserId(searchParams.get(MODAL_QUERY_PARAM));
+        } catch {
+          return "";
+        }
+      }
+      function replaceContributorQueryId(rawId) {
+        const nextId = normalizeUserId(rawId);
+        const currentId = getRequestedContributorQueryId();
+        if (nextId === currentId) return;
+        try {
+          const url = new URL(window.location.href);
+          if (nextId) url.searchParams.set(MODAL_QUERY_PARAM, nextId);
+          else url.searchParams.delete(MODAL_QUERY_PARAM);
+          window.history.replaceState(window.history.state, "", url.toString());
+        } catch {}
+      }
+      function findContributorModalTargetByQueryId(rawId) {
+        const queryId = normalizeUserId(rawId);
+        if (!queryId) return null;
+        const baseContributor = CONTRIBUTOR_BY_QUERY_ID.get(queryId);
+        if (!baseContributor) return null;
+        return {
+          baseContributor,
+          triggerEl: CONTRIBUTOR_TRIGGER_BY_QUERY_ID.get(queryId) || null
+        };
+      }
+      function openContributorModalFromUrlIfNeeded() {
+        const queryId = getRequestedContributorQueryId();
+        if (!queryId) return;
+        const target = findContributorModalTargetByQueryId(queryId);
+        if (!target || !target.baseContributor) return;
+        openContributorModal(target.baseContributor, target.triggerEl, { syncUrl: false });
+      }
       function lockPageScrollForModal() {
         if (document.body.classList.contains("credits-modal-open")) return;
         LOCKED_SCROLL_Y = window.scrollY || window.pageYOffset || 0;
@@ -2392,7 +2452,7 @@
         document.removeEventListener("keydown", preventBackgroundKeyScroll, true);
         window.removeEventListener("scroll", enforceLockedBackgroundScroll);
       }
-      function closeContributorModal() {
+      function closeContributorModal(options = {}) {
         const overlay = document.getElementById("creditDetailModal");
         if (!overlay || overlay.hidden) return;
         overlay.classList.remove("is-open");
@@ -2405,6 +2465,7 @@
         const trigger = ACTIVE_MODAL_TRIGGER;
         ACTIVE_MODAL_CONTRIBUTOR = null;
         ACTIVE_MODAL_TRIGGER = null;
+        if (options.syncUrl !== false) replaceContributorQueryId("");
       }
       function renderContributorModalContent(baseContributor) {
         const overlay = document.getElementById("creditDetailModal");
@@ -2749,7 +2810,7 @@
           } catch {}
         }
       }
-      function openContributorModal(baseContributor, triggerEl) {
+      function openContributorModal(baseContributor, triggerEl, options = {}) {
         const overlay = document.getElementById("creditDetailModal");
         const closeBtn = document.getElementById("creditDetailClose");
         if (!overlay || !baseContributor) return;
@@ -2764,6 +2825,7 @@
         overlay.classList.add("is-open");
         overlay.setAttribute("aria-hidden", "false");
         lockPageScrollForModal();
+        if (options.syncUrl !== false) replaceContributorQueryId(getContributorQueryId(baseContributor));
       }
       function refreshContributorModalLocale() {
         if (!ACTIVE_MODAL_CONTRIBUTOR) return;
@@ -2880,6 +2942,8 @@
         const host = document.getElementById("creditsList");
         if (!host) return;
         host.innerHTML = "";
+        CONTRIBUTOR_BY_QUERY_ID = new Map();
+        CONTRIBUTOR_TRIGGER_BY_QUERY_ID = new Map();
         const socials = window.SITE_SOCIAL_BUTTONS && typeof window.SITE_SOCIAL_BUTTONS === "object"
           ? window.SITE_SOCIAL_BUTTONS
           : {};
@@ -2921,7 +2985,13 @@
           const list = document.createElement("div");
           list.className = "credits-group-list";
           items.forEach((entry) => {
-            list.appendChild(buildContributorCard(entry.localized, entry.base, socials));
+            const card = buildContributorCard(entry.localized, entry.base, socials);
+            list.appendChild(card);
+            const queryId = getContributorQueryId(entry.base);
+            if (queryId) {
+              CONTRIBUTOR_BY_QUERY_ID.set(queryId, entry.base);
+              CONTRIBUTOR_TRIGGER_BY_QUERY_ID.set(queryId, card);
+            }
           });
 
           group.appendChild(title);
@@ -2999,6 +3069,7 @@
         CURRENT_CONTRIBUTORS = Array.isArray(contributors) ? contributors : [];
         renderCredits(CURRENT_CONTRIBUTORS);
         refreshContributorModalLocale();
+        openContributorModalFromUrlIfNeeded();
       }
       initCreditsImagesIndex();
       bindContributorModalEvents();
@@ -3022,6 +3093,7 @@
         render();
         renderCredits(CURRENT_CONTRIBUTORS);
         refreshContributorModalLocale();
+        openContributorModalFromUrlIfNeeded();
         refreshFeedbackLocale();
       }).observe(document.documentElement, {
         attributes: true,

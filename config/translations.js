@@ -2165,6 +2165,10 @@
       if (typeof current === "string" && current.trim()) return;
       i18n[lang][key] = value;
     };
+    const force = (lang, key, value) => {
+      if (!i18n[lang] || typeof i18n[lang] !== "object") i18n[lang] = {};
+      i18n[lang][key] = value;
+    };
 
     const frDefaults = {
       home_btn_guide: "Guides",
@@ -3520,12 +3524,12 @@
         credits_avatar_alt_template: "Profile photo of {name}",
         credits_meta_description: "Contributor credits for the Ile-de-France map.",
         credits_meta_page_title: "Ile-de-France Map - {title}",
-        credits_since_year_singular: "since {count} year",
-        credits_since_year_plural: "since {count} years",
-        credits_since_month_singular: "since {count} month",
-        credits_since_month_plural: "since {count} months",
-        credits_since_day_singular: "since {count} day",
-        credits_since_day_plural: "since {count} days"
+        credits_since_year_singular: "for {count} year",
+        credits_since_year_plural: "for {count} years",
+        credits_since_month_singular: "for {count} month",
+        credits_since_month_plural: "for {count} months",
+        credits_since_day_singular: "for {count} day",
+        credits_since_day_plural: "for {count} days"
       },
       es: {
         nav_credits: "Créditos",
@@ -4050,6 +4054,382 @@
         credits_role_private_voice_access: "プライベートボイスアクセス"
       }
     };
+    const creditsStrictLabelsByLang = {
+      fr: {
+        credits_term_mapping: "Mapping",
+        credits_term_ai_vehicle_textures: "Textures Véhicules IA",
+        credits_term_trailer_textures: "Textures Remorques",
+        credits_term_3d_models: "Modèles 3D",
+        credits_term_software: "Logiciels",
+        credits_term_dbus_world_lines: "Lignes DBus World",
+        credits_term_modded_vehicle_textures: "Textures Véhicules Moddés",
+        credits_term_trailer_texture: "Texture Remorque",
+        credits_role_manager: "GÉRANT DU PROJET",
+        credits_role_developer: "DÉVELOPPEUR",
+        credits_role_administrator: "ADMINISTRATEUR",
+        credits_role_moderator: "MODÉRATEUR",
+        credits_role_animator: "ANIMATEUR",
+        credits_role_contributor: "CONTRIBUTEUR"
+      },
+      en: {
+        credits_term_mapping: "Mapping",
+        credits_term_ai_vehicle_textures: "AI Vehicle Textures",
+        credits_term_trailer_textures: "Trailer Textures",
+        credits_term_3d_models: "3D Models",
+        credits_term_software: "Software",
+        credits_term_dbus_world_lines: "DBus World Lines",
+        credits_term_modded_vehicle_textures: "Modded Vehicle Textures",
+        credits_term_trailer_texture: "Trailer Texture",
+        credits_role_manager: "PROJECT MANAGER",
+        credits_role_developer: "DEVELOPER",
+        credits_role_administrator: "ADMINISTRATOR",
+        credits_role_moderator: "MODERATOR",
+        credits_role_animator: "ANIMATOR",
+        credits_role_contributor: "CONTRIBUTOR"
+      },
+      es: {
+        credits_term_mapping: "Cartografía",
+        credits_term_ai_vehicle_textures: "Texturas de Vehículos IA",
+        credits_term_trailer_textures: "Texturas de Remolques",
+        credits_term_3d_models: "Modelos 3D",
+        credits_term_software: "Software",
+        credits_term_dbus_world_lines: "Líneas DBus World",
+        credits_term_modded_vehicle_textures: "Texturas de Vehículos Moddeados",
+        credits_term_trailer_texture: "Textura de Remolque",
+        credits_role_manager: "GERENTE DEL PROYECTO",
+        credits_role_developer: "DESARROLLADOR",
+        credits_role_administrator: "ADMINISTRADOR",
+        credits_role_moderator: "MODERADOR",
+        credits_role_animator: "ANIMADOR",
+        credits_role_contributor: "CONTRIBUIDOR"
+      },
+      de: {
+        credits_term_mapping: "Mapping",
+        credits_term_ai_vehicle_textures: "KI-Fahrzeugtexturen",
+        credits_term_trailer_textures: "Anhängertexturen",
+        credits_term_3d_models: "3D-Modelle",
+        credits_term_software: "Software",
+        credits_term_dbus_world_lines: "DBus World Linien",
+        credits_term_modded_vehicle_textures: "Texturen für gemoddete Fahrzeuge",
+        credits_term_trailer_texture: "Anhängertextur",
+        credits_role_manager: "PROJEKTLEITER",
+        credits_role_developer: "ENTWICKLER",
+        credits_role_administrator: "ADMINISTRATOR",
+        credits_role_moderator: "MODERATOR",
+        credits_role_animator: "ANIMATOR",
+        credits_role_contributor: "MITWIRKENDER"
+      },
+      pl: {
+        credits_term_mapping: "Mapowanie",
+        credits_term_ai_vehicle_textures: "Tekstury pojazdów AI",
+        credits_term_trailer_textures: "Tekstury naczep",
+        credits_term_3d_models: "Modele 3D",
+        credits_term_software: "Oprogramowanie",
+        credits_term_dbus_world_lines: "Linie DBus World",
+        credits_term_modded_vehicle_textures: "Tekstury pojazdów modyfikowanych",
+        credits_term_trailer_texture: "Tekstura naczepy",
+        credits_role_manager: "KIEROWNIK PROJEKTU",
+        credits_role_developer: "PROGRAMISTA",
+        credits_role_administrator: "ADMINISTRATOR",
+        credits_role_moderator: "MODERATOR",
+        credits_role_animator: "ANIMATOR",
+        credits_role_contributor: "WSPÓŁTWÓRCA"
+      },
+      pt: {
+        credits_term_mapping: "Mapeamento",
+        credits_term_ai_vehicle_textures: "Texturas de Veículos IA",
+        credits_term_trailer_textures: "Texturas de Reboques",
+        credits_term_3d_models: "Modelos 3D",
+        credits_term_software: "Software",
+        credits_term_dbus_world_lines: "Linhas DBus World",
+        credits_term_modded_vehicle_textures: "Texturas de Veículos Modados",
+        credits_term_trailer_texture: "Textura de Reboque",
+        credits_role_manager: "GERENTE DO PROJETO",
+        credits_role_developer: "DESENVOLVEDOR",
+        credits_role_administrator: "ADMINISTRADOR",
+        credits_role_moderator: "MODERADOR",
+        credits_role_animator: "ANIMADOR",
+        credits_role_contributor: "COLABORADOR"
+      },
+      nl: {
+        credits_term_mapping: "Mapping",
+        credits_term_ai_vehicle_textures: "AI-voertuigtexturen",
+        credits_term_trailer_textures: "Aanhangertexturen",
+        credits_term_3d_models: "3D-modellen",
+        credits_term_software: "Software",
+        credits_term_dbus_world_lines: "DBus World-lijnen",
+        credits_term_modded_vehicle_textures: "Texturen van gemodde voertuigen",
+        credits_term_trailer_texture: "Aanhangertextuur",
+        credits_role_manager: "PROJECTMANAGER",
+        credits_role_developer: "ONTWIKKELAAR",
+        credits_role_administrator: "BEHEERDER",
+        credits_role_moderator: "MODERATOR",
+        credits_role_animator: "ANIMATOR",
+        credits_role_contributor: "BIJDRAGER"
+      },
+      it: {
+        credits_term_mapping: "Mapping",
+        credits_term_ai_vehicle_textures: "Texture Veicoli IA",
+        credits_term_trailer_textures: "Texture Rimorchi",
+        credits_term_3d_models: "Modelli 3D",
+        credits_term_software: "Software",
+        credits_term_dbus_world_lines: "Linee DBus World",
+        credits_term_modded_vehicle_textures: "Texture Veicoli Moddati",
+        credits_term_trailer_texture: "Texture Rimorchio",
+        credits_role_manager: "RESPONSABILE DEL PROGETTO",
+        credits_role_developer: "SVILUPPATORE",
+        credits_role_administrator: "AMMINISTRATORE",
+        credits_role_moderator: "MODERATORE",
+        credits_role_animator: "ANIMATORE",
+        credits_role_contributor: "CONTRIBUTORE"
+      },
+      ru: {
+        credits_term_mapping: "Картография",
+        credits_term_ai_vehicle_textures: "Текстуры ИИ-транспорта",
+        credits_term_trailer_textures: "Текстуры прицепов",
+        credits_term_3d_models: "3D-модели",
+        credits_term_software: "ПО",
+        credits_term_dbus_world_lines: "Линии DBus World",
+        credits_term_modded_vehicle_textures: "Текстуры модифицированного транспорта",
+        credits_term_trailer_texture: "Текстура прицепа",
+        credits_role_manager: "РУКОВОДИТЕЛЬ ПРОЕКТА",
+        credits_role_developer: "РАЗРАБОТЧИК",
+        credits_role_administrator: "АДМИНИСТРАТОР",
+        credits_role_moderator: "МОДЕРАТОР",
+        credits_role_animator: "АНИМАТОР",
+        credits_role_contributor: "УЧАСТНИК"
+      },
+      zh: {
+        credits_term_mapping: "地图制作",
+        credits_term_ai_vehicle_textures: "AI车辆纹理",
+        credits_term_trailer_textures: "挂车纹理",
+        credits_term_3d_models: "3D模型",
+        credits_term_software: "软件",
+        credits_term_dbus_world_lines: "DBus World 线路",
+        credits_term_modded_vehicle_textures: "模组车辆纹理",
+        credits_term_trailer_texture: "挂车纹理",
+        credits_role_manager: "项目经理",
+        credits_role_developer: "开发者",
+        credits_role_administrator: "管理员",
+        credits_role_moderator: "版主",
+        credits_role_animator: "动画师",
+        credits_role_contributor: "贡献者"
+      },
+      ko: {
+        credits_term_mapping: "맵핑",
+        credits_term_ai_vehicle_textures: "AI 차량 텍스처",
+        credits_term_trailer_textures: "트레일러 텍스처",
+        credits_term_3d_models: "3D 모델",
+        credits_term_software: "소프트웨어",
+        credits_term_dbus_world_lines: "DBus World 노선",
+        credits_term_modded_vehicle_textures: "모드 차량 텍스처",
+        credits_term_trailer_texture: "트레일러 텍스처",
+        credits_role_manager: "프로젝트 관리자",
+        credits_role_developer: "개발자",
+        credits_role_administrator: "관리자",
+        credits_role_moderator: "모더레이터",
+        credits_role_animator: "애니메이터",
+        credits_role_contributor: "기여자"
+      },
+      ja: {
+        credits_term_mapping: "マッピング",
+        credits_term_ai_vehicle_textures: "AI車両テクスチャ",
+        credits_term_trailer_textures: "トレーラーテクスチャ",
+        credits_term_3d_models: "3Dモデル",
+        credits_term_software: "ソフトウェア",
+        credits_term_dbus_world_lines: "DBus World 路線",
+        credits_term_modded_vehicle_textures: "MOD車両テクスチャ",
+        credits_term_trailer_texture: "トレーラーテクスチャ",
+        credits_role_manager: "プロジェクトマネージャー",
+        credits_role_developer: "開発者",
+        credits_role_administrator: "管理者",
+        credits_role_moderator: "モデレーター",
+        credits_role_animator: "アニメーター",
+        credits_role_contributor: "貢献者"
+      }
+    };
+    const creditsSinceGrammarByLang = {
+      fr: {
+        credits_since_today: "aujourd'hui",
+        credits_since_year_one: "depuis {count} an",
+        credits_since_year_few: "depuis {count} ans",
+        credits_since_year_many: "depuis {count} ans",
+        credits_since_year_other: "depuis {count} ans",
+        credits_since_month_one: "depuis {count} mois",
+        credits_since_month_few: "depuis {count} mois",
+        credits_since_month_many: "depuis {count} mois",
+        credits_since_month_other: "depuis {count} mois",
+        credits_since_day_one: "depuis {count} jour",
+        credits_since_day_few: "depuis {count} jours",
+        credits_since_day_many: "depuis {count} jours",
+        credits_since_day_other: "depuis {count} jours"
+      },
+      en: {
+        credits_since_today: "today",
+        credits_since_year_one: "for {count} year",
+        credits_since_year_few: "for {count} years",
+        credits_since_year_many: "for {count} years",
+        credits_since_year_other: "for {count} years",
+        credits_since_month_one: "for {count} month",
+        credits_since_month_few: "for {count} months",
+        credits_since_month_many: "for {count} months",
+        credits_since_month_other: "for {count} months",
+        credits_since_day_one: "for {count} day",
+        credits_since_day_few: "for {count} days",
+        credits_since_day_many: "for {count} days",
+        credits_since_day_other: "for {count} days"
+      },
+      es: {
+        credits_since_today: "hoy",
+        credits_since_year_one: "desde hace {count} año",
+        credits_since_year_few: "desde hace {count} años",
+        credits_since_year_many: "desde hace {count} años",
+        credits_since_year_other: "desde hace {count} años",
+        credits_since_month_one: "desde hace {count} mes",
+        credits_since_month_few: "desde hace {count} meses",
+        credits_since_month_many: "desde hace {count} meses",
+        credits_since_month_other: "desde hace {count} meses",
+        credits_since_day_one: "desde hace {count} día",
+        credits_since_day_few: "desde hace {count} días",
+        credits_since_day_many: "desde hace {count} días",
+        credits_since_day_other: "desde hace {count} días"
+      },
+      de: {
+        credits_since_today: "heute",
+        credits_since_year_one: "seit {count} Jahr",
+        credits_since_year_few: "seit {count} Jahren",
+        credits_since_year_many: "seit {count} Jahren",
+        credits_since_year_other: "seit {count} Jahren",
+        credits_since_month_one: "seit {count} Monat",
+        credits_since_month_few: "seit {count} Monaten",
+        credits_since_month_many: "seit {count} Monaten",
+        credits_since_month_other: "seit {count} Monaten",
+        credits_since_day_one: "seit {count} Tag",
+        credits_since_day_few: "seit {count} Tagen",
+        credits_since_day_many: "seit {count} Tagen",
+        credits_since_day_other: "seit {count} Tagen"
+      },
+      pl: {
+        credits_since_today: "dzisiaj",
+        credits_since_year_one: "od {count} roku",
+        credits_since_year_few: "od {count} lat",
+        credits_since_year_many: "od {count} lat",
+        credits_since_year_other: "od {count} lat",
+        credits_since_month_one: "od {count} miesiąca",
+        credits_since_month_few: "od {count} miesięcy",
+        credits_since_month_many: "od {count} miesięcy",
+        credits_since_month_other: "od {count} miesięcy",
+        credits_since_day_one: "od {count} dnia",
+        credits_since_day_few: "od {count} dni",
+        credits_since_day_many: "od {count} dni",
+        credits_since_day_other: "od {count} dni"
+      },
+      pt: {
+        credits_since_today: "hoje",
+        credits_since_year_one: "há {count} ano",
+        credits_since_year_few: "há {count} anos",
+        credits_since_year_many: "há {count} anos",
+        credits_since_year_other: "há {count} anos",
+        credits_since_month_one: "há {count} mês",
+        credits_since_month_few: "há {count} meses",
+        credits_since_month_many: "há {count} meses",
+        credits_since_month_other: "há {count} meses",
+        credits_since_day_one: "há {count} dia",
+        credits_since_day_few: "há {count} dias",
+        credits_since_day_many: "há {count} dias",
+        credits_since_day_other: "há {count} dias"
+      },
+      nl: {
+        credits_since_today: "vandaag",
+        credits_since_year_one: "sinds {count} jaar",
+        credits_since_year_few: "sinds {count} jaar",
+        credits_since_year_many: "sinds {count} jaar",
+        credits_since_year_other: "sinds {count} jaar",
+        credits_since_month_one: "sinds {count} maand",
+        credits_since_month_few: "sinds {count} maanden",
+        credits_since_month_many: "sinds {count} maanden",
+        credits_since_month_other: "sinds {count} maanden",
+        credits_since_day_one: "sinds {count} dag",
+        credits_since_day_few: "sinds {count} dagen",
+        credits_since_day_many: "sinds {count} dagen",
+        credits_since_day_other: "sinds {count} dagen"
+      },
+      it: {
+        credits_since_today: "oggi",
+        credits_since_year_one: "da {count} anno",
+        credits_since_year_few: "da {count} anni",
+        credits_since_year_many: "da {count} anni",
+        credits_since_year_other: "da {count} anni",
+        credits_since_month_one: "da {count} mese",
+        credits_since_month_few: "da {count} mesi",
+        credits_since_month_many: "da {count} mesi",
+        credits_since_month_other: "da {count} mesi",
+        credits_since_day_one: "da {count} giorno",
+        credits_since_day_few: "da {count} giorni",
+        credits_since_day_many: "da {count} giorni",
+        credits_since_day_other: "da {count} giorni"
+      },
+      ru: {
+        credits_since_today: "сегодня",
+        credits_since_year_one: "уже {count} год",
+        credits_since_year_few: "уже {count} года",
+        credits_since_year_many: "уже {count} лет",
+        credits_since_year_other: "уже {count} года",
+        credits_since_month_one: "уже {count} месяц",
+        credits_since_month_few: "уже {count} месяца",
+        credits_since_month_many: "уже {count} месяцев",
+        credits_since_month_other: "уже {count} месяца",
+        credits_since_day_one: "уже {count} день",
+        credits_since_day_few: "уже {count} дня",
+        credits_since_day_many: "уже {count} дней",
+        credits_since_day_other: "уже {count} дня"
+      },
+      zh: {
+        credits_since_today: "今天",
+        credits_since_year_one: "已 {count} 年",
+        credits_since_year_few: "已 {count} 年",
+        credits_since_year_many: "已 {count} 年",
+        credits_since_year_other: "已 {count} 年",
+        credits_since_month_one: "已 {count} 个月",
+        credits_since_month_few: "已 {count} 个月",
+        credits_since_month_many: "已 {count} 个月",
+        credits_since_month_other: "已 {count} 个月",
+        credits_since_day_one: "已 {count} 天",
+        credits_since_day_few: "已 {count} 天",
+        credits_since_day_many: "已 {count} 天",
+        credits_since_day_other: "已 {count} 天"
+      },
+      ko: {
+        credits_since_today: "오늘",
+        credits_since_year_one: "{count}년째",
+        credits_since_year_few: "{count}년째",
+        credits_since_year_many: "{count}년째",
+        credits_since_year_other: "{count}년째",
+        credits_since_month_one: "{count}개월째",
+        credits_since_month_few: "{count}개월째",
+        credits_since_month_many: "{count}개월째",
+        credits_since_month_other: "{count}개월째",
+        credits_since_day_one: "{count}일째",
+        credits_since_day_few: "{count}일째",
+        credits_since_day_many: "{count}일째",
+        credits_since_day_other: "{count}일째"
+      },
+      ja: {
+        credits_since_today: "今日",
+        credits_since_year_one: "{count}年前から",
+        credits_since_year_few: "{count}年前から",
+        credits_since_year_many: "{count}年前から",
+        credits_since_year_other: "{count}年前から",
+        credits_since_month_one: "{count}か月前から",
+        credits_since_month_few: "{count}か月前から",
+        credits_since_month_many: "{count}か月前から",
+        credits_since_month_other: "{count}か月前から",
+        credits_since_day_one: "{count}日前から",
+        credits_since_day_few: "{count}日前から",
+        credits_since_day_many: "{count}日前から",
+        credits_since_day_other: "{count}日前から"
+      }
+    };
 
     Object.entries(frDefaults).forEach(([key, value]) => ensure("fr", key, value));
     Object.entries(enDefaults).forEach(([key, value]) => ensure("en", key, value));
@@ -4073,6 +4453,12 @@
     });
     Object.entries(creditsRoleDefaultsByLang).forEach(([lang, defaults]) => {
       Object.entries(defaults).forEach(([key, value]) => ensure(lang, key, value));
+    });
+    Object.entries(creditsStrictLabelsByLang).forEach(([lang, defaults]) => {
+      Object.entries(defaults).forEach(([key, value]) => force(lang, key, value));
+    });
+    Object.entries(creditsSinceGrammarByLang).forEach(([lang, defaults]) => {
+      Object.entries(defaults).forEach(([key, value]) => force(lang, key, value));
     });
 
     const aliasMap = {
