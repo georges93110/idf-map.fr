@@ -482,16 +482,16 @@
       margin:0 auto;
       grid-template-columns:40px minmax(0, 1fr) 40px;
       align-items:center;
-      gap:8px;
+      gap:2px;
     }
     .news-devlog-scroller{
       grid-column:2;
       position:relative;
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:2px;
       overflow-x:hidden;
-      padding:6px;
+      padding:1px;
       border-radius:10px;
       border:0;
       background:transparent;
@@ -506,17 +506,36 @@
       overflow:hidden;
       background:#0b0b0b;
       text-decoration:none;
-      width:auto;
+      width:min(68vw, 440px);
       height:auto;
     }
+    .news-devlog-slide.is-loaded{
+      background:transparent;
+      border-color:transparent;
+    }
+    .news-devlog-slide-stage{
+      position:relative;
+      width:100%;
+      height:260px;
+      border-radius:8px;
+      overflow:hidden;
+      background:rgba(255,255,255,.04);
+    }
+    .news-devlog-slide-stage.is-loaded{
+      background:transparent;
+    }
     .news-devlog-slide-image{
-      width:auto;
-      height:auto;
-      max-height:260px;
-      max-width:min(78vw, 520px);
+      width:100%;
+      height:100%;
       object-fit:contain;
       display:block;
       background:#0b0b0b;
+      opacity:0;
+      transition:opacity .22s ease;
+    }
+    .news-devlog-slide-stage.is-loaded .news-devlog-slide-image{
+      opacity:1;
+      background:transparent !important;
     }
     .news-devlog-carousel-nav{
       position:static;
@@ -544,13 +563,14 @@
     }
     .news-devlog-carousel-nav:disabled{
       opacity:.38;
-      cursor:default;
+      cursor:not-allowed;
     }
     .news-devlog-carousel-nav.is-disabled{
       opacity:.28;
       border-color:rgba(170, 170, 170, .22);
       background:linear-gradient(180deg, rgba(18, 18, 18, .88), rgba(10, 10, 10, .88));
       box-shadow:none;
+      cursor:not-allowed;
     }
     .news-devlog-carousel-nav.prev{
       grid-column:1;
@@ -572,8 +592,8 @@
 
     .news-images{
       display:grid;
-      grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
-      gap:10px;
+      grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+      gap:4px;
     }
 
     .news-image-link{
@@ -584,13 +604,236 @@
       background:#0f0f0f;
       text-decoration:none;
     }
+    .news-image-stage{
+      position:relative;
+      width:100%;
+      height:230px;
+      border-radius:8px;
+      overflow:hidden;
+      background:rgba(255,255,255,.04);
+    }
+    .news-image-stage.is-loaded{
+      background:transparent;
+    }
+    .news-image-loader{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      background:rgba(12,12,12,.72);
+      pointer-events:none;
+      transition:opacity .22s ease, visibility .22s ease;
+    }
+    .news-image-loader-spinner{
+      width:22px;
+      height:22px;
+      border:2px solid rgba(255,255,255,.3);
+      border-top-color:#ffffff;
+      border-radius:50%;
+      animation:news-spin .75s linear infinite;
+    }
+    .news-image-loader-label{
+      margin:0;
+      color:#dfdfdf;
+      font-size:11px;
+      font-weight:700;
+      line-height:1.2;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+    .news-image-loader-progress{
+      margin:0;
+      color:#f5f5f5;
+      font-size:14px;
+      font-weight:800;
+      line-height:1;
+      font-variant-numeric:tabular-nums;
+    }
+    .news-image-stage.is-loaded .news-image-loader,
+    .news-devlog-slide-stage.is-loaded .news-image-loader{
+      opacity:0;
+      visibility:hidden;
+    }
+    .news-image-stage.is-error .news-image-loader-spinner,
+    .news-devlog-slide-stage.is-error .news-image-loader-spinner{
+      display:none;
+    }
+    .news-image-stage.is-error .news-image-loader-label,
+    .news-devlog-slide-stage.is-error .news-image-loader-label{
+      text-transform:none;
+      letter-spacing:0;
+      color:#f4b2b2;
+      font-weight:800;
+    }
 
     .news-image{
       display:block;
       width:100%;
       height:100%;
-      max-height:230px;
       object-fit:cover;
+      opacity:0;
+      transition:opacity .22s ease;
+    }
+    .news-image-stage.is-loaded .news-image{
+      opacity:1;
+    }
+    body.news-image-viewer-open{
+      overflow:hidden;
+    }
+    .news-image-viewer-overlay[hidden]{
+      display:none !important;
+    }
+    .news-image-viewer-overlay{
+      position:fixed;
+      inset:0;
+      z-index:1900;
+      background:rgba(6,6,6,.9);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px 12px;
+      box-sizing:border-box;
+    }
+    .news-image-viewer-overlay.is-open{
+      display:flex;
+    }
+    .news-image-viewer{
+      width:min(1240px, 100%);
+      max-height:calc(100vh - 36px);
+      display:grid;
+      gap:10px;
+      justify-items:center;
+      position:relative;
+      overflow:hidden;
+      overscroll-behavior:contain;
+      padding:0 54px;
+      box-sizing:border-box;
+    }
+    .news-image-viewer::-webkit-scrollbar{
+      display:none;
+    }
+    .news-image-viewer-nav{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      width:38px;
+      height:38px;
+      border:1px solid #5f5f5f;
+      background:#242424;
+      color:#f0f0f0;
+      border-radius:9px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      line-height:1;
+      padding:0;
+      z-index:2;
+    }
+    .news-image-viewer-nav.is-prev{
+      left:8px;
+    }
+    .news-image-viewer-nav.is-next{
+      right:8px;
+    }
+    .news-image-viewer-nav:hover{
+      background:#2f2f2f;
+      border-color:#7b7b7b;
+    }
+    .news-image-viewer-nav:disabled{
+      opacity:.3;
+      cursor:not-allowed;
+      background:#181818;
+      border-color:#2f2f2f;
+      color:#8b8b8b;
+    }
+    .news-image-viewer-nav:disabled:hover{
+      background:#181818;
+      border-color:#2f2f2f;
+      color:#8b8b8b;
+      cursor:not-allowed;
+    }
+    .news-image-viewer-counter{
+      position:absolute;
+      top:2px;
+      left:50%;
+      transform:translateX(-50%);
+      border:1px solid #3a3a3a;
+      border-radius:999px;
+      background:rgba(12,12,12,.86);
+      color:#efefef;
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      padding:6px 10px;
+      letter-spacing:.02em;
+      z-index:2;
+      font-variant-numeric:tabular-nums;
+      white-space:nowrap;
+    }
+    .news-image-viewer-close{
+      position:absolute;
+      top:0;
+      right:0;
+      width:34px;
+      height:34px;
+      border:1px solid #8f2f2f;
+      background:#4a1313;
+      color:#ffe5e5;
+      border-radius:8px;
+      font-size:20px;
+      line-height:1;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      z-index:1;
+    }
+    .news-image-viewer-close:hover{
+      background:#611919;
+      border-color:#b03b3b;
+    }
+    .news-image-viewer-close:focus-visible{
+      outline:2px solid #ffffff;
+      outline-offset:2px;
+    }
+    .news-image-viewer-figure{
+      margin:0;
+      display:grid;
+      gap:10px;
+      justify-items:center;
+      width:100%;
+      padding-top:42px;
+      box-sizing:border-box;
+    }
+    .news-image-viewer-image{
+      display:block;
+      width:auto;
+      height:auto;
+      max-width:100%;
+      max-height:calc(100vh - 140px);
+      object-fit:contain;
+      border:1px solid #2f2f2f;
+      border-radius:12px;
+      background:#0f0f0f;
+      box-shadow:0 24px 52px rgba(0,0,0,.52);
+    }
+    .news-image-viewer-caption{
+      margin:0;
+      color:#ececec;
+      font-size:13px;
+      font-weight:600;
+      line-height:1.4;
+      text-align:center;
+      max-width:min(920px, 100%);
+      white-space:pre-line;
+      overflow-wrap:anywhere;
     }
 
     @media (max-width:700px){
@@ -617,17 +860,65 @@
         height:30px;
       }
       .news-devlog-slide-image{
-        max-height:210px;
-        max-width:min(86vw, 420px);
+        width:100%;
+        height:100%;
+      }
+      .news-devlog-slide{
+        width:min(78vw, 360px);
+      }
+      .news-devlog-slide-stage{
+        height:210px;
       }
       .news-images{
         grid-template-columns:1fr;
+      }
+      .news-image-viewer-overlay{
+        padding:10px 8px;
+      }
+      .news-image-viewer{
+        max-height:calc(100vh - 20px);
+        padding:0 40px;
+      }
+      .news-image-viewer-nav{
+        width:32px;
+        height:32px;
+        font-size:17px;
+      }
+      .news-image-viewer-nav.is-prev{
+        left:4px;
+      }
+      .news-image-viewer-nav.is-next{
+        right:4px;
+      }
+      .news-image-viewer-counter{
+        top:0;
+        font-size:11px;
+        padding:5px 8px;
+      }
+      .news-image-viewer-close{
+        width:30px;
+        height:30px;
+        font-size:18px;
+      }
+      .news-image-viewer-image{
+        max-height:calc(100vh - 122px);
+      }
+      .news-image-viewer-caption{
+        font-size:12px;
       }
     }
 
     @media (prefers-reduced-motion: reduce){
       .news-devlog-scroller{
         scroll-behavior:auto;
+      }
+      .news-image-loader,
+      .news-image,
+      .news-devlog-slide-image{
+        transition:none;
+      }
+      .news-image-loader-spinner{
+        animation:none;
       }
     }
   </style>
@@ -640,6 +931,18 @@
       <p class="news-feedback is-loading" id="actualitesFeedback">Chargement</p>
     </section>
   </main>
+  <div class="news-image-viewer-overlay" id="newsImageViewer" hidden aria-hidden="true">
+    <section class="news-image-viewer" role="dialog" aria-modal="true" aria-label="Photo viewer">
+      <button class="news-image-viewer-nav is-prev" id="newsImageViewerPrev" type="button" aria-label="Previous image">‹</button>
+      <p class="news-image-viewer-counter" id="newsImageViewerCounter" aria-live="polite">1/1</p>
+      <button class="news-image-viewer-nav is-next" id="newsImageViewerNext" type="button" aria-label="Next image">›</button>
+      <button class="news-image-viewer-close" id="newsImageViewerClose" type="button" aria-label="Close">&times;</button>
+      <figure class="news-image-viewer-figure">
+        <img class="news-image-viewer-image" id="newsImageViewerImage" alt=""/>
+        <figcaption class="news-image-viewer-caption" id="newsImageViewerCaption" hidden></figcaption>
+      </figure>
+    </section>
+  </div>
 
   <script src="config/translations.js"></script>
   <script src="config/config.js"></script>
@@ -694,6 +997,292 @@
         const fromLang = TABLE_LABELS[code] && TABLE_LABELS[code][key];
         if (typeof fromLang === "string" && fromLang) return fromLang;
         return TABLE_LABELS.fr[key] || "";
+      }
+      let NEWS_IMAGE_VIEWER_TRIGGER = null;
+      let NEWS_IMAGE_VIEWER_ITEMS = [];
+      let NEWS_IMAGE_VIEWER_INDEX = 0;
+      function collectNewsImageViewerItems(triggerEl, fallbackHref, fallbackCaption) {
+        const fallbackImage = String(fallbackHref || "").trim();
+        const fallbackText = String(fallbackCaption || "").trim();
+        const scope = triggerEl instanceof Element
+          ? triggerEl.closest(".news-devlog-scroller, .news-images")
+          : null;
+        const links = scope
+          ? Array.from(scope.querySelectorAll("a[data-news-viewer=\"1\"]"))
+          : [];
+        const items = links
+          .map((link) => ({
+            href: String(link.dataset.newsViewerImage || link.getAttribute("href") || "").trim(),
+            caption: String(link.dataset.newsViewerCaption || "").trim(),
+            trigger: link
+          }))
+          .filter((item) => item.href);
+        if (!items.length && fallbackImage) {
+          items.push({
+            href: fallbackImage,
+            caption: fallbackText,
+            trigger: triggerEl instanceof HTMLElement ? triggerEl : null
+          });
+        }
+        let index = 0;
+        if (items.length && triggerEl instanceof HTMLElement) {
+          const byTrigger = items.findIndex((item) => item.trigger === triggerEl);
+          if (byTrigger >= 0) index = byTrigger;
+          else if (fallbackImage) {
+            const byHref = items.findIndex((item) => item.href === fallbackImage);
+            if (byHref >= 0) index = byHref;
+          }
+        } else if (items.length && fallbackImage) {
+          const byHref = items.findIndex((item) => item.href === fallbackImage);
+          if (byHref >= 0) index = byHref;
+        }
+        return { items, index };
+      }
+      function updateNewsImageViewerFrame() {
+        const imageEl = document.getElementById("newsImageViewerImage");
+        const captionEl = document.getElementById("newsImageViewerCaption");
+        const counterEl = document.getElementById("newsImageViewerCounter");
+        const prevBtn = document.getElementById("newsImageViewerPrev");
+        const nextBtn = document.getElementById("newsImageViewerNext");
+        if (!imageEl || !captionEl || !counterEl || !prevBtn || !nextBtn) return;
+        const total = NEWS_IMAGE_VIEWER_ITEMS.length;
+        if (!total) return;
+        NEWS_IMAGE_VIEWER_INDEX = Math.max(0, Math.min(total - 1, Number(NEWS_IMAGE_VIEWER_INDEX) || 0));
+        const current = NEWS_IMAGE_VIEWER_ITEMS[NEWS_IMAGE_VIEWER_INDEX] || NEWS_IMAGE_VIEWER_ITEMS[0];
+        if (!current) return;
+        const caption = String(current.caption || "").trim();
+        const showCaption = lang() === "fr" && !!caption;
+        imageEl.src = current.href;
+        imageEl.alt = caption || tableLabel("imagesCol") || "Image";
+        captionEl.textContent = showCaption ? caption : "";
+        captionEl.hidden = !showCaption;
+        counterEl.textContent = `${NEWS_IMAGE_VIEWER_INDEX + 1}/${total}`;
+        const showNav = total > 1;
+        prevBtn.hidden = !showNav;
+        nextBtn.hidden = !showNav;
+        prevBtn.disabled = !showNav || NEWS_IMAGE_VIEWER_INDEX <= 0;
+        nextBtn.disabled = !showNav || NEWS_IMAGE_VIEWER_INDEX >= total - 1;
+      }
+      function moveNewsImageViewer(step) {
+        if (!NEWS_IMAGE_VIEWER_ITEMS.length) return;
+        const total = NEWS_IMAGE_VIEWER_ITEMS.length;
+        const next = Math.max(0, Math.min(total - 1, NEWS_IMAGE_VIEWER_INDEX + Number(step || 0)));
+        if (next === NEWS_IMAGE_VIEWER_INDEX) return;
+        NEWS_IMAGE_VIEWER_INDEX = next;
+        updateNewsImageViewerFrame();
+      }
+      function isNewsImageViewerOpen() {
+        const overlay = document.getElementById("newsImageViewer");
+        return !!overlay && !overlay.hidden;
+      }
+      function openNewsImageViewer(rawHref, rawCaption, triggerEl) {
+        const { items, index } = collectNewsImageViewerItems(triggerEl, rawHref, rawCaption);
+        if (!items.length) return;
+        const overlay = document.getElementById("newsImageViewer");
+        const closeBtn = document.getElementById("newsImageViewerClose");
+        if (!overlay) return;
+        NEWS_IMAGE_VIEWER_ITEMS = items;
+        NEWS_IMAGE_VIEWER_INDEX = Math.max(0, Math.min(items.length - 1, Number(index) || 0));
+        NEWS_IMAGE_VIEWER_TRIGGER = triggerEl instanceof HTMLElement ? triggerEl : null;
+        updateNewsImageViewerFrame();
+        overlay.hidden = false;
+        overlay.classList.add("is-open");
+        overlay.setAttribute("aria-hidden", "false");
+        document.body.classList.add("news-image-viewer-open");
+        if (closeBtn) {
+          closeBtn.setAttribute("aria-label", t("close", "Close"));
+          closeBtn.focus();
+        }
+      }
+      function closeNewsImageViewer(options = {}) {
+        const overlay = document.getElementById("newsImageViewer");
+        const imageEl = document.getElementById("newsImageViewerImage");
+        const captionEl = document.getElementById("newsImageViewerCaption");
+        const counterEl = document.getElementById("newsImageViewerCounter");
+        if (!overlay || overlay.hidden) return;
+        overlay.classList.remove("is-open");
+        overlay.hidden = true;
+        overlay.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("news-image-viewer-open");
+        if (imageEl) {
+          imageEl.removeAttribute("src");
+          imageEl.alt = "";
+        }
+        if (captionEl) {
+          captionEl.textContent = "";
+          captionEl.hidden = true;
+        }
+        if (counterEl) counterEl.textContent = "1/1";
+        NEWS_IMAGE_VIEWER_ITEMS = [];
+        NEWS_IMAGE_VIEWER_INDEX = 0;
+        const trigger = NEWS_IMAGE_VIEWER_TRIGGER;
+        NEWS_IMAGE_VIEWER_TRIGGER = null;
+        if (options.restoreFocus === false) return;
+        if (trigger && typeof trigger.focus === "function") {
+          try {
+            trigger.focus({ preventScroll: true });
+          } catch {
+            trigger.focus();
+          }
+        }
+      }
+      function bindNewsImageViewerLink(linkEl, imageHref, imageCaption) {
+        if (!(linkEl instanceof HTMLAnchorElement)) return;
+        linkEl.setAttribute("data-news-viewer", "1");
+        linkEl.dataset.newsViewerImage = String(imageHref || "").trim();
+        const safeCaption = String(imageCaption || "").trim();
+        if (safeCaption) linkEl.dataset.newsViewerCaption = safeCaption;
+        else delete linkEl.dataset.newsViewerCaption;
+        linkEl.addEventListener("click", (event) => {
+          if (event.defaultPrevented) return;
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          openNewsImageViewer(imageHref, imageCaption, linkEl);
+        });
+      }
+      function bindNewsImageViewerEvents() {
+        const overlay = document.getElementById("newsImageViewer");
+        const closeBtn = document.getElementById("newsImageViewerClose");
+        const prevBtn = document.getElementById("newsImageViewerPrev");
+        const nextBtn = document.getElementById("newsImageViewerNext");
+        if (!overlay || !closeBtn || !prevBtn || !nextBtn || overlay.dataset.bound === "1") return;
+        overlay.dataset.bound = "1";
+        closeBtn.addEventListener("click", () => closeNewsImageViewer());
+        prevBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          moveNewsImageViewer(-1);
+        });
+        nextBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          moveNewsImageViewer(1);
+        });
+        overlay.addEventListener("click", (event) => {
+          if (event.target === overlay) closeNewsImageViewer();
+        });
+        document.addEventListener("keydown", (event) => {
+          if (!isNewsImageViewerOpen()) return;
+          if (event.key === "Escape") {
+            event.preventDefault();
+            closeNewsImageViewer();
+            return;
+          }
+          if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            moveNewsImageViewer(-1);
+            return;
+          }
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            moveNewsImageViewer(1);
+          }
+        });
+      }
+      function buildNewsImageStage(options = {}) {
+        const imageUrl = String(options.imageUrl || "").trim();
+        if (!imageUrl) return null;
+        const stageClass = String(options.stageClass || "news-image-stage").trim() || "news-image-stage";
+        const imageClass = String(options.imageClass || "news-image").trim() || "news-image";
+        const imageAlt = String(options.imageAlt || "").trim();
+        const onStateChange = typeof options.onStateChange === "function" ? options.onStateChange : null;
+        const onLoaded = typeof options.onLoaded === "function" ? options.onLoaded : null;
+        const onError = typeof options.onError === "function" ? options.onError : null;
+
+        const stage = document.createElement("div");
+        stage.className = `${stageClass} is-loading`;
+        const loader = document.createElement("div");
+        loader.className = "news-image-loader";
+        loader.setAttribute("aria-hidden", "true");
+        const loaderSpinner = document.createElement("span");
+        loaderSpinner.className = "news-image-loader-spinner";
+        const loaderLabel = document.createElement("span");
+        loaderLabel.className = "news-image-loader-label";
+        loaderLabel.textContent = t("credits_loading", "Loading");
+        const loaderProgress = document.createElement("span");
+        loaderProgress.className = "news-image-loader-progress";
+        loaderProgress.textContent = "0%";
+        loader.appendChild(loaderSpinner);
+        loader.appendChild(loaderLabel);
+        loader.appendChild(loaderProgress);
+
+        const img = document.createElement("img");
+        img.className = imageClass;
+        img.loading = "lazy";
+        img.alt = imageAlt;
+
+        let progressValue = 0;
+        let isSettled = false;
+        let progressTimer = window.setInterval(() => {
+          if (isSettled) {
+            clearInterval(progressTimer);
+            progressTimer = 0;
+            return;
+          }
+          if (progressValue >= 94) {
+            clearInterval(progressTimer);
+            progressTimer = 0;
+            return;
+          }
+          const remaining = 94 - progressValue;
+          const step = remaining > 32 ? 6 : remaining > 18 ? 4 : 2;
+          progressValue = Math.min(94, progressValue + step);
+          loaderProgress.textContent = `${progressValue}%`;
+        }, 120);
+        const stopProgressTimer = () => {
+          if (!progressTimer) return;
+          clearInterval(progressTimer);
+          progressTimer = 0;
+        };
+        const setProgress = (value) => {
+          const next = Math.max(progressValue, Math.min(100, Math.round(Number(value) || 0)));
+          if (next === progressValue) return;
+          progressValue = next;
+          loaderProgress.textContent = `${progressValue}%`;
+        };
+        const notifyStateChange = () => {
+          if (!onStateChange) return;
+          window.requestAnimationFrame(onStateChange);
+        };
+        const markImageLoaded = () => {
+          if (isSettled) return;
+          isSettled = true;
+          stopProgressTimer();
+          setProgress(100);
+          stage.classList.remove("is-loading");
+          stage.classList.add("is-loaded");
+          if (onLoaded) {
+            try {
+              onLoaded();
+            } catch {}
+          }
+          notifyStateChange();
+        };
+        const markImageError = () => {
+          if (isSettled) return;
+          isSettled = true;
+          stopProgressTimer();
+          if (onError) {
+            try {
+              onError();
+            } catch {}
+            notifyStateChange();
+            return;
+          }
+          stage.classList.remove("is-loading");
+          stage.classList.add("is-error");
+          loaderLabel.textContent = t("credits_error", "Error");
+          loaderProgress.textContent = "0%";
+          notifyStateChange();
+        };
+        img.addEventListener("load", markImageLoaded, { once: true });
+        img.addEventListener("error", markImageError, { once: true });
+        img.src = imageUrl;
+        if (img.complete && img.naturalWidth > 0) {
+          markImageLoaded();
+        }
+
+        stage.appendChild(img);
+        stage.appendChild(loader);
+        return stage;
       }
 
       function normalizeHeader(raw) {
@@ -1538,14 +2127,6 @@
           setTimeout(updateNavState, 260);
           setTimeout(updateNavState, 460);
         }
-        function setEmptyState() {
-          scroller.innerHTML = "";
-          const empty = document.createElement("span");
-          empty.textContent = "-";
-          scroller.appendChild(empty);
-          setNavDisabled(prev, true);
-          setNavDisabled(next, true);
-        }
         function clampIndex(index) {
           if (!slidePositions.length) return 0;
           return Math.max(0, Math.min(slidePositions.length - 1, Number(index) || 0));
@@ -1592,36 +2173,6 @@
           setNavDisabled(prev, atLeft);
           setNavDisabled(next, atRight);
         }
-        function checkImageLoadable(url) {
-          return new Promise((resolve) => {
-            const probe = new Image();
-            let done = false;
-            const timer = setTimeout(() => {
-              if (done) return;
-              done = true;
-              probe.onload = null;
-              probe.onerror = null;
-              resolve(false);
-            }, 7000);
-            probe.onload = () => {
-              if (done) return;
-              done = true;
-              clearTimeout(timer);
-              probe.onload = null;
-              probe.onerror = null;
-              resolve(true);
-            };
-            probe.onerror = () => {
-              if (done) return;
-              done = true;
-              clearTimeout(timer);
-              probe.onload = null;
-              probe.onerror = null;
-              resolve(false);
-            };
-            probe.src = url;
-          });
-        }
         function buildSlides(validUrls) {
           scroller.innerHTML = "";
           validUrls.forEach((url) => {
@@ -1630,14 +2181,30 @@
             slide.href = url;
             slide.target = "_blank";
             slide.rel = "noopener noreferrer";
-
-            const img = document.createElement("img");
-            img.className = "news-devlog-slide-image";
-            img.loading = "lazy";
-            img.alt = tableLabel("devlogImageAlt");
-            img.src = url;
-
-            slide.appendChild(img);
+            bindNewsImageViewerLink(slide, url, tableLabel("devlogImageAlt"));
+            const stage = buildNewsImageStage({
+              imageUrl: url,
+              imageAlt: tableLabel("devlogImageAlt"),
+              stageClass: "news-devlog-slide-stage",
+              imageClass: "news-devlog-slide-image",
+              onLoaded: () => slide.classList.add("is-loaded"),
+              onError: () => {
+                slide.remove();
+                const hasAnySlide = !!scroller.querySelector(".news-devlog-slide");
+                if (!hasAnySlide) {
+                  scroller.innerHTML = "";
+                  const empty = document.createElement("span");
+                  empty.textContent = "-";
+                  scroller.appendChild(empty);
+                  setNavDisabled(prev, true);
+                  setNavDisabled(next, true);
+                  return;
+                }
+                updateNavState();
+              },
+              onStateChange: updateNavState
+            });
+            if (stage) slide.appendChild(stage);
             scroller.appendChild(slide);
           });
           currentSlideIndex = 0;
@@ -1645,18 +2212,6 @@
             scrollToSlide(0, "auto");
             updateNavState();
           });
-        }
-        async function validateItemsOnLoad() {
-          const checks = await Promise.all(sourceItems.map(async (url) => {
-            const ok = await checkImageLoadable(url);
-            return ok ? url : "";
-          }));
-          const validItems = checks.filter(Boolean);
-          if (!validItems.length) {
-            setEmptyState();
-            return;
-          }
-          buildSlides(validItems);
         }
         prev.addEventListener("click", () => {
           scrollToSlide(currentSlideIndex - 1, "smooth");
@@ -1679,7 +2234,7 @@
         carousel.appendChild(next);
         setNavDisabled(prev, true);
         setNavDisabled(next, true);
-        validateItemsOnLoad();
+        buildSlides(sourceItems);
         return carousel;
       }
 
@@ -1807,14 +2362,20 @@
               imageLink.href = url;
               imageLink.target = "_blank";
               imageLink.rel = "noopener noreferrer";
-
-              const img = document.createElement("img");
-              img.className = "news-image";
-              img.loading = "lazy";
-              img.src = url;
-              img.alt = "Image actualite";
-
-              imageLink.appendChild(img);
+              bindNewsImageViewerLink(imageLink, url, tableLabel("imagesCol"));
+              const stage = buildNewsImageStage({
+                imageUrl: url,
+                imageAlt: tableLabel("imagesCol"),
+                stageClass: "news-image-stage",
+                imageClass: "news-image",
+                onError: () => {
+                  imageLink.remove();
+                  if (!imageGrid.querySelector(".news-image-link")) {
+                    imageGrid.remove();
+                  }
+                }
+              });
+              if (stage) imageLink.appendChild(stage);
               imageGrid.appendChild(imageLink);
             });
             article.appendChild(imageGrid);
@@ -1896,6 +2457,13 @@
         const pageTitle = t("nav_actualites", "Actualites");
         const titleEl = document.getElementById("actualitesTitle");
         if (titleEl) titleEl.textContent = pageTitle;
+        const imageViewerCloseBtn = document.getElementById("newsImageViewerClose");
+        if (imageViewerCloseBtn) imageViewerCloseBtn.setAttribute("aria-label", t("close", "Close"));
+        const imageViewerPrevBtn = document.getElementById("newsImageViewerPrev");
+        if (imageViewerPrevBtn) imageViewerPrevBtn.setAttribute("aria-label", t("credits_carousel_prev", "Previous image"));
+        const imageViewerNextBtn = document.getElementById("newsImageViewerNext");
+        if (imageViewerNextBtn) imageViewerNextBtn.setAttribute("aria-label", t("credits_carousel_next", "Next image"));
+        if (isNewsImageViewerOpen()) updateNewsImageViewerFrame();
         document.title = `Ile-de-France Map | ${pageTitle}`;
       }
 
@@ -1905,6 +2473,7 @@
         renderActualites(CURRENT_ITEMS);
       }
 
+      bindNewsImageViewerEvents();
       render();
       setFeedbackByKey("credits_loading", "Chargement", false, true);
       loadActualites()

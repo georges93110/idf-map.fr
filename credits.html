@@ -172,33 +172,6 @@
       font-size:13px;
       line-height:1.45;
     }
-    .credits-feedback{
-      margin:2px 0 0;
-      color:#bdbdbd;
-      font-size:12px;
-      line-height:1.4;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-    }
-    .credits-feedback.is-loading::before{
-      content:"";
-      width:12px;
-      height:12px;
-      border:2px solid #5f5f5f;
-      border-top-color:#f0f0f0;
-      border-radius:50%;
-      animation:credits-spin .75s linear infinite;
-    }
-    .credits-feedback.is-error{
-      color:#f4b2b2;
-    }
-    @keyframes credits-spin{
-      to{
-        transform:rotate(360deg);
-      }
-    }
-
     .credits-list{
       display:block;
       min-height:auto;
@@ -449,6 +422,158 @@
     }
     .credit-modal-overlay.is-open{
       display:flex;
+    }
+    .credit-image-viewer-overlay[hidden]{
+      display:none !important;
+    }
+    .credit-image-viewer-overlay{
+      position:fixed;
+      inset:0;
+      z-index:1900;
+      background:rgba(5,5,5,.88);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px 12px;
+      box-sizing:border-box;
+    }
+    .credit-image-viewer-overlay.is-open{
+      display:flex;
+    }
+    .credit-image-viewer{
+      width:min(1220px, 100%);
+      max-height:calc(100vh - 36px);
+      display:grid;
+      gap:10px;
+      justify-items:center;
+      position:relative;
+      overflow:hidden;
+      overscroll-behavior:contain;
+      padding:0 54px;
+      box-sizing:border-box;
+    }
+    .credit-image-viewer::-webkit-scrollbar{
+      display:none;
+    }
+    .credit-image-viewer-nav{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      width:38px;
+      height:38px;
+      border:1px solid #5f5f5f;
+      background:#242424;
+      color:#f0f0f0;
+      border-radius:9px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      line-height:1;
+      padding:0;
+      z-index:2;
+    }
+    .credit-image-viewer-nav.is-prev{
+      left:8px;
+    }
+    .credit-image-viewer-nav.is-next{
+      right:8px;
+    }
+    .credit-image-viewer-nav:hover{
+      background:#2f2f2f;
+      border-color:#7b7b7b;
+    }
+    .credit-image-viewer-nav:disabled{
+      opacity:.3;
+      cursor:not-allowed;
+      background:#181818;
+      border-color:#2f2f2f;
+      color:#8b8b8b;
+    }
+    .credit-image-viewer-nav:disabled:hover{
+      background:#181818;
+      border-color:#2f2f2f;
+      color:#8b8b8b;
+      cursor:not-allowed;
+    }
+    .credit-image-viewer-counter{
+      position:absolute;
+      top:2px;
+      left:50%;
+      transform:translateX(-50%);
+      border:1px solid #3a3a3a;
+      border-radius:999px;
+      background:rgba(12,12,12,.86);
+      color:#efefef;
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      padding:6px 10px;
+      letter-spacing:.02em;
+      z-index:2;
+      font-variant-numeric:tabular-nums;
+      white-space:nowrap;
+    }
+    .credit-image-viewer-close{
+      position:absolute;
+      top:0;
+      right:0;
+      width:34px;
+      height:34px;
+      border:1px solid #8f2f2f;
+      background:#4a1313;
+      color:#ffe5e5;
+      border-radius:8px;
+      font-size:20px;
+      line-height:1;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      z-index:1;
+    }
+    .credit-image-viewer-close:hover{
+      background:#611919;
+      border-color:#b03b3b;
+    }
+    .credit-image-viewer-close:focus-visible{
+      outline:2px solid #ffffff;
+      outline-offset:2px;
+    }
+    .credit-image-viewer-figure{
+      margin:0;
+      display:grid;
+      gap:10px;
+      justify-items:center;
+      width:100%;
+      padding-top:42px;
+      box-sizing:border-box;
+    }
+    .credit-image-viewer-image{
+      display:block;
+      width:auto;
+      height:auto;
+      max-width:100%;
+      max-height:calc(100vh - 140px);
+      object-fit:contain;
+      border:1px solid #2f2f2f;
+      border-radius:12px;
+      background:#0f0f0f;
+      box-shadow:0 24px 52px rgba(0,0,0,.52);
+    }
+    .credit-image-viewer-caption{
+      margin:0;
+      color:#ececec;
+      font-size:13px;
+      font-weight:600;
+      line-height:1.4;
+      text-align:center;
+      max-width:min(920px, 100%);
+      white-space:pre-line;
+      overflow-wrap:anywhere;
     }
     .credit-modal{
       width:min(720px, 100%);
@@ -775,17 +900,19 @@
       color:#767676;
       background:#131313;
       border-color:#2d2d2d;
-      cursor:default;
+      cursor:not-allowed;
     }
     .credit-modal-carousel-btn.is-disabled{
       opacity:.2;
       color:#5f5f5f !important;
       background:#111111 !important;
       border-color:#242424 !important;
-      cursor:default;
-      pointer-events:none;
+      cursor:not-allowed;
       box-shadow:none;
       filter:grayscale(1);
+    }
+    .credit-modal-carousel-btn.is-disabled:hover{
+      cursor:not-allowed;
     }
     .credit-modal-images{
       display:flex;
@@ -987,6 +1114,40 @@
       .credit-modal-overlay{
         padding:10px 8px;
       }
+      .credit-image-viewer-overlay{
+        padding:10px 8px;
+      }
+      .credit-image-viewer{
+        max-height:calc(100vh - 20px);
+        padding:0 40px;
+      }
+      .credit-image-viewer-nav{
+        width:32px;
+        height:32px;
+        font-size:17px;
+      }
+      .credit-image-viewer-nav.is-prev{
+        left:4px;
+      }
+      .credit-image-viewer-nav.is-next{
+        right:4px;
+      }
+      .credit-image-viewer-counter{
+        top:0;
+        font-size:11px;
+        padding:5px 8px;
+      }
+      .credit-image-viewer-close{
+        width:30px;
+        height:30px;
+        font-size:18px;
+      }
+      .credit-image-viewer-image{
+        max-height:calc(100vh - 122px);
+      }
+      .credit-image-viewer-caption{
+        font-size:12px;
+      }
       .credit-modal{
         padding:11px;
         max-height:90vh;
@@ -1048,7 +1209,6 @@
         <p class="credits-lang-notice" id="creditsLangNotice" hidden></p>
       </div>
       <div class="credits-list" id="creditsList" aria-live="polite"></div>
-      <p class="credits-feedback is-loading" id="creditsFeedback">Loading</p>
     </section>
   </main>
   <div class="credit-modal-overlay" id="creditDetailModal" hidden aria-hidden="true">
@@ -1058,6 +1218,18 @@
         <button class="credit-modal-close" id="creditDetailClose" type="button" aria-label="Close">&times;</button>
       </div>
       <div class="credit-modal-content" id="creditDetailContent"></div>
+    </section>
+  </div>
+  <div class="credit-image-viewer-overlay" id="creditImageViewer" hidden aria-hidden="true">
+    <section class="credit-image-viewer" role="dialog" aria-modal="true" aria-label="Photo viewer">
+      <button class="credit-image-viewer-nav is-prev" id="creditImageViewerPrev" type="button" aria-label="Previous image">‹</button>
+      <p class="credit-image-viewer-counter" id="creditImageViewerCounter" aria-live="polite">1/1</p>
+      <button class="credit-image-viewer-nav is-next" id="creditImageViewerNext" type="button" aria-label="Next image">›</button>
+      <button class="credit-image-viewer-close" id="creditImageViewerClose" type="button" aria-label="Close">&times;</button>
+      <figure class="credit-image-viewer-figure">
+        <img class="credit-image-viewer-image" id="creditImageViewerImage" alt=""/>
+        <figcaption class="credit-image-viewer-caption" id="creditImageViewerCaption" hidden></figcaption>
+      </figure>
     </section>
   </div>
 
@@ -1414,6 +1586,9 @@
         const hasTexture = hasAny(["texture", "textures"]);
         const hasVehicle = hasAny(["vehicule", "vehicules", "vehicle", "vehicles", "veicoli", "pojazd"]);
         const hasTrailer = hasAny(["remorque", "remorques", "trailer", "trailers", "rimorchio", "rimorchi", "reboque", "reboques", "naczepa", "naczep"]);
+        const hasConvoy = hasAny(["convoi", "convoy", "konvoi", "konwoj", "konwoju", "comboio", "konvooi", "convoglio"]);
+        const hasServer = hasAny(["serveur", "server", "servidor", "serwer", "serwera"]);
+        const hasHosting = hasAny(["hebergement", "hosting", "alojamiento", "hospedagem", "hostingu"]);
 
         if (hasAny(["gerant du projet", "project manager", "project lead"])) return "credits_role_manager";
         if (hasAny(["developpeur", "developer", "developpeuse"])) return "credits_role_developer";
@@ -1439,6 +1614,7 @@
         if (hasAny(["mapping", "cartographie", "mappeo", "mapeamento", "mapowanie", "mappatura"])) return "credits_term_mapping";
         if (hasAny(["modeles 3d", "modele 3d", "3d models", "3d model", "modelli 3d", "modelos 3d", "modelle 3d", "modele 3 d"])) return "credits_term_3d_models";
         if (hasAny(["logiciels", "logiciel", "software", "softwares", "programme", "programmes", "programa", "programas", "oprogramowanie"])) return "credits_term_software";
+        if (hasConvoy && hasServer && hasHosting) return "credits_term_convoy_server_hosting";
         if (has("dbus world") && hasAny(["ligne", "lignes", "line", "lines", "linhas", "linie", "linee"])) return "credits_term_dbus_world_lines";
         if (hasTexture && hasVehicle && (hasWord("ia") || hasWord("ai"))) return "credits_term_ai_vehicle_textures";
         if (hasTexture && hasVehicle && hasAny(["modde", "modded", "moddees", "moddes", "modados", "moddati", "modyfikowanych", "gemodde"])) return "credits_term_modded_vehicle_textures";
@@ -2389,10 +2565,18 @@
           if (shouldOpenLink) {
             scroller.setAttribute("data-drag-click-block", "1");
             setTimeout(() => scroller.removeAttribute("data-drag-click-block"), 0);
-            try {
-              window.open(pressedLink.href, "_blank", "noopener,noreferrer");
-            } catch {
-              pressedLink.click();
+            const hasModifierKey = !!(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey);
+            const viewerHref = String(pressedLink.dataset.creditViewerImage || "").trim();
+            const viewerCaption = String(pressedLink.dataset.creditViewerCaption || "").trim();
+            const isViewerLink = pressedLink.getAttribute("data-credit-viewer") === "1" || !!viewerHref;
+            if (isViewerLink && !hasModifierKey) {
+              openCreditImageViewer(viewerHref || pressedLink.href, viewerCaption, pressedLink);
+            } else {
+              try {
+                window.open(pressedLink.href, "_blank", "noopener,noreferrer");
+              } catch {
+                pressedLink.click();
+              }
             }
           }
           dragActivated = false;
@@ -2438,12 +2622,173 @@
       }
       let ACTIVE_MODAL_CONTRIBUTOR = null;
       let ACTIVE_MODAL_TRIGGER = null;
+      let ACTIVE_IMAGE_VIEWER_TRIGGER = null;
+      let CREDIT_IMAGE_VIEWER_ITEMS = [];
+      let CREDIT_IMAGE_VIEWER_INDEX = 0;
       let LOCKED_SCROLL_Y = 0;
       let ENFORCE_MODAL_SCROLL_LOCK = false;
       const MODAL_SCROLL_BLOCK_KEYS = new Set([" ", "Spacebar", "PageUp", "PageDown", "Home", "End", "ArrowUp", "ArrowDown"]);
       const MODAL_QUERY_PARAM = "profil";
       let CONTRIBUTOR_BY_QUERY_ID = new Map();
       let CONTRIBUTOR_TRIGGER_BY_QUERY_ID = new Map();
+      function collectCreditImageViewerItems(triggerEl, fallbackHref, fallbackCaption) {
+        const fallbackImage = String(fallbackHref || "").trim();
+        const fallbackText = String(fallbackCaption || "").trim();
+        const scope = triggerEl instanceof Element ? triggerEl.closest(".credit-modal-images") : null;
+        const links = scope
+          ? Array.from(scope.querySelectorAll("a[data-credit-viewer=\"1\"]"))
+          : [];
+        const items = links
+          .map((link) => ({
+            href: String(link.dataset.creditViewerImage || link.getAttribute("href") || "").trim(),
+            caption: String(link.dataset.creditViewerCaption || "").trim(),
+            trigger: link
+          }))
+          .filter((item) => item.href);
+        if (!items.length && fallbackImage) {
+          items.push({
+            href: fallbackImage,
+            caption: fallbackText,
+            trigger: triggerEl instanceof HTMLElement ? triggerEl : null
+          });
+        }
+        let index = 0;
+        if (items.length && triggerEl instanceof HTMLElement) {
+          const byTrigger = items.findIndex((item) => item.trigger === triggerEl);
+          if (byTrigger >= 0) index = byTrigger;
+          else if (fallbackImage) {
+            const byHref = items.findIndex((item) => item.href === fallbackImage);
+            if (byHref >= 0) index = byHref;
+          }
+        } else if (items.length && fallbackImage) {
+          const byHref = items.findIndex((item) => item.href === fallbackImage);
+          if (byHref >= 0) index = byHref;
+        }
+        return { items, index };
+      }
+      function updateCreditImageViewerFrame() {
+        const imageEl = document.getElementById("creditImageViewerImage");
+        const captionEl = document.getElementById("creditImageViewerCaption");
+        const counterEl = document.getElementById("creditImageViewerCounter");
+        const prevBtn = document.getElementById("creditImageViewerPrev");
+        const nextBtn = document.getElementById("creditImageViewerNext");
+        if (!imageEl || !captionEl || !counterEl || !prevBtn || !nextBtn) return;
+        const total = CREDIT_IMAGE_VIEWER_ITEMS.length;
+        if (!total) return;
+        CREDIT_IMAGE_VIEWER_INDEX = Math.max(0, Math.min(total - 1, Number(CREDIT_IMAGE_VIEWER_INDEX) || 0));
+        const current = CREDIT_IMAGE_VIEWER_ITEMS[CREDIT_IMAGE_VIEWER_INDEX] || CREDIT_IMAGE_VIEWER_ITEMS[0];
+        if (!current) return;
+        const rawCaption = String(current.caption || "").trim();
+        const isFinImage = /(?:^|\/)fin\.png(?:$|[?#])/i.test(String(current.href || "").trim());
+        const caption = isFinImage ? t("credits_and_much_more", "ET BIEN PLUS ENCORE !") : rawCaption;
+        imageEl.src = current.href;
+        imageEl.alt = caption || formatMessage(
+          t("credits_contribution_image_alt", "Contribution image: {name}"),
+          { name: "Image" }
+        );
+        const showCaption = lang() === "fr" && !!caption;
+        captionEl.textContent = showCaption ? caption : "";
+        captionEl.hidden = !showCaption;
+        counterEl.textContent = `${CREDIT_IMAGE_VIEWER_INDEX + 1}/${total}`;
+        const showNav = total > 1;
+        prevBtn.hidden = !showNav;
+        nextBtn.hidden = !showNav;
+        prevBtn.disabled = !showNav || CREDIT_IMAGE_VIEWER_INDEX <= 0;
+        nextBtn.disabled = !showNav || CREDIT_IMAGE_VIEWER_INDEX >= total - 1;
+      }
+      function moveCreditImageViewer(step) {
+        if (!CREDIT_IMAGE_VIEWER_ITEMS.length) return;
+        const total = CREDIT_IMAGE_VIEWER_ITEMS.length;
+        const next = Math.max(0, Math.min(total - 1, CREDIT_IMAGE_VIEWER_INDEX + Number(step || 0)));
+        if (next === CREDIT_IMAGE_VIEWER_INDEX) return;
+        CREDIT_IMAGE_VIEWER_INDEX = next;
+        updateCreditImageViewerFrame();
+      }
+      function isCreditImageViewerOpen() {
+        const overlay = document.getElementById("creditImageViewer");
+        return !!overlay && !overlay.hidden;
+      }
+      function openCreditImageViewer(rawHref, rawCaption, triggerEl) {
+        const { items, index } = collectCreditImageViewerItems(triggerEl, rawHref, rawCaption);
+        if (!items.length) return;
+        const overlay = document.getElementById("creditImageViewer");
+        const closeBtn = document.getElementById("creditImageViewerClose");
+        if (!overlay) return;
+        CREDIT_IMAGE_VIEWER_ITEMS = items;
+        CREDIT_IMAGE_VIEWER_INDEX = Math.max(0, Math.min(items.length - 1, Number(index) || 0));
+        ACTIVE_IMAGE_VIEWER_TRIGGER = triggerEl instanceof HTMLElement ? triggerEl : null;
+        updateCreditImageViewerFrame();
+        overlay.hidden = false;
+        overlay.classList.add("is-open");
+        overlay.setAttribute("aria-hidden", "false");
+        if (closeBtn) {
+          closeBtn.setAttribute("aria-label", t("close", "Close"));
+          closeBtn.focus();
+        }
+      }
+      function closeCreditImageViewer(options = {}) {
+        const overlay = document.getElementById("creditImageViewer");
+        const imageEl = document.getElementById("creditImageViewerImage");
+        const captionEl = document.getElementById("creditImageViewerCaption");
+        const counterEl = document.getElementById("creditImageViewerCounter");
+        if (!overlay || overlay.hidden) return;
+        overlay.classList.remove("is-open");
+        overlay.hidden = true;
+        overlay.setAttribute("aria-hidden", "true");
+        if (imageEl) {
+          imageEl.removeAttribute("src");
+          imageEl.alt = "";
+        }
+        if (captionEl) {
+          captionEl.textContent = "";
+          captionEl.hidden = true;
+        }
+        if (counterEl) counterEl.textContent = "1/1";
+        CREDIT_IMAGE_VIEWER_ITEMS = [];
+        CREDIT_IMAGE_VIEWER_INDEX = 0;
+        const trigger = ACTIVE_IMAGE_VIEWER_TRIGGER;
+        ACTIVE_IMAGE_VIEWER_TRIGGER = null;
+        if (options.restoreFocus === false) return;
+        if (trigger && typeof trigger.focus === "function") {
+          try {
+            trigger.focus({ preventScroll: true });
+          } catch {
+            trigger.focus();
+          }
+        }
+      }
+      function bindCreditImageViewerEvents() {
+        const overlay = document.getElementById("creditImageViewer");
+        const closeBtn = document.getElementById("creditImageViewerClose");
+        const prevBtn = document.getElementById("creditImageViewerPrev");
+        const nextBtn = document.getElementById("creditImageViewerNext");
+        if (!overlay || !closeBtn || !prevBtn || !nextBtn || overlay.dataset.bound === "1") return;
+        overlay.dataset.bound = "1";
+        closeBtn.addEventListener("click", () => closeCreditImageViewer());
+        prevBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          moveCreditImageViewer(-1);
+        });
+        nextBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          moveCreditImageViewer(1);
+        });
+        overlay.addEventListener("click", (event) => {
+          if (event.target === overlay) closeCreditImageViewer();
+        });
+        document.addEventListener("keydown", (event) => {
+          if (!isCreditImageViewerOpen()) return;
+          if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            moveCreditImageViewer(-1);
+            return;
+          }
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            moveCreditImageViewer(1);
+          }
+        });
+      }
       function enforceLockedBackgroundScroll() {
         if (!ENFORCE_MODAL_SCROLL_LOCK) return;
         const currentY = window.scrollY || window.pageYOffset || 0;
@@ -2458,17 +2803,25 @@
         const target = event && event.target;
         return target instanceof Element && modal.contains(target);
       }
+      function isEventInsideImageViewer(event) {
+        const overlay = document.getElementById("creditImageViewer");
+        if (!overlay || overlay.hidden) return false;
+        const viewer = overlay.querySelector(".credit-image-viewer");
+        if (!viewer) return false;
+        const target = event && event.target;
+        return target instanceof Element && viewer.contains(target);
+      }
       function preventBackgroundWheel(event) {
-        if (isEventInsideModal(event)) return;
+        if (isEventInsideModal(event) || isEventInsideImageViewer(event)) return;
         event.preventDefault();
       }
       function preventBackgroundTouchMove(event) {
-        if (isEventInsideModal(event)) return;
+        if (isEventInsideModal(event) || isEventInsideImageViewer(event)) return;
         event.preventDefault();
       }
       function preventBackgroundKeyScroll(event) {
         if (!MODAL_SCROLL_BLOCK_KEYS.has(event.key)) return;
-        if (isEventInsideModal(event)) return;
+        if (isEventInsideModal(event) || isEventInsideImageViewer(event)) return;
         event.preventDefault();
       }
       function getContributorQueryId(baseContributor) {
@@ -2533,6 +2886,7 @@
       function closeContributorModal(options = {}) {
         const overlay = document.getElementById("creditDetailModal");
         if (!overlay || overlay.hidden) return;
+        closeCreditImageViewer({ restoreFocus: false });
         overlay.classList.remove("is-open");
         overlay.hidden = true;
         overlay.setAttribute("aria-hidden", "true");
@@ -2741,7 +3095,7 @@
           if (hadFinMarkerVisual) {
             groupedImages.push({
               isMoreText: true,
-              text: "AND MUCH MORE!"
+              text: t("credits_and_much_more", "AND MUCH MORE!")
             });
           }
         }
@@ -2809,7 +3163,7 @@
               moreItem.className = "credit-modal-image-link is-more-text";
               const moreText = document.createElement("p");
               moreText.className = "credit-modal-more-text";
-              moreText.textContent = String(item.text || "AND MUCH + MORE!");
+              moreText.textContent = String(item.text || t("credits_and_much_more", "AND MUCH MORE!"));
               moreItem.appendChild(moreText);
               images.appendChild(moreItem);
               return;
@@ -2819,6 +3173,18 @@
             link.href = item.href;
             link.target = "_blank";
             link.rel = "noopener noreferrer";
+            const viewerCaption = String(item.caption || "").trim();
+            link.setAttribute("data-credit-viewer", "1");
+            link.dataset.creditViewerImage = item.href;
+            if (viewerCaption) link.dataset.creditViewerCaption = viewerCaption;
+            link.addEventListener("click", (event) => {
+              if (images.getAttribute("data-drag-click-block") === "1") return;
+              if (event.defaultPrevented) return;
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              event.preventDefault();
+              event.stopPropagation();
+              openCreditImageViewer(item.href, viewerCaption, link);
+            });
             const stage = document.createElement("div");
             stage.className = "credit-modal-image-stage is-loading";
             const loader = document.createElement("div");
@@ -2960,6 +3326,7 @@
         const overlay = document.getElementById("creditDetailModal");
         const closeBtn = document.getElementById("creditDetailClose");
         if (!overlay || !baseContributor) return;
+        closeCreditImageViewer({ restoreFocus: false });
         ACTIVE_MODAL_CONTRIBUTOR = baseContributor;
         ACTIVE_MODAL_TRIGGER = triggerEl || null;
         document.querySelectorAll(".credit-item.is-modal-open").forEach((item) => {
@@ -2986,7 +3353,13 @@
           if (event.target === overlay) closeContributorModal();
         });
         document.addEventListener("keydown", (event) => {
-          if (event.key === "Escape" && !overlay.hidden) {
+          if (event.key !== "Escape") return;
+          if (isCreditImageViewerOpen()) {
+            event.preventDefault();
+            closeCreditImageViewer();
+            return;
+          }
+          if (!overlay.hidden) {
             event.preventDefault();
             closeContributorModal();
           }
@@ -3058,31 +3431,6 @@
         article.appendChild(photoWrap);
         article.appendChild(meta);
         return article;
-      }
-      let FEEDBACK_STATE = { key: "", fallback: "", isError: false, isLoading: false };
-      function setFeedback(message, isError, isLoading) {
-        const feedback = document.getElementById("creditsFeedback");
-        if (!feedback) return;
-        feedback.textContent = message || "";
-        feedback.classList.toggle("is-error", !!isError);
-        feedback.classList.toggle("is-loading", !!isLoading);
-      }
-      function setFeedbackByKey(key, fallback, isError, isLoading) {
-        FEEDBACK_STATE = {
-          key: String(key || "").trim(),
-          fallback: String(fallback || "").trim(),
-          isError: !!isError,
-          isLoading: !!isLoading
-        };
-        setFeedback(FEEDBACK_STATE.key ? t(FEEDBACK_STATE.key, FEEDBACK_STATE.fallback) : "", FEEDBACK_STATE.isError, FEEDBACK_STATE.isLoading);
-      }
-      function clearFeedback() {
-        FEEDBACK_STATE = { key: "", fallback: "", isError: false, isLoading: false };
-        setFeedback("", false, false);
-      }
-      function refreshFeedbackLocale() {
-        if (!FEEDBACK_STATE.key) return;
-        setFeedback(t(FEEDBACK_STATE.key, FEEDBACK_STATE.fallback), FEEDBACK_STATE.isError, FEEDBACK_STATE.isLoading);
       }
       function renderCredits(contributors) {
         const host = document.getElementById("creditsList");
@@ -3161,18 +3509,12 @@
         const cacheMs = Math.max(60000, Number(sheetCfg.cache_ms) || 180000);
         const timeoutMs = Math.max(3000, Number(sheetCfg.timeout_ms) || 10000);
 
-        if (!spreadsheetId) {
-          setFeedbackByKey("credits_error", "Error", true, false);
-          return ENABLE_LOCAL_MODE ? fallbackContributors() : [];
-        }
+        if (!spreadsheetId) return ENABLE_LOCAL_MODE ? fallbackContributors() : [];
 
         const cachedRows = readCache(cacheMs);
         if (cachedRows && cachedRows.length) {
           const contributors = cachedRows.map(contributorFromRow).filter((item) => item && item.name);
-          if (contributors.length) {
-            setFeedbackByKey("credits_cache_local_loaded", "", false, false);
-            return contributors;
-          }
+          if (contributors.length) return contributors;
         }
 
         const sheetUrl = buildSheetUrl(spreadsheetId, gid);
@@ -3180,7 +3522,6 @@
         if (rows.length) writeCache(rows);
         const contributors = rows.map(contributorFromRow).filter((item) => item && item.name);
         if (!contributors.length) throw new Error("Sheet is empty");
-        clearFeedback();
         return contributors;
       }
       function render() {
@@ -3196,6 +3537,13 @@
         }
         const closeBtn = document.getElementById("creditDetailClose");
         if (closeBtn) closeBtn.setAttribute("aria-label", t("close", "Close"));
+        const imageViewerCloseBtn = document.getElementById("creditImageViewerClose");
+        if (imageViewerCloseBtn) imageViewerCloseBtn.setAttribute("aria-label", t("close", "Close"));
+        const imageViewerPrevBtn = document.getElementById("creditImageViewerPrev");
+        if (imageViewerPrevBtn) imageViewerPrevBtn.setAttribute("aria-label", t("credits_carousel_prev", "Previous image"));
+        const imageViewerNextBtn = document.getElementById("creditImageViewerNext");
+        if (imageViewerNextBtn) imageViewerNextBtn.setAttribute("aria-label", t("credits_carousel_next", "Next image"));
+        if (isCreditImageViewerOpen()) updateCreditImageViewerFrame();
         const pageDescription = t("credits_meta_description", "Contributor credits for the Ile-de-France map.");
         const pageMetaTitle = formatMessage(t("credits_meta_page_title", "Ile-de-France Map - {title}"), { title: pageTitle });
         document.title = pageMetaTitle;
@@ -3218,9 +3566,9 @@
         openContributorModalFromUrlIfNeeded();
       }
       initCreditsImagesIndex();
+      bindCreditImageViewerEvents();
       bindContributorModalEvents();
       render();
-      setFeedbackByKey("credits_loading", "Loading", false, true);
       loadContributors()
         .then((contributors) => {
           applyContributors(contributors);
@@ -3229,18 +3577,15 @@
           if (ENABLE_LOCAL_MODE) {
             const fallback = fallbackContributors();
             applyContributors(fallback);
-            setFeedbackByKey("credits_error", "Error", true, false);
             return;
           }
           applyContributors([]);
-          setFeedbackByKey("credits_error", "Error", true, false);
         });
       new MutationObserver(() => {
         render();
         renderCredits(CURRENT_CONTRIBUTORS);
         refreshContributorModalLocale();
         openContributorModalFromUrlIfNeeded();
-        refreshFeedbackLocale();
       }).observe(document.documentElement, {
         attributes: true,
         attributeFilter: ["lang"]
