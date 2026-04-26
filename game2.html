@@ -75,7 +75,8 @@
         0 0 calc(12px * var(--overlay-ui-scale)) rgba(0, 0, 0, 0.45);
       z-index: 6000;
       background: #f59e0b;
-      pointer-events: none;
+      pointer-events: auto;
+      cursor: help;
     }
     .telemetry-dot.is-checking {
       background: #f59e0b;
@@ -85,6 +86,42 @@
     }
     .telemetry-dot.is-offline {
       background: #ef4444;
+    }
+    body.is-telemetry-mode-1::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 1500;
+      pointer-events: none;
+      background: rgba(128, 128, 128, 0.75);
+    }
+    .telemetry-dot-status {
+      position: fixed;
+      top: calc((12px + 8px) * var(--overlay-ui-scale));
+      right: calc((12px + 16px + 8px) * var(--overlay-ui-scale));
+      transform: translateY(-50%) translateX(3px);
+      max-width: min(52vw, calc(360px * var(--overlay-ui-scale)));
+      padding: calc(4px * var(--overlay-ui-scale)) calc(7px * var(--overlay-ui-scale));
+      border-radius: calc(6px * var(--overlay-ui-scale));
+      border: 1px solid rgba(148, 163, 184, 0.42);
+      background: rgba(15, 23, 42, 0.92);
+      color: #e5e7eb;
+      font-size: calc(11px * var(--overlay-ui-scale));
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 120ms ease, transform 120ms ease, visibility 120ms ease;
+      z-index: 6000;
+    }
+    #telemetryDot:hover + #telemetryDotStatus {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(-50%) translateX(0);
     }
     body.is-telemetry-blocked {
       overflow: hidden;
@@ -737,31 +774,6 @@
       pointer-events: auto;
     }
 
-    #overlayManagerOpenBtn {
-      position: fixed;
-      left: calc(12px * var(--overlay-ui-scale));
-      top: calc(12px * var(--overlay-ui-scale));
-      width: calc(34px * var(--overlay-ui-scale));
-      height: calc(34px * var(--overlay-ui-scale));
-      border-radius: calc(8px * var(--overlay-ui-scale));
-      border: 1px solid rgba(148, 163, 184, 0.48);
-      background: rgba(15, 23, 42, 0.9);
-      color: #e2e8f0;
-      font-size: calc(14px * var(--overlay-ui-scale));
-      font-weight: 800;
-      line-height: 1;
-      cursor: pointer;
-      pointer-events: auto;
-      z-index: 6300;
-      display: none;
-    }
-
-    #overlayManagerOpenBtn.is-visible {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
     .manager-section-title {
       margin: 0;
       color: #aeb7c8;
@@ -858,6 +870,7 @@
     </section>
   </main>
   <div id="telemetryDot" class="telemetry-dot is-checking" role="status" aria-live="polite" aria-label="Verification connexion"></div>
+  <div id="telemetryDotStatus" class="telemetry-dot-status" aria-hidden="true">En jeu (dans un menu)</div>
   <div id="telemetryErrorOverlay" class="telemetry-error-overlay" role="alert" aria-live="assertive" hidden>
     <div class="telemetry-error-shell">
       <p id="telemetryErrorText" class="telemetry-error-text">ERREUR : Télémétrie non connectée</p>
@@ -865,16 +878,12 @@
   </div>
   <div id="overlayRoot">
     <div id="overlayWorkspace"></div>
-    <button id="overlayManagerOpenBtn" type="button" aria-label="Ouvrir le manager">M</button>
     <section id="overlayManager" class="overlay-window" aria-label="Widget Manager">
       <div id="overlayManagerTitlebar" class="overlay-window-titlebar">
         <span class="overlay-window-title">Widget Manager</span>
-        <div class="overlay-window-actions">
-          <button id="overlayManagerHideBtn" class="overlay-window-btn" type="button" aria-label="Masquer le manager">-</button>
-        </div>
       </div>
       <div class="manager-content">
-        <p class="manager-help">F8: afficher/masquer ce manager.</p>
+        <p class="manager-help">Mode piloté par télémétrie.</p>
         <p class="manager-section-title">Mode</p>
         <div class="manager-tabs" role="tablist" aria-label="Mode de jeu">
           <button id="managerTabBus" class="manager-tab is-active" type="button" role="tab" aria-selected="true">Mode Bus</button>
@@ -955,6 +964,7 @@
         listPip: document.getElementById("listPip"),
         stage: document.getElementById("widgetStage"),
         telemetryDot: document.getElementById("telemetryDot"),
+        telemetryDotStatus: document.getElementById("telemetryDotStatus"),
         telemetryErrorOverlay: document.getElementById("telemetryErrorOverlay"),
         telemetryErrorText: document.getElementById("telemetryErrorText"),
         telemetryErrorHelp: document.getElementById("telemetryErrorHelp"),
@@ -962,8 +972,6 @@
         overlayWorkspace: document.getElementById("overlayWorkspace"),
         overlayManager: document.getElementById("overlayManager"),
         overlayManagerTitlebar: document.getElementById("overlayManagerTitlebar"),
-        overlayManagerHideBtn: document.getElementById("overlayManagerHideBtn"),
-        overlayManagerOpenBtn: document.getElementById("overlayManagerOpenBtn"),
         overlayResetLayoutBtn: document.getElementById("overlayResetLayoutBtn")
       };
 
@@ -1003,13 +1011,14 @@
       var OVERLAY_WIDGET_TITLEBAR_HEIGHT = scaleUiSize(32);
       var OVERLAY_MANAGER_MIN_WIDTH = scaleUiSize(260);
       var OVERLAY_MANAGER_MIN_HEIGHT = scaleUiSize(180);
+      var telemetryUiMode = 1;
       var managerState = {
         x: scaleUiSize(18),
         y: scaleUiSize(18),
         width: scaleUiSize(320),
         height: scaleUiSize(330),
         z: 1200,
-        visible: true
+        visible: false
       };
       var activeOverlayDrag = null;
       var TELEMETRY_WS_URL = "ws://localhost:3001";
@@ -5261,12 +5270,15 @@
         if (safe === "online") {
           el.telemetryDot.setAttribute("aria-label", "Connexion OK");
           el.telemetryDot.title = "Connexion OK";
+          if (el.telemetryDotStatus) el.telemetryDotStatus.textContent = "En jeu";
         } else if (safe === "offline") {
           el.telemetryDot.setAttribute("aria-label", "Connexion perdue");
           el.telemetryDot.title = "Connexion perdue";
+          if (el.telemetryDotStatus) el.telemetryDotStatus.textContent = "Déconnecté";
         } else {
           el.telemetryDot.setAttribute("aria-label", "Verification connexion");
           el.telemetryDot.title = "Verification connexion";
+          if (el.telemetryDotStatus) el.telemetryDotStatus.textContent = "En jeu (dans un menu)";
         }
       }
       function buildTelemetryErrorCopy(reason) {
@@ -5400,6 +5412,32 @@
         if (x === null || y === null || z === null || heading === null) return null;
         return { x: x, y: y, z: z, heading: heading };
       }
+      function normalizeTelemetryUiMode(value) {
+        var n = Math.floor(Number(value));
+        if (n === 2) return 2;
+        return 1;
+      }
+      function extractTelemetryUiMode(data) {
+        var payload = data && typeof data === "object" ? data : null;
+        if (!payload) return 1;
+        var pools = [payload, payload.data, payload.payload];
+        for (var i = 0; i < pools.length; i += 1) {
+          var src = pools[i];
+          if (!src || typeof src !== "object") continue;
+          if (!Object.prototype.hasOwnProperty.call(src, "mode")) continue;
+          var mode = normalizeTelemetryUiMode(src.mode);
+          return mode;
+        }
+        return 1;
+      }
+      function applyTelemetryUiMode(modeRaw) {
+        var nextMode = normalizeTelemetryUiMode(modeRaw);
+        if (nextMode === telemetryUiMode) return false;
+        telemetryUiMode = nextMode;
+        managerState.visible = telemetryUiMode === 1;
+        renderManager();
+        return true;
+      }
       function stopTelemetryReconnectTimer() {
         if (!telemetryReconnectTimer) return;
         clearTimeout(telemetryReconnectTimer);
@@ -5454,6 +5492,7 @@
         ws.onmessage = function (event) {
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          applyTelemetryUiMode(extractTelemetryUiMode(raw));
           if (handleWidgetBridgeEnvelope(raw)) return;
           var signal = extractTelemetrySignal(raw);
           if (!signal) return;
@@ -6924,7 +6963,9 @@
 
       function renderManager() {
         if (!el.overlayManager) return;
-        var managerHidden = managerState.visible === false;
+        var managerHidden = telemetryUiMode !== 1;
+        managerState.visible = !managerHidden;
+        document.body.classList.toggle("is-telemetry-mode-1", telemetryUiMode === 1);
         document.body.classList.toggle("is-manager-hidden", managerHidden);
         clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
         el.overlayManager.style.left = Math.round(managerState.x) + "px";
@@ -6933,9 +6974,6 @@
         el.overlayManager.style.height = Math.round(managerState.height) + "px";
         el.overlayManager.style.zIndex = String(Math.max(1, Number(managerState.z) || 1));
         el.overlayManager.style.display = managerHidden ? "none" : "";
-        if (el.overlayManagerOpenBtn) {
-          el.overlayManagerOpenBtn.classList.toggle("is-visible", managerHidden);
-        }
       }
 
       function refreshManagerUi() {
@@ -7106,23 +7144,6 @@
             event.preventDefault();
           });
         }
-        if (el.overlayManagerHideBtn) {
-          el.overlayManagerHideBtn.addEventListener("click", function (event) {
-            event.preventDefault();
-            managerState.visible = false;
-            renderManager();
-            saveWidgetLayoutState();
-          });
-        }
-        if (el.overlayManagerOpenBtn) {
-          el.overlayManagerOpenBtn.addEventListener("click", function (event) {
-            event.preventDefault();
-            managerState.visible = true;
-            bringManagerToFront();
-            renderManager();
-            saveWidgetLayoutState();
-          });
-        }
         if (el.overlayResetLayoutBtn) {
           el.overlayResetLayoutBtn.addEventListener("click", function (event) {
             event.preventDefault();
@@ -7153,14 +7174,6 @@
           });
         });
 
-        window.addEventListener("keydown", function (event) {
-          if (event.key !== "F8") return;
-          event.preventDefault();
-          managerState.visible = !managerState.visible;
-          if (managerState.visible) managerState.z = bumpOverlayZ();
-          renderManager();
-          saveWidgetLayoutState();
-        });
         window.addEventListener("keydown", function (event) {
           if (!telemetryConnected && event.key === "Enter") {
             event.stopImmediatePropagation();
