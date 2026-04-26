@@ -18,7 +18,7 @@ window.CREDITS_IMAGES_MANIFEST = {
       "5_ Isuzu Créteil Soleil.png",
       "6_Isuzu Les Mercuriales.png"
     ],
-    "hasEndMarker": false
+    "hasEndMarker": true
   },
   "422188304612458497": {
     "folder": "422188304612458497-JNM",
@@ -30,7 +30,16 @@ window.CREDITS_IMAGES_MANIFEST = {
       "Skoda Superb Police Nationale.png",
       "Skoda Superb SAMU 94.png"
     ],
-    "hasEndMarker": false
+    "hasEndMarker": true
+  },
+  "491692233498689536": {
+    "folder": "491692233498689536-FELZOW",
+    "files": [
+      "1_Hebergement Serveur Convoi.png",
+      "2_ Installateur automatique IDF Map.png",
+      "3_ Modèle 3D Péage du Parking de Disneyland Paris.png"
+    ],
+    "hasEndMarker": true
   },
   "501462784421396510": {
     "folder": "501462784421396510-T24",
