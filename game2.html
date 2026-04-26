@@ -11,7 +11,8 @@
       --line: rgba(160, 160, 160, 0.24);
       --text: #e6e6e6;
       --muted: #a3a3a3;
-      --overlay-widget-titlebar-h: 32px;
+      --overlay-ui-scale: 0.5;
+      --overlay-widget-titlebar-h: calc(32px * var(--overlay-ui-scale));
     }
 
     * { box-sizing: border-box; }
@@ -63,13 +64,15 @@
     }
     .telemetry-dot {
       position: fixed;
-      top: 12px;
-      right: 12px;
-      width: 16px;
-      height: 16px;
+      top: calc(12px * var(--overlay-ui-scale));
+      right: calc(12px * var(--overlay-ui-scale));
+      width: calc(16px * var(--overlay-ui-scale));
+      height: calc(16px * var(--overlay-ui-scale));
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.4);
-      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35), 0 0 12px rgba(0, 0, 0, 0.45);
+      box-shadow:
+        0 0 0 calc(2px * var(--overlay-ui-scale)) rgba(0, 0, 0, 0.35),
+        0 0 calc(12px * var(--overlay-ui-scale)) rgba(0, 0, 0, 0.45);
       z-index: 6000;
       background: #f59e0b;
       pointer-events: none;
@@ -536,9 +539,12 @@
     .overlay-window {
       position: absolute;
       border: 1px solid rgba(187, 196, 211, 0.42);
-      border-radius: 8px;
+      border-radius: calc(8px * var(--overlay-ui-scale));
       background: rgba(16, 20, 29, 0.92);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+      box-shadow:
+        0 calc(16px * var(--overlay-ui-scale))
+        calc(36px * var(--overlay-ui-scale))
+        rgba(0, 0, 0, 0.5);
       overflow: hidden;
       min-width: 120px;
       min-height: 80px;
@@ -557,13 +563,13 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: calc(8px * var(--overlay-ui-scale));
       height: var(--overlay-widget-titlebar-h, 32px);
-      padding: 0 10px;
+      padding: 0 calc(10px * var(--overlay-ui-scale));
       background: linear-gradient(180deg, rgba(52, 60, 76, 0.95) 0%, rgba(31, 36, 47, 0.96) 100%);
       border-bottom: 1px solid rgba(159, 170, 189, 0.35);
       color: #e8edf8;
-      font-size: 12px;
+      font-size: calc(12px * var(--overlay-ui-scale));
       font-weight: 700;
       letter-spacing: 0.03em;
       cursor: move;
@@ -576,7 +582,7 @@
       right: 0;
       top: calc(-1 * var(--overlay-widget-titlebar-h, 32px));
       border-bottom: 0;
-      border-radius: 8px 8px 0 0;
+      border-radius: calc(8px * var(--overlay-ui-scale)) calc(8px * var(--overlay-ui-scale)) 0 0;
       z-index: 2;
     }
 
@@ -589,18 +595,18 @@
     .overlay-window-actions {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: calc(6px * var(--overlay-ui-scale));
       flex: 0 0 auto;
     }
 
     .overlay-window-btn {
-      width: 20px;
-      height: 20px;
+      width: calc(20px * var(--overlay-ui-scale));
+      height: calc(20px * var(--overlay-ui-scale));
       border: 1px solid rgba(153, 170, 199, 0.5);
-      border-radius: 5px;
+      border-radius: calc(5px * var(--overlay-ui-scale));
       background: rgba(27, 33, 45, 0.92);
       color: #e2e8f0;
-      font-size: 12px;
+      font-size: calc(12px * var(--overlay-ui-scale));
       font-weight: 700;
       line-height: 1;
       padding: 0;
@@ -623,9 +629,12 @@
     .overlay-window[data-widget-type] .overlay-window-content {
       inset: 0;
       border: 1px solid rgba(187, 196, 211, 0.42);
-      border-radius: 8px;
+      border-radius: calc(8px * var(--overlay-ui-scale));
       background: transparent;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+      box-shadow:
+        0 calc(16px * var(--overlay-ui-scale))
+        calc(36px * var(--overlay-ui-scale))
+        rgba(0, 0, 0, 0.5);
       overflow: hidden;
     }
 
@@ -643,8 +652,8 @@
 
     .overlay-window-resize {
       position: absolute;
-      width: 18px;
-      height: 18px;
+      width: calc(18px * var(--overlay-ui-scale));
+      height: calc(18px * var(--overlay-ui-scale));
       right: 0;
       bottom: 0;
       cursor: nwse-resize;
@@ -667,8 +676,8 @@
     }
 
     #overlayManager {
-      width: 320px;
-      min-height: 210px;
+      width: calc(320px * var(--overlay-ui-scale));
+      min-height: calc(210px * var(--overlay-ui-scale));
     }
 
     #overlayManager .overlay-window-titlebar {
@@ -676,69 +685,69 @@
     }
 
     .manager-content {
-      padding: 10px;
+      padding: calc(10px * var(--overlay-ui-scale));
       color: #e5e7eb;
-      font-size: 13px;
+      font-size: calc(13px * var(--overlay-ui-scale));
       line-height: 1.35;
       display: grid;
-      gap: 8px;
+      gap: calc(8px * var(--overlay-ui-scale));
       background: rgba(11, 15, 23, 0.95);
-      height: calc(100% - 32px);
+      height: calc(100% - var(--overlay-widget-titlebar-h, 32px));
       overflow: auto;
     }
 
     .manager-help {
       margin: 0;
       color: #9ca3af;
-      font-size: 12px;
+      font-size: calc(12px * var(--overlay-ui-scale));
     }
 
     .manager-toggle {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
+      gap: calc(8px * var(--overlay-ui-scale));
+      padding: calc(6px * var(--overlay-ui-scale)) calc(8px * var(--overlay-ui-scale));
       border: 1px solid rgba(148, 163, 184, 0.28);
-      border-radius: 6px;
+      border-radius: calc(6px * var(--overlay-ui-scale));
       background: rgba(30, 38, 53, 0.82);
     }
 
     .manager-toggle input[type="checkbox"] {
       margin: 0;
-      width: 15px;
-      height: 15px;
+      width: calc(15px * var(--overlay-ui-scale));
+      height: calc(15px * var(--overlay-ui-scale));
     }
 
     .manager-actions {
       display: flex;
-      gap: 8px;
+      gap: calc(8px * var(--overlay-ui-scale));
       padding-top: 2px;
     }
 
     .manager-action-btn {
-      height: 30px;
-      border-radius: 7px;
+      height: calc(30px * var(--overlay-ui-scale));
+      border-radius: calc(7px * var(--overlay-ui-scale));
       border: 1px solid rgba(148, 163, 184, 0.36);
       background: rgba(30, 41, 59, 0.95);
       color: #f1f5f9;
-      font-size: 12px;
+      font-size: calc(12px * var(--overlay-ui-scale));
       font-weight: 700;
-      padding: 0 10px;
+      padding: 0 calc(10px * var(--overlay-ui-scale));
       cursor: pointer;
       pointer-events: auto;
     }
 
     #overlayManagerOpenBtn {
       position: fixed;
-      left: 12px;
-      top: 12px;
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
+      left: calc(12px * var(--overlay-ui-scale));
+      top: calc(12px * var(--overlay-ui-scale));
+      width: calc(34px * var(--overlay-ui-scale));
+      height: calc(34px * var(--overlay-ui-scale));
+      border-radius: calc(8px * var(--overlay-ui-scale));
       border: 1px solid rgba(148, 163, 184, 0.48);
       background: rgba(15, 23, 42, 0.9);
       color: #e2e8f0;
-      font-size: 14px;
+      font-size: calc(14px * var(--overlay-ui-scale));
       font-weight: 800;
       line-height: 1;
       cursor: pointer;
@@ -753,27 +762,39 @@
       justify-content: center;
     }
 
-    #telemetryToast {
-      position: fixed;
-      right: 14px;
-      bottom: 14px;
-      min-width: 280px;
-      max-width: min(540px, 92vw);
-      border: 1px solid rgba(248, 113, 113, 0.64);
-      border-radius: 8px;
-      background: rgba(69, 18, 18, 0.92);
-      color: #fee2e2;
-      font-size: 12px;
+    .manager-section-title {
+      margin: 0;
+      color: #aeb7c8;
+      font-size: calc(11px * var(--overlay-ui-scale));
       font-weight: 700;
-      line-height: 1.35;
-      padding: 10px 12px;
-      pointer-events: none;
-      z-index: 6200;
-      display: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
-    #telemetryToast.is-visible {
-      display: block;
+    .manager-tabs {
+      display: flex;
+      align-items: stretch;
+      gap: calc(6px * var(--overlay-ui-scale));
+    }
+
+    .manager-tab {
+      height: calc(30px * var(--overlay-ui-scale));
+      border-radius: calc(7px * var(--overlay-ui-scale));
+      border: 1px solid rgba(148, 163, 184, 0.34);
+      background: rgba(30, 38, 53, 0.82);
+      color: #dbe3ef;
+      font-size: calc(12px * var(--overlay-ui-scale));
+      font-weight: 700;
+      padding: 0 calc(10px * var(--overlay-ui-scale));
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .manager-tab.is-active {
+      border-color: rgba(147, 197, 253, 0.72);
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.35) 0%, rgba(37, 99, 235, 0.28) 100%);
+      color: #f8fbff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
   </style>
 </head>
@@ -854,13 +875,14 @@
       </div>
       <div class="manager-content">
         <p class="manager-help">F8: afficher/masquer ce manager.</p>
+        <p class="manager-section-title">Mode</p>
+        <div class="manager-tabs" role="tablist" aria-label="Mode de jeu">
+          <button id="managerTabBus" class="manager-tab is-active" type="button" role="tab" aria-selected="true">Mode Bus</button>
+        </div>
+        <p class="manager-section-title">Widgets</p>
         <label class="manager-toggle">
           <input id="toggleWaze" type="checkbox" data-widget-type="waze" />
           <span>GPS Réaliste (Waze)</span>
-        </label>
-        <label class="manager-toggle">
-          <input id="toggleWazeUberEats" type="checkbox" data-widget-type="waze_uber_eats" />
-          <span>GPS Uber Eats</span>
         </label>
         <label class="manager-toggle">
           <input id="toggleSaeiv" type="checkbox" data-widget-type="saeiv" />
@@ -876,15 +898,14 @@
       </div>
     </section>
   </div>
-  <div id="telemetryToast" role="status" aria-live="polite"></div>
 
   <script>
     (function () {
       var OUTPUTS = ["inline", "tab", "pip"];
       // Basculer a true pour reactiver Nouvel onglet + PIP.
       var ENABLE_TAB_AND_PIP_OUTPUTS = false;
-      // Basculer a true pour reactiver le mode Uber Eats.
-      var ENABLE_UBER_EATS_MODE = true;
+      // Uber Eats retire pour game2.
+      var ENABLE_UBER_EATS_MODE = false;
       var GAME_MODE_STORAGE_KEY = "idf_game2_mode_v1";
       var GAME_MODES = {
         BUS: "bus",
@@ -893,15 +914,13 @@
       var TYPES = {
         saeiv: { label: "HUD Ligne Réaliste (SAEIV) : SAEIV", url: new URL("widgets/saeiv.html?dev=1&host=game&source=game", location.href).href },
         saeiv_mini: { label: "HUD Ligne Simple (Mini) : SAEIV Mini", url: new URL("widgets/saeiv_mini.html?host=game&source=game", location.href).href },
-        waze: { label: "GPS Réaliste (Waze)", url: new URL("widgets/waze.html?host=game", location.href).href },
-        waze_uber_eats: { label: "GPS Uber Eats", url: new URL("widgets/uber_eats.html?host=game", location.href).href }
+        waze: { label: "GPS Réaliste (Waze)", url: new URL("widgets/waze.html?host=game", location.href).href }
       };
       var TYPE_ASPECT_RATIO = {
         // largeur / hauteur
         saeiv: 679 / 383,
         saeiv_mini: 679 / 383,
-        waze: 9 / 19.5,
-        waze_uber_eats: 9 / 19.5
+        waze: 9 / 19.5
       };
       var MODE_CONFIGS = {};
       MODE_CONFIGS[GAME_MODES.BUS] = {
@@ -945,8 +964,7 @@
         overlayManagerTitlebar: document.getElementById("overlayManagerTitlebar"),
         overlayManagerHideBtn: document.getElementById("overlayManagerHideBtn"),
         overlayManagerOpenBtn: document.getElementById("overlayManagerOpenBtn"),
-        overlayResetLayoutBtn: document.getElementById("overlayResetLayoutBtn"),
-        telemetryToast: document.getElementById("telemetryToast")
+        overlayResetLayoutBtn: document.getElementById("overlayResetLayoutBtn")
       };
 
       var nextId = 1;
@@ -965,13 +983,34 @@
       var lastStableWazeColWidth = 0;
       // Espace entre fenetres PIP (0 = collees)
       var PIP_PANE_GAP_PX = 15;
-      var WIDGET_LAYOUT_STORAGE_KEY = "idf_game2_widget_layout_v1";
-      var OVERLAY_MANAGER_STORAGE_KEY = "idf_game2_overlay_manager_v1";
+      var WIDGET_LAYOUT_STORAGE_KEY = "idf_game2_widget_layout_v2";
+      var OVERLAY_MANAGER_STORAGE_KEY = "idf_game2_overlay_manager_v2";
       var windowsByType = Object.create(null);
       var windowNodeByType = Object.create(null);
       var nextOverlayZ = 20;
-      var OVERLAY_WIDGET_TITLEBAR_HEIGHT = 32;
-      var managerState = { x: 18, y: 18, width: 320, height: 330, z: 1200, visible: true };
+      var OVERLAY_UI_SCALE = 0.5;
+      var OVERLAY_WIDGET_SIZE_SCALE = 0.75;
+      function scaleUiSize(value) {
+        var n = Number(value);
+        if (!Number.isFinite(n)) return 1;
+        return Math.max(1, Math.round(n * OVERLAY_UI_SCALE));
+      }
+      function scaleWidgetSize(value) {
+        var n = Number(value);
+        if (!Number.isFinite(n)) return 1;
+        return Math.max(1, Math.round(n * OVERLAY_WIDGET_SIZE_SCALE));
+      }
+      var OVERLAY_WIDGET_TITLEBAR_HEIGHT = scaleUiSize(32);
+      var OVERLAY_MANAGER_MIN_WIDTH = scaleUiSize(260);
+      var OVERLAY_MANAGER_MIN_HEIGHT = scaleUiSize(180);
+      var managerState = {
+        x: scaleUiSize(18),
+        y: scaleUiSize(18),
+        width: scaleUiSize(320),
+        height: scaleUiSize(330),
+        z: 1200,
+        visible: true
+      };
       var activeOverlayDrag = null;
       var TELEMETRY_WS_URL = "ws://localhost:3001";
       var TELEMETRY_PACKET_TIMEOUT_MS = 2000;
@@ -5208,6 +5247,11 @@
         if (!Number.isFinite(r) || r <= 0) return 1;
         return r;
       }
+      function isAspectRatioLocked(type) {
+        var safeType = normalizeWidgetType(type);
+        if (!safeType) return true;
+        return safeType !== "saeiv_mini";
+      }
       function setTelemetryDotState(state) {
         if (!el.telemetryDot) return;
         var safe = String(state || "checking").toLowerCase();
@@ -6453,19 +6497,19 @@
       }
       function getOverlayTypeDefaults(type) {
         var index = 0;
-        var keys = ["waze", "waze_uber_eats", "saeiv", "saeiv_mini"];
+        var keys = ["waze", "saeiv", "saeiv_mini"];
         for (var i = 0; i < keys.length; i += 1) {
           if (keys[i] === type) {
             index = i;
             break;
           }
         }
-        var baseX = 26 + (index * 34);
-        var baseY = 62 + (index * 28);
+        var baseX = scaleUiSize(26 + (index * 34));
+        var baseY = scaleUiSize(62 + (index * 28));
         var ratio = typeAspectRatio(type);
-        if (type === "waze" || type === "waze_uber_eats") {
-          var wazeDefaultWidth = 360;
-          var wazeMinWidth = 140;
+        if (type === "waze") {
+          var wazeDefaultWidth = scaleWidgetSize(scaleUiSize(360));
+          var wazeMinWidth = scaleWidgetSize(scaleUiSize(140));
           return {
             x: baseX,
             y: baseY,
@@ -6475,8 +6519,20 @@
             minHeight: Math.round(wazeMinWidth / ratio)
           };
         }
-        var hudDefaultWidth = 720;
-        var hudMinWidth = 260;
+        if (type === "saeiv_mini") {
+          var miniDefaultWidth = scaleWidgetSize(scaleUiSize(720));
+          var miniDefaultHeight = scaleWidgetSize(scaleUiSize(420));
+          return {
+            x: baseX,
+            y: baseY,
+            width: miniDefaultWidth,
+            height: miniDefaultHeight,
+            minWidth: scaleWidgetSize(scaleUiSize(220)),
+            minHeight: scaleWidgetSize(scaleUiSize(120))
+          };
+        }
+        var hudDefaultWidth = scaleWidgetSize(scaleUiSize(720));
+        var hudMinWidth = scaleWidgetSize(scaleUiSize(260));
         return {
           x: baseX,
           y: baseY,
@@ -6509,6 +6565,7 @@
         var safeType = normalizeWidgetType(type);
         if (!state || !isType(safeType)) return;
         var defaults = getOverlayTypeDefaults(safeType);
+        var lockRatio = isAspectRatioLocked(safeType);
         var ratio = typeAspectRatio(safeType);
         var viewportWidth = Math.max(240, Number(window.innerWidth) || 0);
         var viewportHeight = Math.max(180, Number(window.innerHeight) || 0);
@@ -6516,21 +6573,29 @@
         var maxContentHeight = Math.max(80, viewportHeight - topInset);
         var minWidth = Math.max(120, Number(defaults.minWidth) || 120);
         var minHeight = Math.max(80, Number(defaults.minHeight) || 80);
-        var effectiveMinWidth = Math.max(minWidth, minHeight * ratio);
-        var maxWidth = Math.min(viewportWidth, maxContentHeight * ratio);
-        if (!Number.isFinite(maxWidth) || maxWidth <= 0) maxWidth = effectiveMinWidth;
-        if (maxWidth < effectiveMinWidth) effectiveMinWidth = maxWidth;
-
         var width = Number(state.width);
         var height = Number(state.height);
-        if (!Number.isFinite(width) || width <= 0) {
-          if (Number.isFinite(height) && height > 0) width = height * ratio;
-        }
-        if (!Number.isFinite(width) || width <= 0) width = Number(defaults.width) || effectiveMinWidth;
-        width = Math.max(effectiveMinWidth, Math.min(width, maxWidth));
+        if (lockRatio) {
+          var effectiveMinWidth = Math.max(minWidth, minHeight * ratio);
+          var maxWidth = Math.min(viewportWidth, maxContentHeight * ratio);
+          if (!Number.isFinite(maxWidth) || maxWidth <= 0) maxWidth = effectiveMinWidth;
+          if (maxWidth < effectiveMinWidth) effectiveMinWidth = maxWidth;
 
-        state.width = width;
-        state.height = width / ratio;
+          if (!Number.isFinite(width) || width <= 0) {
+            if (Number.isFinite(height) && height > 0) width = height * ratio;
+          }
+          if (!Number.isFinite(width) || width <= 0) width = Number(defaults.width) || effectiveMinWidth;
+          width = Math.max(effectiveMinWidth, Math.min(width, maxWidth));
+          state.width = width;
+          state.height = width / ratio;
+        } else {
+          var maxWidthFree = viewportWidth;
+          var maxHeightFree = maxContentHeight;
+          if (!Number.isFinite(width) || width <= 0) width = Number(defaults.width) || minWidth;
+          if (!Number.isFinite(height) || height <= 0) height = Number(defaults.height) || minHeight;
+          state.width = Math.max(minWidth, Math.min(width, maxWidthFree));
+          state.height = Math.max(minHeight, Math.min(height, maxHeightFree));
+        }
         state.x = Number(state.x) || 0;
         state.y = Number(state.y) || 0;
         var minY = topInset;
@@ -6584,7 +6649,11 @@
         if (!node || !state) return;
         var safeType = normalizeWidgetType(node.dataset ? node.dataset.widgetType : "");
         if (isType(safeType)) {
-          node.style.aspectRatio = String(typeAspectRatio(safeType));
+          if (isAspectRatioLocked(safeType)) {
+            node.style.aspectRatio = String(typeAspectRatio(safeType));
+          } else {
+            node.style.removeProperty("aspect-ratio");
+          }
         }
         node.style.left = Math.round(state.x) + "px";
         node.style.top = Math.round(state.y) + "px";
@@ -6634,7 +6703,7 @@
       function saveWidgetLayoutState() {
         sanitize();
         var state = {
-          version: 2,
+          version: 4,
           nextId: Math.max(1, Number(nextId) || 1),
           activeTypes: getInlineActiveTypes(),
           windowsByType: {},
@@ -6689,7 +6758,8 @@
         windowNodeByType = Object.create(null);
         nextId = 1;
 
-        if (!parsed || typeof parsed !== "object" || Number(parsed.version) !== 2) {
+        var parsedVersion = Number(parsed && parsed.version);
+        if (!parsed || typeof parsed !== "object" || (parsedVersion !== 3 && parsedVersion !== 4)) {
           return false;
         }
 
@@ -6715,6 +6785,10 @@
             height: Number(src.height),
             z: Number(src.z)
           };
+          if (parsedVersion === 3) {
+            windowsByType[type].width = scaleWidgetSize(windowsByType[type].width);
+            windowsByType[type].height = scaleWidgetSize(windowsByType[type].height);
+          }
           clampWidgetRect(windowsByType[type], type);
           if (!Number.isFinite(Number(windowsByType[type].z))) windowsByType[type].z = bumpOverlayZ();
         });
@@ -6746,7 +6820,7 @@
           }
         }
 
-        clampOverlayRect(managerState, 260, 180);
+        clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
         if (!Number.isFinite(Number(managerState.z))) managerState.z = 1200;
         sanitize();
         return true;
@@ -6855,7 +6929,7 @@
         if (!el.overlayManager) return;
         var managerHidden = managerState.visible === false;
         document.body.classList.toggle("is-manager-hidden", managerHidden);
-        clampOverlayRect(managerState, 260, 180);
+        clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
         el.overlayManager.style.left = Math.round(managerState.x) + "px";
         el.overlayManager.style.top = Math.round(managerState.y) + "px";
         el.overlayManager.style.width = Math.round(managerState.width) + "px";
@@ -6910,7 +6984,7 @@
           if (!state) return;
           clampWidgetRect(state, safeType);
         });
-        clampOverlayRect(managerState, 260, 180);
+        clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
       }
 
       function renderStage() {
@@ -6956,7 +7030,7 @@
       function applyOutputVisibility() {}
       function enforceOutputModeConstraints() {}
       function applyModeWidgetTypeLists() {
-        GPS_WIDGET_TYPES = ["waze", "waze_uber_eats"];
+        GPS_WIDGET_TYPES = ["waze"];
         HUD_WIDGET_TYPES = ["saeiv", "saeiv_mini"];
       }
       function refreshModeButtonsUi() {}
@@ -6972,24 +7046,25 @@
         if (opts.persist !== false) writeStoredGameMode(currentGameMode);
       }
 
+      function resolveTelemetryDotState() {
+        var wsOpen = !!(telemetryWs && telemetryWs.readyState === WebSocket.OPEN);
+        if (!wsOpen) return "offline";
+        var speedKmh = telemetrySpeedForStopDecision(telemetryInstantSpeedKmh);
+        if (!Number.isFinite(speedKmh) && Number.isFinite(Number(telemetryEstimatedSpeedKmh))) {
+          speedKmh = Number(telemetryEstimatedSpeedKmh);
+        }
+        if (Number.isFinite(speedKmh) && speedKmh > 1.2) return "online";
+        return "checking";
+      }
+
       function setTelemetryConnectionState(isConnected, reason) {
         var nextConnected = !!isConnected;
-        if (!nextConnected && telemetryOfflineLock) return;
         telemetryConnected = nextConnected;
         telemetryLastErrorReason = telemetryConnected ? "" : String(reason || "Connexion indisponible.");
         telemetryOfflineLock = !telemetryConnected;
-        setTelemetryDotState(telemetryConnected ? "online" : "offline");
+        setTelemetryDotState(resolveTelemetryDotState());
         if (el.telemetryErrorOverlay) el.telemetryErrorOverlay.hidden = true;
         document.body.classList.remove("is-telemetry-blocked");
-        if (el.telemetryToast) {
-          if (telemetryConnected) {
-            el.telemetryToast.classList.remove("is-visible");
-            el.telemetryToast.textContent = "";
-          } else {
-            el.telemetryToast.classList.add("is-visible");
-            el.telemetryToast.textContent = "ERREUR : Télémétrie non connectée. " + telemetryLastErrorReason;
-          }
-        }
         syncExternalTelemetryBlocks();
       }
 
@@ -7053,7 +7128,14 @@
           el.overlayResetLayoutBtn.addEventListener("click", function (event) {
             event.preventDefault();
             windowsByType = Object.create(null);
-            managerState = { x: 18, y: 18, width: 320, height: 330, z: bumpOverlayZ(), visible: true };
+            managerState = {
+              x: scaleUiSize(18),
+              y: scaleUiSize(18),
+              width: scaleUiSize(320),
+              height: scaleUiSize(330),
+              z: bumpOverlayZ(),
+              visible: true
+            };
             apply();
           });
         }
@@ -7094,7 +7176,7 @@
           if (activeOverlayDrag.mode === "manager-move") {
             managerState.x = activeOverlayDrag.originX + dx;
             managerState.y = activeOverlayDrag.originY + dy;
-            clampOverlayRect(managerState, 260, 180);
+            clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
             renderManager();
             event.preventDefault();
             return;
@@ -7106,15 +7188,20 @@
             state.x = activeOverlayDrag.originX + dx;
             state.y = activeOverlayDrag.originY + dy;
           } else if (activeOverlayDrag.mode === "resize") {
-            var ratio = typeAspectRatio(type);
-            var widthFromDx = activeOverlayDrag.originWidth + dx;
-            var widthFromDy = (activeOverlayDrag.originHeight + dy) * ratio;
-            var nextWidth = Math.abs(dy) > Math.abs(dx) ? widthFromDy : widthFromDx;
-            if (!Number.isFinite(nextWidth) || nextWidth <= 0) {
-              nextWidth = activeOverlayDrag.originWidth;
+            if (isAspectRatioLocked(type)) {
+              var ratio = typeAspectRatio(type);
+              var widthFromDx = activeOverlayDrag.originWidth + dx;
+              var widthFromDy = (activeOverlayDrag.originHeight + dy) * ratio;
+              var nextWidth = Math.abs(dy) > Math.abs(dx) ? widthFromDy : widthFromDx;
+              if (!Number.isFinite(nextWidth) || nextWidth <= 0) {
+                nextWidth = activeOverlayDrag.originWidth;
+              }
+              state.width = nextWidth;
+              state.height = nextWidth / ratio;
+            } else {
+              state.width = activeOverlayDrag.originWidth + dx;
+              state.height = activeOverlayDrag.originHeight + dy;
             }
-            state.width = nextWidth;
-            state.height = nextWidth / ratio;
           }
           clampWidgetRect(state, type);
           var node = windowNodeByType[type];
