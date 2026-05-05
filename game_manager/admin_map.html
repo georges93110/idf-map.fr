@@ -157,6 +157,7 @@
         "playerId",
         "player_id"
       ];
+      const visibleIdentityKeys = identityKeys.filter((key) => !["from", "playerId", "player_id"].includes(key));
 
       const map = L.map("map", {
         crs: L.CRS.Simple,
@@ -306,6 +307,15 @@
         });
       }
 
+      function hasVisibleIdentity(source) {
+        if (!source || typeof source !== "object") return false;
+        return visibleIdentityKeys.some((key) => {
+          if (!Object.prototype.hasOwnProperty.call(source, key)) return false;
+          const value = source[key];
+          return value != null && String(value).trim() !== "";
+        });
+      }
+
       function readIdentity(source, depth = 0, seen = new Set()) {
         if (!source || typeof source !== "object" || depth > 4 || seen.has(source)) return {};
         seen.add(source);
@@ -317,7 +327,7 @@
           if (value == null || String(value).trim() === "") continue;
           result[key] = value;
         }
-        if (hasIdentity(result)) return result;
+        if (hasVisibleIdentity(result)) return result;
 
         const priorityKeys = [
           "player",
@@ -338,15 +348,15 @@
           const nested = source[key];
           if (!nested || typeof nested !== "object") continue;
           const identity = readIdentity(nested, depth + 1, seen);
-          if (hasIdentity(identity)) return identity;
+          if (hasVisibleIdentity(identity)) return identity;
         }
 
         for (const value of Object.values(source)) {
           if (!value || typeof value !== "object") continue;
           const identity = readIdentity(value, depth + 1, seen);
-          if (hasIdentity(identity)) return identity;
+          if (hasVisibleIdentity(identity)) return identity;
         }
-        return {};
+        return hasIdentity(result) ? result : {};
       }
 
       function normalizeHeadingDeg(value) {
@@ -375,6 +385,14 @@
         return normalizeHeadingDeg(-deg);
       }
 
+      function isTechnicalIdentifierText(value) {
+        const text = String(value || "").trim();
+        if (!text) return false;
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(text)) return true;
+        if (/^[0-9a-f]{24,}$/i.test(text)) return true;
+        return false;
+      }
+
       function extractPlayer(entry, fallbackIndex) {
         const pools = entryPools(entry);
         if (!pools.length) return null;
@@ -387,6 +405,7 @@
         let steamid = "";
         let name = "";
         let displayname = "";
+        let technicalId = "";
 
         for (const source of pools) {
           if (x === null) x = readNumber(source, ["x", "X", "worldX", "world_x", "posX", "positionX"]);
@@ -398,12 +417,15 @@
           if (!headingConvention) headingConvention = readString(source, ["headingConvention", "heading_convention", "headingMode", "heading_mode"]);
           if (!steamid) steamid = readString(source, ["steamid", "steamId", "steamID", "steam_id"]);
           if (!displayname) displayname = readString(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "personaname", "personaName", "persona_name", "nickname"]);
-          if (!name) name = readString(source, ["name", "playerName", "player_name", "username", "userName", "from", "playerId", "player_id"]);
+          if (!name) name = readString(source, ["name", "playerName", "player_name", "username", "userName"]);
+          if (!technicalId) technicalId = readString(source, ["playerId", "player_id", "from"]);
         }
 
         if (x === null || z === null) return null;
+        if (isTechnicalIdentifierText(displayname)) displayname = "";
+        if (isTechnicalIdentifierText(name)) name = "";
 
-        const id = steamid || displayname || name || `player-${fallbackIndex}`;
+        const id = steamid || technicalId || displayname || name || `player-${fallbackIndex}`;
         return {
           id,
           steamid,
