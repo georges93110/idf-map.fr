@@ -173,6 +173,13 @@
     .map-topbar-row #devNavDebugRow *{
       pointer-events:auto;
     }
+    .map-topbar-row #devLinesEditorModal{
+      pointer-events:none;
+    }
+    .map-topbar-row #devLinesEditorModal .dev-lines-editor-shell,
+    .map-topbar-row #devLinesEditorModal .dev-lines-editor-shell *{
+      pointer-events:auto;
+    }
     .map-topbar-row .search-input{
       position:static;
       left:auto;
@@ -240,6 +247,174 @@
     #devNavDebugMenu button{
       display:block;
       margin:0 0 6px;
+    }
+    .dev-lines-editor-modal{
+      position:fixed;
+      inset:0;
+      z-index:3500;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-end;
+      background:transparent;
+      padding:12px;
+      box-sizing:border-box;
+      pointer-events:none;
+    }
+    .dev-lines-editor-modal[hidden]{
+      display:none !important;
+    }
+    .dev-lines-editor-shell{
+      width:min(760px, 46vw);
+      height:min(72vh, 640px);
+      border:1px solid #3a3a3a;
+      border-radius:10px;
+      background:rgba(12,12,12,.96);
+      box-shadow:0 14px 36px rgba(0,0,0,.5);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      pointer-events:auto;
+    }
+    .dev-lines-editor-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-bottom:1px solid #2f2f2f;
+      color:#fff;
+      font:700 14px/1.2 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    .dev-lines-editor-head button{
+      margin:0 !important;
+    }
+    .dev-lines-editor-controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      padding:10px 12px;
+      border-bottom:1px solid #2f2f2f;
+      align-items:center;
+    }
+    .dev-lines-editor-controls button{
+      margin:0 !important;
+    }
+    .dev-lines-editor-status{
+      color:#c6d7ea;
+      font:600 12px/1.3 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      padding:0 12px 8px;
+      word-break:break-word;
+    }
+    .dev-lines-editor-summary{
+      color:#9fb3c7;
+      font:600 12px/1.3 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      padding:0 12px 8px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .dev-lines-editor-main{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+      padding:8px 10px 10px;
+      min-height:0;
+      flex:1 1 auto;
+    }
+    .dev-lines-editor-left,
+    .dev-lines-editor-right{
+      border:1px solid #2f2f2f;
+      border-radius:8px;
+      background:#101010;
+      padding:10px;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .dev-lines-editor-label{
+      color:#d6e0eb;
+      font:700 12px/1.2 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    .dev-lines-editor-select{
+      width:100%;
+      border:1px solid #3a3a3a;
+      background:#0e0e0e;
+      color:#ecf3fb;
+      border-radius:6px;
+      padding:6px 8px;
+      box-sizing:border-box;
+      font:500 12px/1.25 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      outline:none;
+    }
+    .dev-lines-editor-stop-list{
+      flex:1 1 auto;
+      min-height:110px;
+      max-height:210px;
+      width:100%;
+      border:1px solid #3a3a3a;
+      background:#0e0e0e;
+      color:#e7edf5;
+      border-radius:6px;
+      padding:4px;
+      box-sizing:border-box;
+      font:500 12px/1.35 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      outline:none;
+    }
+    .dev-lines-editor-form{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:6px;
+    }
+    .dev-lines-editor-field{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .dev-lines-editor-field label{
+      color:#9fb3c7;
+      font:600 11px/1.2 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    .dev-lines-editor-field input{
+      border:1px solid #3a3a3a;
+      background:#0e0e0e;
+      color:#e7edf5;
+      border-radius:6px;
+      padding:6px 8px;
+      box-sizing:border-box;
+      font:500 12px/1.25 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      outline:none;
+    }
+    .dev-lines-editor-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+    }
+    .dev-lines-editor-source{
+      color:#8ca2b9;
+      font:600 11px/1.25 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    @media (max-width: 1200px){
+      .dev-lines-editor-shell{
+        width:min(700px, 52vw);
+      }
+    }
+    @media (max-width: 980px){
+      .dev-lines-editor-shell{
+        width:min(98vw, 720px);
+        height:min(80vh, 700px);
+      }
+      .dev-lines-editor-main{
+        grid-template-columns:1fr;
+      }
+      .dev-lines-editor-form{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
     }
     #devSpeedLimitsLegend{
       display:grid;
@@ -3131,6 +3306,7 @@
         <div id="devNavDebugMenu" hidden>
           <button id="btnDevNavPointsToggle" type="button">nav points: off</button>
           <button id="btnDevSpeedLimitsToggle" type="button">nav speed limits: off</button>
+          <button id="btnDevLinesXmlEditorToggle" type="button" hidden>editeur lignes</button>
           <div id="devSpeedLimitsLegend" hidden></div>
           <button id="btnDevTrafficAreasToggle" type="button">traffic areas: off</button>
           <button id="btnDevUberRestaurantsToggle" type="button">uber eats restaurants: off</button>
@@ -3148,6 +3324,67 @@
         </div>
         <span id="devMapCoordsValue"></span>
         <span id="devTrafficAreaInfo"></span>
+      </div>
+      <div id="devLinesEditorModal" class="dev-lines-editor-modal" hidden>
+        <div class="dev-lines-editor-shell" role="dialog" aria-modal="true" aria-labelledby="devLinesEditorTitle">
+          <div class="dev-lines-editor-head">
+            <span id="devLinesEditorTitle">Editeur local lines.xml</span>
+            <button id="btnDevLinesXmlEditorClose" type="button">fermer</button>
+          </div>
+          <div class="dev-lines-editor-controls">
+            <button id="btnDevLinesXmlEditorDownload" type="button">telecharger lines.xml modifie</button>
+          </div>
+          <div id="devLinesEditorStatus" class="dev-lines-editor-status"></div>
+          <div id="devLinesEditorSummary" class="dev-lines-editor-summary"></div>
+          <div id="devLinesEditorSource" class="dev-lines-editor-source"></div>
+          <div class="dev-lines-editor-main">
+            <div class="dev-lines-editor-left">
+              <label class="dev-lines-editor-label" for="devLinesEditorLineSelect">Ligne</label>
+              <select id="devLinesEditorLineSelect" class="dev-lines-editor-select"></select>
+              <label class="dev-lines-editor-label" for="devLinesEditorRouteSelect">Route</label>
+              <select id="devLinesEditorRouteSelect" class="dev-lines-editor-select"></select>
+              <label class="dev-lines-editor-label" for="devLinesEditorStopList">Arrets</label>
+              <select id="devLinesEditorStopList" class="dev-lines-editor-stop-list" size="14"></select>
+            </div>
+            <div class="dev-lines-editor-right">
+              <div class="dev-lines-editor-label">Edition arret</div>
+              <div class="dev-lines-editor-form">
+                <div class="dev-lines-editor-field">
+                  <label for="devStopUid">uid</label>
+                  <input id="devStopUid" type="number" step="1" min="0"/>
+                </div>
+                <div class="dev-lines-editor-field">
+                  <label for="devStopPassengersMin">passengersMin</label>
+                  <input id="devStopPassengersMin" type="number" step="1"/>
+                </div>
+                <div class="dev-lines-editor-field">
+                  <label for="devStopPassengersMax">passengersMax</label>
+                  <input id="devStopPassengersMax" type="number" step="1"/>
+                </div>
+                <div class="dev-lines-editor-field">
+                  <label for="devStopCoefOn">coefOn</label>
+                  <input id="devStopCoefOn" type="number" step="1"/>
+                </div>
+                <div class="dev-lines-editor-field">
+                  <label for="devStopNextStopTime">nextStopTime</label>
+                  <input id="devStopNextStopTime" type="number" step="1"/>
+                </div>
+                <div class="dev-lines-editor-field">
+                  <label for="devStopNextStopPrice">nextStopPrice</label>
+                  <input id="devStopNextStopPrice" type="number" step="1"/>
+                </div>
+              </div>
+              <div class="dev-lines-editor-actions">
+                <button id="btnDevLinesStopApply" type="button">appliquer</button>
+                <button id="btnDevLinesStopAddAfter" type="button">ajouter apres</button>
+                <button id="btnDevLinesStopDelete" type="button">supprimer</button>
+                <button id="btnDevLinesStopMoveUp" type="button">monter</button>
+                <button id="btnDevLinesStopMoveDown" type="button">descendre</button>
+                <button id="btnDevLinesRouteDraw" type="button">dessiner sur la map</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="top-actions">
         <button id="btnSaeivPanel" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Ecran SAEIV" title="Ecran SAEIV">
@@ -4887,7 +5124,15 @@
 
   <script>
     const QS = new URLSearchParams(location.search);
+    function isStrictLocalRuntime(){
+      const host = String(location.hostname || "").toLowerCase();
+      const proto = String(location.protocol || "").toLowerCase();
+      if (proto === "file:") return true;
+      if (host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
+      return false;
+    }
     const DEV_MODE = QS.has("dev");
+    const DEV_LOCAL_ONLY = DEV_MODE && isStrictLocalRuntime();
     const DEV_GRAPH = QS.has("dev_graph");
     const DEV_NAV_POINTS_DEBUG = DEV_MODE || DEV_GRAPH;
     const DEV_NAV_BRIDGES_DEBUG = DEV_GRAPH || QS.has("dev_bridges");
@@ -5202,6 +5447,7 @@
     const $devNavDebugMenu = document.getElementById("devNavDebugMenu");
     const $btnDevNavPointsToggle = document.getElementById("btnDevNavPointsToggle");
     const $btnDevSpeedLimitsToggle = document.getElementById("btnDevSpeedLimitsToggle");
+    const $btnDevLinesXmlEditorToggle = document.getElementById("btnDevLinesXmlEditorToggle");
     const $devSpeedLimitsLegend = document.getElementById("devSpeedLimitsLegend");
     const $btnDevTrafficAreasToggle = document.getElementById("btnDevTrafficAreasToggle");
     const $btnDevUberRestaurantsToggle = document.getElementById("btnDevUberRestaurantsToggle");
@@ -5213,6 +5459,31 @@
     const $devTrafficAreasFilterList = document.getElementById("devTrafficAreasFilterList");
     const $devMapCoordsValue = document.getElementById("devMapCoordsValue");
     const $devTrafficAreaInfo = document.getElementById("devTrafficAreaInfo");
+    const $devLinesEditorModal = document.getElementById("devLinesEditorModal");
+    const $btnDevLinesXmlEditorClose = document.getElementById("btnDevLinesXmlEditorClose");
+    const $btnDevLinesXmlEditorLoadCurrent = document.getElementById("btnDevLinesXmlEditorLoadCurrent");
+    const $btnDevLinesXmlEditorPickFile = document.getElementById("btnDevLinesXmlEditorPickFile");
+    const $btnDevLinesXmlEditorSaveFile = document.getElementById("btnDevLinesXmlEditorSaveFile");
+    const $btnDevLinesXmlEditorDownload = document.getElementById("btnDevLinesXmlEditorDownload");
+    const $btnDevLinesXmlEditorReloadPage = document.getElementById("btnDevLinesXmlEditorReloadPage");
+    const $devLinesEditorStatus = document.getElementById("devLinesEditorStatus");
+    const $devLinesEditorSummary = document.getElementById("devLinesEditorSummary");
+    const $devLinesEditorSource = document.getElementById("devLinesEditorSource");
+    const $devLinesEditorLineSelect = document.getElementById("devLinesEditorLineSelect");
+    const $devLinesEditorRouteSelect = document.getElementById("devLinesEditorRouteSelect");
+    const $devLinesEditorStopList = document.getElementById("devLinesEditorStopList");
+    const $devStopUid = document.getElementById("devStopUid");
+    const $devStopPassengersMin = document.getElementById("devStopPassengersMin");
+    const $devStopPassengersMax = document.getElementById("devStopPassengersMax");
+    const $devStopCoefOn = document.getElementById("devStopCoefOn");
+    const $devStopNextStopTime = document.getElementById("devStopNextStopTime");
+    const $devStopNextStopPrice = document.getElementById("devStopNextStopPrice");
+    const $btnDevLinesStopApply = document.getElementById("btnDevLinesStopApply");
+    const $btnDevLinesStopAddAfter = document.getElementById("btnDevLinesStopAddAfter");
+    const $btnDevLinesStopDelete = document.getElementById("btnDevLinesStopDelete");
+    const $btnDevLinesStopMoveUp = document.getElementById("btnDevLinesStopMoveUp");
+    const $btnDevLinesStopMoveDown = document.getElementById("btnDevLinesStopMoveDown");
+    const $btnDevLinesRouteDraw = document.getElementById("btnDevLinesRouteDraw");
     const $results = document.getElementById("results");
     const $siteTopBar = document.getElementById("siteTopBar");
     const $topBar = document.getElementById("topBar");
@@ -6437,6 +6708,625 @@
       const txt = await res.text();
       const parser = new DOMParser();
       return parser.parseFromString(txt, "text/xml");
+    }
+    let devLinesEditorFileHandle = null;
+    let devLinesEditorDoc = null;
+    let devLinesEditorSourceLabel = "";
+    const devLinesEditorSelection = { lineIdx: 0, routeIdx: 0, stopIdx: 0 };
+    function setDevLinesEditorStatus(message, isError = false){
+      if (!$devLinesEditorStatus) return;
+      $devLinesEditorStatus.textContent = String(message || "").trim();
+      $devLinesEditorStatus.style.color = isError ? "#fca5a5" : "#c6d7ea";
+    }
+    function setDevLinesEditorSourceLabel(label){
+      devLinesEditorSourceLabel = String(label || "").trim();
+      if ($devLinesEditorSource) $devLinesEditorSource.textContent = devLinesEditorSourceLabel ? `source: ${devLinesEditorSourceLabel}` : "";
+    }
+    function childElementsByTag(parent, tagName){
+      if (!parent) return [];
+      const needle = String(tagName || "").toLowerCase();
+      return [...parent.children].filter((el) => String(el.tagName || "").toLowerCase() === needle);
+    }
+    function getDevLinesRoot(){
+      if (!devLinesEditorDoc) return null;
+      const root = devLinesEditorDoc.querySelector("lines") || devLinesEditorDoc.documentElement;
+      if (!root) return null;
+      return String(root.tagName || "").toLowerCase() === "lines" ? root : null;
+    }
+    function getDevLineNodes(){
+      return childElementsByTag(getDevLinesRoot(), "line");
+    }
+    function getDevCurrentLineNode(){
+      const lines = getDevLineNodes();
+      if (!lines.length) return null;
+      const idx = Math.max(0, Math.min(lines.length - 1, Number(devLinesEditorSelection.lineIdx) || 0));
+      devLinesEditorSelection.lineIdx = idx;
+      return lines[idx] || null;
+    }
+    function getDevRouteNodes(lineNode){
+      return childElementsByTag(lineNode, "route");
+    }
+    function getDevCurrentRouteNode(){
+      const lineNode = getDevCurrentLineNode();
+      if (!lineNode) return null;
+      const routes = getDevRouteNodes(lineNode);
+      if (!routes.length) return null;
+      const idx = Math.max(0, Math.min(routes.length - 1, Number(devLinesEditorSelection.routeIdx) || 0));
+      devLinesEditorSelection.routeIdx = idx;
+      return routes[idx] || null;
+    }
+    function getDevStopNodes(routeNode){
+      return childElementsByTag(routeNode, "busstop");
+    }
+    function getDevCurrentStopNode(){
+      const routeNode = getDevCurrentRouteNode();
+      if (!routeNode) return null;
+      const stops = getDevStopNodes(routeNode);
+      if (!stops.length) return null;
+      const idx = Math.max(0, Math.min(stops.length - 1, Number(devLinesEditorSelection.stopIdx) || 0));
+      devLinesEditorSelection.stopIdx = idx;
+      return stops[idx] || null;
+    }
+    function sanitizeInt(value, fallback = 0, min = -Infinity, max = Infinity){
+      const n = Number(value);
+      const base = Number.isFinite(n) ? Math.trunc(n) : Math.trunc(Number(fallback) || 0);
+      return Math.max(min, Math.min(max, base));
+    }
+    function getStopNameByUid(uid){
+      const id = sanitizeInt(uid, 0, 0);
+      const stop = DBUS_STOPS.get(id);
+      const raw = String(stop?.name || "").trim();
+      return raw || "(inconnu)";
+    }
+    function summarizeLinesXmlDoc(){
+      if (!$devLinesEditorSummary) return;
+      const lines = getDevLineNodes();
+      let routesCount = 0;
+      let stopsCount = 0;
+      const preview = [];
+      lines.forEach((lineNode, index) => {
+        const num = String(lineNode.getAttribute("number") || "").trim() || "?";
+        if (index < 14) preview.push(num);
+        const routes = getDevRouteNodes(lineNode);
+        routesCount += routes.length;
+        routes.forEach((routeNode) => {
+          stopsCount += getDevStopNodes(routeNode).length;
+        });
+      });
+      $devLinesEditorSummary.textContent = `${lines.length} ligne(s) | ${routesCount} route(s) | ${stopsCount} arret(s)${preview.length ? ` | apercu: ${preview.join(", ")}` : ""}`;
+    }
+    function renderDevStopFormFromSelection(){
+      const stopNode = getDevCurrentStopNode();
+      const empty = !stopNode;
+      if ($devStopUid) $devStopUid.value = empty ? "" : String(stopNode.getAttribute("uid") || "0");
+      if ($devStopPassengersMin) $devStopPassengersMin.value = empty ? "" : String(stopNode.getAttribute("passengersMin") || "0");
+      if ($devStopPassengersMax) $devStopPassengersMax.value = empty ? "" : String(stopNode.getAttribute("passengersMax") || "0");
+      if ($devStopCoefOn) $devStopCoefOn.value = empty ? "" : String(stopNode.getAttribute("coefOn") || "1");
+      if ($devStopNextStopTime) $devStopNextStopTime.value = empty ? "" : String(stopNode.getAttribute("nextStopTime") || "0");
+      if ($devStopNextStopPrice) $devStopNextStopPrice.value = empty ? "" : String(stopNode.getAttribute("nextStopPrice") || "0");
+    }
+    function makeDevStopOptionLabel(stopNode, index){
+      const uid = sanitizeInt(stopNode?.getAttribute("uid"), 0, 0);
+      const passengersMin = sanitizeInt(stopNode?.getAttribute("passengersMin"), 0, 0);
+      const passengersMax = sanitizeInt(stopNode?.getAttribute("passengersMax"), passengersMin, passengersMin);
+      const name = getStopNameByUid(uid);
+      return `${index + 1}. uid ${uid} | ${name} | ${passengersMin}-${passengersMax}`;
+    }
+    function buildDevRouteData(lineNode, routeNode){
+      if (!lineNode || !routeNode) return null;
+      const lineIdx = Number(devLinesEditorSelection.lineIdx) || 0;
+      const routeIdx = Number(devLinesEditorSelection.routeIdx) || 0;
+      const rawLineUid = String(lineNode.getAttribute("uid") || "").trim() || `line_${lineIdx}`;
+      const rawRouteUid = String(routeNode.getAttribute("uid") || "").trim() || `route_${routeIdx}`;
+      const line = {
+        uid: `${rawLineUid}__devedit__${lineIdx}`,
+        uidRaw: rawLineUid,
+        number: String(lineNode.getAttribute("number") || "?").trim() || "?",
+        routes: []
+      };
+      const stops = getDevStopNodes(routeNode).map((stopNode) => ({
+        uid: sanitizeInt(stopNode.getAttribute("uid"), 0, 0),
+        nextStopTime: sanitizeInt(stopNode.getAttribute("nextStopTime"), 0, 0)
+      }));
+      const route = {
+        uid: `${rawRouteUid}__devedit__${routeIdx}`,
+        uidRaw: rawRouteUid,
+        name: String(routeNode.getAttribute("name") || "").trim(),
+        stops,
+        totalMinutes: stops.reduce((sum, stop) => sum + sanitizeInt(stop.nextStopTime, 0, 0), 0)
+      };
+      line.routes = [route];
+      return { line, route, key: `${line.uid}:${route.uid}` };
+    }
+    function getVisibleDevRouteStopIndices(routeData){
+      const out = [];
+      const routeStops = routeData?.route?.stops || [];
+      routeStops.forEach((stop, idx) => {
+        if (DBUS_STOPS.has(sanitizeInt(stop?.uid, -1))) out.push(idx);
+      });
+      return out;
+    }
+    function bindDevRouteStopClicks(routeData){
+      if (!routeData) return;
+      const bundle = dbusRouteLayers.get(routeData.key);
+      if (!bundle || !Array.isArray(bundle.stops) || !bundle.stops.length) return;
+      const visibleIndices = getVisibleDevRouteStopIndices(routeData);
+      bundle.stops.forEach((marker, markerIdx) => {
+        if (!marker || marker._devLinesEditorBound === routeData.key) return;
+        const routeStopIdx = Number.isFinite(visibleIndices[markerIdx]) ? visibleIndices[markerIdx] : markerIdx;
+        marker._devLinesEditorBound = routeData.key;
+        marker.on("click", () => {
+          devLinesEditorSelection.stopIdx = Math.max(0, sanitizeInt(routeStopIdx, 0, 0));
+          if ($devLinesEditorStopList) $devLinesEditorStopList.value = String(devLinesEditorSelection.stopIdx);
+          renderDevStopFormFromSelection();
+          const stopNode = getDevCurrentStopNode();
+          const stopUid = sanitizeInt(stopNode?.getAttribute("uid"), -1);
+          if (stopUid >= 0) setActiveStopById(stopUid);
+          setDevLinesEditorStatus(`Arret #${devLinesEditorSelection.stopIdx + 1} selectionne depuis la carte.`);
+        });
+      });
+    }
+    function focusDevSelectedStopOnMap(routeData){
+      if (!routeData) return;
+      const stopNode = getDevCurrentStopNode();
+      if (!stopNode) return;
+      const routeKey = routeData.key;
+      const bundle = dbusRouteLayers.get(routeKey);
+      if (!bundle || !Array.isArray(bundle.stops) || !bundle.stops.length) return;
+      const routeStops = routeData.route?.stops || [];
+      const targetIdx = Number(devLinesEditorSelection.stopIdx) || 0;
+      const targetUid = sanitizeInt(stopNode.getAttribute("uid"), 0, 0);
+      let markerIdx = -1;
+      let visibleIdx = -1;
+      routeStops.forEach((stop, idx) => {
+        if (!DBUS_STOPS.has(stop.uid)) return;
+        visibleIdx += 1;
+        if (idx === targetIdx && markerIdx < 0) markerIdx = visibleIdx;
+      });
+      let marker = markerIdx >= 0 ? bundle.stops[markerIdx] : null;
+      if (!marker) {
+        marker = bundle.stops.find((mk) => sanitizeInt(mk?._stopId, -1) === targetUid) || null;
+      }
+      const stop = DBUS_STOPS.get(targetUid);
+      if (marker) centerMarkerWithPreview(marker, stop?.latlng, { zoom: map.getZoom(), openPopup: true });
+      setActiveStopById(targetUid);
+    }
+    function drawSelectedDevRoute({ focusStop = false } = {}){
+      const lineNode = getDevCurrentLineNode();
+      const routeNode = getDevCurrentRouteNode();
+      if (!lineNode || !routeNode) return null;
+      const routeData = buildDevRouteData(lineNode, routeNode);
+      if (!routeData) return null;
+      currentSelectedKey = routeData.key;
+      currentSelectedLineUid = routeData.line.uid;
+      const prevCenter = CENTER_ON_LINE_SELECT;
+      CENTER_ON_LINE_SELECT = false;
+      try {
+        showOnlyRoute(0, routeData.line, routeData.route);
+      } finally {
+        CENTER_ON_LINE_SELECT = prevCenter;
+      }
+      bindDevRouteStopClicks(routeData);
+      if (focusStop) focusDevSelectedStopOnMap(routeData);
+      return routeData;
+    }
+    function renderDevLinesEditorSelectors({ redrawRoute = false, focusStop = false } = {}){
+      const lines = getDevLineNodes();
+      if ($devLinesEditorLineSelect) {
+        $devLinesEditorLineSelect.innerHTML = "";
+        lines.forEach((lineNode, idx) => {
+          const number = String(lineNode.getAttribute("number") || "").trim() || "?";
+          const uid = String(lineNode.getAttribute("uid") || "").trim() || `line_${idx + 1}`;
+          const opt = document.createElement("option");
+          opt.value = String(idx);
+          opt.textContent = `${idx + 1}. [${number}] ${uid}`;
+          $devLinesEditorLineSelect.appendChild(opt);
+        });
+      }
+      if (!lines.length) {
+        if ($devLinesEditorRouteSelect) $devLinesEditorRouteSelect.innerHTML = "";
+        if ($devLinesEditorStopList) $devLinesEditorStopList.innerHTML = "";
+        renderDevStopFormFromSelection();
+        summarizeLinesXmlDoc();
+        return;
+      }
+      devLinesEditorSelection.lineIdx = Math.max(0, Math.min(lines.length - 1, Number(devLinesEditorSelection.lineIdx) || 0));
+      if ($devLinesEditorLineSelect) $devLinesEditorLineSelect.value = String(devLinesEditorSelection.lineIdx);
+      const lineNode = lines[devLinesEditorSelection.lineIdx];
+      const routes = getDevRouteNodes(lineNode);
+      if ($devLinesEditorRouteSelect) {
+        $devLinesEditorRouteSelect.innerHTML = "";
+        routes.forEach((routeNode, idx) => {
+          const uid = String(routeNode.getAttribute("uid") || "").trim() || `route_${idx + 1}`;
+          const name = String(routeNode.getAttribute("name") || "").trim() || "(sans nom)";
+          const opt = document.createElement("option");
+          opt.value = String(idx);
+          opt.textContent = `${idx + 1}. ${uid} | ${name}`;
+          $devLinesEditorRouteSelect.appendChild(opt);
+        });
+      }
+      if (!routes.length) {
+        devLinesEditorSelection.routeIdx = 0;
+        devLinesEditorSelection.stopIdx = 0;
+        if ($devLinesEditorStopList) $devLinesEditorStopList.innerHTML = "";
+        renderDevStopFormFromSelection();
+        summarizeLinesXmlDoc();
+        return;
+      }
+      devLinesEditorSelection.routeIdx = Math.max(0, Math.min(routes.length - 1, Number(devLinesEditorSelection.routeIdx) || 0));
+      if ($devLinesEditorRouteSelect) $devLinesEditorRouteSelect.value = String(devLinesEditorSelection.routeIdx);
+      const routeNode = routes[devLinesEditorSelection.routeIdx];
+      const stops = getDevStopNodes(routeNode);
+      if ($devLinesEditorStopList) {
+        $devLinesEditorStopList.innerHTML = "";
+        stops.forEach((stopNode, idx) => {
+          const opt = document.createElement("option");
+          opt.value = String(idx);
+          opt.textContent = makeDevStopOptionLabel(stopNode, idx);
+          $devLinesEditorStopList.appendChild(opt);
+        });
+      }
+      if (stops.length) {
+        devLinesEditorSelection.stopIdx = Math.max(0, Math.min(stops.length - 1, Number(devLinesEditorSelection.stopIdx) || 0));
+        if ($devLinesEditorStopList) $devLinesEditorStopList.value = String(devLinesEditorSelection.stopIdx);
+      } else {
+        devLinesEditorSelection.stopIdx = 0;
+      }
+      renderDevStopFormFromSelection();
+      summarizeLinesXmlDoc();
+      if (redrawRoute) drawSelectedDevRoute({ focusStop });
+    }
+    function parseDevLinesEditorXmlText(xmlText){
+      const text = String(xmlText || "");
+      const parseXml = (rawText) => new DOMParser().parseFromString(String(rawText || ""), "text/xml");
+      const countRawTag = (rawText, tagName) => {
+        const escTag = String(tagName || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const re = new RegExp(`<${escTag}\\b`, "gi");
+        const m = String(rawText || "").match(re);
+        return Array.isArray(m) ? m.length : 0;
+      };
+      const sanitizeLooseXml = (rawText) => String(rawText || "")
+        // Escape naked ampersands.
+        .replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\da-fA-F]+);)/g, "&amp;")
+        // Repair malformed attributes like: nextStopPrice]="0"
+        .replace(/([A-Za-z_][\w:-]*)\]\s*=\s*"/g, '$1="')
+        // Remove stray control chars that can break XML parsing.
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+      const parseTagAttrs = (rawAttrs) => {
+        const attrs = new Map();
+        const src = String(rawAttrs || "");
+        const re = /([A-Za-z_][\w:-]*)\s*=\s*("([^"]*)"|'([^']*)')/g;
+        let m;
+        while ((m = re.exec(src)) !== null) {
+          const k = String(m[1] || "").trim();
+          const v = String(typeof m[3] === "string" ? m[3] : (m[4] || ""));
+          if (!k) continue;
+          attrs.set(k, v);
+        }
+        return attrs;
+      };
+      const applyTagAttrs = (el, attrsMap) => {
+        if (!el || !attrsMap || typeof attrsMap.forEach !== "function") return;
+        attrsMap.forEach((v, k) => {
+          try { el.setAttribute(String(k), String(v)); } catch {}
+        });
+      };
+      const getParsedCounts = (docObj) => {
+        try {
+          return {
+            lines: docObj?.querySelectorAll("lines > line")?.length || 0,
+            routes: docObj?.querySelectorAll("lines > line > route")?.length || 0,
+            stops: docObj?.querySelectorAll("lines > line > route > busstop")?.length || 0
+          };
+        } catch {
+          return { lines: 0, routes: 0, stops: 0 };
+        }
+      };
+      const buildDocFromLooseText = (rawText) => {
+        const src = String(rawText || "");
+        const out = document.implementation.createDocument("", "", null);
+        const root = out.createElement("lines");
+        out.appendChild(root);
+
+        const linesOpenMatch = src.match(/<lines\b([^>]*)>/i);
+        if (linesOpenMatch && typeof linesOpenMatch[1] === "string") {
+          applyTagAttrs(root, parseTagAttrs(linesOpenMatch[1]));
+        }
+
+        const lineRe = /<line\b([^>]*)>([\s\S]*?)<\/line>/gi;
+        let lineMatch;
+        while ((lineMatch = lineRe.exec(src)) !== null) {
+          const lineNode = out.createElement("line");
+          applyTagAttrs(lineNode, parseTagAttrs(lineMatch[1]));
+          const lineBody = String(lineMatch[2] || "");
+          const routeStartRe = /<route\b([^>]*)>/gi;
+          const routeStarts = [];
+          let routeStartMatch;
+          while ((routeStartMatch = routeStartRe.exec(lineBody)) !== null) {
+            routeStarts.push({
+              attrsRaw: String(routeStartMatch[1] || ""),
+              bodyStartIdx: routeStartRe.lastIndex,
+              openTagIdx: routeStartMatch.index
+            });
+          }
+          for (let i = 0; i < routeStarts.length; i += 1) {
+            const rec = routeStarts[i];
+            const nextOpenIdx = i + 1 < routeStarts.length ? routeStarts[i + 1].openTagIdx : lineBody.length;
+            const rawSegment = String(lineBody.slice(rec.bodyStartIdx, nextOpenIdx) || "");
+            const closeIdx = rawSegment.search(/<\/route>/i);
+            const routeBody = closeIdx >= 0 ? rawSegment.slice(0, closeIdx) : rawSegment;
+
+            const routeNode = out.createElement("route");
+            applyTagAttrs(routeNode, parseTagAttrs(rec.attrsRaw));
+
+            const stopRe = /<busstop\b([^>]*?)(?:\/>|>)/gi;
+            let stopMatch;
+            while ((stopMatch = stopRe.exec(routeBody)) !== null) {
+              const stopNode = out.createElement("busstop");
+              applyTagAttrs(stopNode, parseTagAttrs(stopMatch[1]));
+              routeNode.appendChild(stopNode);
+            }
+            lineNode.appendChild(routeNode);
+          }
+          root.appendChild(lineNode);
+        }
+        return out;
+      };
+
+      const rawLineCount = countRawTag(text, "line");
+      const rawRouteCount = countRawTag(text, "route");
+      const rawStopCount = countRawTag(text, "busstop");
+      const sanitizedText = sanitizeLooseXml(text);
+
+      let doc = parseXml(sanitizedText);
+      let hadParserError = !!doc.querySelector("parsererror");
+      let parsed = getParsedCounts(doc);
+      let modeUsed = "xml";
+
+      const shouldUseRebuild =
+        hadParserError
+        || (rawLineCount > 0 && parsed.lines < rawLineCount)
+        || (rawRouteCount > 0 && parsed.routes < rawRouteCount)
+        || (rawStopCount > 0 && parsed.stops < rawStopCount);
+      if (shouldUseRebuild) {
+        const rebuiltDoc = buildDocFromLooseText(sanitizedText);
+        const rebuilt = getParsedCounts(rebuiltDoc);
+        const rebuiltBetter =
+          rebuilt.lines > parsed.lines
+          || rebuilt.routes > parsed.routes
+          || rebuilt.stops > parsed.stops;
+        if (rebuiltBetter) {
+          doc = rebuiltDoc;
+          parsed = rebuilt;
+          hadParserError = false;
+          modeUsed = "rebuild";
+        }
+      }
+
+      const root = doc.querySelector("lines") || doc.documentElement;
+      if (!root || String(root.tagName || "").toLowerCase() !== "lines") throw new Error("Racine <lines> introuvable.");
+      if (modeUsed === "rebuild") {
+        setDevLinesEditorStatus(`Mode tolerant actif: ${parsed.lines}/${rawLineCount} lignes, ${parsed.routes}/${rawRouteCount} routes, ${parsed.stops}/${rawStopCount} arrets.`);
+      } else if (hadParserError) {
+        setDevLinesEditorStatus("Attention: XML partiellement invalide, edition en mode tolerant.", true);
+      }
+      return doc;
+    }
+    function setDevLinesEditorDocFromText(xmlText, { sourceLabel = "", keepSelection = false } = {}){
+      const nextDoc = parseDevLinesEditorXmlText(xmlText);
+      devLinesEditorDoc = nextDoc;
+      if (!keepSelection) {
+        devLinesEditorSelection.lineIdx = 0;
+        devLinesEditorSelection.routeIdx = 0;
+        devLinesEditorSelection.stopIdx = 0;
+      }
+      setDevLinesEditorSourceLabel(sourceLabel);
+      renderDevLinesEditorSelectors({ redrawRoute: true, focusStop: false });
+    }
+    function serializeDevLinesEditorXml(){
+      if (!devLinesEditorDoc) return "";
+      return new XMLSerializer().serializeToString(devLinesEditorDoc);
+    }
+    function applyDevStopFormToNode(stopNode){
+      if (!stopNode) return false;
+      const currentMin = sanitizeInt(stopNode.getAttribute("passengersMin"), 0, 0);
+      const currentMax = sanitizeInt(stopNode.getAttribute("passengersMax"), currentMin, currentMin);
+      let passengersMin = sanitizeInt($devStopPassengersMin?.value, currentMin, 0);
+      let passengersMax = sanitizeInt($devStopPassengersMax?.value, currentMax, 0);
+      if (passengersMax < passengersMin) passengersMax = passengersMin;
+      if (passengersMin > passengersMax) passengersMin = passengersMax;
+      const uid = sanitizeInt($devStopUid?.value, sanitizeInt(stopNode.getAttribute("uid"), 0, 0), 0);
+      const coefOn = sanitizeInt($devStopCoefOn?.value, sanitizeInt(stopNode.getAttribute("coefOn"), 1), 0);
+      const nextStopTime = sanitizeInt($devStopNextStopTime?.value, sanitizeInt(stopNode.getAttribute("nextStopTime"), 0), 0);
+      const nextStopPrice = sanitizeInt($devStopNextStopPrice?.value, sanitizeInt(stopNode.getAttribute("nextStopPrice"), 0), 0);
+      stopNode.setAttribute("uid", String(uid));
+      stopNode.setAttribute("passengersMin", String(passengersMin));
+      stopNode.setAttribute("passengersMax", String(passengersMax));
+      stopNode.setAttribute("coefOn", String(coefOn));
+      stopNode.setAttribute("nextStopTime", String(nextStopTime));
+      stopNode.setAttribute("nextStopPrice", String(nextStopPrice));
+      return true;
+    }
+    function applySelectedDevStopEdits(){
+      const stopNode = getDevCurrentStopNode();
+      if (!stopNode) {
+        setDevLinesEditorStatus("Aucun arret selectionne.", true);
+        return;
+      }
+      applyDevStopFormToNode(stopNode);
+      renderDevLinesEditorSelectors({ redrawRoute: true, focusStop: true });
+      setDevLinesEditorStatus("Arret mis a jour.");
+    }
+    function createDevStopNodeFromForm(){
+      if (!devLinesEditorDoc) return null;
+      const stopNode = devLinesEditorDoc.createElement("busstop");
+      stopNode.setAttribute("uid", String(sanitizeInt($devStopUid?.value, 0, 0)));
+      stopNode.setAttribute("passengersMin", String(sanitizeInt($devStopPassengersMin?.value, 0, 0)));
+      stopNode.setAttribute("passengersMax", String(sanitizeInt($devStopPassengersMax?.value, 0, 0)));
+      stopNode.setAttribute("coefOn", String(sanitizeInt($devStopCoefOn?.value, 1, 0)));
+      stopNode.setAttribute("nextStopTime", String(sanitizeInt($devStopNextStopTime?.value, 0, 0)));
+      stopNode.setAttribute("nextStopPrice", String(sanitizeInt($devStopNextStopPrice?.value, 0, 0)));
+      const pMin = sanitizeInt(stopNode.getAttribute("passengersMin"), 0, 0);
+      const pMax = sanitizeInt(stopNode.getAttribute("passengersMax"), pMin, pMin);
+      if (pMax < pMin) stopNode.setAttribute("passengersMax", String(pMin));
+      return stopNode;
+    }
+    function addDevStopAfterSelection(){
+      const routeNode = getDevCurrentRouteNode();
+      if (!routeNode) {
+        setDevLinesEditorStatus("Aucune route selectionnee.", true);
+        return;
+      }
+      const stops = getDevStopNodes(routeNode);
+      const insertAfter = stops[Math.max(0, Math.min(stops.length - 1, Number(devLinesEditorSelection.stopIdx) || 0))] || null;
+      const newStop = createDevStopNodeFromForm();
+      if (!newStop) return;
+      if (insertAfter && insertAfter.parentNode === routeNode) {
+        routeNode.insertBefore(newStop, insertAfter.nextSibling);
+        devLinesEditorSelection.stopIdx = Math.max(0, Math.min(stops.length, Number(devLinesEditorSelection.stopIdx) + 1));
+      } else {
+        routeNode.appendChild(newStop);
+        devLinesEditorSelection.stopIdx = getDevStopNodes(routeNode).length - 1;
+      }
+      renderDevLinesEditorSelectors({ redrawRoute: true, focusStop: true });
+      setDevLinesEditorStatus("Arret ajoute.");
+    }
+    function deleteSelectedDevStop(){
+      const routeNode = getDevCurrentRouteNode();
+      const stopNode = getDevCurrentStopNode();
+      if (!routeNode || !stopNode) {
+        setDevLinesEditorStatus("Aucun arret a supprimer.", true);
+        return;
+      }
+      const stopsBefore = getDevStopNodes(routeNode);
+      const idx = Math.max(0, stopsBefore.indexOf(stopNode));
+      routeNode.removeChild(stopNode);
+      const stopsAfter = getDevStopNodes(routeNode);
+      devLinesEditorSelection.stopIdx = Math.max(0, Math.min(stopsAfter.length - 1, idx));
+      renderDevLinesEditorSelectors({ redrawRoute: true, focusStop: true });
+      setDevLinesEditorStatus("Arret supprime.");
+    }
+    function moveSelectedDevStop(offset){
+      const routeNode = getDevCurrentRouteNode();
+      const stopNode = getDevCurrentStopNode();
+      if (!routeNode || !stopNode) return;
+      const stops = getDevStopNodes(routeNode);
+      const idx = stops.indexOf(stopNode);
+      if (idx < 0) return;
+      if (offset < 0 && idx > 0) {
+        routeNode.insertBefore(stopNode, stops[idx - 1]);
+        devLinesEditorSelection.stopIdx = idx - 1;
+      } else if (offset > 0 && idx < stops.length - 1) {
+        routeNode.insertBefore(stops[idx + 1], stopNode);
+        devLinesEditorSelection.stopIdx = idx + 1;
+      } else {
+        return;
+      }
+      renderDevLinesEditorSelectors({ redrawRoute: true, focusStop: true });
+      setDevLinesEditorStatus(offset < 0 ? "Arret remonte." : "Arret descendu.");
+    }
+    function closeDevLinesEditor(){
+      if (!$devLinesEditorModal) return;
+      $devLinesEditorModal.hidden = true;
+    }
+    function openDevLinesEditor(){
+      if (!DEV_LOCAL_ONLY) {
+        setDevLinesEditorStatus("Disponible uniquement en local (localhost / 127.0.0.1 / file:).", true);
+        return;
+      }
+      if (!$devLinesEditorModal) return;
+      $devLinesEditorModal.hidden = false;
+      if (!devLinesEditorDoc) {
+        void loadCurrentLinesXmlIntoEditor();
+      } else {
+        renderDevLinesEditorSelectors({ redrawRoute: true, focusStop: false });
+      }
+    }
+    async function loadCurrentLinesXmlIntoEditor(){
+      if (!DEV_LOCAL_ONLY) return;
+      const targetUrl = `${dbusRoot}/lines.xml`;
+      try {
+        setDevLinesEditorStatus(`Chargement ${targetUrl}...`);
+        const response = await fetch(targetUrl, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const xmlText = await response.text();
+        setDevLinesEditorDocFromText(xmlText, { sourceLabel: targetUrl });
+        devLinesEditorFileHandle = null;
+        setDevLinesEditorStatus(`Charge: ${targetUrl}`);
+      } catch (err) {
+        setDevLinesEditorStatus(`Echec de chargement: ${String(err && err.message || err || "inconnu")}`, true);
+      }
+    }
+    async function openLocalLinesXmlFile(){
+      if (!DEV_LOCAL_ONLY) return;
+      if (typeof window.showOpenFilePicker !== "function") {
+        setDevLinesEditorStatus("showOpenFilePicker indisponible sur ce navigateur.", true);
+        return;
+      }
+      try {
+        const handles = await window.showOpenFilePicker({
+          multiple: false,
+          excludeAcceptAllOption: false,
+          types: [{ description: "XML", accept: { "application/xml": [".xml"], "text/xml": [".xml"], "text/plain": [".xml"] } }]
+        });
+        const handle = Array.isArray(handles) ? handles[0] : null;
+        if (!handle) return;
+        const file = await handle.getFile();
+        const xmlText = await file.text();
+        setDevLinesEditorDocFromText(xmlText, { sourceLabel: String(file.name || "lines.xml") });
+        devLinesEditorFileHandle = handle;
+        setDevLinesEditorStatus(`Fichier local ouvert: ${String(file.name || "lines.xml")}`);
+      } catch (err) {
+        const msg = String(err && err.name || "");
+        if (msg === "AbortError") return;
+        setDevLinesEditorStatus(`Ouverture annulee/echouee: ${String(err && err.message || err || "inconnu")}`, true);
+      }
+    }
+    async function saveLocalLinesXmlFile(){
+      if (!DEV_LOCAL_ONLY) return;
+      const xmlText = serializeDevLinesEditorXml();
+      if (!xmlText.trim()) {
+        setDevLinesEditorStatus("Le contenu XML est vide.", true);
+        return;
+      }
+      if (typeof window.showSaveFilePicker !== "function" && !devLinesEditorFileHandle) {
+        setDevLinesEditorStatus("Sauvegarde locale indisponible ici. Utilise telecharger xml.", true);
+        return;
+      }
+      try {
+        if (!devLinesEditorFileHandle) {
+          devLinesEditorFileHandle = await window.showSaveFilePicker({
+            suggestedName: "lines.xml",
+            types: [{ description: "XML", accept: { "application/xml": [".xml"], "text/xml": [".xml"], "text/plain": [".xml"] } }]
+          });
+        }
+        if (!devLinesEditorFileHandle) return;
+        const writable = await devLinesEditorFileHandle.createWritable();
+        await writable.write(xmlText);
+        await writable.close();
+        setDevLinesEditorStatus("Fichier local sauvegarde. Recharge la page pour recharger la map.");
+      } catch (err) {
+        const msg = String(err && err.name || "");
+        if (msg === "AbortError") return;
+        setDevLinesEditorStatus(`Sauvegarde echouee: ${String(err && err.message || err || "inconnu")}`, true);
+      }
+    }
+    function downloadLinesXmlText(){
+      const xmlText = serializeDevLinesEditorXml();
+      if (!xmlText.trim()) {
+        setDevLinesEditorStatus("Rien a telecharger: contenu vide.", true);
+        return;
+      }
+      const blob = new Blob([xmlText], { type: "application/xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lines.xml";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setDevLinesEditorStatus("Telechargement lines.xml lance.");
     }
     function ensureTrailingSlash(path){
       return /\/$/.test(String(path || "")) ? String(path) : `${String(path || "")}/`;
@@ -10898,6 +11788,12 @@
         setDevNavDebugMenuOpen(false);
         return;
       }
+      if ($btnDevLinesXmlEditorToggle) {
+        $btnDevLinesXmlEditorToggle.hidden = !DEV_LOCAL_ONLY;
+      }
+      if (!DEV_LOCAL_ONLY && $devLinesEditorModal) {
+        $devLinesEditorModal.hidden = true;
+      }
       $devNavDebugRow.hidden = false;
       setDevNavDebugMenuOpen(false);
       updateDevNavDebugUIState();
@@ -10916,7 +11812,10 @@
         }
       });
       document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") setDevNavDebugMenuOpen(false);
+        if (event.key === "Escape") {
+          setDevNavDebugMenuOpen(false);
+          closeDevLinesEditor();
+        }
       });
       $btnDevNavPointsToggle.addEventListener("click", () => {
         if (DEV_GRAPH_STATE.enabled || DEV_GRAPH_STATE.pendingEnable) {
@@ -10940,6 +11839,104 @@
         $btnDevUberRestaurantsToggle.addEventListener("click", () => {
           void toggleDevUberRestaurantsOverlay();
         });
+      }
+      if (DEV_LOCAL_ONLY) {
+        if ($btnDevLinesXmlEditorToggle) {
+          $btnDevLinesXmlEditorToggle.addEventListener("click", () => {
+            openDevLinesEditor();
+          });
+        }
+        if ($btnDevLinesXmlEditorClose) {
+          $btnDevLinesXmlEditorClose.addEventListener("click", () => {
+            closeDevLinesEditor();
+          });
+        }
+        if ($btnDevLinesXmlEditorLoadCurrent) {
+          $btnDevLinesXmlEditorLoadCurrent.addEventListener("click", () => {
+            void loadCurrentLinesXmlIntoEditor();
+          });
+        }
+        if ($btnDevLinesXmlEditorPickFile) {
+          $btnDevLinesXmlEditorPickFile.addEventListener("click", () => {
+            void openLocalLinesXmlFile();
+          });
+        }
+        if ($btnDevLinesXmlEditorSaveFile) {
+          $btnDevLinesXmlEditorSaveFile.addEventListener("click", () => {
+            void saveLocalLinesXmlFile();
+          });
+        }
+        if ($btnDevLinesXmlEditorDownload) {
+          $btnDevLinesXmlEditorDownload.addEventListener("click", () => {
+            downloadLinesXmlText();
+          });
+        }
+        if ($btnDevLinesXmlEditorReloadPage) {
+          $btnDevLinesXmlEditorReloadPage.addEventListener("click", () => {
+            location.reload();
+          });
+        }
+        if ($devLinesEditorLineSelect) {
+          $devLinesEditorLineSelect.addEventListener("change", () => {
+            devLinesEditorSelection.lineIdx = sanitizeInt($devLinesEditorLineSelect.value, 0, 0);
+            devLinesEditorSelection.routeIdx = 0;
+            devLinesEditorSelection.stopIdx = 0;
+            renderDevLinesEditorSelectors({ redrawRoute: true, focusStop: false });
+          });
+        }
+        if ($devLinesEditorRouteSelect) {
+          $devLinesEditorRouteSelect.addEventListener("change", () => {
+            devLinesEditorSelection.routeIdx = sanitizeInt($devLinesEditorRouteSelect.value, 0, 0);
+            devLinesEditorSelection.stopIdx = 0;
+            renderDevLinesEditorSelectors({ redrawRoute: true, focusStop: false });
+          });
+        }
+        if ($devLinesEditorStopList) {
+          $devLinesEditorStopList.addEventListener("change", () => {
+            devLinesEditorSelection.stopIdx = sanitizeInt($devLinesEditorStopList.value, 0, 0);
+            renderDevStopFormFromSelection();
+            drawSelectedDevRoute({ focusStop: true });
+          });
+        }
+        if ($btnDevLinesStopApply) {
+          $btnDevLinesStopApply.addEventListener("click", () => {
+            applySelectedDevStopEdits();
+          });
+        }
+        if ($btnDevLinesStopAddAfter) {
+          $btnDevLinesStopAddAfter.addEventListener("click", () => {
+            addDevStopAfterSelection();
+          });
+        }
+        if ($btnDevLinesStopDelete) {
+          $btnDevLinesStopDelete.addEventListener("click", () => {
+            deleteSelectedDevStop();
+          });
+        }
+        if ($btnDevLinesStopMoveUp) {
+          $btnDevLinesStopMoveUp.addEventListener("click", () => {
+            moveSelectedDevStop(-1);
+          });
+        }
+        if ($btnDevLinesStopMoveDown) {
+          $btnDevLinesStopMoveDown.addEventListener("click", () => {
+            moveSelectedDevStop(1);
+          });
+        }
+        if ($btnDevLinesRouteDraw) {
+          $btnDevLinesRouteDraw.addEventListener("click", () => {
+            drawSelectedDevRoute({ focusStop: true });
+            setDevLinesEditorStatus("Route dessinee sur la map.");
+          });
+        }
+        if ($devLinesEditorModal) {
+          $devLinesEditorModal.addEventListener("click", (event) => {
+            if (event.target === $devLinesEditorModal) {
+              // Keep editor open when clicking outside the panel.
+              event.stopPropagation();
+            }
+          });
+        }
       }
       if ($devTrafficAreasModeInputs && $devTrafficAreasModeInputs.length) {
         $devTrafficAreasModeInputs.forEach((input) => {

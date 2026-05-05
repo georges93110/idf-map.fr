@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #map {
+      position: fixed;
+      inset: 0;
+      background: #000;
+    }
+
+    #output {
+      display: none !important;
+    }
+
+    .leaflet-container,
+    .leaflet-container .leaflet-control-container {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .player-marker {
+      position: relative;
+      width: 34px;
+      height: 34px;
+    }
+
+    .player-marker-dot {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      border: 3px solid #fff;
+      border-radius: 999px;
+      background: #2f8cff;
+      box-shadow:
+        0 0 0 2px rgba(0, 0, 0, 0.44),
+        0 4px 12px rgba(0, 0, 0, 0.45);
+      box-sizing: border-box;
+    }
+
+    .player-marker-dot::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 17px solid #fff;
+      transform: translate(-50%, -62%) rotate(var(--heading, 0deg));
+      transform-origin: 50% 70%;
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+    }
+
+    .player-marker-label {
+      position: absolute;
+      left: 50%;
+      top: 38px;
+      transform: translateX(-50%);
+      max-width: 180px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      font: 700 12px/1.2 Arial, Helvetica, sans-serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+
+    .map-error {
+      position: fixed;
+      left: 12px;
+      bottom: 12px;
+      z-index: 1000;
+      max-width: min(520px, calc(100vw - 24px));
+      padding: 10px 12px;
+      border: 1px solid rgba(248, 113, 113, 0.45);
+      border-radius: 8px;
+      background: rgba(127, 29, 29, 0.85);
+      color: #fee2e2;
+      font: 13px/1.35 Arial, Helvetica, sans-serif;
+    }
+
+    .map-error[hidden] {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="map" aria-label="Carte live"></div>
+  <pre id="output" hidden></pre>
+  <div id="mapError" class="map-error" hidden></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      const WS_URL = "ws://panel.idf-map.fr:9377";
+      const MAP_FILES_ROOT = "../map_files";
+      const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
+      const WS_RECONNECT_MS = 2000;
+      const PLAYER_STALE_MS = 15000;
+
+      const output = document.getElementById("output");
+      const mapError = document.getElementById("mapError");
+
+      const minNativeZoom = 0;
+      const maxNativeZoom = 8;
+      const tileSize = 256;
+      const widthPx = tileSize * Math.pow(2, maxNativeZoom);
+      const heightPx = tileSize * Math.pow(2, maxNativeZoom);
+
+      let tileMapInfo = null;
+      let selectedVersion = "";
+      let dataBase = "";
+      let tileBase = "";
+      let hasCenteredOnPlayer = false;
+      let socket = null;
+      let reconnectTimer = 0;
+      const playerMarkers = new Map();
+      const identityKeys = [
+        "steamid",
+        "steamId",
+        "steamID",
+        "steam_id",
+        "name",
+        "steamName",
+        "steam_name",
+        "playerName",
+        "player_name",
+        "username",
+        "userName",
+        "personaname",
+        "displayname",
+        "displayName",
+        "display_name",
+        "steamDisplayName",
+        "steam_display_name",
+        "nickname"
+      ];
+
+      const map = L.map("map", {
+        crs: L.CRS.Simple,
+        attributionControl: false,
+        zoomControl: true,
+        minZoom: minNativeZoom + 4,
+        maxZoom: maxNativeZoom + 2,
+        zoomSnap: 0.25,
+        zoomDelta: 0.25,
+        wheelPxPerZoomLevel: 80,
+        maxBoundsViscosity: 1.0,
+        inertia: true,
+        preferCanvas: true,
+        zoomAnimation: true,
+        fadeAnimation: true,
+        markerZoomAnimation: true
+      });
+
+      const fullBounds = L.latLngBounds(
+        map.unproject(L.point(0, heightPx), maxNativeZoom),
+        map.unproject(L.point(widthPx, 0), maxNativeZoom)
+      );
+
+      function showError(message) {
+        const text = String(message || "").trim();
+        if (!text) {
+          mapError.hidden = true;
+          mapError.textContent = "";
+          return;
+        }
+        mapError.textContent = text;
+        mapError.hidden = false;
+      }
+
+      function parseVersion(value) {
+        const match = VERSION_PATTERN.exec(String(value || "").trim());
+        if (!match) return null;
+        return {
+          raw: `${parseInt(match[1], 10)}.${parseInt(match[2], 10)}.${parseInt(match[3], 10)}${match[4].toLowerCase()}`,
+          major: parseInt(match[1], 10),
+          minor: parseInt(match[2], 10),
+          patch: parseInt(match[3], 10),
+          suffix: match[4].toLowerCase()
+        };
+      }
+
+      function compareVersions(a, b) {
+        if (a.major !== b.major) return a.major - b.major;
+        if (a.minor !== b.minor) return a.minor - b.minor;
+        if (a.patch !== b.patch) return a.patch - b.patch;
+        return a.suffix.localeCompare(b.suffix);
+      }
+
+      async function selectMapVersion() {
+        const response = await fetch(`${MAP_FILES_ROOT}/versions.json`, { cache: "no-store" });
+        if (!response.ok) throw new Error("versions.json introuvable");
+        const list = await response.json();
+        const versions = (Array.isArray(list) ? list : list && list.versions || [])
+          .map(parseVersion)
+          .filter(Boolean)
+          .sort(compareVersions);
+        if (!versions.length) throw new Error("Aucune version de map disponible");
+        const forced = parseVersion(new URLSearchParams(location.search).get("version"));
+        return forced ? forced.raw : versions[versions.length - 1].raw;
+      }
+
+      function innerBounds(margin) {
+        const sw = L.point(margin, heightPx - margin);
+        const ne = L.point(widthPx - margin, margin);
+        return L.latLngBounds(
+          map.unproject(sw, maxNativeZoom),
+          map.unproject(ne, maxNativeZoom)
+        );
+      }
+
+      function applyBounds() {
+        const bounds = innerBounds(64);
+        map.setMaxBounds(bounds);
+        map.panInsideBounds(bounds, { animate: false });
+      }
+
+      function toLatLng(worldX, worldY) {
+        if (!tileMapInfo) return null;
+        const x = Number(worldX);
+        const y = Number(worldY);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        const px = (x - tileMapInfo.x1) / (tileMapInfo.x2 - tileMapInfo.x1) * widthPx;
+        const py = (y - tileMapInfo.y1) / (tileMapInfo.y2 - tileMapInfo.y1) * heightPx;
+        return map.unproject([px, py], maxNativeZoom);
+      }
+
+      function readNumber(source, keys) {
+        if (!source || typeof source !== "object") return null;
+        for (const key of keys) {
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          const value = Number(source[key]);
+          if (Number.isFinite(value)) return value;
+        }
+        return null;
+      }
+
+      function readString(source, keys) {
+        if (!source || typeof source !== "object") return "";
+        for (const key of keys) {
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          const value = String(source[key] == null ? "" : source[key]).trim();
+          if (value) return value;
+        }
+        return "";
+      }
+
+      function entryPools(entry) {
+        if (!entry || typeof entry !== "object") return [];
+        return [
+          entry,
+          entry.data,
+          entry.payload,
+          entry.telemetry,
+          entry.signal,
+          entry.position,
+          entry.pos,
+          entry.location,
+          entry.vehicle,
+          entry.truck,
+          entry.truckPosition,
+          entry.player,
+          entry.client,
+          entry.sender,
+          entry.author,
+          entry.account,
+          entry.user,
+          entry.profile,
+          entry.steam,
+          entry.metadata,
+          entry.meta,
+          entry.playerInfo,
+          entry.player_info
+        ].filter((item) => item && typeof item === "object");
+      }
+
+      function hasIdentity(source) {
+        if (!source || typeof source !== "object") return false;
+        return identityKeys.some((key) => {
+          if (!Object.prototype.hasOwnProperty.call(source, key)) return false;
+          const value = source[key];
+          return value != null && String(value).trim() !== "";
+        });
+      }
+
+      function readIdentity(source, depth = 0, seen = new Set()) {
+        if (!source || typeof source !== "object" || depth > 4 || seen.has(source)) return {};
+        seen.add(source);
+
+        const result = {};
+        for (const key of identityKeys) {
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          const value = source[key];
+          if (value == null || String(value).trim() === "") continue;
+          result[key] = value;
+        }
+        if (hasIdentity(result)) return result;
+
+        const priorityKeys = [
+          "player",
+          "client",
+          "sender",
+          "author",
+          "account",
+          "user",
+          "profile",
+          "steam",
+          "metadata",
+          "meta",
+          "playerInfo",
+          "player_info"
+        ];
+        for (const key of priorityKeys) {
+          const nested = source[key];
+          if (!nested || typeof nested !== "object") continue;
+          const identity = readIdentity(nested, depth + 1, seen);
+          if (hasIdentity(identity)) return identity;
+        }
+
+        for (const value of Object.values(source)) {
+          if (!value || typeof value !== "object") continue;
+          const identity = readIdentity(value, depth + 1, seen);
+          if (hasIdentity(identity)) return identity;
+        }
+        return {};
+      }
+
+      function normalizeHeadingDeg(value) {
+        let deg = Number(value);
+        if (!Number.isFinite(deg)) return 0;
+        deg = deg % 360;
+        if (deg < 0) deg += 360;
+        return deg;
+      }
+
+      function headingToMarkerRotationDeg(value, convention, unit) {
+        let deg = Number(value);
+        if (!Number.isFinite(deg)) return 0;
+        const unitText = String(unit || "").trim().toLowerCase();
+        if (unitText === "rad" || unitText === "radian" || unitText === "radians") {
+          deg = deg * (180 / Math.PI);
+        }
+        deg = normalizeHeadingDeg(deg);
+        const mode = String(convention || "north_ccw").trim().toLowerCase();
+        if (mode === "north_cw" || mode === "compass" || mode === "telemetry_cw") {
+          return normalizeHeadingDeg(deg);
+        }
+        if (mode === "screen" || mode === "east_ccw" || mode === "map") {
+          return normalizeHeadingDeg(deg + 90);
+        }
+        return normalizeHeadingDeg(-deg);
+      }
+
+      function extractPlayer(entry, fallbackIndex) {
+        const pools = entryPools(entry);
+        if (!pools.length) return null;
+
+        let x = null;
+        let z = null;
+        let heading = null;
+        let headingUnit = "";
+        let headingConvention = "";
+        let steamid = "";
+        let name = "";
+        let displayname = "";
+
+        for (const source of pools) {
+          if (x === null) x = readNumber(source, ["x", "X", "worldX", "world_x", "posX", "positionX"]);
+          if (z === null) z = readNumber(source, ["z", "Z", "worldZ", "world_z", "posZ", "positionZ"]);
+          if (z === null) z = readNumber(source, ["mapY", "worldY", "world_y"]);
+          if (z === null) z = readNumber(source, ["y", "Y", "posY", "positionY"]);
+          if (heading === null) heading = readNumber(source, ["heading", "Heading", "rotation", "yaw"]);
+          if (!headingUnit) headingUnit = readString(source, ["headingUnit", "heading_unit", "unit"]);
+          if (!headingConvention) headingConvention = readString(source, ["headingConvention", "heading_convention", "headingMode", "heading_mode"]);
+          if (!steamid) steamid = readString(source, ["steamid", "steamId", "steamID", "steam_id"]);
+          if (!name) name = readString(source, ["name", "steamName", "steam_name", "playerName", "player_name", "username", "userName", "personaname"]);
+          if (!displayname) displayname = readString(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "nickname"]);
+        }
+
+        if (x === null || z === null) return null;
+
+        const id = steamid || name || displayname || `player-${fallbackIndex}`;
+        return {
+          id,
+          steamid,
+          name,
+          displayname,
+          label: name || displayname || steamid || "Joueur",
+          x,
+          z,
+          heading: Number.isFinite(Number(heading)) ? Number(heading) : 0,
+          headingUnit,
+          headingConvention: headingConvention || "north_ccw"
+        };
+      }
+
+      function collectPlayers(payload) {
+        const roots = [];
+        if (Array.isArray(payload)) roots.push(...payload);
+        else if (payload && typeof payload === "object") {
+          roots.push(payload);
+          const candidates = [
+            payload.players,
+            payload.player,
+            payload.clients,
+            payload.users,
+            payload.vehicles,
+            payload.data,
+            payload.payload
+          ];
+          for (const candidate of candidates) {
+            if (Array.isArray(candidate)) roots.push(...candidate);
+            else if (candidate && typeof candidate === "object") {
+              const values = Object.values(candidate);
+              if (values.some((value) => value && typeof value === "object")) roots.push(...values);
+              else roots.push(candidate);
+            }
+          }
+        }
+
+        const players = [];
+        const seen = new Set();
+        roots.forEach((entry, index) => {
+          const player = extractPlayer(entry, index);
+          if (!player || seen.has(player.id)) return;
+          seen.add(player.id);
+          players.push(player);
+        });
+        return players;
+      }
+
+      function playerIcon(player) {
+        const heading = headingToMarkerRotationDeg(player.heading, player.headingConvention, player.headingUnit);
+        const label = escapeHtml(player.label || "Joueur");
+        return L.divIcon({
+          className: "",
+          iconSize: [34, 34],
+          iconAnchor: [17, 17],
+          html: `<div class="player-marker"><div class="player-marker-dot" style="--heading:${heading.toFixed(1)}deg"></div><div class="player-marker-label">${label}</div></div>`
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function updatePlayerMarkers(players) {
+        const now = Date.now();
+        const liveIds = new Set();
+
+        for (const player of players) {
+          const latlng = toLatLng(player.x, player.z);
+          if (!latlng) continue;
+          liveIds.add(player.id);
+
+          let record = playerMarkers.get(player.id);
+          if (!record) {
+            const marker = L.marker(latlng, {
+              icon: playerIcon(player),
+              title: player.label,
+              keyboard: false
+            }).addTo(map);
+            record = { marker, lastSeen: now };
+            playerMarkers.set(player.id, record);
+          } else {
+            record.marker.setLatLng(latlng);
+            record.marker.setIcon(playerIcon(player));
+            record.marker.options.title = player.label;
+            record.lastSeen = now;
+          }
+
+          if (!hasCenteredOnPlayer) {
+            hasCenteredOnPlayer = true;
+            map.setView(latlng, Math.max(map.getZoom(), maxNativeZoom - 1), { animate: false });
+          }
+        }
+
+        for (const [id, record] of playerMarkers.entries()) {
+          if (liveIds.has(id) || now - record.lastSeen <= PLAYER_STALE_MS) continue;
+          map.removeLayer(record.marker);
+          playerMarkers.delete(id);
+        }
+      }
+
+      function show(text) {
+        const line = String(text == null ? "" : text);
+        console.log(line);
+      }
+
+      function showData(payload) {
+        console.log(payload);
+      }
+
+      function mergeEnvelopeIdentity(message) {
+        if (!message || typeof message !== "object") return message;
+        const payload = Object.prototype.hasOwnProperty.call(message, "data") ? message.data : message;
+        const identity = readIdentity(message);
+        function fillIdentity(target) {
+          if (!target || typeof target !== "object" || Array.isArray(target)) return target;
+          const merged = Object.assign({}, target);
+          for (const key of identityKeys) {
+            if (!Object.prototype.hasOwnProperty.call(identity, key)) continue;
+            if (Object.prototype.hasOwnProperty.call(merged, key) && merged[key] != null && String(merged[key]).trim() !== "") continue;
+            merged[key] = identity[key];
+          }
+          return merged;
+        }
+        if (Array.isArray(payload)) return payload.map(fillIdentity);
+        return fillIdentity(payload);
+      }
+
+      function handleTelemetryPayload(payload) {
+        showData(payload);
+        updatePlayerMarkers(collectPlayers(payload));
+        showError("");
+      }
+
+      function scheduleReconnect() {
+        if (reconnectTimer) return;
+        reconnectTimer = window.setTimeout(function () {
+          reconnectTimer = 0;
+          connect();
+        }, WS_RECONNECT_MS);
+      }
+
+      function connect() {
+        if (reconnectTimer) {
+          window.clearTimeout(reconnectTimer);
+          reconnectTimer = 0;
+        }
+
+        if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return;
+
+        try {
+          socket = new WebSocket(WS_URL);
+        } catch (err) {
+          show("Erreur WebSocket");
+          showError("Impossible d'ouvrir le WebSocket panel.");
+          scheduleReconnect();
+          return;
+        }
+
+        socket.onopen = function () {
+          output.textContent = "";
+          show("Connecte au WebSocket");
+          showError("");
+        };
+
+        socket.onmessage = function (event) {
+          let message = null;
+          try {
+            message = JSON.parse(event.data);
+          } catch (err) {
+            show("Systeme : " + String(event.data || ""));
+            return;
+          }
+
+          if (message && message.type === "data") {
+            handleTelemetryPayload(mergeEnvelopeIdentity(message));
+            return;
+          }
+
+          const mergedMessage = mergeEnvelopeIdentity(message);
+          const directPlayers = collectPlayers(mergedMessage);
+          if (directPlayers.length) {
+            handleTelemetryPayload(mergedMessage);
+            return;
+          }
+
+          show("Systeme : " + JSON.stringify(message));
+        };
+
+        socket.onclose = function () {
+          socket = null;
+          show("Deconnecte, reconnexion...");
+          showError("WebSocket panel deconnecte, reconnexion...");
+          scheduleReconnect();
+        };
+
+        socket.onerror = function () {
+          show("Erreur WebSocket");
+          showError("Erreur WebSocket panel.");
+          try { socket.close(); } catch (err) { }
+        };
+      }
+
+      async function boot() {
+        try {
+          selectedVersion = await selectMapVersion();
+          dataBase = `${MAP_FILES_ROOT}/${selectedVersion}`;
+          tileBase = `${dataBase}/Tiles`;
+
+          const tileInfoResponse = await fetch(`${dataBase}/TileMapInfo.json`, { cache: "no-store" });
+          if (!tileInfoResponse.ok) throw new Error("TileMapInfo introuvable");
+          tileMapInfo = await tileInfoResponse.json();
+
+          L.tileLayer(`${tileBase}/{z}/{x}/{y}.png`, {
+            tileSize,
+            minNativeZoom,
+            maxNativeZoom,
+            maxZoom: maxNativeZoom + 2,
+            noWrap: true,
+            bounds: fullBounds,
+            crossOrigin: true,
+            referrerPolicy: "no-referrer",
+            updateWhenIdle: false,
+            updateWhenZooming: true,
+            keepBuffer: 3
+          }).addTo(map);
+
+          map.fitBounds(innerBounds(64), { animate: false });
+          applyBounds();
+          map.on("zoomend resize", applyBounds);
+
+          connect();
+        } catch (err) {
+          const message = err && err.message ? err.message : String(err || "Erreur carte");
+          showError(message);
+        }
+      }
+
+      boot();
+    })();
+  </script>
+</body>
+</html>

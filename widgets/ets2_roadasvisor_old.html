@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Road Advisor - ETS2 Ancien</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --w: 100%;
+      --h: 100%;
+      --orange: #f2a319;
+      --yellow: #ffd15a;
+      --text: #f5f5f5;
+      --muted: #9c9c9c;
+      --dark: #0e0e0e;
+      --panel: #1b1b1b;
+      --line: #3b3b3b;
+      --blue: #2eb5e9;
+      --truck-size: 80px;
+      --trailer-size: 150px;
+      --cargo-size: 45px;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+    }
+
+
+    .gps {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #151515;
+    }
+
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(138deg, transparent 0 39%, rgba(255, 255, 255, .045) 39.2% 46%, transparent 46.2%),
+        radial-gradient(circle at 0 0, rgba(255, 255, 255, .08), transparent 34%),
+        repeating-linear-gradient(135deg, rgba(255, 255, 255, .025) 0 2px, rgba(0, 0, 0, .06) 2px 4px),
+        #151515;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 34px;
+      background: linear-gradient(#4c4c4c, #161616 56%, #090909);
+      border-bottom: 1px solid #262626;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-weight: 700;
+      text-shadow: 0 1px 2px #000;
+      z-index: 10;
+    }
+
+    .speed {
+      width: 112px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .road {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      width: 150px;
+      color: #bdbdbd;
+      font-size: 18px;
+    }
+
+    .road .tag {
+      color: var(--orange);
+      font-size: 15px;
+      margin-right: 5px;
+    }
+
+    .mini-icon {
+      opacity: .75;
+      filter: drop-shadow(0 1px 0 #000);
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .mini-truck {
+      width: 20px;
+      height: 13px;
+      position: relative;
+      background: #aaa;
+      border-radius: 1px;
+      margin-left: 1px;
+      opacity: .8;
+    }
+
+    .mini-truck:before {
+      content: "";
+      position: absolute;
+      left: -6px;
+      bottom: 0;
+      width: 8px;
+      height: 9px;
+      background: #aaa;
+      border-radius: 1px;
+    }
+
+    .mini-truck:after {
+      content: "";
+      position: absolute;
+      right: 1px;
+      bottom: -3px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #333;
+      box-shadow: -14px 0 #333;
+    }
+
+    .mini-fuel {
+      width: 8px;
+      height: 19px;
+      border: 1px solid #aaa;
+      background: linear-gradient(90deg, #777 0 48%, var(--orange) 49%);
+      margin-left: 3px;
+    }
+
+    .mail {
+      font-size: 20px;
+      margin-left: auto;
+      opacity: .75;
+    }
+
+    .clock {
+      font-size: 16px;
+      margin-left: auto;
+      min-width: 93px;
+      text-align: right;
+    }
+
+    .routebar {
+      position: absolute;
+      top: 34px;
+      left: 0;
+      right: 0;
+      height: 30px;
+      z-index: 9;
+      background: linear-gradient(#252525, #0f0f0f);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-weight: 800;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+      text-shadow: 0 1px 2px #000;
+    }
+
+    .flag {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      object-fit: contain;
+    }
+
+    .mini-ico {
+      height: 16px !important;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .ico-img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    .route-text {
+      font-size: 17px;
+    }
+
+    .money {
+      margin-left: auto;
+      color: var(--orange);
+      font-size: 16px;
+    }
+
+    .main {
+      position: absolute;
+      inset: 70px 6px 60px 6px;
+      overflow: hidden;
+      z-index: 5;
+    }
+
+    .view {
+      display: none;
+      height: 100%;
+      position: relative;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    /* Map */
+    .map-wrap {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .map-wrap {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .map-bg {
+      position: absolute;
+      inset: 0;
+      background: #202020;
+      overflow: hidden;
+    }
+
+    #wazeLeafletMap {
+      width: 100%;
+      height: 100%;
+      background: #202020;
+    }
+
+    /* Styles pour les marqueurs de navigation */
+    .nav-arrow-icon {
+      width: 28px;
+      height: 28px;
+      background: #2c99f4;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-arrow-icon svg {
+      width: 80%;
+      height: 80%;
+      fill: #fff;
+    }
+
+    .leaflet-container {
+      background: #202020 !important;
+    }
+
+    .leaflet-tile {
+      filter: brightness(0.9) contrast(1.1) saturate(0.8);
+    }
+
+    .map-label {
+      position: absolute;
+      font-weight: 800;
+      color: #e9c15e;
+      letter-spacing: 2px;
+      font-size: 18px;
+      text-shadow: 0 2px 3px #000;
+    }
+
+    .lille {
+      left: 238px;
+      top: 38px;
+    }
+
+    .road-gray {
+      position: absolute;
+      background: #9a9a9a;
+      filter: drop-shadow(0 2px 1px rgba(0, 0, 0, .7));
+    }
+
+    .rg1 {
+      left: -28px;
+      top: 82px;
+      width: 199px;
+      height: 16px;
+      transform: rotate(8deg);
+    }
+
+    .rg2 {
+      left: 65px;
+      top: 38px;
+      width: 117px;
+      height: 15px;
+      transform: rotate(-27deg);
+    }
+
+    .rg3 {
+      left: 113px;
+      top: 31px;
+      width: 123px;
+      height: 12px;
+      transform: rotate(14deg);
+    }
+
+    .rg4 {
+      left: 17px;
+      top: 111px;
+      width: 120px;
+      height: 18px;
+      transform: rotate(36deg);
+    }
+
+    .rg5 {
+      left: 99px;
+      top: 69px;
+      width: 84px;
+      height: 15px;
+      transform: rotate(93deg);
+    }
+
+    .roundabout {
+      position: absolute;
+      left: 92px;
+      top: 116px;
+      width: 30px;
+      height: 19px;
+      border-radius: 50%;
+      background: #1d1d1d;
+      box-shadow: 0 0 0 13px #8e8e8e;
+    }
+
+    .route-red,
+    .route-yellow {
+      position: absolute;
+      height: 16px;
+      transform-origin: left center;
+      filter: drop-shadow(0 1px 0 #111);
+    }
+
+    .route-red {
+      background: #e11414;
+    }
+
+    .route-yellow {
+      background: #ffd33c;
+    }
+
+    .r1 {
+      left: 227px;
+      top: 86px;
+      width: 121px;
+      transform: rotate(5deg);
+    }
+
+    .r2 {
+      left: 339px;
+      top: 88px;
+      width: 92px;
+      transform: rotate(20deg);
+    }
+
+    .r3 {
+      left: 219px;
+      top: 104px;
+      width: 139px;
+      transform: rotate(82deg);
+    }
+
+    .r4 {
+      left: 256px;
+      top: 174px;
+      width: 91px;
+      transform: rotate(24deg);
+    }
+
+    .r5 {
+      left: 314px;
+      top: 96px;
+      width: 82px;
+      transform: rotate(92deg);
+    }
+
+    .y1 {
+      left: 346px;
+      top: 96px;
+      width: 75px;
+      transform: rotate(25deg);
+    }
+
+    .y2 {
+      left: 382px;
+      top: 106px;
+      width: 111px;
+      transform: rotate(99deg);
+    }
+
+    .arrow-green {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-top: 11px solid transparent;
+      border-bottom: 11px solid transparent;
+      border-left: 27px solid #28e032;
+      filter: drop-shadow(0 1px 0 #000);
+    }
+
+    .g1 {
+      left: 354px;
+      top: 137px;
+      transform: rotate(21deg)
+    }
+
+    .g2 {
+      left: 288px;
+      top: 179px;
+      transform: rotate(26deg)
+    }
+
+    .home {
+      position: absolute;
+      left: 215px;
+      top: 206px;
+      width: 25px;
+      height: 20px;
+      background: #7eda41;
+      clip-path: polygon(50% 0, 100% 45%, 82% 45%, 82% 100%, 18% 100%, 18% 45%, 0 45%);
+      filter: drop-shadow(0 1px 1px #000);
+    }
+
+    .pin {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      background: #236d96;
+      border: 2px solid rgba(255, 255, 255, .7);
+      box-shadow: 0 2px 2px #000;
+    }
+
+    .pin span {
+      position: absolute;
+      inset: 3px;
+      display: grid;
+      place-items: center;
+      transform: rotate(45deg);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .pin.p1 {
+      left: 218px;
+      top: 168px;
+    }
+
+    .shop {
+      position: absolute;
+      width: 39px;
+      height: 31px;
+      background: linear-gradient(135deg, #1c75c4 0 48%, #f7f7f7 49% 60%, #c61f18 61%);
+      transform: rotate(14deg);
+      box-shadow: 0 2px 4px #000;
+      display: grid;
+      place-items: center;
+      font-size: 17px;
+    }
+
+    .shop.s1 {
+      left: 199px;
+      top: 91px;
+    }
+
+    .motel {
+      position: absolute;
+      width: 34px;
+      height: 31px;
+      background: #4f5960;
+      border: 1px solid #222;
+      box-shadow: 0 2px 3px #000;
+    }
+
+    .motel:before {
+      content: "🛏";
+      position: absolute;
+      left: 5px;
+      top: 4px;
+      font-size: 18px;
+    }
+
+    .motel:after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      right: 5px;
+      bottom: 3px;
+      height: 4px;
+      background: #e1e1e1;
+    }
+
+    .motel.m1 {
+      left: 299px;
+      top: 120px;
+    }
+
+    .motel.m2 {
+      left: 245px;
+      top: 96px;
+    }
+
+    .poi {
+      position: absolute;
+      font-weight: 800;
+      text-shadow: 0 1px 2px #000;
+    }
+
+    .q {
+      left: 149px;
+      top: 89px;
+      font-size: 28px;
+      color: #efefef;
+    }
+
+    .gar {
+      left: 92px;
+      top: 51px;
+      font-size: 8px;
+      background: #fff;
+      color: #32b83b;
+      border-radius: 3px;
+      padding: 1px 3px;
+      transform: rotate(-6deg)
+    }
+
+    .metro {
+      left: 148px;
+      top: 43px;
+      font-size: 8px;
+      background: #fff;
+      color: #a22;
+      border-radius: 2px;
+      padding: 1px 4px;
+      transform: rotate(7deg)
+    }
+
+    .trans {
+      left: 258px;
+      top: 83px;
+      font-size: 8px;
+      background: #f4c65d;
+      color: #883;
+      padding: 1px 3px;
+      transform: rotate(-3deg)
+    }
+
+    .zoom {
+      position: absolute;
+      right: 11px;
+      top: 13px;
+      width: 62px;
+      height: 24px;
+      background: linear-gradient(#666, #303030);
+      border: 1px solid #4e4e4e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e8e8e8;
+      font-weight: 800;
+      gap: 5px;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, .25);
+    }
+
+    .zoom:before {
+      content: "🔎";
+      font-size: 16px;
+      filter: grayscale(1)
+    }
+
+    /* rest / services */
+    .striped {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .035) 0 18px, transparent 18px 37px), repeating-linear-gradient(135deg, rgba(255, 255, 255, .025) 0 2px, rgba(0, 0, 0, .02) 2px 4px);
+    }
+
+    .rest-lines {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 94px;
+      font-weight: 800;
+      text-shadow: 0 1px 2px #000;
+    }
+
+    .rest-lines p {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      color: #dcdcdc;
+    }
+
+    .rest-lines .row {
+      display: flex;
+      font-size: 16px;
+    }
+
+    .rest-lines .row span:last-child {
+      margin-left: auto;
+      color: var(--yellow);
+    }
+
+    .damage-title {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 45px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 24px;
+    }
+
+    .damage-icons {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 25px;
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      align-items: flex-end;
+      text-align: center;
+    }
+
+    .dmg-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dmg-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 1px 2px #000;
+      min-width: 40px;
+    }
+
+    .damage-icons img {
+      height: auto;
+      object-fit: contain;
+    }
+
+    .dmg-truck {
+      width: var(--truck-size);
+    }
+
+    .dmg-trailer {
+      width: var(--trailer-size);
+    }
+
+    .dmg-cargo {
+      width: var(--cargo-size);
+    }
+
+    .dblock {
+      width: 85px;
+      position: relative;
+      color: #f4f4f4;
+      font-weight: 800;
+      font-size: 16px;
+      text-shadow: 0 1px 2px #000;
+    }
+
+    .truck-large {
+      height: 41px;
+      position: relative;
+      margin: auto auto 8px;
+      width: 70px;
+    }
+
+    .truck-large:before {
+      content: "";
+      position: absolute;
+      left: 21px;
+      top: 4px;
+      width: 40px;
+      height: 25px;
+      background: #8d8d8d;
+    }
+
+    .truck-large:after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 14px;
+      width: 25px;
+      height: 22px;
+      background: #9a9a9a;
+      box-shadow: 12px 28px 0 -9px #060606, 54px 28px 0 -9px #060606;
+    }
+
+    .trailer-large {
+      height: 43px;
+      width: 94px;
+      margin: auto auto 6px;
+      position: relative;
+    }
+
+    .trailer-large:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 92px;
+      height: 33px;
+      background: #aaa;
+    }
+
+    .trailer-large:after {
+      content: "";
+      position: absolute;
+      right: 18px;
+      bottom: 1px;
+      width: 8px;
+      height: 8px;
+      background: #080808;
+      border-radius: 50%;
+      box-shadow: 14px 0 #080808;
+    }
+
+    .cargo-large {
+      height: 44px;
+      width: 58px;
+      margin: auto auto 5px;
+      position: relative;
+    }
+
+    .cargo-large:before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 0;
+      width: 19px;
+      height: 19px;
+      background: #aaa;
+      box-shadow: 22px 0 #aaa, 0 22px #aaa, 22px 22px #aaa;
+    }
+
+    .cargo-large:after {
+      content: "";
+      position: absolute;
+      left: -3px;
+      right: -3px;
+      bottom: -4px;
+      height: 4px;
+      background: #9a9a9a;
+    }
+
+    .service-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 29px;
+      background: linear-gradient(#9d9d9d, #525252 48%, #1b1b1b);
+      border-top: 1px solid #b0b0b0;
+      display: flex;
+      align-items: center;
+      padding-left: 67px;
+      font-weight: 800;
+      color: #dedede;
+      text-shadow: 0 1px 2px #000;
+      font-size: 16px;
+    }
+
+    .service-icon {
+      position: absolute;
+      left: 28px;
+      bottom: 4px;
+      width: 28px;
+      height: 27px;
+      background: linear-gradient(#ffd840, #c89004);
+      border-radius: 3px;
+      display: grid;
+      place-items: center;
+      color: #5c4a00;
+      font-size: 19px;
+      box-shadow: 0 1px 2px #000;
+    }
+
+    .parking-title {
+      position: absolute;
+      left: 12px;
+      top: 4px;
+      color: var(--orange);
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .parking-msg {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 70px;
+      text-align: center;
+      font-weight: 800;
+      line-height: 2.1;
+      font-size: 16px;
+    }
+
+    .parking-msg b {
+      color: var(--yellow);
+    }
+
+    /* bottom */
+    .fkeys {
+      position: absolute;
+      bottom: 51px;
+      left: 0;
+      right: 0;
+      height: 32px;
+      display: flex;
+      justify-content: center;
+      background: rgba(6, 6, 6, .62);
+      border-top: 1px solid #272727;
+      border-bottom: 1px solid #313131;
+      z-index: 20;
+    }
+
+    .fkey {
+      width: 56px;
+      height: 30px;
+      background: linear-gradient(#242424, #121212);
+      border-left: 1px solid #333;
+      border-right: 1px solid #060606;
+      display: grid;
+      place-items: center;
+      color: #696969;
+      font-weight: 800;
+      font-size: 16px;
+      text-shadow: 0 1px 1px #000;
+      flex-shrink: 0;
+    }
+
+    .menubar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 51px;
+      background: linear-gradient(#333, #202020 48%, #050505);
+      border-top: 1px solid #4a4a4a;
+      z-index: 21;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      gap: 0;
+    }
+
+    .cursor-f1 {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 96px;
+      height: 49px;
+      padding: 0 5px;
+      display: flex;
+      align-items: center;
+      color: #cfcfcf;
+      font-size: 14px;
+      background: linear-gradient(90deg, #777, #2a2a2a 70%, transparent);
+      font-weight: 800;
+      text-shadow: 0 1px 2px #000;
+      flex-shrink: 0;
+      line-height: 1.1;
+    }
+
+    .cursor-f1 .flag {
+      width: 38px;
+      height: 38px;
+      margin-right: 2px;
+      flex-shrink: 0;
+    }
+
+
+
+    .navbtn {
+      width: 56px;
+      height: 49px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      color: #606060;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      padding: 0;
+      outline: none;
+    }
+
+    .navbtn.active {
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .navbtn .ico {
+      width: 31px;
+      height: 31px;
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      filter: drop-shadow(0 2px 2px #000);
+      margin-top: 3px;
+    }
+
+    .compass {
+      border-radius: 50% !important;
+      background: radial-gradient(circle at 45% 45%, #fff 0 34%, #c7d5d1 35% 65%, #706d5b 66%);
+      font-size: 18px !important;
+    }
+
+    .note {
+      background: linear-gradient(#f4e7c4, #d2b572);
+      color: #503b00;
+      position: relative;
+    }
+
+    .note:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 31px;
+      height: 31px;
+      background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(120, 80, 0, .28) 6px 7px);
+    }
+
+    .gear {
+      background: linear-gradient(#ffd72f, #c88b00);
+      color: #5a4a00;
+    }
+
+    .list {
+      background: linear-gradient(#f5f5f5, #b9d6d6);
+      color: #47606b;
+      font-size: 20px !important;
+    }
+
+    .chat {
+      background: transparent;
+      color: #28bfe8;
+      font-size: 29px !important;
+    }
+
+    .help {
+      margin-left: auto;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: 3px solid #c99c23;
+      background: radial-gradient(circle, #d9d9d9 0 48%, #848484 49%);
+      display: grid;
+      place-items: center;
+      color: #345;
+      font-size: 25px;
+      font-weight: 900;
+      text-shadow: none;
+    }
+
+    .navbtn.active:after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 6px;
+      background: var(--orange);
+      box-shadow: 0 -1px 8px rgba(252, 174, 27, .55);
+    }
+
+    .navbtn.active .ico {
+      transform: translateY(-1px);
+    }
+
+    .caret {
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="gps">
+    <div class="screen"></div>
+    <div class="topbar">
+      <div class="speed">0 km/h</div>
+      <div class="road">
+        <img src="../images/widgets/truck.png" class="mini-ico" alt="Truck">
+        <img src="../images/widgets/fuel_warning.png" class="mini-ico" alt="Fuel">
+      </div>
+      <div id="timeTop" class="clock">00:00</div>
+    </div>
+    <div id="routebar" class="routebar">
+      <img src="../images/widgets/job_target.png" class="flag" alt="Target">
+      <div id="routeText" class="route-text">00:00, 0 km, 0min</div>
+    </div>
+
+    <main class="main">
+      <section id="view-map" class="view active">
+        <div class="map-wrap">
+          <div id="wazeLeafletMap" class="map-bg"></div>
+          <div class="zoom">F5</div>
+        </div>
+      </section>
+
+      <section id="view-rest" class="view">
+        <div class="striped"></div>
+        <div class="rest-lines">
+          <p>Vous n'avez pas de livraison pour le moment.</p>
+        </div>
+      </section>
+
+      <section id="view-service" class="view">
+        <div class="striped"></div>
+        <div class="damage-title">Dégats</div>
+        <div class="damage-icons">
+          <div class="dmg-item">
+            <img src="../images/widgets/truck.png" class="dmg-truck" alt="Camion">
+            <span class="dmg-val" id="truckDmg">0%</span>
+          </div>
+          <div class="dmg-item">
+            <img src="../images/widgets/trailer.png" class="dmg-trailer" alt="Remorque">
+            <span class="dmg-val" id="trailerDmg">0%</span>
+          </div>
+          <div class="dmg-item">
+            <img src="../images/widgets/cargo.png" class="dmg-cargo" alt="Cargaison">
+            <span class="dmg-val" id="cargoDmg">0%</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+
+    <nav class="menubar">
+      <button class="navbtn active" data-view="map" title="Carte"><img src="../images/widgets/compass.png"
+          class="ico-img" alt=""></button>
+      <button class="navbtn" data-view="rest" title="Jobs"><img src="../images/widgets/job.png" class="ico-img"
+          alt=""></button>
+      <button class="navbtn" data-view="service" title="Services"><img src="../images/widgets/degats.png"
+          class="ico-img" alt=""></button>
+      <span class="caret">⌄</span>
+    </nav>
+  </div>
+
+  <script>
+    (function () {
+      const navbtns = document.querySelectorAll('.navbtn');
+      const views = document.querySelectorAll('.view');
+
+      // --- Map Integration Logic ---
+      let map, truckMarker, routePolyline;
+      let tileMapInfo = null;
+      const tileSize = 256;
+      const maxNativeZoom = 8;
+      const widthPx = tileSize * Math.pow(2, maxNativeZoom);
+      const heightPx = tileSize * Math.pow(2, maxNativeZoom);
+
+      function initMap() {
+        if (typeof L === 'undefined') {
+          const mapEl = document.getElementById("wazeLeafletMap");
+          if (mapEl) mapEl.innerHTML = '<div style="color:#f2a319;padding:20px;text-align:center;font-weight:bold;">Erreur: Leaflet non chargé.<br>Vérifiez votre connexion internet.</div>';
+          return;
+        }
+        map = L.map("wazeLeafletMap", {
+          crs: L.CRS.Simple,
+          attributionControl: false,
+          zoomControl: false,
+          dragging: false,
+          touchZoom: false,
+          scrollWheelZoom: false,
+          doubleClickZoom: false,
+          boxZoom: false,
+          keyboard: false,
+          tap: false,
+          minZoom: 1,
+          maxZoom: 12,
+          zoomSnap: 0.25
+        });
+
+        // Tiles
+        L.tileLayer('../map_files/0.1.6a/Tiles/{z}/{x}/{y}.png', {
+          tileSize: tileSize,
+          minNativeZoom: 0,
+          maxNativeZoom: 8,
+          noWrap: true,
+          crossOrigin: true
+        }).addTo(map);
+
+        // Fetch Coord Info
+        fetch('../map_files/0.1.6a/TileMapInfo.json')
+          .then(r => r.json())
+          .then(info => {
+            tileMapInfo = info;
+            // Centrer la carte sur le milieu des coordonnées
+            const centerX = (info.x1 + info.x2) / 2;
+            const centerY = (info.y1 + info.y2) / 2;
+            const centerLatLng = toLatLng(centerX, centerY);
+            if (centerLatLng) {
+              map.setView(centerLatLng, 8);
+            } else {
+              map.setView([0, 0], 8);
+            }
+            map.invalidateSize();
+          })
+          .catch(e => {
+            console.error("Map info error:", e);
+            // Fallback view
+            map.setView([0, 0], 2);
+          });
+
+        setTimeout(() => map.invalidateSize(), 500);
+      }
+
+      function toLatLng(X, Y) {
+        if (!tileMapInfo) return null;
+        const px = ((X - tileMapInfo.x1) / (tileMapInfo.x2 - tileMapInfo.x1)) * widthPx;
+        const py = ((Y - tileMapInfo.y1) / (tileMapInfo.y2 - tileMapInfo.y1)) * heightPx;
+        return map.unproject([px, py], maxNativeZoom);
+      }
+
+      function updateTruck(truck) {
+        if (!map || !tileMapInfo) return;
+        const latlng = toLatLng(truck.placement.x, truck.placement.z);
+        if (!latlng) return;
+
+        if (!truckMarker) {
+          const icon = L.divIcon({
+            className: 'nav-arrow-wrap',
+            html: '<div class="nav-arrow-icon"><svg viewBox="0 0 24 24"><path d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z"/></svg></div>',
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
+          });
+          truckMarker = L.marker(latlng, { icon }).addTo(map);
+        } else {
+          truckMarker.setLatLng(latlng);
+        }
+
+        const heading = (truck.placement.heading || 0) * 360 + 90;
+        const arrow = truckMarker.getElement().querySelector('.nav-arrow-icon');
+        if (arrow) arrow.style.transform = `rotate(${heading}deg)`;
+
+        map.setView(latlng, map.getZoom());
+      }
+
+      function updateRoute(nav) {
+        if (!map || !tileMapInfo || !nav || !nav.route || nav.route.length < 2) {
+          if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
+          return;
+        }
+        const latlngs = nav.route.map(p => toLatLng(p.x, p.z)).filter(l => !!l);
+        if (!routePolyline) {
+          routePolyline = L.polyline(latlngs, { color: '#ff9000', weight: 6, opacity: 0.8 }).addTo(map);
+        } else {
+          routePolyline.setLatLngs(latlngs);
+        }
+      }
+
+      initMap();
+
+      function switchView(viewId) {
+        views.forEach(v => v.classList.remove('active'));
+        navbtns.forEach(b => b.classList.remove('active'));
+
+        const targetView = document.getElementById('view-' + viewId);
+        const targetBtn = document.querySelector(`.navbtn[data-view="${viewId}"]`);
+
+        if (targetView) targetView.classList.add('active');
+        if (targetBtn) targetBtn.classList.add('active');
+
+        if (viewId === 'map' && map) {
+          setTimeout(() => map.invalidateSize(), 100);
+        }
+      }
+
+      navbtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchView(btn.getAttribute('data-view'));
+        });
+      });
+
+      window.addEventListener('message', (event) => {
+        const msg = event.data;
+        if (!msg || msg.scope !== "idf_game_widget_bridge_v1") return;
+
+        if (msg.type === "game_pause_state") {
+          // Gérer l'état de pause si nécessaire
+          return;
+        }
+
+        if (msg.channel === "waze") {
+          const p = msg.payload;
+          if (!p) return;
+
+          // Vitesse
+          const speedEl = document.querySelector('.speed');
+          if (speedEl) {
+            const speedKmh = Math.round(Number(p.speed || p.kmh || 0));
+            speedEl.textContent = speedKmh + ' km/h';
+          }
+
+          // Horloge
+          if (p.refTime) {
+            const timeEl = document.getElementById('timeTop');
+            if (timeEl) timeEl.textContent = p.refTime;
+          }
+
+          // Camion (Position et Cap)
+          if (p.arrow) {
+            updateTruck({
+              placement: {
+                x: p.arrow.x,
+                z: p.arrow.z,
+                heading: (p.heading || 0) / 360
+              }
+            });
+          }
+
+          // Dégâts
+          const truckDmgEl = document.getElementById('truckDmg');
+          if (truckDmgEl) truckDmgEl.textContent = Math.round(Number(msg.truckDamage || 0) * 100) + '%';
+
+          const trailerDmgEl = document.getElementById('trailerDmg');
+          if (trailerDmgEl) trailerDmgEl.textContent = Math.round(Number(msg.trailerDamage || 0) * 100) + '%';
+
+          const cargoDmgEl = document.getElementById('cargoDmg');
+          if (cargoDmgEl) cargoDmgEl.textContent = Math.round(Number(msg.cargoDamage || 0) * 100) + '%';
+
+          // Navigation (Itinéraire et Infos)
+          if (p.routePoints) {
+            updateRoute({
+              route: p.routePoints
+            });
+
+            const routeTextEl = document.getElementById('routeText');
+            if (routeTextEl) {
+              const distKm = (Number(p.distanceToCurrentStopM || 0) / 1000).toFixed(1);
+              const timeMin = Math.round(Number(p.etaRemainingMinutes || 0));
+
+              // Calculer l'heure d'arrivée estimée
+              let arrivalTime = p.refTime;
+              if (p.refTime && timeMin > 0) {
+                const parts = p.refTime.split(':');
+                let h = parseInt(parts[0]);
+                let m = parseInt(parts[1]) + timeMin;
+                h = (h + Math.floor(m / 60)) % 24;
+                m = m % 60;
+                arrivalTime = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+              }
+
+              routeTextEl.textContent = `${arrivalTime}, ${distKm} km, ${timeMin}min`;
+            }
+          }
+        }
+      });
+
+      function formatGameTime(minutes) {
+        const h = Math.floor(minutes / 60) % 24;
+        const m = Math.floor(minutes % 60);
+        return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+      }
+    })();
+  </script>
+</body>
+
+</html>

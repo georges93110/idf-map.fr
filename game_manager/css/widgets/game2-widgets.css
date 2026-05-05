@@ -1,0 +1,345 @@
+﻿    /* Convoy Status Styles (from index.html) */
+    .home-convoy-panel {
+      display: grid;
+      gap: 0;
+      justify-items: center;
+      align-content: start;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      padding: 0 5px;
+      box-sizing: border-box;
+    }
+
+    .home-convoy-card {
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: row;
+      gap: 25px;
+      align-items: start;
+      justify-content: start;
+      text-align: left;
+      box-sizing: border-box;
+    }
+
+    .home-convoy-status-frame {
+      width: 800px;
+      flex-shrink: 0;
+      aspect-ratio: 30 / 10;
+      min-height: 140px;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+      background: #131313;
+    }
+
+    .home-convoy-status-image {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 5;
+    }
+
+    .home-convoy-status-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      /* Visible by default during initial load */
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #131313;
+      color: #eef2f8;
+      text-align: center;
+      padding: 16px;
+      z-index: 10;
+    }
+
+    .home-convoy-status-error {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #1a0606;
+      color: #fca5a5;
+      text-align: center;
+      padding: 16px;
+      z-index: 20;
+    }
+
+    .home-convoy-status-spinner {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 3px solid rgba(255, 255, 255, 0.24);
+      border-top-color: rgba(255, 255, 255, 0.92);
+      animation: convoy-spin 0.9s linear infinite;
+    }
+
+    @keyframes convoy-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .home-convoy-status-summary {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      z-index: 15;
+      gap: 8px;
+      padding: 18px;
+      text-align: center;
+      font-size: clamp(20px, 4vw, 32px);
+      font-weight: 900;
+      color: #eef2f8;
+      text-transform: uppercase;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .home-convoy-status-summary-line.is-online {
+      color: #6bff87;
+    }
+
+    .home-convoy-status-summary-line.is-offline {
+      color: #ff6b6b;
+    }
+
+    .home-convoy-status-summary-count {
+      font-size: 0.7em;
+      font-weight: 800;
+      color: #f1f1f1;
+      margin-top: 4px;
+    }
+
+    .home-convoy-status-age {
+      color: #dce2e8;
+      font-size: 13px;
+      font-weight: 600;
+      min-height: 1.2em;
+      margin-top: 5px;
+    }
+
+    .home-convoy-status-age.is-error {
+      color: #ffb5b5;
+    }
+
+    .convoy-info-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      width: 100%;
+      margin-top: 0;
+    }
+
+    .convoy-info-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+
+    .convoy-info-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .convoy-info-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fbbf24;
+    }
+
+    .convoy-info-value.is-clickable-text {
+      cursor: pointer;
+      transition: color 0.2s ease, text-shadow 0.2s ease;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .convoy-info-value.is-clickable-text:hover {
+      color: #fff !important;
+      text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+    }
+
+    .video-preview-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .video-play-btn {
+      width: 60px;
+      height: 60px;
+      background: rgba(251, 191, 36, 0.95);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #111;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(251, 191, 36, 0.4);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .video-preview-container:hover .video-play-btn {
+      transform: scale(1.15);
+      background: #fff;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 255, 255, 0.4);
+      color: #000;
+    }
+
+    .video-preview-container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.4) 100%);
+      transition: opacity 0.3s ease;
+    }
+
+    .video-preview-container:hover::before {
+      opacity: 0.7;
+    }
+
+    /* Pause tÃ©lÃ©mÃ©trie WebSocket : coupe les widgets immÃ©diatement */
+    body.is-telemetry-paused-widgets .overlay-window[data-widget-type],
+    body.is-telemetry-paused-widgets .overlay-window[data-widget-type] *,
+    body.is-telemetry-paused-widgets .overlay-window[data-widget-type] iframe,
+    body.is-telemetry-paused-widgets .overlay-window-frame,
+    body.is-telemetry-paused-widgets .overlay-window-content {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      transition: none !important;
+      animation: none !important;
+    }
+
+    #globalLoadingScreen {
+      display: none !important;
+    }
+
+    body.is-loading-visible #globalLoadingScreen.is-active {
+      display: flex !important;
+    }
+
+    body.is-loading-blocking-ui #overlayManager {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      transition: none !important;
+      animation: none !important;
+    }
+
+    #overlayDefaultStartupModeDisplay {
+      pointer-events: auto !important;
+      cursor: pointer !important;
+    }
+
+    #overlayDefaultStartupModeMenu {
+      pointer-events: auto !important;
+      z-index: 9999 !important;
+    }
+
+    .settings-mode-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      min-width: 54px;
+      min-height: 22px;
+      padding: 3px 7px;
+
+      border-radius: 4px;
+      background: rgba(102, 81, 23, 0.95);
+      color: #ffffff;
+
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-align: center;
+
+      white-space: normal;
+      word-break: keep-all;
+    }
+
+    .startup-mode-select-wrap {
+      grid-column: 2 / 4 !important;
+      justify-self: end !important;
+      width: 278px !important;
+      max-width: 278px !important;
+      min-width: 278px !important;
+      position: relative;
+    }
+
+    #overlayDefaultStartupModeDisplay.startup-mode-display {
+      width: 100% !important;
+      height: 42px !important;
+      min-height: 42px !important;
+      border-radius: 6px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      text-align: left !important;
+      padding: 0 34px 0 18px !important;
+      font-size: 16px !important;
+      font-weight: 800 !important;
+      color: #fbbf24 !important;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+    }
+
+    #overlayDefaultStartupModeLabel {
+      display: block;
+      width: 100%;
+      text-align: left !important;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+
+    #overlayDefaultStartupModeMenu {
+      width: 100% !important;
+      left: 0 !important;
+      right: auto !important;
+      z-index: 9999 !important;
+      pointer-events: auto !important;
+    }
+
+    .manager-section-title-wrap {
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      line-height: 1.25 !important;
+    }

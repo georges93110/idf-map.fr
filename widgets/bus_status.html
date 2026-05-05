@@ -1,0 +1,1616 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bus Status Minimap</title>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent !important;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .root {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent !important;
+      pointer-events: none;
+      transform: scale(1.5) scaleY(-1);
+      transform-origin: 50% 50%;
+      left: 25%;
+    }
+
+    .scene {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    .scene-center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 0;
+      height: 0;
+    }
+
+    .bus {
+      position: absolute;
+      left: -25px;
+      top: -70px;
+      width: 50px;
+      height: 140px;
+      border: 2px solid rgba(255, 255, 255, 0.92);
+      border-radius: 8px;
+      background: rgba(15, 15, 18, 0.95);
+      z-index: 20;
+      /* La transition permet au bus de tourner fluidement */
+      transition: transform 0.4s linear;
+      will-change: transform;
+    }
+
+    .door-gap {
+      position: absolute;
+      right: -2px;
+      width: 6px;
+      height: 24px;
+      background: rgba(15, 15, 18, 0.95);
+      z-index: 25;
+    }
+
+    .door-in {
+      top: 12px;
+    }
+
+    .door-out {
+      bottom: 12px;
+    }
+
+    .counter {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(180deg) scale(-1, 1);
+      min-width: 3px;
+      padding: 0 6px;
+      height: 18px;
+      gap: 1px;
+      color: #ffffff;
+      background: transparent;
+      font-weight: 800;
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      z-index: 30;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .counter-current {
+      font-size: 13px;
+    }
+
+    .counter-max {
+      font-size: 9px;
+      opacity: 0.85;
+    }
+
+    .platform-container {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 0;
+      z-index: 5;
+      /* transition for smooth map movement */
+      transition: transform 0.4s linear, opacity 0.4s ease;
+      will-change: transform, opacity;
+    }
+
+    .platform-body {
+      position: absolute;
+      left: -20px;
+      top: -80px;
+      width: 40px;
+      height: 160px;
+      background: #444;
+      border-left: 2px solid #facc15;
+      border-radius: 4px;
+    }
+
+    .dot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #15ff68;
+      box-shadow: 0 0 5px rgba(21, 255, 104, 0.85);
+      transform: translate(-50%, -50%);
+      z-index: 40;
+      will-change: left, top, opacity, transform;
+      transition:
+        left var(--walk-speed, 0.8s) linear,
+        top var(--walk-speed, 0.8s) linear,
+        opacity 0.2s linear,
+        transform 0.2s linear;
+    }
+
+    .dot.leaving {
+      background: #ff3b3b;
+      box-shadow: 0 0 5px rgba(255, 59, 59, 0.85);
+    }
+
+    .waiting-dot {
+      z-index: 15;
+    }
+
+    .dot.fade {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.35);
+    }
+
+
+
+    .orientation-readout {
+      display: none;
+      /* Masqué suite à la finalisation du débug */
+      position: absolute;
+      left: -95px;
+      top: -135px;
+      width: 190px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-size: 11px;
+      line-height: 1.35;
+      font-weight: 700;
+      text-align: left;
+      white-space: pre-line;
+      z-index: 50;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="root">
+    <div id="scene" class="scene">
+      <div id="scene-center" class="scene-center">
+        <div id="bus" class="bus" aria-label="Statut passagers bus">
+          <div class="door-gap door-in"></div>
+          <div class="door-gap door-out"></div>
+          <div id="counter" class="counter"><span id="counterCurrent" class="counter-current">0</span><span
+              id="counterMax" class="counter-max"> / 100</span></div>
+        </div>
+
+        <div id="platform-container" class="platform-container" style="display: none;">
+          <div class="platform-body">
+          </div>
+        </div>
+
+        <div id="dots-container"></div>
+        <div id="orientation-readout" class="orientation-readout">Bus X: --<br>Arret X: --</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
+      var WIDGET_BRIDGE_CHANNEL = "saeiv";
+      var WIDGET_BRIDGE_WS_URL = "ws://localhost:3001";
+
+      var params = new URLSearchParams(location.search || "");
+      var hostParam = String(params.get("host") || "").trim().toLowerCase();
+      var isHostedByGame = hostParam === "game" || hostParam === "1" || hostParam === "true";
+
+      // --- CONFIGURATION VITESSE / TEMPS ATTENTE PASSAGERS ---
+      var PASSENGER_GAP_MIN_MS = 500;         // Temps min d'écart entre deux montées/descentes (en ms)
+      var PASSENGER_GAP_MAX_MS = 1000;         // Temps max d'écart entre deux montées/descentes (en ms)
+      var PASSENGER_WALK_STEP_MS = 1000;       // Vitesse de déplacement physique d'une étape (en ms)
+      var PASSENGER_DWELL_REQUIRED_MS = 1000; // Temps d'immobilisation complète requis (en ms)
+      var PASSENGER_STOP_MAX_SPEED_KMH = 0.5; // Vitesse maximale tolérée pour considérer l'arrêt (en km/h)
+
+      // Injection de la vitesse de marche dans le CSS
+      document.documentElement.style.setProperty('--walk-speed', (PASSENGER_WALK_STEP_MS / 1000) + 's');
+
+      var platformContainer = document.getElementById("platform-container");
+      var dotsContainer = document.getElementById("dots-container");
+      var counter = document.getElementById("counter");
+      var counterCurrent = document.getElementById("counterCurrent");
+      var counterMax = document.getElementById("counterMax");
+      var busElement = document.getElementById("bus");
+      var orientationReadout = document.getElementById("orientation-readout");
+
+      var PIXELS_PER_METER = 8;
+      var PLATFORM_ANGLE_OFFSET_DEG = 0;
+      var PLATFORM_SIDE_OFFSET_PX = 50;
+
+      var currentCount = 0;
+      var visualCount = 0;
+      var firstState = true;
+      var lastPublishedPassengerCount = Number.NaN;
+      var lastPublishedPassengerServiceActive = null;
+      var lastPublishedPassengerServiceReady = null;
+      var lastPublishedPassengerBoardingTotal = Number.NaN;
+      var lastPublishedPassengerBoardingDone = Number.NaN;
+      var lastPublishedPassengerAlightingTotal = Number.NaN;
+      var lastPublishedPassengerAlightingDone = Number.NaN;
+      var lastPassengerPublishAt = 0;
+      var passengerServiceBoardingTotal = 0;
+      var passengerServiceAlightingTotal = 0;
+      var currentBusMaxCapacity = 100;
+      var currentBusMaxCapacityUnlimited = false;
+      var passengerValidationSoundsEnabled = false;
+      var passengerValidationSoundVolume = 0.25;
+      var PASSENGER_VALIDATION_DELAY_MS = 500;
+      var PASSENGER_VALIDATION_PASS_CHANCE = 0.79;
+      var PASSENGER_VALIDATION_ERROR_CHANCE = 0.01;
+      var PASSENGER_VALIDATION_PASS_URL = "../map_files/dbus_fis/validation/navigo_ratp_pass.mp3";
+      var PASSENGER_VALIDATION_ERROR_URL = "../map_files/dbus_fis/validation/navigo_ratp_error.mp3";
+
+      var activeWalkingPassengers = [];
+
+      // --- MOTEUR SPATIAL & ORIENTATION ---
+      var lastBusX = 0, lastBusZ = 0, lastBusHeading = 0;
+      var lastStopX = 0, lastStopZ = 0;
+      var lastPlatformAngle = 0;
+      var lastScreenX = 0, lastScreenY = 0;
+      var hasStopCoords = false;
+      var cssBusAngle = 0;
+      var cssPlatformAngle = 0;
+
+      var waitingDots = [];
+      var hasBoardingStarted = false;
+      var ws = null;
+      var lastHostTs = 0;
+      window.servedStopsMemory = {};
+
+      // --- CHARGEMENT DES DONNÉES XML (Lignes/Arrêts) ---
+      var linesData = null;
+      var isFetchingLines = false;
+      var PASSENGER_PEAK_RANGE_DIVISOR = 5;
+      var PASSENGER_SMALL_VALUE_THRESHOLD = 5;
+      var PASSENGER_PEAK_AM_START_MIN = (6 * 60);
+      var PASSENGER_PEAK_AM_END_MIN = (10 * 60);
+      var PASSENGER_PEAK_PM_START_MIN = (16 * 60) + 30;
+      var PASSENGER_PEAK_PM_END_MIN = (19 * 60) + 30;
+
+      function loadLinesData(version) {
+        if (isFetchingLines || linesData) return;
+        isFetchingLines = true;
+        var v = version || "0.1.6a";
+        var url = "../map_files/" + v + "/DBus/IDF MAP/lines.xml";
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              try {
+                var parser = new DOMParser();
+                linesData = parser.parseFromString(xhr.responseText, "text/xml");
+                if (isDevMode) console.log("[BusStatus] lines.xml loaded (" + v + ")");
+              } catch (e) {
+                console.error("Failed to parse lines.xml", e);
+              }
+            }
+            isFetchingLines = false;
+          }
+        };
+        xhr.send();
+      }
+
+      // Utils Mathématiques
+      function clamp(n, min, max) {
+        n = Number(n);
+        if (!Number.isFinite(n)) return min;
+        return Math.max(min, Math.min(max, n));
+      }
+      function isPeakPassengerMinute(minuteOfDay) {
+        var m = Number(minuteOfDay);
+        if (!Number.isFinite(m)) return false;
+        return (m >= PASSENGER_PEAK_AM_START_MIN && m < PASSENGER_PEAK_AM_END_MIN) ||
+          (m >= PASSENGER_PEAK_PM_START_MIN && m < PASSENGER_PEAK_PM_END_MIN);
+      }
+      function isPeakPassengerTimeFromState(state) {
+        var ts = Number(state && state.clockNowMs);
+        if (!Number.isFinite(ts) || ts <= 0) ts = Date.now();
+        var date = new Date(ts);
+        var minuteOfDay = (date.getHours() * 60) + date.getMinutes() + (date.getSeconds() / 60);
+        return isPeakPassengerMinute(minuteOfDay);
+      }
+      function pickRandomIntegerInRange(minInclusive, maxInclusive) {
+        var minVal = Math.max(0, Math.round(Number(minInclusive) || 0));
+        var maxVal = Math.max(minVal, Math.round(Number(maxInclusive) || 0));
+        return minVal + Math.floor(Math.random() * ((maxVal - minVal) + 1));
+      }
+      function pickPassengerSpawnCount(minInclusive, maxInclusive, isPeak) {
+        var minVal = Math.max(0, Math.round(Number(minInclusive) || 0));
+        var maxVal = Math.max(minVal, Math.round(Number(maxInclusive) || 0));
+        var spawnMin = minVal;
+        var spawnMax = maxVal;
+
+        if (isPeak) {
+          if (maxVal > PASSENGER_SMALL_VALUE_THRESHOLD) {
+            var coefA = Math.max(1, Math.ceil(maxVal / PASSENGER_PEAK_RANGE_DIVISOR));
+            spawnMin = Math.max(minVal, maxVal - coefA);
+            spawnMax = maxVal;
+          } else {
+            spawnMin = minVal;
+            spawnMax = maxVal;
+          }
+        } else {
+          if (minVal > PASSENGER_SMALL_VALUE_THRESHOLD) {
+            var coefB = Math.max(1, Math.ceil(minVal / PASSENGER_PEAK_RANGE_DIVISOR));
+            spawnMin = minVal;
+            spawnMax = Math.min(maxVal, minVal + coefB);
+          } else if (maxVal > PASSENGER_SMALL_VALUE_THRESHOLD) {
+            var coefFallback = Math.max(1, Math.ceil(maxVal / PASSENGER_PEAK_RANGE_DIVISOR));
+            spawnMin = minVal;
+            spawnMax = Math.min(maxVal, minVal + coefFallback);
+          } else {
+            spawnMin = minVal;
+            spawnMax = maxVal;
+          }
+        }
+
+        spawnMin = Math.max(minVal, Math.round(spawnMin));
+        spawnMax = Math.min(maxVal, Math.round(spawnMax));
+        if (spawnMax < spawnMin) spawnMax = spawnMin;
+        return pickRandomIntegerInRange(spawnMin, spawnMax);
+      }
+
+      function getShortestAngle(current, target) {
+        var diff = (target - current) % 360;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+        return current + diff;
+      }
+
+      function normalizeAngleDeg(value) {
+        var a = Number(value);
+        if (!Number.isFinite(a)) return 0;
+        a = a % 360;
+        if (a < 0) a += 360; // Cap en degrés : 0 à 359
+        return a;
+      }
+
+      // Convertit un vecteur monde (X=Est, Z=Nord) en cap (0=Nord, 90=Est)
+      function headingFromDelta(dx, dz) {
+        if (dx === 0 && dz === 0) return null;
+        // atan2(dx, dz) correspond parfaitement au mapping (0=Nord, 90=Est)
+        return normalizeAngleDeg(Math.atan2(dx, dz) * 180 / Math.PI);
+      }
+      function updateOrientationReadout(busHeadingDeg, stopHeadingDeg, stopSource) {
+        if (!orientationReadout) return;
+        var busHText = Number.isFinite(busHeadingDeg) ? Number(busHeadingDeg).toFixed(3) : "--";
+        var stopHText = Number.isFinite(stopHeadingDeg) ? Number(stopHeadingDeg).toFixed(3) : "--";
+        var bXText = Number.isFinite(lastBusX) ? Number(lastBusX).toFixed(2) : "--";
+        var bZText = Number.isFinite(lastBusZ) ? Number(lastBusZ).toFixed(2) : "--";
+        var sXText = Number.isFinite(lastStopX) ? Number(lastStopX).toFixed(2) : "--";
+        var sZText = Number.isFinite(lastStopZ) ? Number(lastStopZ).toFixed(2) : "--";
+        var src = String(stopSource || "DIR");
+
+        orientationReadout.textContent =
+          "Bus Coord: X:" + bXText + " Z:" + bZText + " | Angle: " + busHText + "°\n" +
+          "Arrêt Coord: X:" + sXText + " Z:" + sZText + " | Angle: " + stopHText + "° (" + src + ")";
+      }
+
+      // Matrice de rotation 2D : Convertit des coords locales en coords écran
+      function localToScreen(lx, ly, headingDeg, tx, ty) {
+        var angleDeg = Number(headingDeg);
+        if (!Number.isFinite(angleDeg)) angleDeg = 0;
+        var rad = angleDeg * Math.PI / 180;
+        var cos = Math.cos(rad);
+        var sin = Math.sin(rad);
+
+        // L'axe Y visuel descend, la rotation CSS est horaire
+        var rx = lx * cos - ly * sin;
+        var ry = lx * sin + ly * cos;
+
+        return { x: tx + rx, y: ty + ry };
+      }
+
+      // Inverse de la matrice : Convertit des coords écran en coords locales
+      function screenToLocal(screenX, screenY, headingDeg, tx, ty) {
+        var dx = screenX - tx;
+        var dy = screenY - ty;
+        var angleDeg = Number(headingDeg);
+        if (!Number.isFinite(angleDeg)) angleDeg = 0;
+        var rad = -angleDeg * Math.PI / 180; // Rotation inverse
+        var cos = Math.cos(rad);
+        var sin = Math.sin(rad);
+
+        return { x: dx * cos - dy * sin, y: dx * sin + dy * cos };
+      }
+      function projectWorldDeltaToBusFrame(dx, dz, busHeadingDeg) {
+        var deltaX = Number(dx);
+        var deltaZ = Number(dz);
+        var headingDeg = Number(busHeadingDeg);
+        if (!Number.isFinite(deltaX) || !Number.isFinite(deltaZ)) {
+          return { rightM: 0, forwardM: 0 };
+        }
+        if (!Number.isFinite(headingDeg)) headingDeg = 0;
+        var rad = headingDeg * Math.PI / 180;
+        var cosH = Math.cos(rad);
+        var sinH = Math.sin(rad);
+        return {
+          rightM: deltaX * cosH - deltaZ * sinH,
+          forwardM: deltaX * sinH + deltaZ * cosH
+        };
+      }
+      function worldDeltaToSceneOffset(dx, dz, busHeadingDeg) {
+        var projected = projectWorldDeltaToBusFrame(dx, dz, busHeadingDeg);
+        return {
+          x: projected.rightM * PIXELS_PER_METER,
+          y: -projected.forwardM * PIXELS_PER_METER
+        };
+      }
+      function normalizeRelativeAngleDeg(angleDeg) {
+        var angle = Number(angleDeg);
+        if (!Number.isFinite(angle)) return 0;
+        angle = ((angle + 180) % 360 + 360) % 360 - 180;
+        return angle;
+      }
+      function computeRelativePlatformAngle(stopHeadingDeg, busHeadingDeg) {
+        var stopAngle = Number(stopHeadingDeg);
+        var busAngle = Number(busHeadingDeg);
+        if (!Number.isFinite(stopAngle)) stopAngle = 0;
+        if (!Number.isFinite(busAngle)) busAngle = 0;
+        return normalizeRelativeAngleDeg(stopAngle - busAngle + PLATFORM_ANGLE_OFFSET_DEG);
+      }
+      function applyPlatformTransform(offsetX, offsetY, platformAngleDeg, immediate) {
+        if (!platformContainer) return;
+        var x = Number(offsetX);
+        var y = Number(offsetY);
+        var angle = Number(platformAngleDeg);
+        if (!Number.isFinite(x)) x = 0;
+        if (!Number.isFinite(y)) y = 0;
+        if (!Number.isFinite(angle)) angle = 0;
+        var transform =
+          "translate(" + x + "px, " + y + "px) " +
+          "rotate(" + angle + "deg) " +
+          "translateX(" + PLATFORM_SIDE_OFFSET_PX + "px)";
+        if (immediate === true) {
+          platformContainer.style.transition = "none";
+          platformContainer.style.transform = transform;
+          void platformContainer.offsetWidth;
+          platformContainer.style.transition = "transform 0.4s linear, opacity 0.4s ease";
+          platformContainer.style.opacity = "1";
+          return;
+        }
+        platformContainer.style.transition = "transform 0.4s linear, opacity 0.4s ease";
+        platformContainer.style.transform = transform;
+        platformContainer.style.opacity = "1";
+      }
+
+      function px(v) { return String(Math.round(v)) + "px"; }
+      var simulationPaused = false;
+      function setSimulationPaused(paused) {
+        simulationPaused = !!paused;
+        if (simulationPaused) document.body.classList.add("is-paused");
+        else document.body.classList.remove("is-paused");
+      }
+
+      function wait(ms) {
+        return new Promise(function (resolve) {
+          var start = Date.now();
+          var remaining = ms;
+          function check() {
+            if (simulationPaused) {
+              setTimeout(check, 100);
+              return;
+            }
+            var now = Date.now();
+            remaining -= (now - start);
+            start = now;
+            if (remaining <= 0) resolve();
+            else setTimeout(check, Math.min(remaining, 100));
+          }
+          check();
+        });
+      }
+      function clamp01(value, fallback) {
+        var n = Number(value);
+        if (!Number.isFinite(n)) n = Number(fallback);
+        if (!Number.isFinite(n)) n = 0;
+        if (n < 0) n = 0;
+        if (n > 1) n = 1;
+        return n;
+      }
+      function readPassengerValidationSoundEnabled(raw) {
+        if (raw === true) return true;
+        if (raw === false) return false;
+        var text = String(raw == null ? "" : raw).trim().toLowerCase();
+        return !(text === "0" || text === "false" || text === "no" || text === "off");
+      }
+      function clearPassengerValidationSoundTimer(passState) {
+        if (!passState || !passState.validationSoundTimer) return;
+        clearTimeout(passState.validationSoundTimer);
+        passState.validationSoundTimer = 0;
+      }
+      function playPassengerValidationSound() {
+        if (passengerValidationSoundsEnabled !== true) return;
+        var roll = Math.random();
+        var src = "";
+        if (roll < PASSENGER_VALIDATION_PASS_CHANCE) {
+          src = PASSENGER_VALIDATION_PASS_URL;
+        } else if (roll < (PASSENGER_VALIDATION_PASS_CHANCE + PASSENGER_VALIDATION_ERROR_CHANCE)) {
+          src = PASSENGER_VALIDATION_ERROR_URL;
+        }
+        if (!src) return;
+        var audio = new Audio(src);
+        audio.volume = clamp01(passengerValidationSoundVolume, 0.25);
+
+        var randomRate = 0.98 + (Math.random() * 0.02);
+        audio.playbackRate = randomRate;
+        if ('preservesPitch' in audio) {
+          audio.preservesPitch = false;
+        }
+
+        audio.play().catch(function () { });
+      }
+      function schedulePassengerValidationSound(passState) {
+        if (!passState || passState.type !== "in") return;
+        if (passengerValidationSoundsEnabled !== true) return;
+        clearPassengerValidationSoundTimer(passState);
+        passState.validationSoundTimer = setTimeout(function () {
+          passState.validationSoundTimer = 0;
+          if (!passState || passState.isCancelled === true) return;
+          if (Number(passState.step) < 2) return;
+          playPassengerValidationSound();
+        }, PASSENGER_VALIDATION_DELAY_MS);
+      }
+      function computePassengerServiceState() {
+        var atStop = window.lastKnownAtStopState === true;
+        var routeStarted = window.lastKnownRouteStartedState === true;
+        if (!routeStarted || !atStop) {
+          return { active: false, ready: false };
+        }
+        var activeWalkingCount = Array.isArray(activeWalkingPassengers) ? activeWalkingPassengers.length : 0;
+        var boardQueueCount = Array.isArray(boardQueue) ? boardQueue.length : 0;
+        var leaveQueueCount = Array.isArray(leaveQueue) ? leaveQueue.length : 0;
+        var inProgress = activeWalkingCount > 0 || boardQueueCount > 0 || leaveQueueCount > 0;
+        return { active: inProgress, ready: !inProgress };
+      }
+      function computePassengerServiceProgress() {
+        var boardTotal = Math.max(0, Math.round(Number(passengerServiceBoardingTotal) || 0));
+        var alightTotal = Math.max(0, Math.round(Number(passengerServiceAlightingTotal) || 0));
+        var activeIn = 0;
+        var activeOut = 0;
+        if (Array.isArray(activeWalkingPassengers)) {
+          activeWalkingPassengers.forEach(function (entry) {
+            if (!entry || entry.isCancelled === true) return;
+            if (entry.type === "in") activeIn += 1;
+            else if (entry.type === "out") activeOut += 1;
+          });
+        }
+        var remainingBoard = Math.max(0, Math.round(Number(boardQueue && boardQueue.length) || 0) + activeIn);
+        var remainingAlight = Math.max(0, Math.round(Number(leaveQueue && leaveQueue.length) || 0) + activeOut);
+        var boardDone = Math.max(0, Math.min(boardTotal, boardTotal - remainingBoard));
+        var alightDone = Math.max(0, Math.min(alightTotal, alightTotal - remainingAlight));
+        return {
+          boardTotal: boardTotal,
+          boardDone: boardDone,
+          alightTotal: alightTotal,
+          alightDone: alightDone
+        };
+      }
+      function publishPassengerState(force) {
+        var count = Math.max(0, Math.round(Number(visualCount) || 0));
+        var service = computePassengerServiceState();
+        var progress = computePassengerServiceProgress();
+        var serviceActive = service.active === true;
+        var serviceReady = service.ready === true;
+        var now = Date.now();
+        var changed = count !== lastPublishedPassengerCount;
+        var serviceChanged = serviceActive !== lastPublishedPassengerServiceActive ||
+          serviceReady !== lastPublishedPassengerServiceReady;
+        var progressChanged =
+          progress.boardTotal !== lastPublishedPassengerBoardingTotal ||
+          progress.boardDone !== lastPublishedPassengerBoardingDone ||
+          progress.alightTotal !== lastPublishedPassengerAlightingTotal ||
+          progress.alightDone !== lastPublishedPassengerAlightingDone;
+        if (!force && !changed && !serviceChanged && !progressChanged && (now - lastPassengerPublishAt) < 250) return;
+        lastPublishedPassengerCount = count;
+        lastPublishedPassengerServiceActive = serviceActive;
+        lastPublishedPassengerServiceReady = serviceReady;
+        lastPublishedPassengerBoardingTotal = progress.boardTotal;
+        lastPublishedPassengerBoardingDone = progress.boardDone;
+        lastPublishedPassengerAlightingTotal = progress.alightTotal;
+        lastPublishedPassengerAlightingDone = progress.alightDone;
+        lastPassengerPublishAt = now;
+        try {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+              type: "bus_status:passenger_state",
+              passengersInBus: count,
+              passengerServiceActive: serviceActive,
+              passengerServiceReady: serviceReady,
+              passengerBoardingTotal: progress.boardTotal,
+              passengerBoardingDone: progress.boardDone,
+              passengerAlightingTotal: progress.alightTotal,
+              passengerAlightingDone: progress.alightDone,
+              ts: now
+            }, "*");
+          }
+        } catch (err) { }
+      }
+      function updateCounterText() {
+        if (!counter) return;
+        var countText = String(Math.max(0, Math.round(Number(visualCount) || 0)));
+        var maxText = "";
+        if (currentBusMaxCapacityUnlimited === true) {
+          maxText = "/\u221E";
+        } else if (Number.isFinite(currentBusMaxCapacity) && currentBusMaxCapacity > 0) {
+          maxText = "/" + String(Math.round(currentBusMaxCapacity));
+        } else {
+          maxText = "";
+        }
+        if (counterCurrent && counterMax) {
+          counterCurrent.textContent = countText;
+          counterMax.textContent = maxText;
+        } else {
+          counter.textContent = countText + maxText;
+        }
+      }
+      function syncVisualCount(nextCount, forcePublish) {
+        var n = Math.max(0, Math.round(Number(nextCount) || 0));
+        visualCount = n;
+        updateCounterText();
+        publishPassengerState(forcePublish === true);
+      }
+
+      // Coordonnées locales du Bus
+      var p = {
+        doorInX: 35, doorInY: 46,
+        doorOutX: 35, doorOutY: -46,
+        edgeX: 25, aisleX: 0, centerY: 0,
+        frontLeftX: -45, frontLeftY: -90,
+        frontRightX: 45, frontRightY: -90,
+        backLeftX: -45, backLeftY: 90,
+        backRightX: 45, backRightY: 90
+      };
+
+      // --- SYSTÈME DE POINTS (PASSAGERS) ---
+      function setDot(dot, x, y) {
+        dot.style.left = px(x);
+        dot.style.top = px(y);
+        dot.sceneX = x;
+        dot.sceneY = y;
+      }
+
+      function getScenePosFromPlatform(localX, localY) {
+        return localToScreen(localX + PLATFORM_SIDE_OFFSET_PX, localY, cssPlatformAngle, lastScreenX, lastScreenY);
+      }
+
+      function getScenePosFromBus(localX, localY) {
+        return { x: localX, y: localY };
+      }
+
+      function getLocalBusPosFromScene(sceneX, sceneY) {
+        return { x: sceneX, y: sceneY };
+      }
+
+      function setDotLocalBus(dot, localX, localY) {
+        var sPos = getScenePosFromBus(localX, localY);
+        setDot(dot, sPos.x, sPos.y);
+      }
+
+      function makeDot(x, y, extraClass) {
+        var dot = document.createElement("div");
+        dot.className = extraClass ? "dot " + extraClass : "dot";
+        setDot(dot, x, y);
+        dotsContainer.appendChild(dot);
+        return dot;
+      }
+
+      function makeWaitingDot(index) {
+        var dot = document.createElement("div");
+        dot.className = "dot waiting-dot fade";
+
+        var offsetX = (Math.random() * 4 - 2);
+        var offsetY = (Math.random() * 8 - 4);
+        dot.dataset.offsetX = offsetX;
+        dot.dataset.offsetY = offsetY;
+
+        var col = index % 3;
+        var row = Math.floor(index / 3);
+
+        // Position locale sur la plateforme
+        var platX = -10 + col * 10 + offsetX;
+        var platY = 60 - row * 20 + offsetY;
+
+        dot.dataset.platX = platX;
+        dot.dataset.platY = platY;
+
+        var sPos = getScenePosFromPlatform(platX, platY);
+        setDot(dot, sPos.x, sPos.y);
+
+        dotsContainer.appendChild(dot);
+
+        setTimeout(function () { dot.classList.remove("fade"); }, 20);
+        return dot;
+      }
+
+      function updateWaitingDotsPositions() {
+        for (var i = 0; i < waitingDots.length; i++) {
+          var dot = waitingDots[i];
+          var col = i % 3;
+          var row = Math.floor(i / 3);
+          var offsetX = Number(dot.dataset.offsetX) || 0;
+          var offsetY = Number(dot.dataset.offsetY) || 0;
+
+          var targetPlatX = -10 + col * 10 + offsetX;
+          var targetPlatY = 60 - row * 20 + offsetY;
+
+          var currentPlatX = Number(dot.dataset.platX);
+          var currentPlatY = Number(dot.dataset.platY);
+
+          if (Number.isFinite(currentPlatX) && Number.isFinite(currentPlatY)) {
+            var newPlatX = currentPlatX + (targetPlatX - currentPlatX) * 0.15;
+            var newPlatY = currentPlatY + (targetPlatY - currentPlatY) * 0.15;
+
+            dot.dataset.platX = newPlatX;
+            dot.dataset.platY = newPlatY;
+
+            var sPos = getScenePosFromPlatform(newPlatX, newPlatY);
+            setDot(dot, sPos.x, sPos.y);
+          }
+        }
+      }
+
+      function showWaitingPassengers(count) {
+        count = clamp(count, 0, 60);
+
+        // Nettoyage complet pour garantir l'exactitude
+        var existing = dotsContainer.querySelectorAll(".waiting-dot");
+        existing.forEach(function (el) { el.remove(); });
+        waitingDots = [];
+
+        for (var i = 0; i < count; i++) {
+          waitingDots.push(makeWaitingDot(i));
+        }
+      }
+
+      var lastStoppedAtMs = 0;
+
+      async function smartWait(ms) {
+        var elapsed = 0;
+        var step = 50;
+        while (elapsed < ms) {
+          var speed = Number(window.lastKnownSpeedKmh) || 0;
+          var atStop = window.lastKnownAtStopState === true;
+
+          if (atStop && speed < PASSENGER_STOP_MAX_SPEED_KMH) {
+            elapsed += step;
+          }
+          await wait(step);
+        }
+      }
+
+      async function animateBoard() {
+        var dot;
+        if (waitingDots.length > 0) {
+          dot = waitingDots.shift();
+          dot.classList.remove("waiting-dot");
+        } else {
+          return;
+        }
+
+        dot.classList.add("walking-dot");
+
+        var passState = {
+          type: "in",
+          dot: dot,
+          step: 0,
+          isCancelled: false,
+          validationSoundTimer: 0
+        };
+        activeWalkingPassengers.push(passState);
+
+        try {
+          await smartWait(40);
+          if (passState.isCancelled) return;
+
+          // CONTOURNEMENT DU BUS : Si le passager commence de l'autre côté (X < -20)
+          if (dot.sceneX < -20) {
+            if (dot.sceneY < 0) {
+              setDotLocalBus(dot, p.frontLeftX, p.frontLeftY);
+              await smartWait(PASSENGER_WALK_STEP_MS);
+              if (passState.isCancelled) return;
+
+              setDotLocalBus(dot, p.frontRightX, p.frontRightY);
+              await smartWait(PASSENGER_WALK_STEP_MS);
+              if (passState.isCancelled) return;
+            } else {
+              setDotLocalBus(dot, p.backLeftX, p.backLeftY);
+              await smartWait(PASSENGER_WALK_STEP_MS);
+              if (passState.isCancelled) return;
+
+              setDotLocalBus(dot, p.backRightX, p.backRightY);
+              await smartWait(PASSENGER_WALK_STEP_MS);
+              if (passState.isCancelled) return;
+            }
+          }
+
+          passState.step = 1;
+          setDotLocalBus(dot, p.doorInX, p.doorInY);
+          await smartWait(PASSENGER_WALK_STEP_MS);
+          if (passState.isCancelled) return;
+
+          passState.step = 2;
+          setDotLocalBus(dot, p.edgeX, p.doorInY);
+          schedulePassengerValidationSound(passState);
+          await smartWait(PASSENGER_WALK_STEP_MS);
+          if (passState.isCancelled) return;
+
+          passState.step = 3;
+          setDotLocalBus(dot, p.aisleX, p.doorInY);
+          await smartWait(PASSENGER_WALK_STEP_MS);
+          if (passState.isCancelled) return;
+
+          passState.step = 4;
+          setDotLocalBus(dot, p.aisleX, p.centerY);
+          await smartWait(PASSENGER_WALK_STEP_MS);
+          if (passState.isCancelled) return;
+
+          syncVisualCount(visualCount + 1);
+
+          dot.classList.add("fade");
+          await smartWait(190);
+          if (!passState.isCancelled) dot.remove();
+        } finally {
+          clearPassengerValidationSoundTimer(passState);
+          var idx = activeWalkingPassengers.indexOf(passState);
+          if (idx !== -1) activeWalkingPassengers.splice(idx, 1);
+          publishPassengerState(true);
+        }
+      }
+
+      async function animateLeave() {
+        if (visualCount <= 0) {
+          return;
+        }
+
+        var sPos = getScenePosFromBus(p.aisleX, p.centerY);
+        var dot = makeDot(sPos.x, sPos.y, "leaving");
+        dot.classList.add("walking-dot");
+
+        var passState = {
+          type: "out",
+          dot: dot,
+          step: 0,
+          isCancelled: false
+        };
+        activeWalkingPassengers.push(passState);
+
+        try {
+          dot.classList.add("fade");
+          await smartWait(30);
+          if (passState.isCancelled) return;
+          dot.classList.remove("fade");
+          await smartWait(160);
+          if (passState.isCancelled) return;
+
+          passState.step = 1;
+          setDotLocalBus(dot, p.aisleX, p.doorOutY);
+          await smartWait(PASSENGER_WALK_STEP_MS);
+          if (passState.isCancelled) return;
+
+          passState.step = 2;
+          setDotLocalBus(dot, p.edgeX, p.doorOutY);
+          await smartWait(PASSENGER_WALK_STEP_MS);
+          if (passState.isCancelled) return;
+
+          passState.step = 3;
+          setDotLocalBus(dot, p.doorOutX, p.doorOutY);
+          await smartWait(PASSENGER_WALK_STEP_MS);
+          if (passState.isCancelled) return;
+
+          passState.step = 4;
+          dot.classList.add("fade");
+          await smartWait(200);
+          if (!passState.isCancelled) {
+            syncVisualCount(visualCount - 1);
+            dot.remove();
+          }
+        } finally {
+          var idx = activeWalkingPassengers.indexOf(passState);
+          if (idx !== -1) activeWalkingPassengers.splice(idx, 1);
+          publishPassengerState(true);
+        }
+      }
+
+      var boardQueue = [];
+      var leaveQueue = [];
+      var isProcessingBoard = false;
+      var isProcessingLeave = false;
+
+      function enqueue(type, count) {
+        count = clamp(count, 0, 80);
+        if (type === "in") {
+          for (var i = 0; i < count; i += 1) boardQueue.push("in");
+          processBoardQueue();
+        } else {
+          for (var i = 0; i < count; i += 1) leaveQueue.push("out");
+          processLeaveQueue();
+        }
+      }
+      function getEffectiveBusCapacityLimit() {
+        if (currentBusMaxCapacityUnlimited === true) return Number.POSITIVE_INFINITY;
+        var n = Math.round(Number(currentBusMaxCapacity));
+        if (Number.isFinite(n) && n > 0) return n;
+        return Number.POSITIVE_INFINITY;
+      }
+      function getBoardingInProgressCount() {
+        if (!Array.isArray(activeWalkingPassengers) || !activeWalkingPassengers.length) return 0;
+        var n = 0;
+        for (var i = 0; i < activeWalkingPassengers.length; i += 1) {
+          var pState = activeWalkingPassengers[i];
+          if (!pState || pState.isCancelled === true) continue;
+          if (pState.type === "in") n += 1;
+        }
+        return n;
+      }
+      function canStartBoardingNow() {
+        var cap = getEffectiveBusCapacityLimit();
+        if (!Number.isFinite(cap)) return true;
+        var inBus = Math.max(0, Math.round(Number(visualCount) || 0));
+        var boardingInProgress = getBoardingInProgressCount();
+        return (inBus + boardingInProgress) < cap;
+      }
+      function cancelBoardingPassenger(passState) {
+        if (!passState || passState.isCancelled === true || passState.type !== "in") return false;
+        passState.isCancelled = true;
+        clearPassengerValidationSoundTimer(passState);
+        var d = passState.dot;
+        if (d) {
+          d.classList.add("fade");
+          setTimeout(function () {
+            try { d.remove(); } catch (err) { }
+          }, 180);
+        }
+        return true;
+      }
+      function enforceCapacityLimitImmediately() {
+        var cap = getEffectiveBusCapacityLimit();
+        if (!Number.isFinite(cap)) return;
+        var capInt = Math.max(0, Math.round(Number(cap) || 0));
+
+        var activeBoarding = [];
+        if (Array.isArray(activeWalkingPassengers)) {
+          for (var i = 0; i < activeWalkingPassengers.length; i += 1) {
+            var pState = activeWalkingPassengers[i];
+            if (!pState || pState.isCancelled === true || pState.type !== "in") continue;
+            activeBoarding.push(pState);
+          }
+        }
+        var committed = Math.max(0, Math.round(Number(visualCount) || 0)) + activeBoarding.length;
+        if (committed <= capInt) return;
+
+        var overflow = committed - capInt;
+
+        if (activeBoarding.length > 0 && overflow > 0) {
+          activeBoarding.sort(function (a, b) {
+            var aStep = Number(a && a.step) || 0;
+            var bStep = Number(b && b.step) || 0;
+            return aStep - bStep;
+          });
+          for (var j = 0; j < activeBoarding.length && overflow > 0; j += 1) {
+            if (cancelBoardingPassenger(activeBoarding[j])) {
+              overflow -= 1;
+            }
+          }
+        }
+
+        if (overflow > 0) {
+          var inBusNow = Math.max(0, Math.round(Number(visualCount) || 0));
+          var nextCount = Math.max(0, inBusNow - overflow);
+          if (nextCount !== inBusNow) {
+            syncVisualCount(nextCount, true);
+          }
+        }
+
+        publishPassengerState(true);
+      }
+
+      async function processBoardQueue() {
+        if (isProcessingBoard) return;
+        isProcessingBoard = true;
+
+        while (boardQueue.length > 0) {
+          while (true) {
+            var now = Date.now();
+            var speed = Number(window.lastKnownSpeedKmh) || 0;
+            var atStop = window.lastKnownAtStopState === true;
+
+            if (atStop && speed < PASSENGER_STOP_MAX_SPEED_KMH) {
+              if (lastStoppedAtMs === 0) {
+                lastStoppedAtMs = now;
+              }
+              if ((now - lastStoppedAtMs) >= PASSENGER_DWELL_REQUIRED_MS) {
+                break;
+              }
+            } else {
+              lastStoppedAtMs = 0;
+            }
+            await wait(200);
+          }
+
+          var speedCheck = Number(window.lastKnownSpeedKmh) || 0;
+          var atStopCheck = window.lastKnownAtStopState === true;
+          if (!atStopCheck || speedCheck >= PASSENGER_STOP_MAX_SPEED_KMH) {
+            continue;
+          }
+          if (!canStartBoardingNow()) {
+            await wait(160);
+            continue;
+          }
+
+          boardQueue.shift();
+          animateBoard();
+
+          var delay = PASSENGER_GAP_MIN_MS + Math.floor(Math.random() * (PASSENGER_GAP_MAX_MS - PASSENGER_GAP_MIN_MS));
+          await smartWait(delay);
+        }
+
+        isProcessingBoard = false;
+        publishPassengerState(true);
+      }
+
+      async function processLeaveQueue() {
+        if (isProcessingLeave) return;
+        isProcessingLeave = true;
+
+        while (leaveQueue.length > 0) {
+          while (true) {
+            var now = Date.now();
+            var speed = Number(window.lastKnownSpeedKmh) || 0;
+            var atStop = window.lastKnownAtStopState === true;
+
+            if (atStop && speed < PASSENGER_STOP_MAX_SPEED_KMH) {
+              if (lastStoppedAtMs === 0) {
+                lastStoppedAtMs = now;
+              }
+              if ((now - lastStoppedAtMs) >= PASSENGER_DWELL_REQUIRED_MS) {
+                break;
+              }
+            } else {
+              lastStoppedAtMs = 0;
+            }
+            await wait(200);
+          }
+
+          var speedCheck = Number(window.lastKnownSpeedKmh) || 0;
+          var atStopCheck = window.lastKnownAtStopState === true;
+          if (!atStopCheck || speedCheck >= PASSENGER_STOP_MAX_SPEED_KMH) {
+            continue;
+          }
+
+          leaveQueue.shift();
+          animateLeave();
+
+          var delay = PASSENGER_GAP_MIN_MS + Math.floor(Math.random() * (PASSENGER_GAP_MAX_MS - PASSENGER_GAP_MIN_MS));
+          await smartWait(delay);
+        }
+
+        isProcessingLeave = false;
+        publishPassengerState(true);
+      }
+
+      function handleInterruptedPassengers() {
+        var list = activeWalkingPassengers.slice();
+        list.forEach(function (pState) {
+          if (pState.isCancelled) return;
+          pState.isCancelled = true;
+          clearPassengerValidationSoundTimer(pState);
+
+          if (pState.type === "in") {
+            if (pState.step >= 2) {
+              // Déjà à l'intérieur ! Tween vers le centre
+              pState.dot.style.transition = "left 0.4s ease-out, top 0.4s ease-out";
+              setDotLocalBus(pState.dot, p.aisleX, p.centerY);
+
+              (function (d) {
+                setTimeout(function () {
+                  d.classList.add("fade");
+                  setTimeout(function () { d.remove(); }, 200);
+                }, 400);
+              })(pState.dot);
+
+              syncVisualCount(visualCount + 1);
+            } else {
+              // Toujours dehors ! Tween BACK vers le quai
+              pState.dot.classList.remove("walking-dot");
+              pState.dot.classList.add("waiting-dot");
+
+              var count = waitingDots.length;
+              var index = count;
+              var offsetX = (Math.random() * 4 - 2);
+              var offsetY = (Math.random() * 8 - 4);
+              pState.dot.dataset.offsetX = offsetX;
+              pState.dot.dataset.offsetY = offsetY;
+
+              var col = index % 3;
+              var row = Math.floor(index / 3);
+              var platX = -10 + col * 10 + offsetX;
+              var platY = 60 - row * 20 + offsetY;
+
+              pState.dot.dataset.platX = platX;
+              pState.dot.dataset.platY = platY;
+
+              pState.dot.style.transition = "left 0.4s ease-out, top 0.4s ease-out";
+              var sPos = getScenePosFromPlatform(platX, platY);
+              setDot(pState.dot, sPos.x, sPos.y);
+
+              waitingDots.push(pState.dot);
+              boardQueue.push("in");
+              processBoardQueue();
+            }
+          } else if (pState.type === "out") {
+            if (pState.step >= 3) {
+              // Déjà sorti du bus : on finalise immédiatement la descente
+              if (pState.dot) {
+                pState.dot.classList.add("fade");
+                (function (d) {
+                  setTimeout(function () {
+                    try { d.remove(); } catch (err) { }
+                  }, 200);
+                })(pState.dot);
+              }
+              var leaveIdx = activeWalkingPassengers.indexOf(pState);
+              if (leaveIdx !== -1) activeWalkingPassengers.splice(leaveIdx, 1);
+              syncVisualCount(visualCount - 1, true);
+            } else {
+              // Toujours dedans ! Tween vers le centre
+              pState.dot.style.transition = "left 0.4s ease-out, top 0.4s ease-out";
+              setDotLocalBus(pState.dot, p.aisleX, p.centerY);
+
+              (function (d) {
+                setTimeout(function () {
+                  d.classList.add("fade");
+                  setTimeout(function () { d.remove(); }, 200);
+                }, 400);
+              })(pState.dot);
+
+              leaveQueue.push("out");
+              processLeaveQueue();
+            }
+          }
+        });
+      }
+
+      // --- LOGIQUE PRINCIPALE D'ÉTAT ---
+      function handleState(state) {
+        var bX = Number(state.busX);
+        var bZ = Number(state.busZ);
+        var bH = Number(state.busHeading);
+
+        var sX = Number(state.stopX);
+        var sZ = Number(state.stopZ);
+        var sH = Number(state.stopHeading);
+        var sPrevX = Number(state.stopPrevX);
+        var sPrevZ = Number(state.stopPrevZ);
+        var sNextX = Number(state.stopNextX);
+        var sNextZ = Number(state.stopNextZ);
+
+        var speedFromCoords = 0;
+        var nowTs = Date.now();
+        if (Number.isFinite(bX) && Number.isFinite(bZ) && lastBusX && lastBusZ) {
+          var dist = Math.hypot(bX - lastBusX, bZ - lastBusZ);
+          var dt = 0.2;
+          if (window.lastStatePacketAt) {
+            dt = Math.max(0.01, (nowTs - window.lastStatePacketAt) / 1000);
+          }
+          speedFromCoords = (dist / dt) * 3.6;
+        }
+        window.lastStatePacketAt = nowTs;
+
+        var finalSpeed = Math.max(Number(state.busSpeedKmh) || 0, speedFromCoords);
+        window.lastKnownSpeedKmh = finalSpeed;
+        window.lastKnownAtStopState = (state.vehicleAtStop === true);
+        window.lastKnownRouteStartedState = (state.routeStarted === true);
+        var previousCapacity = Number(currentBusMaxCapacity);
+        var previousUnlimited = currentBusMaxCapacityUnlimited === true;
+        var busMaxCapacityRaw = Math.round(Number(state.busMaxCapacity));
+        if (Number.isFinite(busMaxCapacityRaw) && busMaxCapacityRaw > 0) {
+          currentBusMaxCapacity = busMaxCapacityRaw;
+        }
+        if (typeof state.busMaxCapacityUnlimited === "boolean") {
+          currentBusMaxCapacityUnlimited = state.busMaxCapacityUnlimited === true;
+        }
+        if (Object.prototype.hasOwnProperty.call(state, "passengerValidationSoundsEnabled")) {
+          passengerValidationSoundsEnabled = readPassengerValidationSoundEnabled(state.passengerValidationSoundsEnabled);
+        }
+        var validationVolumeRaw = Number(state.passengerValidationSoundVolume);
+        if (Number.isFinite(validationVolumeRaw)) {
+          passengerValidationSoundVolume = clamp01(validationVolumeRaw, 0.25);
+        } else {
+          var globalVolumeRaw = Number(state.globalAudioVolumeMultiplier);
+          if (Number.isFinite(globalVolumeRaw)) {
+            passengerValidationSoundVolume = clamp01(globalVolumeRaw / 2, 0.25);
+          }
+        }
+        if (previousCapacity !== Number(currentBusMaxCapacity) || previousUnlimited !== (currentBusMaxCapacityUnlimited === true)) {
+          enforceCapacityLimitImmediately();
+        }
+        updateCounterText();
+
+        if (!window.lastKnownAtStopState || window.lastKnownSpeedKmh >= PASSENGER_STOP_MAX_SPEED_KMH) {
+          handleInterruptedPassengers();
+        }
+
+        // 1. Mise à jour du Bus
+        if (!Number.isFinite(bH) && Number.isFinite(bX) && Number.isFinite(bZ) && lastBusX && lastBusZ) {
+          var movementH = headingFromDelta(bX - lastBusX, bZ - lastBusZ);
+          if (movementH !== null) bH = movementH;
+        }
+
+        if (Number.isFinite(bH)) {
+          lastBusHeading = bH;
+          busElement.style.transform = "rotate(0deg)";
+        }
+
+        if (Number.isFinite(bX) && Number.isFinite(bZ)) {
+          lastBusX = bX;
+          lastBusZ = bZ;
+        }
+
+        // 2. Mise à jour du Quai (Plateforme)
+        if (Number.isFinite(sX) && Number.isFinite(sZ)) {
+          var stopChanged = (lastStopX !== sX || lastStopZ !== sZ);
+
+          if (stopChanged && !window.isChangingStop) {
+            window.isChangingStop = true;
+            platformContainer.style.opacity = "0";
+            hasBoardingStarted = false;
+
+            // SAUVEGARDE de l'état de l'ancien arrêt avant de changer
+            var oldStopId = Number.isFinite(lastStopX) && Number.isFinite(lastStopZ) ? (lastStopX.toFixed(2) + "," + lastStopZ.toFixed(2)) : null;
+            if (oldStopId && window.servedStopsMemory[oldStopId]) {
+              window.servedStopsMemory[oldStopId].remainingWaiting = waitingDots.length;
+            }
+
+            passengerServiceBoardingTotal = 0;
+            passengerServiceAlightingTotal = 0;
+
+            // Réinitialisation de la mémoire des flux passagers
+            window.lastKnownAtStop = undefined;
+            window.lastKnownInBus = undefined;
+            window.hasSpawnedForCurrentStop = false;
+            lastStoppedAtMs = 0;
+
+            // Nettoyage immédiat des anciens passagers
+            var existing = dotsContainer.querySelectorAll(".waiting-dot");
+            existing.forEach(function (el) { el.remove(); });
+            waitingDots = [];
+            boardQueue = [];
+            leaveQueue = [];
+            isProcessingBoard = false;
+            isProcessingLeave = false;
+
+            setTimeout(function () { window.isChangingStop = false; }, 400);
+          }
+
+          lastStopX = sX;
+          lastStopZ = sZ;
+          hasStopCoords = true;
+          platformContainer.style.display = "";
+
+          // Vue avec caméra "attachée" au bus (le bus pointe toujours vers le haut)
+          var dx = sX - lastBusX;
+          var dz = sZ - lastBusZ;
+
+          var screenOffset = worldDeltaToSceneOffset(dx, dz, lastBusHeading);
+          lastScreenX = screenOffset.x;
+          lastScreenY = screenOffset.y;
+
+          // Calcul Orientation Quai brute
+          var stopRotationDeg = sH;
+          var stopSource = Number.isFinite(sH) ? "DBUS" : "DIR";
+          if (!Number.isFinite(stopRotationDeg)) {
+            if (Number.isFinite(sPrevX) && Number.isFinite(sPrevZ) && Number.isFinite(sNextX) && Number.isFinite(sNextZ)) {
+              stopRotationDeg = headingFromDelta(sNextX - sPrevX, sNextZ - sPrevZ);
+            } else if (Number.isFinite(sX) && Number.isFinite(sZ) && Number.isFinite(sNextX) && Number.isFinite(sNextZ)) {
+              stopRotationDeg = headingFromDelta(sNextX - sX, sNextZ - sZ);
+            } else {
+              stopRotationDeg = lastBusHeading; // Fallback d'urgence
+            }
+          }
+
+          lastPlatformAngle = stopRotationDeg;
+          var relativeStopAngle = computeRelativePlatformAngle(stopRotationDeg, lastBusHeading);
+          cssPlatformAngle = getShortestAngle(cssPlatformAngle, relativeStopAngle);
+          updateOrientationReadout(lastBusHeading, stopRotationDeg, stopSource);
+
+          // Application CSS dans le même repère que la projection du quai et des passagers
+          if (!window.isChangingStop) {
+            if (platformContainer.style.opacity === "0") {
+              applyPlatformTransform(lastScreenX, lastScreenY, cssPlatformAngle, true);
+            } else {
+              applyPlatformTransform(lastScreenX, lastScreenY, cssPlatformAngle, false);
+            }
+            updateWaitingDotsPositions();
+          }
+        } else {
+          hasStopCoords = false;
+          platformContainer.style.display = "none";
+          updateOrientationReadout(lastBusHeading, Number.NaN, "DIR");
+        }
+
+        if (state.routeStarted !== true) {
+          syncVisualCount(0);
+          currentCount = 0;
+          passengerServiceBoardingTotal = 0;
+          passengerServiceAlightingTotal = 0;
+          window.servedStopsMemory = {}; // Reset memory when mission ends/is cancelled
+
+          var existing = dotsContainer.querySelectorAll(".dot");
+          existing.forEach(function (el) { el.remove(); });
+          waitingDots = [];
+          window.hasSpawnedForCurrentStop = false;
+        }
+
+        // 2b. Génération des passagers uniquement à l'arrêt du véhicule et si la ligne est démarrée
+        var stopId = Number.isFinite(sX) && Number.isFinite(sZ) ? (sX.toFixed(2) + "," + sZ.toFixed(2)) : null;
+        if (state.routeStarted === true && state.vehicleAtStop === true && !window.hasSpawnedForCurrentStop && stopId) {
+          window.hasSpawnedForCurrentStop = true;
+
+          var peopleToAlight = 0;
+          var peopleToBoard = 0;
+
+          if (!window.servedStopsMemory[stopId]) {
+            // DÉTECTION DU TERMINUS (Priorité absolue)
+            var isAtTerminus = (!Number.isFinite(state.stopNextX) || state.stopNextX === 0 || isNaN(state.stopNextX)) ||
+              (Number.isFinite(state.routeReachedIndex) && Number.isFinite(state.routeStopCount) && state.routeReachedIndex >= (state.routeStopCount - 1)) ||
+              (Number.isFinite(state.vehicleAtStopIndex) && Number.isFinite(state.routeStopCount) && state.vehicleAtStopIndex >= (state.routeStopCount - 1));
+
+            // PRIORITÉ : Utiliser les valeurs fournies par le state (pour être synchro avec le SAEIV)
+            var stateBoard = Number(state.stopBoardingTotal);
+            var stateAlight = Number(state.stopAlightingTotal);
+
+            if (isAtTerminus) {
+              // TOUT LE MONDE DESCEND, PERSONNE NE MONTE
+              peopleToBoard = 0;
+              peopleToAlight = visualCount;
+              if (isDevMode) console.log("[BusStatus] Terminus reached: forcing 0 board, 100% alight");
+            } else if (Number.isFinite(stateBoard) && Number.isFinite(stateAlight) && (stateBoard > 0 || stateAlight > 0)) {
+              // Priorité aux valeurs fournies par le state si non-terminus
+              peopleToBoard = stateBoard;
+              peopleToAlight = Math.min(visualCount, stateAlight);
+            } else {
+              // FALLBACK : Génération locale depuis lines.xml
+              loadLinesData(String(state.dbusVersion || state.version || "0.1.6a").trim());
+
+              var stopNode = null;
+              if (linesData && state.selectedLineUid !== undefined && state.selectedRouteUid !== undefined) {
+                var lUid = String(state.selectedLineUid);
+                var rUid = String(state.selectedRouteUid);
+                var lineNode = linesData.querySelector('line[uid="' + lUid + '"]');
+                if (lineNode) {
+                  var routeNode = lineNode.querySelector('route[uid="' + rUid + '"]');
+                  if (routeNode) {
+                    var stops = routeNode.querySelectorAll('busstop');
+                    var stopIdx = Number(state.vehicleAtStopIndex);
+                    if (!Number.isFinite(stopIdx)) stopIdx = Number(state.routeReachedIndex);
+                    stopNode = stops[stopIdx];
+                  }
+                }
+              }
+
+              if (stopNode) {
+                var pMin = Number(stopNode.getAttribute("passengersMin")) || 0;
+                var pMax = Number(stopNode.getAttribute("passengersMax")) || 0;
+                pMin = Math.max(0, Math.round(pMin));
+                pMax = Math.max(pMin, Math.round(pMax));
+                var cOn = Number(stopNode.getAttribute("coefOn"));
+                if (!Number.isFinite(cOn)) cOn = 100;
+                cOn = Math.max(0, Math.min(100, cOn));
+
+                var isPeak = isPeakPassengerTimeFromState(state);
+                var totalN = pickPassengerSpawnCount(pMin, pMax, isPeak);
+
+                for (var i = 0; i < totalN; i++) {
+                  if ((Math.random() * 100) < cOn) {
+                    peopleToBoard++;
+                  } else {
+                    peopleToAlight++;
+                  }
+                }
+                peopleToAlight = Math.min(visualCount, peopleToAlight);
+              } else {
+                // FALLBACK ULTIME (si XML non chargé ou non trouvé)
+                if (visualCount > 0) {
+                  var isTerminus = (state.routeCompleted === true) ||
+                    (Number.isFinite(state.routeReachedIndex) &&
+                      Number.isFinite(state.routeStopCount) &&
+                      state.routeStopCount > 0 &&
+                      state.routeReachedIndex >= (state.routeStopCount - 1)) ||
+                    (Number.isFinite(state.vehicleAtStopIndex) &&
+                      Number.isFinite(state.routeStopCount) &&
+                      state.routeStopCount > 0 &&
+                      state.vehicleAtStopIndex >= (state.routeStopCount - 1)) ||
+                    (!Number.isFinite(sNextX) || sNextX === 0 || isNaN(sNextX));
+
+                  peopleToAlight = isTerminus ? visualCount : Math.min(visualCount, 1 + Math.floor(Math.random() * 4));
+                }
+                peopleToBoard = Number(state.passengersAtStop) || 0;
+              }
+            }
+
+            if (peopleToAlight > 0) enqueue("out", peopleToAlight);
+            if (peopleToBoard > 0) {
+              showWaitingPassengers(peopleToBoard);
+              enqueue("in", peopleToBoard);
+            }
+
+            // Enregistrement en mémoire
+            window.servedStopsMemory[stopId] = {
+              spawned: true,
+              remainingWaiting: peopleToBoard
+            };
+          } else {
+            // RETOUR A UN ARRÊT DÉJÀ SERVI : On restaure les passagers restants
+            var memory = window.servedStopsMemory[stopId];
+            peopleToBoard = Math.max(0, Math.round(Number(memory.remainingWaiting) || 0));
+
+            if (peopleToBoard > 0) {
+              showWaitingPassengers(peopleToBoard);
+              enqueue("in", peopleToBoard);
+            }
+            peopleToAlight = 0;
+          }
+
+          passengerServiceAlightingTotal = Math.max(0, Math.round(Number(peopleToAlight) || 0));
+          passengerServiceBoardingTotal = Math.max(0, Math.round(Number(peopleToBoard) || 0));
+
+          // Force une publication immédiate pour synchroniser le SAEIV/GPS
+          publishPassengerState(true);
+        }
+
+        // 3. Synchronisation du compteur de passagers (seulement au démarrage ou arrêt de ligne)
+        var nextInBus = Number(state.passengersInBus);
+        if (Number.isFinite(nextInBus) && (firstState || state.routeStarted !== true)) {
+          syncVisualCount(nextInBus);
+        }
+        firstState = false;
+      }
+
+      var isDevMode = false;
+      try {
+        if (window.location.search.includes("dev")) isDevMode = true;
+        else if (window.parent && window.parent.location.search.includes("dev")) isDevMode = true;
+      } catch (e) { }
+
+      function handleEnvelope(envelope) {
+        if (isDevMode) {
+          console.log("[WebSocket DEV]", envelope);
+        }
+        if (!envelope || typeof envelope !== "object") return;
+        if (envelope.scope && envelope.scope !== WIDGET_BRIDGE_SCOPE) return;
+        if (envelope.channel && envelope.channel !== WIDGET_BRIDGE_CHANNEL) return;
+        var payload = envelope.payload && typeof envelope.payload === "object" ? envelope.payload : envelope;
+        var state = null;
+        if (payload && typeof payload === "object") {
+          if (payload.type === 'game_pause_state') {
+            var pauseByTelemetry = payload.pausedByTelemetry === true;
+            var pauseByManager = payload.pausedByManager === true;
+            var shouldPause = payload.paused === true;
+            // Interactive manager mode must not freeze passenger boarding/alighting.
+            if (pauseByManager && !pauseByTelemetry) shouldPause = false;
+            setSimulationPaused(shouldPause);
+            return;
+          }
+          if (payload.type === "saeiv:state") {
+            if (payload.payload && typeof payload.payload === "object") state = payload.payload;
+            else if (payload.state && typeof payload.state === "object") state = payload.state;
+            else state = payload;
+          } else if (payload.state && typeof payload.state === "object") {
+            state = payload.state;
+          } else if (payload.passengersInBus !== undefined || payload.busX !== undefined || payload.stopX !== undefined) {
+            state = payload;
+          }
+        }
+        if (state) handleState(state);
+      }
+
+      function readHostBridgeState() {
+        if (!isHostedByGame) return;
+        try {
+          if (window.parent && window.parent !== window && typeof window.parent.saeivGetBridgeState === "function") {
+            var envelope = window.parent.saeivGetBridgeState();
+            if (envelope && envelope.ts && envelope.ts === lastHostTs) return;
+            if (envelope && envelope.ts) lastHostTs = envelope.ts;
+            handleEnvelope(envelope);
+          }
+        } catch (_) { }
+      }
+
+      function sendRequest() {
+        var payload = { type: "saeiv:request_state", source: "bus_status" };
+        try {
+          if (isHostedByGame && window.parent && window.parent !== window && typeof window.parent.saeivPostBridgeMessage === "function") {
+            window.parent.saeivPostBridgeMessage(payload);
+          }
+        } catch (_) { }
+        try {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ scope: WIDGET_BRIDGE_SCOPE, channel: WIDGET_BRIDGE_CHANNEL, payload: payload, ts: Date.now() }));
+          }
+        } catch (_) { }
+      }
+
+      function connectWs() {
+        try {
+          ws = new WebSocket(WIDGET_BRIDGE_WS_URL);
+          ws.addEventListener("open", sendRequest);
+          ws.addEventListener("message", function (evt) {
+            try { handleEnvelope(JSON.parse(evt.data)); } catch (_) { }
+          });
+          ws.addEventListener("close", function () { setTimeout(connectWs, 900); });
+        } catch (_) {
+          setTimeout(connectWs, 1200);
+        }
+      }
+
+      window.addEventListener("message", function (event) { handleEnvelope(event.data); });
+
+      setInterval(readHostBridgeState, 100);
+      setInterval(sendRequest, 1000);
+      setInterval(function () { publishPassengerState(true); }, 800);
+
+      readHostBridgeState();
+      sendRequest();
+      connectWs();
+      publishPassengerState(true);
+
+      window.busStatusAdd = function (n) { enqueue("in", Number(n) || 1); };
+      window.busStatusRemove = function (n) { enqueue("out", Number(n) || 1); };
+      window.busStatusWaiting = function (n) { showWaitingPassengers(Number(n) || 1); };
+
+      function updateScale() {
+        var baseW = 120;
+        var baseH = 260;
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        if (w === 0 || h === 0) return;
+
+        var scale = Math.min(w / baseW, h / baseH);
+        if (scale > 2.5) scale = 2.5;
+        if (scale < 0.2) scale = 0.2;
+
+        var sceneCenter = document.querySelector('.scene-center');
+        if (sceneCenter) {
+          sceneCenter.style.transform = "scale(" + scale + ")";
+        }
+      }
+
+      window.addEventListener("resize", updateScale);
+      updateScale();
+
+    }());
+  </script>
+</body>
+
+</html>

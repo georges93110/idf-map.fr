@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Telemetry WebSocket</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      color-scheme: light;
+      --bg: #f3f4f7;
+      --panel: #ffffff;
+      --row: #fbfbfc;
+      --row-alt: #f6f7f9;
+      --border: #d8dde6;
+      --line: #b8c0cc;
+      --text: #151922;
+      --muted: #697386;
+      --num: #087d20;
+      --bool: #a100b5;
+      --string: #0645ad;
+      --null: #7a7f89;
+      --error: #b42318;
+      --ok: #0a7f36;
+      --warn: #b35b00;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, sans-serif;
+      padding: 16px;
+    }
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    input, button {
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      padding: 9px 10px;
+    }
+    button {
+      cursor: pointer;
+      background: #eef2f7;
+    }
+    button:hover { background: #e3e9f2; }
+    .status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .pill {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      padding: 4px 10px;
+    }
+    .pill.ok { color: var(--ok); border-color: #9bd5ad; }
+    .pill.bad { color: var(--error); border-color: #e2aaa5; }
+    .pill.warn { color: var(--warn); border-color: #e7c28b; }
+    .viewer {
+      min-height: calc(100vh - 92px);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: auto;
+      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+      font-family: Consolas, "Segoe UI", ui-monospace, monospace;
+      font-size: 17px;
+      line-height: 1.55;
+    }
+    .empty {
+      padding: 18px;
+      color: var(--muted);
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 14px;
+    }
+    .node {
+      position: relative;
+    }
+    .row {
+      position: relative;
+      display: flex;
+      align-items: baseline;
+      min-height: 30px;
+      padding: 2px 10px 2px calc(14px + var(--depth) * 22px);
+      background: var(--row);
+      white-space: nowrap;
+    }
+    .row:nth-child(even) {
+      background: var(--row-alt);
+    }
+    .row::before {
+      content: "";
+      position: absolute;
+      left: calc(9px + var(--depth) * 22px);
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--line);
+      opacity: 0.9;
+    }
+    .row::after {
+      content: "";
+      position: absolute;
+      left: calc(9px + var(--depth) * 22px);
+      top: 15px;
+      width: 10px;
+      height: 1px;
+      background: var(--line);
+    }
+    .twisty {
+      width: 18px;
+      margin-right: 3px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+    }
+    .spacer {
+      width: 21px;
+      flex: 0 0 21px;
+    }
+    .key {
+      color: var(--text);
+    }
+    .colon {
+      color: var(--muted);
+      margin: 0 5px;
+    }
+    .value.number { color: var(--num); }
+    .value.boolean { color: var(--bool); }
+    .value.string { color: var(--string); }
+    .value.null { color: var(--null); }
+    .summary {
+      color: var(--muted);
+      margin-left: 6px;
+      font-size: 0.9em;
+    }
+    .children.collapsed {
+      display: none;
+    }
+    @media (max-width: 720px) {
+      body { padding: 10px; }
+      .topbar { grid-template-columns: 1fr; }
+      .viewer { font-size: 14px; min-height: calc(100vh - 154px); }
+      .row { padding-left: calc(10px + var(--depth) * 16px); }
+      .row::before { left: calc(6px + var(--depth) * 16px); }
+      .row::after { left: calc(6px + var(--depth) * 16px); width: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <input id="wsUrl" value="ws://127.0.0.1:3001" aria-label="URL WebSocket" spellcheck="false">
+    <button id="connectBtn" type="button">Connecter</button>
+    <button id="expandBtn" type="button">Tout ouvrir</button>
+  </div>
+  <div class="status">
+    <span id="statePill" class="pill warn">deconnecte</span>
+    <span id="countPill" class="pill">messages: 0</span>
+    <span id="timePill" class="pill">dernier: -</span>
+  </div>
+  <main id="viewer" class="viewer">
+    <div class="empty">En attente du WebSocket...</div>
+  </main>
+
+  <script>
+    (function () {
+      const wsUrl = document.getElementById('wsUrl');
+      const connectBtn = document.getElementById('connectBtn');
+      const expandBtn = document.getElementById('expandBtn');
+      const statePill = document.getElementById('statePill');
+      const countPill = document.getElementById('countPill');
+      const timePill = document.getElementById('timePill');
+      const viewer = document.getElementById('viewer');
+
+      let ws = null;
+      let reconnectTimer = null;
+      let messageCount = 0;
+      let latestTelemetry = null;
+      let latestGameContext = null;
+      let allExpanded = true;
+
+      function setState(text, kind) {
+        statePill.textContent = text;
+        statePill.className = 'pill ' + (kind || '');
+      }
+
+      function stamp() {
+        return new Date().toLocaleTimeString();
+      }
+
+      function connect() {
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = null;
+        }
+        if (ws) {
+          try { ws.close(); } catch (_) {}
+          ws = null;
+        }
+        setState('connexion', 'warn');
+        ws = new WebSocket(wsUrl.value.trim() || 'ws://127.0.0.1:3001');
+        ws.onopen = () => setState('connecte', 'ok');
+        ws.onerror = () => setState('erreur websocket', 'bad');
+        ws.onclose = () => {
+          setState('deconnecte - reconnexion', 'warn');
+          reconnectTimer = setTimeout(connect, 1500);
+        };
+        ws.onmessage = (event) => {
+          messageCount += 1;
+          countPill.textContent = 'messages: ' + messageCount;
+          timePill.textContent = 'dernier: ' + stamp();
+          handleMessage(event.data);
+        };
+      }
+
+      function handleMessage(raw) {
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (_) {
+          render({ raw });
+          return;
+        }
+
+        if (data && data.type === 'gameContext') {
+          latestGameContext = data;
+          if (latestTelemetry && !latestTelemetry.gameContext) {
+            latestTelemetry = Object.assign({}, latestTelemetry, { gameContext: latestGameContext });
+          }
+          render(latestTelemetry || { gameContext: latestGameContext });
+          return;
+        }
+
+        if (data && data.type && data.type !== 'gameContext') {
+          return;
+        }
+
+        latestTelemetry = data;
+        if (latestGameContext && latestTelemetry && !latestTelemetry.gameContext) {
+          latestTelemetry = Object.assign({}, latestTelemetry, { gameContext: latestGameContext });
+        }
+        render(latestTelemetry);
+      }
+
+      function valueClass(value) {
+        if (value === null || value === undefined) return 'null';
+        if (Array.isArray(value)) return 'array';
+        return typeof value;
+      }
+
+      function valueText(value) {
+        if (value === null) return 'null';
+        if (value === undefined) return 'undefined';
+        if (typeof value === 'string') return value;
+        if (typeof value === 'number') return Number.isFinite(value) ? String(value) : 'NaN';
+        if (typeof value === 'boolean') return String(value);
+        return '';
+      }
+
+      function summary(value) {
+        if (Array.isArray(value)) return '[' + value.length + ']';
+        if (value && typeof value === 'object') return '{' + Object.keys(value).length + '}';
+        return '';
+      }
+
+      function appendNode(parent, key, value, depth) {
+        const isObject = value && typeof value === 'object';
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.style.setProperty('--depth', depth);
+
+        if (isObject) {
+          const twisty = document.createElement('span');
+          twisty.className = 'twisty';
+          twisty.textContent = allExpanded ? '▾' : '▸';
+          row.appendChild(twisty);
+        } else {
+          const spacer = document.createElement('span');
+          spacer.className = 'spacer';
+          row.appendChild(spacer);
+        }
+
+        const keyEl = document.createElement('span');
+        keyEl.className = 'key';
+        keyEl.textContent = key;
+        row.appendChild(keyEl);
+
+        const colon = document.createElement('span');
+        colon.className = 'colon';
+        colon.textContent = ':';
+        row.appendChild(colon);
+
+        if (isObject) {
+          const sum = document.createElement('span');
+          sum.className = 'summary';
+          sum.textContent = summary(value);
+          row.appendChild(sum);
+        } else {
+          const val = document.createElement('span');
+          val.className = 'value ' + valueClass(value);
+          val.textContent = valueText(value);
+          row.appendChild(val);
+        }
+
+        parent.appendChild(row);
+
+        if (isObject) {
+          const children = document.createElement('div');
+          children.className = 'children' + (allExpanded ? '' : ' collapsed');
+          const entries = Array.isArray(value)
+            ? value.map((item, index) => [String(index), item])
+            : Object.keys(value).map((name) => [name, value[name]]);
+          entries.forEach(([childKey, childValue]) => appendNode(children, childKey, childValue, depth + 1));
+          parent.appendChild(children);
+
+          row.querySelector('.twisty').addEventListener('click', () => {
+            const collapsed = children.classList.toggle('collapsed');
+            row.querySelector('.twisty').textContent = collapsed ? '▸' : '▾';
+          });
+        }
+      }
+
+      function render(data) {
+        viewer.textContent = '';
+        if (!data || typeof data !== 'object') {
+          const empty = document.createElement('div');
+          empty.className = 'empty';
+          empty.textContent = 'Aucune donnee JSON.';
+          viewer.appendChild(empty);
+          return;
+        }
+        Object.keys(data).forEach((key) => appendNode(viewer, key, data[key], 0));
+      }
+
+      connectBtn.addEventListener('click', connect);
+      expandBtn.addEventListener('click', () => {
+        allExpanded = !allExpanded;
+        expandBtn.textContent = allExpanded ? 'Tout fermer' : 'Tout ouvrir';
+        render(latestTelemetry || (latestGameContext ? { gameContext: latestGameContext } : null));
+      });
+      expandBtn.textContent = 'Tout fermer';
+      connect();
+    })();
+  </script>
+</body>
+</html>

@@ -2587,8 +2587,15 @@
         return String(Math.max(0, Math.min(99, Math.floor(num)))).padStart(2, "0");
       }
 
+      function getNowMsFromState() {
+        const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : null;
+        const nowMs = Number(state && state.clockNowMs);
+        if (Number.isFinite(nowMs) && nowMs > 0) return nowMs;
+        return Date.now();
+      }
+
       function currentClockText() {
-        const now = new Date();
+        const now = new Date(getNowMsFromState());
         const h = String(now.getHours()).padStart(2, "0");
         const m = String(now.getMinutes()).padStart(2, "0");
         return `${h}:${m}`;
@@ -2604,7 +2611,7 @@
         return (hh * 60) + mm;
       }
       function signedMinutesFromNowToRef(refMinutes) {
-        const now = new Date();
+        const now = new Date(getNowMsFromState());
         const nowMinutes = (now.getHours() * 60) + now.getMinutes();
         let delta = nowMinutes - refMinutes;
         if (delta > 720) delta -= 1440;
@@ -2654,7 +2661,7 @@
       }
 
       function currentDateText() {
-        const now = new Date();
+        const now = new Date(getNowMsFromState());
         const dd = String(now.getDate()).padStart(2, "0");
         const mm = String(now.getMonth() + 1).padStart(2, "0");
         const yyyy = String(now.getFullYear());
@@ -2722,6 +2729,18 @@
         updateDiffusionActionButtons(latestStatePayload);
       }
 
+      function resolveGlobalAudioVolumeMultiplier(payload) {
+        const data = payload && typeof payload === "object" ? payload : {};
+        const raw = Number(data.globalAudioVolumeMultiplier);
+        if (!Number.isFinite(raw)) return 1;
+        return Math.max(0, Math.min(1, raw));
+      }
+
+      function applyDiffusionAudioVolumeFromPayload(payload) {
+        if (!diffusionAudioEl) return;
+        diffusionAudioEl.volume = resolveGlobalAudioVolumeMultiplier(payload);
+      }
+
       function stopDiffusionAudioPlayback() {
         diffusionAudioToken += 1;
         const active = diffusionAudioEl;
@@ -2747,9 +2766,7 @@
         diffusionAudioToken = token;
         const audio = new Audio(targetUrl);
         diffusionAudioEl = audio;
-        const mulRaw = Number(state.globalAudioVolumeMultiplier);
-        const safeVolume = Number.isFinite(mulRaw) ? Math.max(0, Math.min(1, mulRaw)) : 1;
-        audio.volume = safeVolume;
+        audio.volume = resolveGlobalAudioVolumeMultiplier(state);
         const finish = () => {
           if (token !== diffusionAudioToken) return;
           diffusionAudioEl = null;
@@ -2873,6 +2890,7 @@
       function renderState(payload) {
         const data = withDevGlobalAudioFallback(payload);
         latestStatePayload = data;
+        applyDiffusionAudioVolumeFromPayload(data);
         updateDiffusionActionButtons(data);
         const hasLineSelection = data.lineSelected === true || !!String(data.selectedLineUid || data.lineNumber || "").trim();
 

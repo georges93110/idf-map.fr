@@ -1,0 +1,110 @@
+IDF MAP - GAME MANAGER
+Index des fichiers (pour interactions futures)
+Date: 2026-05-03
+
+1) FICHIER PRINCIPAL
+- game2.html
+  - Role: Page principale du Game Overlay.
+  - CSS charge:
+    - game_manager/css/game2.css
+  - JS charges (ordre):
+    - game_manager/js/core/game2-meta.js
+    - game_manager/js/core/game2-hooks.js
+    - game_manager/js/i18n/game2-i18n.js
+    - game_manager/js/runtime/game2-main.js
+  - Changement: les anciens styles inline ont ete remplaces par des classes CSS.
+
+2) DOSSIER CSS
+- game_manager/css/game2.css
+  - Role: point d'entree CSS unique pour game2.html.
+  - Importe les feuilles organisees par domaine ci-dessous.
+
+- game_manager/css/core/game2-core.css
+  - Contenu: base visuelle, layout principal, telemetrie, overlay root, fenetres overlay et controles generiques.
+
+- game_manager/css/menu/game2-menu.css
+  - Contenu: menu principal, onglets, modes de jeu, reglages, modales, mode edition, ecran de chargement.
+
+- game_manager/css/widgets/game2-widgets.css
+  - Contenu: styles des blocs widgets et status convoi, pause telemetrie, options de demarrage.
+
+- game_manager/css/components/game2-html.css
+  - Contenu: classes extraites des anciens attributs style="" de game2.html.
+  - Objectif: garder game2.html propre et eviter le CSS inline.
+
+3) DOSSIER JS
+- game_manager/js/core/game2-meta.js
+  - Contenu: namespace GAME2_MANAGER, version et date de chargement.
+
+- game_manager/js/core/game2-hooks.js
+  - Contenu: point d'extension reserve pour futurs hooks manager.
+
+- game_manager/js/i18n/game2-i18n.js
+  - Contenu: correcteur/normaliseur de textes et point d'acces window.game2I18n.
+  - Charge avant le runtime pour que le DOM puisse etre normalise.
+
+- game_manager/js/runtime/game2-main.js
+  - Contenu: chargeur runtime court.
+  - Charge et assemble les fichiers game_manager/js/runtime/parts/*.js dans l'ordre ci-dessous.
+  - Note: les parts partagent la meme fermeture runtime via new Function(...), pour conserver les variables internes sans refactor risqué.
+
+- game_manager/js/runtime/parts/00-state-and-config.js
+  - Contenu: etat global, configuration, helpers WebView.
+
+- game_manager/js/runtime/parts/01-bridge-and-saeiv-state.js
+  - Contenu: singleton, bridge widgets, etat SAEIV/passagers.
+
+- game_manager/js/runtime/parts/02-saeiv-audio-and-dbus.js
+  - Contenu: audio SAEIV, DBus/FIS, selection de routes.
+
+- game_manager/js/runtime/parts/03-navigation-routing.js
+  - Contenu: catalogue lignes, graph NAV, calculs de route/ETA.
+
+- game_manager/js/runtime/parts/04-waze-bridge.js
+  - Contenu: bridge Waze, position manuelle, helpers debug.
+
+- game_manager/js/runtime/parts/05-telemetry-and-shortcuts.js
+  - Contenu: telemetrie, WebSocket, raccourcis clavier.
+
+- game_manager/js/runtime/parts/06-settings-and-modes.js
+  - Contenu: reglages, modes de jeu, options de widgets.
+
+- game_manager/js/runtime/parts/07-widgets-output.js
+  - Contenu: creation widgets, lanes, rendu stage, tabs/PIP.
+
+- game_manager/js/runtime/parts/08-overlay-ui-state.js
+  - Contenu: etat overlay, persistance layout, rendu fenetres.
+
+- game_manager/js/runtime/parts/09-interactions-main-menu.js
+  - Contenu: bindings manager, menu principal, statut convoi.
+
+- game_manager/js/runtime/parts/10-startup.js
+  - Contenu: initialisation runtime et lancement.
+
+4) DOSSIER LANG
+- game_manager/lang/fr.json
+  - Contenu: dictionnaire FR minimal utilise par game2-i18n.js.
+  - Objectif: eviter une requete manquante et permettre d'ajouter des traductions plus tard.
+
+5) DOSSIER WIDGETS (conserve)
+- widgets/saeiv.html
+  - Widget SAEIV complet.
+- widgets/saeiv_mini.html
+  - HUD ligne simple / version mini.
+- widgets/bus_status.html
+  - Statut embarquement passagers.
+- widgets/waze.html
+  - GPS style Waze.
+- widgets/gps_mini.html
+  - GPS compact.
+- widgets/ets2_roadasvisor_old.html
+  - GPS ETS2 ancien.
+- widgets/ws_dev.html
+  - Outil WebSocket DEV.
+
+6) GARANTIES
+- Les anciens chemins directs game_manager/css/game2-*.css et game_manager/js/game2-*.js ne sont plus les chemins actifs.
+- game2.html utilise maintenant un point d'entree CSS unique et des scripts JS ranges par role.
+- game2-main.js n'est plus le fichier monolithique: la logique principale est decoupee dans runtime/parts/.
+- ./widgets/ est garde.
+- Aucun fichier de logique hors game2.html et ./game_manager/ n'a ete edite pour ce refactoring.
