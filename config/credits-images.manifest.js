@@ -37,7 +37,8 @@ window.CREDITS_IMAGES_MANIFEST = {
     "files": [
       "1_Hebergement Serveur Convoi.png",
       "2_ Installateur automatique IDF Map.png",
-      "3_ Modèle 3D Péage du Parking de Disneyland Paris.png"
+      "3_ Modèle 3D Radars Français.png",
+      "4_ Modèle 3D Péage du Parking de Disneyland Paris.png"
     ],
     "hasEndMarker": true
   },
@@ -66,7 +67,7 @@ window.CREDITS_IMAGES_MANIFEST = {
       "1_Iveco Crossway RATP.png",
       "2_Renault Clio 4 ASVP.png",
       "3_Neoplan Tourliner FLIXBUS.png",
-      "4_Renault Master DIRIF.png",
+      "4_Ford Transit DIRIF.png",
       "5_ Peugeot 2008 Police Nationale.png",
       "6_ Remorque Ville de Neuilly-Plaisance.png",
       "7_Solaris Urbino 12 RATP.png",

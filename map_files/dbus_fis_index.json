@@ -168,5 +168,11 @@
         "Bienvenue (Français)"
       ]
     }
+  },
+  "validation": {
+    "_files": [
+      "navigo_ratp_error",
+      "navigo_ratp_pass"
+    ]
   }
 }
