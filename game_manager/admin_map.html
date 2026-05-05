@@ -111,7 +111,7 @@
     (function () {
       "use strict";
 
-      const WS_URL = "ws://panel.idf-map.fr:9377";
+      const WS_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       const MAP_FILES_ROOT = "../map_files";
       const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
       const WS_RECONNECT_MS = 2000;
@@ -152,7 +152,10 @@
         "display_name",
         "steamDisplayName",
         "steam_display_name",
-        "nickname"
+        "nickname",
+        "from",
+        "playerId",
+        "player_id"
       ];
 
       const map = L.map("map", {
@@ -327,6 +330,7 @@
           "steam",
           "metadata",
           "meta",
+          "from",
           "playerInfo",
           "player_info"
         ];
@@ -393,19 +397,19 @@
           if (!headingUnit) headingUnit = readString(source, ["headingUnit", "heading_unit", "unit"]);
           if (!headingConvention) headingConvention = readString(source, ["headingConvention", "heading_convention", "headingMode", "heading_mode"]);
           if (!steamid) steamid = readString(source, ["steamid", "steamId", "steamID", "steam_id"]);
-          if (!name) name = readString(source, ["name", "steamName", "steam_name", "playerName", "player_name", "username", "userName", "personaname"]);
-          if (!displayname) displayname = readString(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "nickname"]);
+          if (!displayname) displayname = readString(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "personaname", "personaName", "persona_name", "nickname"]);
+          if (!name) name = readString(source, ["name", "playerName", "player_name", "username", "userName", "from", "playerId", "player_id"]);
         }
 
         if (x === null || z === null) return null;
 
-        const id = steamid || name || displayname || `player-${fallbackIndex}`;
+        const id = steamid || displayname || name || `player-${fallbackIndex}`;
         return {
           id,
           steamid,
           name,
           displayname,
-          label: name || displayname || steamid || "Joueur",
+          label: displayname || name || steamid || "",
           x,
           z,
           heading: Number.isFinite(Number(heading)) ? Number(heading) : 0,
@@ -451,12 +455,13 @@
 
       function playerIcon(player) {
         const heading = headingToMarkerRotationDeg(player.heading, player.headingConvention, player.headingUnit);
-        const label = escapeHtml(player.label || "Joueur");
+        const label = String(player.label || "").trim();
+        const labelHtml = label ? `<div class="player-marker-label">${escapeHtml(label)}</div>` : "";
         return L.divIcon({
           className: "",
           iconSize: [34, 34],
           iconAnchor: [17, 17],
-          html: `<div class="player-marker"><div class="player-marker-dot" style="--heading:${heading.toFixed(1)}deg"></div><div class="player-marker-label">${label}</div></div>`
+          html: `<div class="player-marker"><div class="player-marker-dot" style="--heading:${heading.toFixed(1)}deg"></div>${labelHtml}</div>`
         });
       }
 
@@ -516,27 +521,41 @@
         console.log(payload);
       }
 
+      function fillIdentityFields(target, identity) {
+        if (!target || typeof target !== "object" || Array.isArray(target)) return target;
+        const merged = Object.assign({}, target);
+        for (const key of identityKeys) {
+          if (!Object.prototype.hasOwnProperty.call(identity, key)) continue;
+          if (Object.prototype.hasOwnProperty.call(merged, key) && merged[key] != null && String(merged[key]).trim() !== "") continue;
+          merged[key] = identity[key];
+        }
+        return merged;
+      }
+
       function mergeEnvelopeIdentity(message) {
         if (!message || typeof message !== "object") return message;
         const payload = Object.prototype.hasOwnProperty.call(message, "data") ? message.data : message;
         const identity = readIdentity(message);
-        function fillIdentity(target) {
-          if (!target || typeof target !== "object" || Array.isArray(target)) return target;
-          const merged = Object.assign({}, target);
-          for (const key of identityKeys) {
-            if (!Object.prototype.hasOwnProperty.call(identity, key)) continue;
-            if (Object.prototype.hasOwnProperty.call(merged, key) && merged[key] != null && String(merged[key]).trim() !== "") continue;
-            merged[key] = identity[key];
-          }
-          return merged;
-        }
-        if (Array.isArray(payload)) return payload.map(fillIdentity);
-        return fillIdentity(payload);
+        if (Array.isArray(payload)) return payload.map((item) => fillIdentityFields(item, identity));
+        return fillIdentityFields(payload, identity);
+      }
+
+      function unwrapTelemetryEnvelope(payload) {
+        if (!payload || typeof payload !== "object" || Array.isArray(payload)) return payload;
+        const action = String(payload.action || "").trim().toLowerCase();
+        const source = String(payload.source || "").trim().toLowerCase();
+        if (action !== "telemetry" && source !== "game2") return payload;
+        const inner = payload.data || payload.telemetry || payload.payload;
+        if (!inner || typeof inner !== "object") return payload;
+        const identity = readIdentity(payload);
+        if (Array.isArray(inner)) return inner.map((item) => fillIdentityFields(item, identity));
+        return fillIdentityFields(inner, identity);
       }
 
       function handleTelemetryPayload(payload) {
-        showData(payload);
-        updatePlayerMarkers(collectPlayers(payload));
+        const telemetryPayload = unwrapTelemetryEnvelope(payload);
+        showData(telemetryPayload);
+        updatePlayerMarkers(collectPlayers(telemetryPayload));
         showError("");
       }
 

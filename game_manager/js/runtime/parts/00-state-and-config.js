@@ -429,7 +429,7 @@
 
       var activeOverlayDrag = null;
       var TELEMETRY_WS_URL = "ws://localhost:3001";
-      var REMOTE_SERVER_WS_DEFAULT_URL = "ws://panel.idf-map.fr:9377";
+      var REMOTE_SERVER_WS_DEFAULT_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       var remotePanelTelemetryInFlight = false;
       var remotePanelTelemetryQueuedPayload = null;
       var OVERLAY_NOTIFICATION_MIN_DURATION_MS = 2400;

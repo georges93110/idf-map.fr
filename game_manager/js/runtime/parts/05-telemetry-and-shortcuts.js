@@ -1234,9 +1234,16 @@
         return normalizeRemotePanelWsUrl(REMOTE_SERVER_WS_DEFAULT_URL);
       }
       function buildRemotePanelTelemetryPayload(raw, signal) {
-        if (raw && typeof raw === "object") return raw;
-        if (signal && typeof signal === "object") return signal;
-        return null;
+        var payload = raw && typeof raw === "object"
+          ? raw
+          : (signal && typeof signal === "object" ? signal : null);
+        if (!payload) return null;
+        return {
+          source: "game2",
+          action: "telemetry",
+          time: Date.now(),
+          data: payload
+        };
       }
       function getRemotePanelWsSocket() {
         return remoteServerWs && remoteServerWs.socket ? remoteServerWs.socket : null;
