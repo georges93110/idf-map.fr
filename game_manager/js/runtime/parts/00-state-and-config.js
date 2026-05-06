@@ -615,6 +615,7 @@
         queue: [],
         audio: null,
         playing: false,
+        preparePromise: null,
         playbackToken: 0,
         currentClipName: "",
         currentClipEndedHooks: []

@@ -1,6 +1,6 @@
 <lines map_type="other">
 
-	<line uid="0" number="24" adultCoef="75" reducedRate="15" city="true">
+	<line uid="24" number="24" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="24: Gare de Lyon - Maison de la RATP > Centre Commercial">
 					<busstop uid="47" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
@@ -25,7 +25,7 @@
 			</route>
 	</line>
 
-	<line uid="1" number="63" adultCoef="75" reducedRate="15" city="true">
+	<line uid="63" number="63" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="63: Trocadero > Porte de la Muette - Octave Feuillet">
 					<busstop uid="58" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
@@ -46,7 +46,7 @@
 			</route>
 	</line>
 
-	<line uid="2" number="109" adultCoef="75" reducedRate="15" city="true">
+	<line uid="109" number="109" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="109: Terroirs de France > Centre Commercial">
 					<busstop uid="44" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="2" nextStopPrice="0"/>
@@ -60,7 +60,7 @@
 			</route>
 	</line>
 
-	<line uid="3" number="112" adultCoef="75" reducedRate="15" city="true">
+	<line uid="112" number="112" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="112: Château de Vincennes > Plaine de la Faluère">
 					<busstop uid="87" passengersMin="0" passengersMax="20" coefOn="100" nextStopTime="2" nextStopPrice="0"/>
@@ -79,7 +79,7 @@
 			</route>
 	</line>
 
-	<line uid="4" number="114" adultCoef="75" reducedRate="15" city="true">
+	<line uid="114" number="114" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="114: Villemomble - Les Coquetiers > Neuilly-Plaisance RER">
 					<busstop uid="17" passengersMin="1" passengersMax="5" coefOn="100" nextStopTime="2" nextStopPrice="0"/>
@@ -236,7 +236,7 @@
 			</route>
 	</line>
 
-	<line uid="5" number="121" adultCoef="75" reducedRate="15" city="true">
+	<line uid="121" number="121" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="121: Château de Villemomble > Bois-Perrier Nord">
 					<busstop uid="38" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
@@ -257,7 +257,7 @@
 			</route>
 	</line>
 
-	<line uid="6" number="124" adultCoef="75" reducedRate="15" city="true">
+	<line uid="124" number="124" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="124: Nanteuil > Gare de Rosny-sous-Bois RER">
 					<busstop uid="96" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="4" nextStopPrice="0"/>
@@ -266,7 +266,7 @@
 			</route>
 	</line>
 
-	<line uid="7" number="210" adultCoef="75" reducedRate="15" city="true">
+	<line uid="210" number="210" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="210 (Dimanche): Château de Vincennes > Nogent-sur-Marne RER - Pierre Sémard">
 					<busstop uid="263" passengersMin="0" passengersMax="10" coefOn="70" nextStopTime="3" nextStopPrice="0"/>
@@ -283,7 +283,7 @@
 			</route>
 	</line>
 
-	<line uid="18" number="221" adultCoef="75" reducedRate="15" city="true">
+	<line uid="221" number="221" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="221: Château de Villemomble > Bagnolet - Gallieni">
 					<busstop uid="43" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
@@ -308,7 +308,7 @@
 			</route>
 	</line>
 
-	<line uid="8" number="303" adultCoef="75" reducedRate="15" city="true">
+	<line uid="303" number="303" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="303 (Soirée): Château de Villemomble > Cimetière de Villemomble">
 					<busstop uid="43" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
@@ -325,7 +325,7 @@
 			</route>
 	</line>
 
-	<line uid="9" number="351" adultCoef="75" reducedRate="15" city="true">
+	<line uid="351" number="351" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="351: Pyrénées – Docteur Netter > Auguste Polissard">
 					<busstop uid="126" passengersMin="0" passengersMax="50" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
@@ -353,7 +353,7 @@
 			</route>
 	</line>
 
-	<line uid="10" number="Réseau Titus" adultCoef="75" reducedRate="15" city="true">
+	<line uid="10000" number="Réseau Titus" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="Titus 1: Nanteuil Z.I. > Gare de Rosny-sous-Bois RER">
 					<busstop uid="100" passengersMin="0" passengersMax="25" coefOn="75" nextStopTime="4" nextStopPrice="0"/>
@@ -371,7 +371,7 @@
 			</route>
 	</line>
 
-	<line uid="11" number="N11" adultCoef="75" reducedRate="15" city="true">
+	<line uid="10011" number="N11" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="N11: Pyrénées – Docteur Netter > Château de Vincennes">
 					<busstop uid="126" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="4" nextStopPrice="0"/>
@@ -395,7 +395,7 @@
 			</route>
 	</line>
 
-	<line uid="12" number="N23" adultCoef="75" reducedRate="15" city="true">
+	<line uid="10023" number="N23" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="N23: Château de Villemomble > Rosny 2 Nord">
 					<busstop uid="43" passengersMin="0" passengersMax="10" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
@@ -420,7 +420,7 @@
 			</route>
 	</line>
 
-	<line uid="13" number="N33" adultCoef="75" reducedRate="15" city="true">
+	<line uid="10033" number="N33" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="N33: Aubert > Nogent-sur-Marne RER - Pierre Sémard">
 					<busstop uid="154" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
@@ -445,7 +445,7 @@
 			</route>
 	</line>
 
-	<line uid="14" number="FLIXBUS" adultCoef="75" reducedRate="15" city="false">
+	<line uid="20000" number="FLIXBUS" adultCoef="75" reducedRate="15" city="false">
 
 			<route uid="1" name="FLIXBUS: Paris Bercy > Disneyland Paris">
 					<busstop uid="3" passengersMin="0" passengersMax="30" coefOn="100" nextStopTime="30" nextStopPrice="30"/>
@@ -458,7 +458,7 @@
 			</route>
 	</line>
 
-	<line uid="15" number="Scolaire" adultCoef="75" reducedRate="15" city="true">
+	<line uid="30000" number="Scolaire" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Ferme Pédagogique de Rosny-sous-Bois">
 					<busstop uid="101" passengersMin="35" passengersMax="35" coefOn="95" nextStopTime="5" nextStopPrice="0"/>
@@ -1741,7 +1741,7 @@
 			</route>
 	</line>
 
-	<line uid="16" number="Fictive" adultCoef="75" reducedRate="15" city="true">
+	<line uid="40000" number="Fictive" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="Autocar: Marché International de Rungis > Le Raincy - Villemomble - Montfermeil RER">
 					<busstop uid="2" passengersMin="0" passengersMax="30" coefOn="100" nextStopTime="10" nextStopPrice="0"/>
@@ -1872,7 +1872,7 @@
 			</route>
 	</line>
 
-	<line uid="17" number="Bus de Remplacement" adultCoef="75" reducedRate="15" city="true">
+	<line uid="50000" number="Bus de Remplacement" adultCoef="75" reducedRate="15" city="true">
 
 			<route uid="1" name="RER A: Nation > Neuilly-Plaisance">
 					<busstop uid="265" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="6" nextStopPrice="0"/>

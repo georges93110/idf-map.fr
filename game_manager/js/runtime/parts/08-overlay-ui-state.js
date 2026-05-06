@@ -1152,7 +1152,34 @@
         });
 
         editOverlay.appendChild(widgetName);
-        editOverlay.appendChild(bigCloseBtn);
+        var editCenterActions = document.createElement("div");
+        editCenterActions.className = "edit-mode-center-actions";
+        editCenterActions.appendChild(bigCloseBtn);
+        if (type === "saeiv") {
+          var saeivHelpBtn = document.createElement("button");
+          saeivHelpBtn.type = "button";
+          saeivHelpBtn.className = "edit-mode-center-help-btn";
+          saeivHelpBtn.textContent = "?";
+          saeivHelpBtn.setAttribute("aria-label", "Ouvrir les IDs lignes SAEIV");
+          saeivHelpBtn.title = "IDs lignes SAEIV";
+          saeivHelpBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            var helpUrl = new URL("game_manager/id_lignes_saeiv.html", window.location.href).href;
+            if (typeof requestOpenUrl === "function") {
+              requestOpenUrl(helpUrl);
+            } else if (typeof openGame2Tab === "function") {
+              openGame2Tab(helpUrl, "idf_saeiv_line_ids");
+            } else {
+              window.open(helpUrl, "_blank", "noopener,noreferrer");
+            }
+            if (typeof showOverlayNotification === "function") {
+              showOverlayNotification("Lien ouvert dans votre navigateur", 1800);
+            }
+          });
+          editCenterActions.appendChild(saeivHelpBtn);
+        }
+        editOverlay.appendChild(editCenterActions);
         section.appendChild(editOverlay);
 
         var resizeHandle = document.createElement("div");
@@ -1175,7 +1202,15 @@
             }
 
             if (event.button !== 0) return;
-            if (event.target && event.target.closest && (event.target.closest(".resize-handle") || event.target.closest(".edit-mode-center-close-btn"))) return;
+            if (
+              event.target &&
+              event.target.closest &&
+              (
+                event.target.closest(".resize-handle") ||
+                event.target.closest(".edit-mode-center-close-btn") ||
+                event.target.closest(".edit-mode-center-help-btn")
+              )
+            ) return;
 
             var state = ensureWindowState(type);
             if (!state) return;

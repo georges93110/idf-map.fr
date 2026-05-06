@@ -34,6 +34,8 @@
       position: relative;
       width: 34px;
       height: 34px;
+      cursor: pointer;
+      pointer-events: auto;
     }
 
     .player-marker-dot {
@@ -47,6 +49,7 @@
         0 0 0 2px rgba(0, 0, 0, 0.44),
         0 4px 12px rgba(0, 0, 0, 0.45);
       box-sizing: border-box;
+      pointer-events: auto;
     }
 
     .player-marker-dot::before {
@@ -62,6 +65,18 @@
       transform: translate(-50%, -62%) rotate(var(--heading, 0deg));
       transform-origin: 50% 70%;
       filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+    }
+
+    .player-marker-dot.is-anonymous {
+      background: #000000;
+    }
+
+    .player-marker-dot.is-stale {
+      background: #ef4444;
+    }
+
+    .player-marker-dot.is-paused {
+      background: #facc15;
     }
 
     .player-marker-label {
@@ -99,13 +114,244 @@
     .map-error[hidden] {
       display: none !important;
     }
+
+    .player-filter-panel,
+    .player-legend {
+      position: fixed;
+      right: 12px;
+      z-index: 1000;
+      width: min(260px, calc(100vw - 24px));
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(10, 10, 12, 0.84);
+      color: #fff;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(10px);
+      box-sizing: border-box;
+    }
+
+    .player-filter-panel {
+      top: 12px;
+      padding: 10px;
+    }
+
+    .player-filter-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      font: 700 13px/1.2 Arial, Helvetica, sans-serif;
+    }
+
+    .player-filter-total {
+      color: rgba(255, 255, 255, 0.76);
+      font-weight: 700;
+    }
+
+    .player-filter-row {
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font: 700 12px/1.2 Arial, Helvetica, sans-serif;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .player-filter-row:first-of-type {
+      border-top: 0;
+    }
+
+    .player-filter-row input {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      accent-color: #2f8cff;
+      cursor: pointer;
+    }
+
+    .player-filter-count {
+      min-width: 34px;
+      color: rgba(255, 255, 255, 0.78);
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .player-legend {
+      bottom: 12px;
+      padding: 9px 10px;
+    }
+
+    .player-legend-title {
+      margin-bottom: 7px;
+      font: 700 12px/1.2 Arial, Helvetica, sans-serif;
+    }
+
+    .player-legend-row {
+      display: grid;
+      grid-template-columns: 16px 1fr;
+      align-items: center;
+      gap: 8px;
+      min-height: 22px;
+      color: rgba(255, 255, 255, 0.86);
+      font: 700 11px/1.2 Arial, Helvetica, sans-serif;
+    }
+
+    .player-legend-dot {
+      width: 12px;
+      height: 12px;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: #2f8cff;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.42);
+      box-sizing: border-box;
+    }
+
+    .player-legend-dot.is-paused {
+      background: #facc15;
+    }
+
+    .player-legend-dot.is-stale {
+      background: #ef4444;
+    }
+
+    .player-legend-dot.is-anonymous {
+      background: #000000;
+    }
+
+    .player-info-leaflet-popup .leaflet-popup-content-wrapper {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(10, 10, 12, 0.94);
+      color: #fff;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.44);
+      backdrop-filter: blur(10px);
+    }
+
+    .player-info-leaflet-popup .leaflet-popup-content {
+      width: min(520px, calc(100vw - 54px));
+      margin: 0;
+    }
+
+    .player-info-leaflet-popup .leaflet-popup-tip {
+      background: rgba(10, 10, 12, 0.94);
+    }
+
+    .player-info-popup {
+      max-height: min(560px, calc(100vh - 86px));
+      overflow: auto;
+      padding: 13px;
+      box-sizing: border-box;
+      font: 12px/1.35 Arial, Helvetica, sans-serif;
+    }
+
+    .player-info-title {
+      margin: 0 0 10px;
+      font: 800 16px/1.2 Arial, Helvetica, sans-serif;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .player-info-section {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .player-info-section:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .player-info-section-title {
+      margin-bottom: 6px;
+      color: rgba(255, 255, 255, 0.72);
+      font: 800 11px/1.2 Arial, Helvetica, sans-serif;
+      text-transform: uppercase;
+    }
+
+    .player-info-row {
+      display: grid;
+      grid-template-columns: minmax(126px, 34%) minmax(0, 1fr);
+      gap: 10px;
+      min-height: 21px;
+      align-items: start;
+    }
+
+    .player-info-key {
+      color: rgba(255, 255, 255, 0.62);
+      font-weight: 700;
+    }
+
+    .player-info-value {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      color: rgba(255, 255, 255, 0.92);
+      font-weight: 700;
+    }
+
+    .player-info-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .player-info-status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #2f8cff;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.78);
+    }
+
+    .player-info-status-dot.is-anonymous {
+      background: #000000;
+    }
+
+    .player-info-status-dot.is-stale {
+      background: #ef4444;
+    }
+
+    .player-info-status-dot.is-paused {
+      background: #facc15;
+    }
+
   </style>
 </head>
 <body>
   <div id="map" aria-label="Carte live"></div>
   <pre id="output" hidden></pre>
   <div id="mapError" class="map-error" hidden></div>
+  <div class="player-filter-panel" aria-label="Filtres joueurs">
+    <div class="player-filter-head">
+      <span>Joueurs</span>
+      <span id="playerTotalCount" class="player-filter-total">(0)</span>
+    </div>
+    <label class="player-filter-row">
+      <input id="filterSolo" type="checkbox" checked>
+      <span>Solo</span>
+      <span id="soloCount" class="player-filter-count">(0)</span>
+    </label>
+    <label class="player-filter-row">
+      <input id="filterConvoy" type="checkbox" checked>
+      <span>Serveur Convoi</span>
+      <span id="convoyCount" class="player-filter-count">(0)</span>
+    </label>
+  </div>
+  <div class="player-legend" aria-label="Légende joueurs">
+    <div class="player-legend-title">Légende</div>
+    <div class="player-legend-row"><span class="player-legend-dot"></span><span>Joueur actif</span></div>
+    <div class="player-legend-row"><span class="player-legend-dot is-paused"></span><span>Joueur en pause / dans le menu</span></div>
+    <div class="player-legend-row"><span class="player-legend-dot is-stale"></span><span>Joueur (signal perdu)</span></div>
+    <div class="player-legend-row"><span class="player-legend-dot is-anonymous"></span><span>Joueur (aucun pseudo détecté)</span></div>
+  </div>
 
+  <script src="../config/line-styles.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     (function () {
@@ -115,10 +361,19 @@
       const MAP_FILES_ROOT = "../map_files";
       const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
       const WS_RECONNECT_MS = 2000;
-      const PLAYER_STALE_MS = 15000;
+      const PLAYER_WARNING_MS = 1000;
+      const PLAYER_STALE_MS = 10000;
+      const PLAYER_STATE_REFRESH_MS = 500;
+      const PLAYER_GROUP_SOLO = "solo";
+      const PLAYER_GROUP_CONVOY = "convoy";
 
       const output = document.getElementById("output");
       const mapError = document.getElementById("mapError");
+      const filterSolo = document.getElementById("filterSolo");
+      const filterConvoy = document.getElementById("filterConvoy");
+      const soloCount = document.getElementById("soloCount");
+      const convoyCount = document.getElementById("convoyCount");
+      const playerTotalCount = document.getElementById("playerTotalCount");
 
       const minNativeZoom = 0;
       const maxNativeZoom = 8;
@@ -134,6 +389,10 @@
       let socket = null;
       let reconnectTimer = 0;
       const playerMarkers = new Map();
+      const playerFilters = {
+        [PLAYER_GROUP_SOLO]: true,
+        [PLAYER_GROUP_CONVOY]: true
+      };
       const identityKeys = [
         "steamid",
         "steamId",
@@ -175,6 +434,12 @@
         fadeAnimation: true,
         markerZoomAnimation: true
       });
+      const busRoutePane = map.createPane("busRoutePane");
+      busRoutePane.style.zIndex = "430";
+      busRoutePane.style.pointerEvents = "none";
+      const busStopPane = map.createPane("busStopPane");
+      busStopPane.style.zIndex = "520";
+      busStopPane.style.pointerEvents = "none";
 
       const fullBounds = L.latLngBounds(
         map.unproject(L.point(0, heightPx), maxNativeZoom),
@@ -249,6 +514,19 @@
         return map.unproject([px, py], maxNativeZoom);
       }
 
+      function routePointToLatLng(point) {
+        if (!point || typeof point !== "object") return null;
+        const x = Number(point.x ?? point.X);
+        const y = Number(point.y ?? point.Y ?? point.z ?? point.Z);
+        return toLatLng(x, y);
+      }
+
+      function routePointsToLatLngs(points) {
+        return (Array.isArray(points) ? points : [])
+          .map(routePointToLatLng)
+          .filter(Boolean);
+      }
+
       function readNumber(source, keys) {
         if (!source || typeof source !== "object") return null;
         for (const key of keys) {
@@ -264,9 +542,128 @@
         for (const key of keys) {
           if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
           const value = String(source[key] == null ? "" : source[key]).trim();
+          if (/^(null|nil|undefined)$/i.test(value)) continue;
           if (value) return value;
         }
         return "";
+      }
+
+      function readCollectionCount(source, keys) {
+        if (!source || typeof source !== "object") return null;
+        for (const key of keys) {
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          const value = source[key];
+          if (Array.isArray(value)) return value.length;
+          if (value && typeof value === "object") return Object.keys(value).length;
+          const number = Number(value);
+          if (Number.isFinite(number) && number >= 0) return Math.floor(number);
+        }
+        return null;
+      }
+
+      function readBooleanState(source, keys) {
+        if (!source || typeof source !== "object") return null;
+        for (const key of keys) {
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          const value = source[key];
+          if (value === true || value === false) return value;
+          if (typeof value === "number" && Number.isFinite(value)) return value !== 0;
+          const text = String(value == null ? "" : value).trim().toLowerCase();
+          if (!text) continue;
+          if (["true", "1", "yes", "oui", "on", "pause", "paused", "menu", "main_menu", "in_menu"].includes(text)) return true;
+          if (["false", "0", "no", "non", "off", "drive", "driving", "game", "play", "playing"].includes(text)) return false;
+        }
+        return null;
+      }
+
+      function isPausedOrMenuSource(source) {
+        if (!source || typeof source !== "object") return false;
+        const flag = readBooleanState(source, [
+          "paused",
+          "isPaused",
+          "gamePaused",
+          "isGamePaused",
+          "pause",
+          "inMenu",
+          "isInMenu",
+          "menuOpen",
+          "isMenuOpen",
+          "mainMenu",
+          "isMainMenuOpen",
+          "inPauseMenu",
+          "isInPauseMenu"
+        ]);
+        if (flag === true) return true;
+        const state = readString(source, ["state", "status", "mode", "uiMode", "ui_mode", "gameState", "game_state", "screen", "screenName"]);
+        const normalized = state.replace(/[-\s]+/g, "_").toLowerCase();
+        return normalized.includes("pause") || normalized.includes("menu");
+      }
+
+      function readPlayerGroupFromSource(source) {
+        if (!source || typeof source !== "object") return "";
+        const convoyFlag = readBooleanState(source, [
+          "convoy",
+          "isConvoy",
+          "inConvoy",
+          "serverConvoy",
+          "isServerConvoy",
+          "multiplayer",
+          "isMultiplayer",
+          "multi",
+          "isMulti",
+          "online",
+          "isOnline",
+          "mp",
+          "isMp"
+        ]);
+        if (convoyFlag === true) return PLAYER_GROUP_CONVOY;
+
+        const soloFlag = readBooleanState(source, [
+          "solo",
+          "isSolo",
+          "singleplayer",
+          "isSingleplayer",
+          "singlePlayer",
+          "isSinglePlayer",
+          "offline",
+          "isOffline"
+        ]);
+        if (soloFlag === true) return PLAYER_GROUP_SOLO;
+        if (soloFlag === false) return PLAYER_GROUP_CONVOY;
+        if (convoyFlag === false) return PLAYER_GROUP_SOLO;
+
+        const text = readString(source, [
+          "serverType",
+          "server_type",
+          "serverMode",
+          "server_mode",
+          "serverName",
+          "server_name",
+          "convoyServer",
+          "convoy_server",
+          "sessionName",
+          "session_name",
+          "session",
+          "lobby",
+          "networkMode",
+          "network_mode",
+          "gameMode",
+          "game_mode",
+          "mode",
+          "sourceMode",
+          "source_mode"
+        ]).toLowerCase();
+        if (/\b(convoy|convoi|multi|multiplayer|serveur|server|online|truckersmp)\b/.test(text)) return PLAYER_GROUP_CONVOY;
+        if (/\b(solo|single|singleplayer|offline|local)\b/.test(text)) return PLAYER_GROUP_SOLO;
+        return "";
+      }
+
+      function readPlayerGroupFromPools(pools) {
+        for (const source of pools) {
+          const group = readPlayerGroupFromSource(source);
+          if (group === PLAYER_GROUP_CONVOY) return PLAYER_GROUP_CONVOY;
+        }
+        return PLAYER_GROUP_SOLO;
       }
 
       function entryPools(entry) {
@@ -277,6 +674,10 @@
           entry.payload,
           entry.telemetry,
           entry.signal,
+          entry.gameContext,
+          entry.game_context,
+          entry.context,
+          entry.game,
           entry.position,
           entry.pos,
           entry.location,
@@ -295,6 +696,23 @@
           entry.meta,
           entry.playerInfo,
           entry.player_info
+        ].filter((item) => item && typeof item === "object");
+      }
+
+      function profilePools(entry) {
+        if (!entry || typeof entry !== "object") return [];
+        return [
+          entry.profile,
+          entry.profileInfo,
+          entry.profile_info,
+          entry.gameProfile,
+          entry.game_profile,
+          entry.gameContext && entry.gameContext.profile,
+          entry.game_context && entry.game_context.profile,
+          entry.context && entry.context.profile,
+          entry.game && entry.game.profile,
+          entry.data && entry.data.profile,
+          entry.payload && entry.payload.profile
         ].filter((item) => item && typeof item === "object");
       }
 
@@ -390,12 +808,102 @@
         if (!text) return false;
         if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(text)) return true;
         if (/^[0-9a-f]{24,}$/i.test(text)) return true;
+        if (/^\d{15,20}$/.test(text)) return true;
+        if (/^(player|client|user|session|socket)[_-]?[0-9a-f-]{8,}$/i.test(text)) return true;
         return false;
+      }
+
+      function isEmptyIdentityText(value) {
+        const text = String(value == null ? "" : value).trim();
+        return !text || /^(null|nil|undefined|none|nan|n\/a|unknown|inconnu|anonymous|anonyme)$/i.test(text);
+      }
+
+      function normalizeVisiblePlayerName(value) {
+        const text = String(value == null ? "" : value).trim();
+        if (isEmptyIdentityText(text)) return "";
+        if (isTechnicalIdentifierText(text)) return "";
+        return text;
+      }
+
+      function readVisiblePlayerName(source, keys) {
+        if (!source || typeof source !== "object") return "";
+        for (const key of keys) {
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          const value = normalizeVisiblePlayerName(source[key]);
+          if (value) return value;
+        }
+        return "";
+      }
+
+      function isAnonymousPlayer(player) {
+        return !normalizeVisiblePlayerName(player && player.label);
+      }
+
+      function playerDisplayTitle(player) {
+        return normalizeVisiblePlayerName(player && player.label) || "Joueur sans pseudo";
+      }
+
+      function sortWebsocketDataForDisplay(value, depth = 0, seen = new Set()) {
+        if (value == null || typeof value !== "object") return value;
+        if (seen.has(value)) return "[circular]";
+        if (depth >= 6) return Array.isArray(value) ? `[array:${value.length}]` : "[object]";
+        seen.add(value);
+
+        if (Array.isArray(value)) {
+          const limit = 80;
+          const out = value.slice(0, limit).map((item) => sortWebsocketDataForDisplay(item, depth + 1, seen));
+          if (value.length > limit) out.push(`... ${value.length - limit} element(s) masque(s)`);
+          seen.delete(value);
+          return out;
+        }
+
+        const out = {};
+        Object.keys(value).sort((a, b) => a.localeCompare(b)).forEach((key) => {
+          out[key] = sortWebsocketDataForDisplay(value[key], depth + 1, seen);
+        });
+        seen.delete(value);
+        return out;
+      }
+
+      function buildPlayerWebsocketInfo(entry) {
+        if (!entry || typeof entry !== "object") return {};
+        return sortWebsocketDataForDisplay(entry);
+      }
+
+      function readGame2Bonus(source) {
+        if (!source || typeof source !== "object") return null;
+        const candidates = [
+          source.game2Bonus,
+          source.bonus,
+          source.htmlState,
+          source.interfaceState,
+          source.game2State,
+          source.idfMapState
+        ];
+        for (const candidate of candidates) {
+          if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+          const kind = String(candidate.kind || "").trim();
+          if (!kind || kind === "game2_html_state" || candidate.gameMode || candidate.busLine) return candidate;
+        }
+        return null;
+      }
+
+      function readGame2BonusFromPools(pools) {
+        for (const source of Array.isArray(pools) ? pools : []) {
+          const bonus = readGame2Bonus(source);
+          if (bonus) return bonus;
+        }
+        return null;
       }
 
       function extractPlayer(entry, fallbackIndex) {
         const pools = entryPools(entry);
         if (!pools.length) return null;
+        const group = readPlayerGroupFromPools(pools);
+        const websocketInfo = buildPlayerWebsocketInfo(entry);
+        const game2Bonus = readGame2BonusFromPools([entry].concat(pools));
+        const game2Mode = game2Bonus && game2Bonus.gameMode && typeof game2Bonus.gameMode === "object" ? game2Bonus.gameMode : null;
+        const busLine = game2Bonus && game2Bonus.busLine && typeof game2Bonus.busLine === "object" ? game2Bonus.busLine : null;
 
         let x = null;
         let z = null;
@@ -406,6 +914,14 @@
         let name = "";
         let displayname = "";
         let technicalId = "";
+        let isPausedOrMenu = false;
+        let speedKmh = null;
+        let ets2version = "";
+        let modsCount = null;
+        let profileName = "";
+        let profileId = "";
+        let truckDamagePercent = null;
+        let vehicleName = "";
 
         for (const source of pools) {
           if (x === null) x = readNumber(source, ["x", "X", "worldX", "world_x", "posX", "positionX"]);
@@ -416,28 +932,63 @@
           if (!headingUnit) headingUnit = readString(source, ["headingUnit", "heading_unit", "unit"]);
           if (!headingConvention) headingConvention = readString(source, ["headingConvention", "heading_convention", "headingMode", "heading_mode"]);
           if (!steamid) steamid = readString(source, ["steamid", "steamId", "steamID", "steam_id"]);
-          if (!displayname) displayname = readString(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "personaname", "personaName", "persona_name", "nickname"]);
-          if (!name) name = readString(source, ["name", "playerName", "player_name", "username", "userName"]);
+          if (!displayname) displayname = readVisiblePlayerName(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "personaname", "personaName", "persona_name", "nickname"]);
+          if (!name) name = readVisiblePlayerName(source, ["name", "playerName", "player_name", "username", "userName"]);
           if (!technicalId) technicalId = readString(source, ["playerId", "player_id", "from"]);
+          if (!isPausedOrMenu && isPausedOrMenuSource(source)) isPausedOrMenu = true;
+          if (speedKmh === null) speedKmh = readNumber(source, ["speedKmh", "speed_kmh", "speed", "truckSpeed", "truck_speed"]);
+          if (!ets2version) ets2version = readString(source, ["ets2version", "ets2Version", "ets2_version", "gameVersion", "game_version"]);
+          if (modsCount === null) modsCount = readCollectionCount(source, ["modsCount", "modCount", "mods_count", "mod_count", "activeModsCount", "active_mods_count", "enabledModsCount", "enabled_mods_count", "mods", "modList", "mod_list", "activeMods", "active_mods", "enabledMods", "enabled_mods"]);
+          if (!profileName) profileName = readString(source, ["profileName", "profile_name"]);
+          if (!profileId) profileId = readString(source, ["profileId", "profileID", "profile_id"]);
+          if (truckDamagePercent === null) truckDamagePercent = readNumber(source, ["truckDamagePercent", "truck_damage_percent", "damage", "wearSum"]);
+          if (!vehicleName) vehicleName = readString(source, ["vehicleName", "vehicle_name", "truckName", "truck_name", "truckModel", "truck_model", "vehicle", "truck"]);
+        }
+
+        for (const source of profilePools(entry)) {
+          if (!profileName) profileName = readString(source, ["profileName", "profile_name", "name", "Name", "displayName", "display_name"]);
+          if (!profileId) profileId = readString(source, ["profileId", "profileID", "profile_id", "id", "ID"]);
         }
 
         if (x === null || z === null) return null;
-        if (isTechnicalIdentifierText(displayname)) displayname = "";
-        if (isTechnicalIdentifierText(name)) name = "";
+        displayname = normalizeVisiblePlayerName(displayname);
+        name = normalizeVisiblePlayerName(name);
 
+        const label = displayname || name || "";
         const id = steamid || technicalId || displayname || name || `player-${fallbackIndex}`;
         return {
           id,
           steamid,
           name,
           displayname,
-          label: displayname || name || steamid || "",
+          label,
+          isAnonymous: !label,
           x,
           z,
           heading: Number.isFinite(Number(heading)) ? Number(heading) : 0,
           headingUnit,
-          headingConvention: headingConvention || "north_ccw"
+          headingConvention: headingConvention || "north_ccw",
+          group,
+          isPausedOrMenu,
+          speedKmh,
+          ets2version,
+          modsCount,
+          profileName,
+          profileId,
+          truckDamagePercent,
+          vehicleName,
+          htmlStateTitle: game2Bonus ? readString(game2Bonus, ["title"]) : "",
+          gameModeLabel: game2Mode ? readString(game2Mode, ["label"]) : "",
+          gameModeKey: game2Mode ? readString(game2Mode, ["key"]) : "",
+          busLine,
+          websocketInfo
         };
+      }
+
+      function mergePlayerCollectionContext(entry, context) {
+        if (!entry || typeof entry !== "object" || Array.isArray(entry)) return entry;
+        if (!context || typeof context !== "object" || Array.isArray(context)) return entry;
+        return Object.assign({}, context, entry);
       }
 
       function collectPlayers(payload) {
@@ -455,11 +1006,14 @@
             payload.payload
           ];
           for (const candidate of candidates) {
-            if (Array.isArray(candidate)) roots.push(...candidate);
+            if (Array.isArray(candidate)) roots.push(...candidate.map((item) => mergePlayerCollectionContext(item, payload)));
             else if (candidate && typeof candidate === "object") {
               const values = Object.values(candidate);
-              if (values.some((value) => value && typeof value === "object")) roots.push(...values);
-              else roots.push(candidate);
+              if (values.some((value) => value && typeof value === "object")) {
+                roots.push(...values.map((item) => mergePlayerCollectionContext(item, payload)));
+              } else {
+                roots.push(mergePlayerCollectionContext(candidate, payload));
+              }
             }
           }
         }
@@ -475,15 +1029,19 @@
         return players;
       }
 
-      function playerIcon(player) {
+      function playerIcon(player, state = "live") {
         const heading = headingToMarkerRotationDeg(player.heading, player.headingConvention, player.headingUnit);
-        const label = String(player.label || "").trim();
+        const label = normalizeVisiblePlayerName(player && player.label);
         const labelHtml = label ? `<div class="player-marker-label">${escapeHtml(label)}</div>` : "";
+        const stateClass = state === "paused" ? " is-paused" : (state === "stale" ? " is-stale" : "");
+        const nameClass = isAnonymousPlayer(player) ? " is-anonymous" : "";
+        const dotClass = `player-marker-dot${nameClass}${stateClass}`;
+        const playerId = escapeHtml(player.id || "");
         return L.divIcon({
           className: "",
           iconSize: [34, 34],
           iconAnchor: [17, 17],
-          html: `<div class="player-marker"><div class="player-marker-dot" style="--heading:${heading.toFixed(1)}deg"></div>${labelHtml}</div>`
+          html: `<div class="player-marker" data-player-id="${playerId}"><div class="${dotClass}" style="--heading:${heading.toFixed(1)}deg"></div>${labelHtml}</div>`
         });
       }
 
@@ -496,42 +1054,797 @@
           .replace(/'/g, "&#39;");
       }
 
+      function formatInfoNumber(value, digits = 2) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "";
+        return number.toFixed(digits);
+      }
+
+      function formatInfoAge(ms) {
+        const age = Math.max(0, Number(ms) || 0);
+        if (age < 1000) return `${Math.round(age)} ms`;
+        return `${(age / 1000).toFixed(1)} s`;
+      }
+
+      function formatInfoInteger(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "";
+        return String(Math.max(0, Math.floor(number)));
+      }
+
+      function formatInfoPercent(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "";
+        return `${number.toFixed(1)}%`;
+      }
+
+      function formatInfoMeters(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "";
+        return `${number.toFixed(1)} m`;
+      }
+
+      function formatInfoMinutes(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "";
+        return `${number.toFixed(1)} min`;
+      }
+
+      function formatInfoDurationMs(ms) {
+        const total = Math.max(0, Math.round(Number(ms) || 0));
+        if (!total) return "";
+        const minutes = Math.floor(total / 60000);
+        const seconds = Math.floor((total % 60000) / 1000);
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        if (hours > 0) return `${hours}h ${String(mins).padStart(2, "0")}min`;
+        return `${mins}min ${String(seconds).padStart(2, "0")}s`;
+      }
+
+      function formatProfileInfo(name, id) {
+        const profileName = String(name || "").trim();
+        const profileId = String(id || "").trim();
+        if (profileName && profileId) return `${profileName} (${profileId})`;
+        return profileName || profileId;
+      }
+
+      function playerGroupLabel(group) {
+        return normalizePlayerGroup(group) === PLAYER_GROUP_CONVOY ? "Serveur Convoi" : "Solo";
+      }
+
+      function playerStateLabel(state) {
+        if (state === "paused") return "Pause / menu";
+        if (state === "stale") return "Signal perdu";
+        return "Actif";
+      }
+
+      function formatBusLineName(busLine) {
+        if (!busLine || typeof busLine !== "object") return "";
+        const line = String(busLine.lineNumber || "").trim();
+        const route = String(busLine.routeName || "").trim();
+        if (line && route) return `${line} - ${route}`;
+        return line || route;
+      }
+
+      function formatBusLineStatus(busLine) {
+        if (!busLine || typeof busLine !== "object") return "";
+        if (busLine.completed === true) return "Terminee";
+        if (busLine.started === true) return "En cours";
+        if (busLine.waitingStart === true) return "En attente depart";
+        return "Selectionnee";
+      }
+
+      function formatBusStopsProgress(busLine) {
+        if (!busLine || typeof busLine !== "object") return "";
+        const reached = formatInfoInteger(busLine.reachedStops);
+        const remaining = formatInfoInteger(busLine.remainingStops);
+        const total = formatInfoInteger(busLine.stopCount);
+        const parts = [];
+        if (reached) parts.push(`${reached} atteint(s)`);
+        if (remaining) parts.push(`${remaining} restant(s)`);
+        if (total) parts.push(`${total} total`);
+        return parts.join(" / ");
+      }
+
+      function formatBusCapacity(busLine) {
+        if (!busLine || typeof busLine !== "object") return "";
+        const inBus = formatInfoInteger(busLine.passengersInBus);
+        const cap = String(busLine.busMaxCapacityDisplay || "").trim() || formatInfoInteger(busLine.busMaxCapacity);
+        if (inBus && cap) return `${inBus}/${cap}`;
+        return inBus || cap;
+      }
+
+      function formatBusProgress(done, total, remaining) {
+        const doneText = formatInfoInteger(done);
+        const totalText = formatInfoInteger(total);
+        const remainingText = formatInfoInteger(remaining);
+        if (doneText && totalText && remainingText) return `${doneText}/${totalText} (${remainingText} restant)`;
+        if (doneText && totalText) return `${doneText}/${totalText}`;
+        return doneText || totalText || remainingText;
+      }
+
+      function playerInfoRow(key, value, field = "") {
+        const text = value == null ? "" : String(value).trim();
+        const attr = field ? ` data-player-info="${escapeHtml(field)}"` : "";
+        const hidden = text ? "" : ` style="display:none" data-empty-row="1"`;
+        return `<div class="player-info-row"${hidden}><span class="player-info-key">${escapeHtml(key)}</span><span class="player-info-value"${attr}>${escapeHtml(text)}</span></div>`;
+      }
+
+      function playerInfoSection(title, rows) {
+        const body = rows.filter(Boolean).join("");
+        if (!body) return "";
+        const hasVisibleRow = rows.some(function (row) {
+          return row && String(row).indexOf('data-empty-row="1"') === -1;
+        });
+        const hidden = hasVisibleRow ? "" : ` style="display:none"`;
+        return `<div class="player-info-section"${hidden}><div class="player-info-section-title">${escapeHtml(title)}</div>${body}</div>`;
+      }
+
+      function buildPlayerInfoPopup(record) {
+        const player = record && record.player ? record.player : {};
+        const state = record && record.state ? record.state : "live";
+        const age = record ? Date.now() - record.lastSeen : 0;
+        const title = playerDisplayTitle(player);
+        const stateClass = state === "paused" ? " is-paused" : (state === "stale" ? " is-stale" : "");
+        const anonymousClass = isAnonymousPlayer(player) ? " is-anonymous" : "";
+        const statusHtml =
+          `<span class="player-info-status"><span class="player-info-status-dot${anonymousClass}${stateClass}" data-player-info-status-dot></span><span data-player-info="status">${escapeHtml(playerStateLabel(state))}</span></span>`;
+
+        return [
+          `<div class="player-info-popup">`,
+          `<h3 class="player-info-title" data-player-info="title">${escapeHtml(title)}</h3>`,
+          playerInfoSection("Joueur", [
+            playerInfoRow("Pseudo", player.label, "pseudo"),
+            playerInfoRow("Nom", player.name, "name"),
+            playerInfoRow("SteamID", player.steamid, "steamid")
+          ]),
+          playerInfoSection("Session", [
+            playerInfoRow("Connexion", playerGroupLabel(player.group), "mode"),
+            playerInfoRow("Mode de jeu", player.gameModeLabel, "gameModeLabel"),
+            playerInfoRow("ETS2 version", player.ets2version, "ets2version"),
+            playerInfoRow("Mods actifs", formatInfoInteger(player.modsCount), "modsCount")
+          ]),
+          playerInfoSection("Profil", [
+            playerInfoRow("Profil", formatProfileInfo(player.profileName, player.profileId), "profile")
+          ]),
+          playerInfoSection("Vehicule", [
+            playerInfoRow("Vehicule", player.vehicleName, "vehicleName"),
+            playerInfoRow("Vitesse", formatInfoNumber(player.speedKmh, 1), "speedKmh"),
+            playerInfoRow("Degats camion", formatInfoPercent(player.truckDamagePercent), "truckDamagePercent")
+          ]),
+          playerInfoSection("Position", [
+            playerInfoRow("X", formatInfoNumber(player.x, 2), "x"),
+            playerInfoRow("Z", formatInfoNumber(player.z, 2), "z"),
+            playerInfoRow("Unite cap", player.headingUnit, "headingUnit")
+          ]),
+          playerInfoSection("Ligne de bus", [
+            playerInfoRow("Ligne", formatBusLineName(player.busLine), "busLineName"),
+            playerInfoRow("Etat", formatBusLineStatus(player.busLine), "busLineStatus"),
+            playerInfoRow("Arret affiche", player.busLine && player.busLine.currentStopName, "busCurrentStop"),
+            playerInfoRow("Prochain arret", player.busLine && player.busLine.nextStopName, "busNextStop"),
+            playerInfoRow("Arrets", formatBusStopsProgress(player.busLine), "busStopsProgress"),
+            playerInfoRow("Distance arret", player.busLine && formatInfoMeters(player.busLine.distanceToCurrentStopM), "busStopDistance"),
+            playerInfoRow("Retard live", player.busLine && formatInfoMinutes(player.busLine.liveDelayMinutes), "busLiveDelay"),
+            playerInfoRow("Temps ligne", player.busLine && formatInfoDurationMs(player.busLine.liveElapsedMs), "busLiveElapsed")
+          ]),
+          playerInfoSection("Passagers bus", [
+            playerInfoRow("Dans le bus", player.busLine && formatBusCapacity(player.busLine), "busPassengersInBus"),
+            playerInfoRow("A l'arret", player.busLine && formatInfoInteger(player.busLine.passengersAtStop), "busPassengersAtStop"),
+            playerInfoRow("Transportes", player.busLine && formatInfoInteger(player.busLine.transportedPassengers), "busTransportedPassengers"),
+            playerInfoRow("Montees", player.busLine && formatBusProgress(player.busLine.boardingDone, player.busLine.boardingTotal, player.busLine.boardingRemaining), "busBoarding"),
+            playerInfoRow("Descentes", player.busLine && formatBusProgress(player.busLine.alightingDone, player.busLine.alightingTotal, player.busLine.alightingRemaining), "busAlighting"),
+            playerInfoRow("Demandes arret", player.busLine && (player.busLine.stopRequested ? "Oui" : ""), "busStopRequested"),
+            playerInfoRow("Arrets manques", player.busLine && formatInfoInteger(player.busLine.missedStops), "busMissedStops")
+          ]),
+          playerInfoSection("Etat", [
+            `<div class="player-info-row"><span class="player-info-key">Statut</span><span class="player-info-value">${statusHtml}</span></div>`,
+            playerInfoRow("Dernier signal", formatInfoAge(age), "lastSignal")
+          ]),
+          `</div>`
+        ].join("");
+      }
+
+      function getPlayerPopupScrollTop(record) {
+        const popup = record && record.marker && record.marker.getPopup ? record.marker.getPopup() : null;
+        const element = popup && popup.getElement ? popup.getElement() : null;
+        const scrollNode = element ? element.querySelector(".player-info-popup") : null;
+        return scrollNode ? scrollNode.scrollTop : 0;
+      }
+
+      function restorePlayerPopupScrollTop(record, scrollTop) {
+        if (!record || !record.marker || !record.marker.getPopup) return;
+        const restore = function () {
+          const popup = record.marker.getPopup();
+          const element = popup && popup.getElement ? popup.getElement() : null;
+          const scrollNode = element ? element.querySelector(".player-info-popup") : null;
+          if (scrollNode) scrollNode.scrollTop = scrollTop;
+        };
+        if (typeof requestAnimationFrame === "function") requestAnimationFrame(restore);
+        else window.setTimeout(restore, 0);
+      }
+
+      function getPlayerInfoValues(record) {
+        const player = record && record.player ? record.player : {};
+        const state = record && record.state ? record.state : "live";
+        const age = record ? Date.now() - record.lastSeen : 0;
+        return {
+          title: playerDisplayTitle(player),
+          pseudo: player.label,
+          name: player.name,
+          steamid: player.steamid,
+          mode: playerGroupLabel(player.group),
+          htmlStateTitle: player.htmlStateTitle,
+          gameModeLabel: player.gameModeLabel,
+          ets2version: player.ets2version,
+          modsCount: formatInfoInteger(player.modsCount),
+          profile: formatProfileInfo(player.profileName, player.profileId),
+          vehicleName: player.vehicleName,
+          speedKmh: formatInfoNumber(player.speedKmh, 1),
+          truckDamagePercent: formatInfoPercent(player.truckDamagePercent),
+          x: formatInfoNumber(player.x, 2),
+          z: formatInfoNumber(player.z, 2),
+          headingUnit: player.headingUnit,
+          busLineName: formatBusLineName(player.busLine),
+          busLineStatus: formatBusLineStatus(player.busLine),
+          busCurrentStop: player.busLine && player.busLine.currentStopName,
+          busNextStop: player.busLine && player.busLine.nextStopName,
+          busStopsProgress: formatBusStopsProgress(player.busLine),
+          busStopDistance: player.busLine && formatInfoMeters(player.busLine.distanceToCurrentStopM),
+          busLiveDelay: player.busLine && formatInfoMinutes(player.busLine.liveDelayMinutes),
+          busLiveElapsed: player.busLine && formatInfoDurationMs(player.busLine.liveElapsedMs),
+          busPassengersInBus: player.busLine && formatBusCapacity(player.busLine),
+          busPassengersAtStop: player.busLine && formatInfoInteger(player.busLine.passengersAtStop),
+          busTransportedPassengers: player.busLine && formatInfoInteger(player.busLine.transportedPassengers),
+          busBoarding: player.busLine && formatBusProgress(player.busLine.boardingDone, player.busLine.boardingTotal, player.busLine.boardingRemaining),
+          busAlighting: player.busLine && formatBusProgress(player.busLine.alightingDone, player.busLine.alightingTotal, player.busLine.alightingRemaining),
+          busStopRequested: player.busLine && (player.busLine.stopRequested ? "Oui" : ""),
+          busMissedStops: player.busLine && formatInfoInteger(player.busLine.missedStops),
+          status: playerStateLabel(state),
+          lastSignal: formatInfoAge(age)
+        };
+      }
+
+      function updatePlayerPopupDom(record) {
+        if (!record || !record.marker || !record.marker.getPopup) return false;
+        const popup = record.marker.getPopup();
+        const element = popup && popup.getElement ? popup.getElement() : null;
+        if (!element) return false;
+        const values = getPlayerInfoValues(record);
+        Object.keys(values).forEach(function (key) {
+          const node = element.querySelector(`[data-player-info="${key}"]`);
+          const text = values[key] == null ? "" : String(values[key]);
+          if (!node) return;
+          if (node.textContent !== text) node.textContent = text;
+          const row = node.closest ? node.closest(".player-info-row") : null;
+          if (row) row.style.display = text ? "" : "none";
+        });
+        element.querySelectorAll(".player-info-section").forEach(function (section) {
+          const rows = Array.prototype.slice.call(section.querySelectorAll(".player-info-row"));
+          if (!rows.length) return;
+          const hasVisible = rows.some(function (row) { return row.style.display !== "none"; });
+          section.style.display = hasVisible ? "" : "none";
+        });
+        const state = record.state || "live";
+        const dot = element.querySelector("[data-player-info-status-dot]");
+        if (dot) {
+          dot.classList.toggle("is-anonymous", isAnonymousPlayer(record.player));
+          dot.classList.toggle("is-paused", state === "paused");
+          dot.classList.toggle("is-stale", state === "stale");
+        }
+        return true;
+      }
+
+      function bindPlayerPopup(record) {
+        if (!record || !record.marker) return;
+        if (record.popupBound) return;
+        record.marker.bindPopup(buildPlayerInfoPopup(record), {
+          className: "player-info-leaflet-popup",
+          closeButton: true,
+          autoPan: true,
+          maxWidth: 540,
+          minWidth: 360
+        });
+        record.popupBound = true;
+        record.marker.on("popupopen", function () {
+          updatePlayerPopup(record, { force: true, preserveScroll: false });
+          syncPlayerBusRouteLayer(record);
+        });
+        record.marker.on("popupclose", function () {
+          removePlayerBusRouteLayer(record);
+        });
+        record.marker.on("click", function (event) {
+          if (event && event.originalEvent && typeof event.originalEvent.stopPropagation === "function") {
+            event.originalEvent.stopPropagation();
+          }
+          openPlayerPopup(record);
+        });
+      }
+
+      function openPlayerPopup(record) {
+        if (!record || !record.marker) return;
+        bindPlayerPopup(record);
+        updatePlayerPopup(record, { force: true, preserveScroll: false });
+        record.marker.openPopup();
+      }
+
+      function handlePlayerMarkerDomClick(event) {
+        const target = event && event.target;
+        const markerNode = target && target.closest ? target.closest(".player-marker[data-player-id]") : null;
+        if (!markerNode) return;
+        if (typeof event.preventDefault === "function") event.preventDefault();
+        if (typeof event.stopPropagation === "function") event.stopPropagation();
+        const id = markerNode.getAttribute("data-player-id") || "";
+        const record = playerMarkers.get(id);
+        if (record) openPlayerPopup(record);
+      }
+
+      function bindPlayerMarkerDomClick() {
+        const container = map && map.getContainer ? map.getContainer() : null;
+        if (!container) return;
+        container.addEventListener("click", handlePlayerMarkerDomClick, true);
+        container.addEventListener("pointerup", handlePlayerMarkerDomClick, true);
+      }
+
+      function updatePlayerPopup(record, options = null) {
+        if (!record || !record.marker) return;
+        bindPlayerPopup(record);
+        const opts = options && typeof options === "object" ? options : {};
+        const isOpen = record.marker.isPopupOpen && record.marker.isPopupOpen();
+        if (!opts.force && !isOpen) return;
+        if (isOpen && updatePlayerPopupDom(record)) return;
+        if (isOpen && opts.allowRebuildOpen !== true) return;
+        const scrollTop = opts.preserveScroll === false || !isOpen ? 0 : getPlayerPopupScrollTop(record);
+        const content = buildPlayerInfoPopup(record);
+        record.marker.setPopupContent(content);
+        if (opts.preserveScroll !== false && isOpen) restorePlayerPopupScrollTop(record, scrollTop);
+      }
+
+      function normalizePlayerGroup(group) {
+        return group === PLAYER_GROUP_CONVOY ? PLAYER_GROUP_CONVOY : PLAYER_GROUP_SOLO;
+      }
+
+      function isPlayerVisibleByFilter(player) {
+        const group = normalizePlayerGroup(player && player.group);
+        return playerFilters[group] !== false;
+      }
+
+      function isRecordPopupOpen(record) {
+        return !!(record && record.marker && record.marker.isPopupOpen && record.marker.isPopupOpen());
+      }
+
+      function getPlayerBusLine(player) {
+        const busLine = player && player.busLine && typeof player.busLine === "object" ? player.busLine : null;
+        if (!busLine || busLine.active !== true) return null;
+        return busLine;
+      }
+
+      function getBusRouteGeometry(busLine) {
+        const geometry = busLine && busLine.routeGeometry && typeof busLine.routeGeometry === "object" ? busLine.routeGeometry : null;
+        if (!geometry) return null;
+        const hasStops = Array.isArray(geometry.stops) && geometry.stops.length > 0;
+        const hasSegments = Array.isArray(geometry.segments) && geometry.segments.length > 0;
+        return hasStops || hasSegments ? geometry : null;
+      }
+
+      function getBusRouteProgressIndex(busLine, geometry, key) {
+        const value =
+          geometry && Number.isFinite(Number(geometry[key])) ? Number(geometry[key]) :
+          busLine && Number.isFinite(Number(busLine[key])) ? Number(busLine[key]) :
+          Number.NaN;
+        return Number.isFinite(value) ? Math.floor(value) : Number.NaN;
+      }
+
+      function getBusServedStopSet(busLine, geometry) {
+        const served = new Set();
+        const source = Array.isArray(geometry && geometry.servedStopIndices)
+          ? geometry.servedStopIndices
+          : (Array.isArray(busLine && busLine.servedStopIndices) ? busLine.servedStopIndices : []);
+        source.forEach(function (value) {
+          const index = Math.floor(Number(value));
+          if (Number.isFinite(index) && index >= 0) served.add(index);
+        });
+        return served;
+      }
+
+      function isBusSegmentPassed(segment, busLine, geometry) {
+        const reachedIndex =
+          getBusRouteProgressIndex(busLine, geometry, "reachedIndex");
+        const reachedStopIndex = Number.isFinite(reachedIndex)
+          ? reachedIndex
+          : getBusRouteProgressIndex(busLine, geometry, "reachedStopIndex");
+        const toIndex = Math.floor(Number(segment && segment.toIndex));
+        return Number.isFinite(reachedStopIndex) && Number.isFinite(toIndex) && toIndex <= reachedStopIndex;
+      }
+
+      function isBusSegmentCurrent(segment, busLine, geometry) {
+        const targetIndex = getBusRouteProgressIndex(busLine, geometry, "targetIndex");
+        const targetStopIndex = Number.isFinite(targetIndex)
+          ? targetIndex
+          : getBusRouteProgressIndex(busLine, geometry, "targetStopIndex");
+        const fromIndex = Math.floor(Number(segment && segment.fromIndex));
+        const toIndex = Math.floor(Number(segment && segment.toIndex));
+        return Number.isFinite(targetStopIndex) &&
+          Number.isFinite(fromIndex) &&
+          Number.isFinite(toIndex) &&
+          fromIndex < targetStopIndex &&
+          targetStopIndex <= toIndex;
+      }
+
+      function parseRouteWorldPoint(point) {
+        if (!point || typeof point !== "object") return null;
+        const x = Number(point.x ?? point.X);
+        const y = Number(point.y ?? point.Y ?? point.z ?? point.Z);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        return { x, y };
+      }
+
+      function appendUniqueRoutePoint(target, point) {
+        const parsed = parseRouteWorldPoint(point);
+        if (!parsed) return;
+        const last = target[target.length - 1];
+        if (last && Math.abs(last.x - parsed.x) < 0.01 && Math.abs(last.y - parsed.y) < 0.01) return;
+        target.push(parsed);
+      }
+
+      function projectRouteWorldPointOnSegment(point, start, end) {
+        const p = parseRouteWorldPoint(point);
+        const a = parseRouteWorldPoint(start);
+        const b = parseRouteWorldPoint(end);
+        if (!p || !a || !b) return null;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const lenSq = (dx * dx) + (dy * dy);
+        if (!(lenSq > 1e-9)) return null;
+        let t = (((p.x - a.x) * dx) + ((p.y - a.y) * dy)) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        const projected = { x: a.x + (dx * t), y: a.y + (dy * t) };
+        const distance = Math.hypot(p.x - projected.x, p.y - projected.y);
+        return { point: projected, t, distance };
+      }
+
+      function splitBusSegmentAtPlayer(segment, player) {
+        const route = (Array.isArray(segment && segment.points) ? segment.points : [])
+          .map(parseRouteWorldPoint)
+          .filter(Boolean);
+        const playerPoint = parseRouteWorldPoint({ x: player && player.x, y: player && player.z });
+        if (route.length < 2 || !playerPoint) return null;
+        let best = null;
+        for (let i = 0; i < route.length - 1; i += 1) {
+          const projected = projectRouteWorldPointOnSegment(playerPoint, route[i], route[i + 1]);
+          if (!projected) continue;
+          if (!best || projected.distance < best.distance) {
+            best = Object.assign({ segmentIndex: i }, projected);
+          }
+        }
+        if (!best || !Number.isFinite(best.distance) || best.distance > 140) return null;
+        const past = [];
+        const future = [];
+        for (let i = 0; i <= best.segmentIndex; i += 1) appendUniqueRoutePoint(past, route[i]);
+        appendUniqueRoutePoint(past, best.point);
+        appendUniqueRoutePoint(future, best.point);
+        for (let i = best.segmentIndex + 1; i < route.length; i += 1) appendUniqueRoutePoint(future, route[i]);
+        return {
+          past: past.length >= 2 ? past : [],
+          future: future.length >= 2 ? future : []
+        };
+      }
+
+      function isBusStopServed(stop, busLine, geometry, servedSet) {
+        const index = Math.floor(Number(stop && stop.index));
+        if (!Number.isFinite(index)) return false;
+        if (servedSet && servedSet.has(index)) return true;
+        if (stop && (stop.served === true || stop.reached === true)) return true;
+        const reachedIndex = getBusRouteProgressIndex(busLine, geometry, "reachedIndex");
+        const reachedStopIndex = Number.isFinite(reachedIndex)
+          ? reachedIndex
+          : getBusRouteProgressIndex(busLine, geometry, "reachedStopIndex");
+        return Number.isFinite(reachedStopIndex) && index <= reachedStopIndex;
+      }
+
+      function isBusStopCurrent(stop, busLine, geometry) {
+        const index = Math.floor(Number(stop && stop.index));
+        if (!Number.isFinite(index)) return false;
+        const targetIndex = getBusRouteProgressIndex(busLine, geometry, "targetIndex");
+        const targetStopIndex = Number.isFinite(targetIndex)
+          ? targetIndex
+          : getBusRouteProgressIndex(busLine, geometry, "targetStopIndex");
+        return Number.isFinite(targetStopIndex) && index === targetStopIndex;
+      }
+
+      function normalizeCssHexColor(value, fallback = "#7dd3fc") {
+        const text = String(value || "").trim();
+        const match = /^#?([0-9a-f]{6})$/i.exec(text);
+        return match ? `#${match[1]}` : fallback;
+      }
+
+      function getFallbackLineColor(lineNumber) {
+        const palette = ["#6fb2e1", "#ab5798", "#cdc74f", "#e69459", "#9ad1dc"];
+        const key = String(lineNumber || "").trim().toLowerCase();
+        if (!key) return "#7dd3fc";
+        let hash = 0;
+        for (let i = 0; i < key.length; i += 1) {
+          hash = ((hash << 5) - hash + key.charCodeAt(i)) | 0;
+        }
+        const index = /^\d+$/.test(key)
+          ? Math.abs(parseInt(key, 10)) % palette.length
+          : Math.abs(hash) % palette.length;
+        return palette[index] || "#7dd3fc";
+      }
+
+      function getBusLineTraceColor(busLine) {
+        const explicit = normalizeCssHexColor(
+          busLine && (busLine.lineColor || busLine.routeColor || busLine.color),
+          ""
+        );
+        if (explicit) return explicit;
+        const lineNumber = String(busLine && busLine.lineNumber || "").trim();
+        const styles = window.LINE_STYLES && typeof window.LINE_STYLES === "object" ? window.LINE_STYLES : {};
+        const lower = lineNumber.toLowerCase();
+        let hit = styles[lineNumber] || null;
+        if (!hit) {
+          Object.keys(styles).some(function (key) {
+            if (String(key || "").toLowerCase() !== lower) return false;
+            hit = styles[key];
+            return true;
+          });
+        }
+        if (Array.isArray(hit) && hit.length) return normalizeCssHexColor(hit[0], getFallbackLineColor(lineNumber));
+        return getFallbackLineColor(lineNumber);
+      }
+
+      function addBusPolylinePair(group, latlngs, passed, lineColor) {
+        if (!group || !Array.isArray(latlngs) || latlngs.length < 2) return;
+        const opacity = passed ? 0.22 : 0.86;
+        const outlineOpacity = passed ? 0.16 : 0.34;
+        L.polyline(latlngs, {
+          pane: "busRoutePane",
+          color: "#05070a",
+          weight: 9,
+          opacity: outlineOpacity,
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: false
+        }).addTo(group);
+        L.polyline(latlngs, {
+          pane: "busRoutePane",
+          color: lineColor || "#7dd3fc",
+          weight: 5,
+          opacity,
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: false
+        }).addTo(group);
+      }
+
+      function addBusStopMarker(group, stop, busLine, geometry, servedSet, lineColor) {
+        const latlng = routePointToLatLng(stop);
+        if (!group || !latlng) return;
+        const served = isBusStopServed(stop, busLine, geometry, servedSet);
+        const current = isBusStopCurrent(stop, busLine, geometry);
+        const radius = current ? 7 : 6;
+        L.circleMarker(latlng, {
+          pane: "busStopPane",
+          radius,
+          color: "#ffffff",
+          weight: current ? 3 : 2,
+          opacity: served ? 0.34 : 0.96,
+          fillColor: current ? (lineColor || "#38bdf8") : "#ffffff",
+          fillOpacity: served ? 0.22 : 0.94,
+          interactive: false
+        }).addTo(group);
+      }
+
+      function buildPlayerBusRouteLayer(player) {
+        const busLine = getPlayerBusLine(player);
+        const geometry = getBusRouteGeometry(busLine);
+        if (!busLine || !geometry) return null;
+        const group = L.layerGroup();
+        const segments = Array.isArray(geometry.segments) ? geometry.segments : [];
+        const pastSegments = [];
+        const futureSegments = [];
+        const lineColor = getBusLineTraceColor(busLine);
+        segments.forEach(function (segment) {
+          if (isBusSegmentPassed(segment, busLine, geometry)) {
+            const latlngs = routePointsToLatLngs(segment && segment.points);
+            if (latlngs.length >= 2) pastSegments.push(latlngs);
+            return;
+          }
+          if (isBusSegmentCurrent(segment, busLine, geometry)) {
+            const split = splitBusSegmentAtPlayer(segment, player);
+            if (split) {
+              const pastLatLngs = routePointsToLatLngs(split.past);
+              const futureLatLngs = routePointsToLatLngs(split.future);
+              if (pastLatLngs.length >= 2) pastSegments.push(pastLatLngs);
+              if (futureLatLngs.length >= 2) futureSegments.push(futureLatLngs);
+              return;
+            }
+          }
+          const latlngs = routePointsToLatLngs(segment && segment.points);
+          if (latlngs.length >= 2) futureSegments.push(latlngs);
+        });
+        pastSegments.forEach(function (latlngs) { addBusPolylinePair(group, latlngs, true, lineColor); });
+        futureSegments.forEach(function (latlngs) { addBusPolylinePair(group, latlngs, false, lineColor); });
+        const servedSet = getBusServedStopSet(busLine, geometry);
+        (Array.isArray(geometry.stops) ? geometry.stops : []).forEach(function (stop) {
+          addBusStopMarker(group, stop, busLine, geometry, servedSet, lineColor);
+        });
+        return group.getLayers().length ? group : null;
+      }
+
+      function getPlayerBusRouteRenderKey(player) {
+        const busLine = getPlayerBusLine(player);
+        const geometry = getBusRouteGeometry(busLine);
+        if (!busLine || !geometry) return "";
+        const served = Array.isArray(geometry.servedStopIndices) ? geometry.servedStopIndices.join(",") : "";
+        return [
+          String(busLine.selectedKey || ""),
+          String(geometry.cacheKey || ""),
+          geometry.pending === true ? "pending" : "ready",
+          String(getBusRouteProgressIndex(busLine, geometry, "reachedIndex")),
+          String(getBusRouteProgressIndex(busLine, geometry, "reachedStopIndex")),
+          String(getBusRouteProgressIndex(busLine, geometry, "targetIndex")),
+          String(getBusRouteProgressIndex(busLine, geometry, "targetStopIndex")),
+          String(Math.round((Number(player && player.x) || 0) / 2)),
+          String(Math.round((Number(player && player.z) || 0) / 2)),
+          served,
+          String(Array.isArray(geometry.segments) ? geometry.segments.length : 0),
+          String(Array.isArray(geometry.stops) ? geometry.stops.length : 0)
+        ].join("|");
+      }
+
+      function removePlayerBusRouteLayer(record) {
+        if (!record || !record.busRouteLayer) return;
+        map.removeLayer(record.busRouteLayer);
+        record.busRouteLayer = null;
+        record.busRouteKey = "";
+      }
+
+      function syncPlayerBusRouteLayer(record) {
+        if (!record || !record.player) return;
+        if (!isRecordPopupOpen(record)) {
+          removePlayerBusRouteLayer(record);
+          return;
+        }
+        const key = getPlayerBusRouteRenderKey(record.player);
+        if (!key || !isPlayerVisibleByFilter(record.player)) {
+          removePlayerBusRouteLayer(record);
+          return;
+        }
+        if (record.busRouteLayer && record.busRouteKey === key) {
+          if (!map.hasLayer(record.busRouteLayer)) record.busRouteLayer.addTo(map);
+          return;
+        }
+        removePlayerBusRouteLayer(record);
+        const layer = buildPlayerBusRouteLayer(record.player);
+        if (!layer) return;
+        record.busRouteLayer = layer;
+        record.busRouteKey = key;
+        layer.addTo(map);
+      }
+
+      function preservePreviousBusRouteGeometry(player, previousPlayer) {
+        const nextBusLine = getPlayerBusLine(player);
+        const previousBusLine = getPlayerBusLine(previousPlayer);
+        if (!nextBusLine || !previousBusLine) return player;
+        const previousGeometry = getBusRouteGeometry(previousBusLine);
+        if (!previousGeometry || previousGeometry.pending === true) return player;
+        const nextGeometry = getBusRouteGeometry(nextBusLine);
+        const sameRoute = String(nextBusLine.selectedKey || "") === String(previousBusLine.selectedKey || "");
+        const nextHasReadySegments = nextGeometry && nextGeometry.pending !== true && Array.isArray(nextGeometry.segments) && nextGeometry.segments.length;
+        if (!sameRoute || nextHasReadySegments) return player;
+        player.busLine = Object.assign({}, nextBusLine, {
+          routeGeometry: Object.assign({}, previousGeometry, {
+            reachedIndex: Number.isFinite(Number(nextBusLine.reachedStopIndex)) ? Number(nextBusLine.reachedStopIndex) : previousGeometry.reachedIndex,
+            targetIndex: Number.isFinite(Number(nextBusLine.targetStopIndex)) ? Number(nextBusLine.targetStopIndex) : previousGeometry.targetIndex,
+            servedStopIndices: nextGeometry && Array.isArray(nextGeometry.servedStopIndices) ? nextGeometry.servedStopIndices : previousGeometry.servedStopIndices
+          })
+        });
+        return player;
+      }
+
+      function syncPlayerMarkerVisibility(record) {
+        if (!record || !record.marker) return;
+        const shouldShow = isPlayerVisibleByFilter(record.player);
+        const isShown = map.hasLayer(record.marker);
+        if (shouldShow && !isShown) record.marker.addTo(map);
+        else if (!shouldShow && isShown) {
+          record.marker.closePopup();
+          map.removeLayer(record.marker);
+        }
+        syncPlayerBusRouteLayer(record);
+      }
+
+      function updatePlayerFilterCounts() {
+        const counts = {
+          [PLAYER_GROUP_SOLO]: 0,
+          [PLAYER_GROUP_CONVOY]: 0
+        };
+        for (const record of playerMarkers.values()) {
+          const group = normalizePlayerGroup(record.player && record.player.group);
+          counts[group] += 1;
+        }
+        if (soloCount) soloCount.textContent = `(${counts[PLAYER_GROUP_SOLO]})`;
+        if (convoyCount) convoyCount.textContent = `(${counts[PLAYER_GROUP_CONVOY]})`;
+        if (playerTotalCount) playerTotalCount.textContent = `(${counts[PLAYER_GROUP_SOLO] + counts[PLAYER_GROUP_CONVOY]})`;
+      }
+
+      function syncAllPlayerFilterUi() {
+        for (const record of playerMarkers.values()) syncPlayerMarkerVisibility(record);
+        updatePlayerFilterCounts();
+      }
+
       function updatePlayerMarkers(players) {
         const now = Date.now();
-        const liveIds = new Set();
 
-        for (const player of players) {
+        for (let player of players) {
           const latlng = toLatLng(player.x, player.z);
           if (!latlng) continue;
-          liveIds.add(player.id);
 
           let record = playerMarkers.get(player.id);
+          const markerState = getPlayerMarkerState(player, now, now);
           if (!record) {
             const marker = L.marker(latlng, {
-              icon: playerIcon(player),
-              title: player.label,
-              keyboard: false
-            }).addTo(map);
-            record = { marker, lastSeen: now };
+              icon: playerIcon(player, markerState),
+              title: playerDisplayTitle(player),
+              keyboard: false,
+              interactive: true,
+              bubblingMouseEvents: false,
+              riseOnHover: true
+            });
+            record = { marker, player, lastSeen: now, state: markerState, popupBound: false, busRouteLayer: null, busRouteKey: "" };
             playerMarkers.set(player.id, record);
+            bindPlayerPopup(record);
           } else {
+            player = preservePreviousBusRouteGeometry(player, record.player);
+            record.player = player;
             record.marker.setLatLng(latlng);
-            record.marker.setIcon(playerIcon(player));
-            record.marker.options.title = player.label;
+            record.marker.setIcon(playerIcon(player, markerState));
+            record.marker.options.title = playerDisplayTitle(player);
             record.lastSeen = now;
+            record.state = markerState;
+            updatePlayerPopup(record);
           }
+          syncPlayerMarkerVisibility(record);
 
-          if (!hasCenteredOnPlayer) {
+          if (!hasCenteredOnPlayer && isPlayerVisibleByFilter(player)) {
             hasCenteredOnPlayer = true;
             map.setView(latlng, Math.max(map.getZoom(), maxNativeZoom - 1), { animate: false });
           }
         }
 
+        refreshPlayerMarkerStates(now);
+        updatePlayerFilterCounts();
+      }
+
+      function getPlayerMarkerState(player, now, lastSeen) {
+        if (player && player.isPausedOrMenu) return "paused";
+        return now - lastSeen >= PLAYER_WARNING_MS ? "stale" : "live";
+      }
+
+      function refreshPlayerMarkerStates(now = Date.now()) {
+        let changedCount = false;
         for (const [id, record] of playerMarkers.entries()) {
-          if (liveIds.has(id) || now - record.lastSeen <= PLAYER_STALE_MS) continue;
-          map.removeLayer(record.marker);
-          playerMarkers.delete(id);
+          const age = now - record.lastSeen;
+          if (age >= PLAYER_STALE_MS) {
+            record.marker.closePopup();
+            map.removeLayer(record.marker);
+            removePlayerBusRouteLayer(record);
+            playerMarkers.delete(id);
+            changedCount = true;
+            continue;
+          }
+
+          const state = getPlayerMarkerState(record.player || {}, now, record.lastSeen);
+          if (record.state === state) {
+            if (record.marker.isPopupOpen()) updatePlayerPopup(record);
+            continue;
+          }
+          record.state = state;
+          record.marker.setIcon(playerIcon(record.player || {}, state));
+          updatePlayerPopup(record, { force: true });
+          syncPlayerMarkerVisibility(record);
         }
+        if (changedCount) updatePlayerFilterCounts();
       }
 
       function show(text) {
@@ -554,6 +1867,11 @@
         return merged;
       }
 
+      function fillGame2BonusField(target, bonus) {
+        if (!target || typeof target !== "object" || Array.isArray(target) || !bonus || typeof bonus !== "object") return target;
+        return Object.assign({}, target, { game2Bonus: bonus });
+      }
+
       function mergeEnvelopeIdentity(message) {
         if (!message || typeof message !== "object") return message;
         const payload = Object.prototype.hasOwnProperty.call(message, "data") ? message.data : message;
@@ -570,8 +1888,11 @@
         const inner = payload.data || payload.telemetry || payload.payload;
         if (!inner || typeof inner !== "object") return payload;
         const identity = readIdentity(payload);
-        if (Array.isArray(inner)) return inner.map((item) => fillIdentityFields(item, identity));
-        return fillIdentityFields(inner, identity);
+        const bonus = readGame2Bonus(payload);
+        if (Array.isArray(inner)) {
+          return inner.map((item) => fillGame2BonusField(fillIdentityFields(item, identity), bonus));
+        }
+        return fillGame2BonusField(fillIdentityFields(inner, identity), bonus);
       }
 
       function handleTelemetryPayload(payload) {
@@ -650,6 +1971,24 @@
         };
       }
 
+      function bindPlayerFilterEvents() {
+        if (filterSolo) {
+          filterSolo.checked = true;
+          filterSolo.addEventListener("change", function () {
+            playerFilters[PLAYER_GROUP_SOLO] = filterSolo.checked;
+            syncAllPlayerFilterUi();
+          });
+        }
+        if (filterConvoy) {
+          filterConvoy.checked = true;
+          filterConvoy.addEventListener("change", function () {
+            playerFilters[PLAYER_GROUP_CONVOY] = filterConvoy.checked;
+            syncAllPlayerFilterUi();
+          });
+        }
+        updatePlayerFilterCounts();
+      }
+
       async function boot() {
         try {
           selectedVersion = await selectMapVersion();
@@ -685,6 +2024,9 @@
         }
       }
 
+      bindPlayerFilterEvents();
+      bindPlayerMarkerDomClick();
+      window.setInterval(refreshPlayerMarkerStates, PLAYER_STATE_REFRESH_MS);
       boot();
     })();
   </script>

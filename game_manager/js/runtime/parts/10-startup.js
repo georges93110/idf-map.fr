@@ -93,6 +93,9 @@
       }
 
       apply();
+      if (typeof maybeStartConfiguredDefaultGameMode === "function") {
+        maybeStartConfiguredDefaultGameMode();
+      }
 
       // Redirection desactivee: on supprime seulement l'ancien indicateur de session.
       try {

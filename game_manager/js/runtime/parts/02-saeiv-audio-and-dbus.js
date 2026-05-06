@@ -201,6 +201,7 @@
         saeivRouteAudio.playbackToken += 1;
         saeivRouteAudio.queue = [];
         saeivRouteAudio.playing = false;
+        saeivRouteAudio.preparePromise = null;
         saeivRouteAudio.currentClipName = "";
         saeivRouteAudio.currentClipEndedHooks = [];
         if (saeivRouteAudio.terminusAudio) {
@@ -218,6 +219,8 @@
       function primeSaeivTerminusAudio(clipName) {
         var safeName = String(clipName || "").trim();
         if (!safeName || !saeivRouteAudio.available) return false;
+        safeName = findSaeivAudioClipName(safeName);
+        if (!safeName) return false;
         var url = linePreviewAudioClipUrl(saeivRouteAudio.folderPath, safeName);
         var audio = new Audio(url);
         audio.volume = getGlobalAudioVolumeFactor();
@@ -236,6 +239,11 @@
           ? { clipName: nextEntry, onEnded: null }
           : nextEntry;
         var nextClip = String(next && next.clipName || "").trim();
+        if (!nextClip) {
+          processSaeivRouteAudioQueue();
+          return;
+        }
+        nextClip = findSaeivAudioClipName(nextClip);
         if (!nextClip) {
           processSaeivRouteAudioQueue();
           return;
@@ -333,6 +341,8 @@
       function enqueueSaeivRouteAudioClip(clipName, options) {
         var safeName = String(clipName || "").trim();
         if (!safeName || !saeivRouteAudio.available) return false;
+        safeName = findSaeivAudioClipName(safeName);
+        if (!safeName) return false;
         var opts = options && typeof options === "object" ? options : {};
         var onEnded = typeof opts.onEnded === "function" ? opts.onEnded : null;
         saeivRouteAudio.queue.push({
@@ -345,6 +355,8 @@
       function playSaeivRouteAudioClipImmediate(clipName) {
         var safeName = String(clipName || "").trim();
         if (!safeName || !saeivRouteAudio.available) return false;
+        safeName = findSaeivAudioClipName(safeName);
+        if (!safeName) return false;
         // Hard-cut current/queued announcements to keep exact timing.
         var token = saeivRouteAudio.playbackToken + 1;
         saeivRouteAudio.playbackToken = token;
@@ -393,25 +405,21 @@
           saeivTerminusAnnounceTimer = 0;
         }
       }
-      function findSaeivTerminusClipName() {
+      function findSaeivAudioClipName(clipName) {
         if (!saeivRouteAudio.available || !saeivRouteAudio.filesByToken) return "";
-        var token = normalizeAudioNameToken("Terminus");
+        var token = normalizeAudioNameToken(clipName);
         if (!token) return "";
-        var direct = String(saeivRouteAudio.filesByToken.get(token) || "").trim();
-        if (direct) return direct;
-        var found = "";
-        saeivRouteAudio.filesByToken.forEach(function (clipName, clipToken) {
-          if (found) return;
-          var safeToken = String(clipToken || "").trim();
-          if (safeToken === token || safeToken.indexOf(token) !== -1) {
-            found = String(clipName || "").trim();
-          }
-        });
-        return found;
+        return String(saeivRouteAudio.filesByToken.get(token) || "").trim();
+      }
+      function findSaeivTerminusClipName() {
+        return findSaeivAudioClipName("Terminus");
       }
       function findSaeivDepartureClipName() {
         var explicit = String(saeivRouteAudio.departureClipName || "").trim();
-        if (explicit) return explicit;
+        if (explicit) {
+          var explicitClip = findSaeivAudioClipName(explicit);
+          if (explicitClip) return explicitClip;
+        }
         if (!saeivRouteAudio.available || !saeivRouteAudio.filesByToken) return "";
         var primaryToken = normalizeAudioNameToken("Départ");
         var fallbackToken = normalizeAudioNameToken("Depart");
@@ -426,13 +434,52 @@
         return "";
       }
       function findSaeivStopClipName(entry) {
-        if (!entry || !saeivRouteAudio.available || !saeivRouteAudio.filesByToken) return "";
+        if (!entry) return "";
         var rawName = String(entry.name || "").trim();
         if (!rawName) return "";
         var cleanName = stripProvisoire(rawName) || rawName;
-        var token = normalizeAudioNameToken(cleanName);
-        if (!token) return "";
-        return String(saeivRouteAudio.filesByToken.get(token) || "").trim();
+        return findSaeivAudioClipName(cleanName);
+      }
+      function isSaeivHudWidgetTypeActive(type) {
+        var safeType = (typeof normalizeWidgetType === "function")
+          ? normalizeWidgetType(type)
+          : String(type || "").trim();
+        if (!safeType) return false;
+        if (typeof findWidgetIdByType === "function" && findWidgetIdByType(safeType)) return true;
+        try {
+          return !!document.querySelector('[data-widget-type="' + safeType + '"]');
+        } catch (err) {
+          return false;
+        }
+      }
+      function shouldAutoPlaySaeivDestinationOnSelection() {
+        return isSaeivHudWidgetTypeActive("saeiv");
+      }
+      function shouldAutoPlaySaeivDestinationOnStart() {
+        return isSaeivHudWidgetTypeActive("saeiv_mini") && !isSaeivHudWidgetTypeActive("saeiv");
+      }
+      function scheduleSaeivDestinationAnnouncementWhenAudioReady(routeKey) {
+        var expectedKey = String(routeKey || (saeivRouteState && saeivRouteState.selectedKey) || "").trim();
+        if (!expectedKey) return false;
+        var playWhenCurrent = function () {
+          if (!saeivRouteState || typeof saeivRouteState !== "object") return false;
+          if (String(saeivRouteState.selectedKey || "").trim() !== expectedKey) return false;
+          return playSaeivDestinationAnnouncementIfAvailable({
+            action: "game-destination-announcement-auto",
+            requireShortcutContext: false
+          });
+        };
+        var preparePromise = saeivRouteAudio && saeivRouteAudio.preparePromise;
+        if (preparePromise && typeof preparePromise.then === "function") {
+          preparePromise
+            .then(function () {
+              setTimeout(playWhenCurrent, 0);
+            })
+            .catch(function () { });
+          return true;
+        }
+        setTimeout(playWhenCurrent, 0);
+        return true;
       }
       function chainSaeivAudioEndCallback(existing, appended) {
         if (typeof appended !== "function") return existing;
@@ -515,8 +562,9 @@
         if (folderToken && (folderToken === lineToken || folderToken.indexOf(lineToken) !== -1)) return true;
         return false;
       }
-      function triggerSaeivDestinationAnnouncementFromShortcut() {
-        if (managerState.visible || telemetryPaused || !telemetryConnected) return false;
+      function playSaeivDestinationAnnouncementIfAvailable(options) {
+        var opts = options && typeof options === "object" ? options : {};
+        if (opts.requireShortcutContext !== false && (managerState.visible || telemetryPaused || !telemetryConnected)) return false;
         if (!saeivRouteState || typeof saeivRouteState !== "object") return false;
         var activeRouteKey = String(saeivRouteState.selectedKey || "").trim();
         if (!activeRouteKey) return false;
@@ -529,19 +577,22 @@
         var lastEntry = entries[entries.length - 1] || null;
         var departureClip = findSaeivDepartureClipName();
         var destinationClip = findSaeivStopClipName(lastEntry);
-        if (!destinationClip) {
-          destinationClip = findSaeivTerminusClipName();
-        }
+        if (!departureClip || !destinationClip) return false;
         var clips = [];
-        if (departureClip) clips.push(departureClip);
-        if (destinationClip) clips.push(destinationClip);
-        if (!clips.length) return false;
+        clips.push(departureClip);
+        clips.push(destinationClip);
         for (var i = 0; i < clips.length; i += 1) {
           if (!enqueueSaeivRouteAudioClip(clips[i])) return false;
         }
-        saeivLastAction = "game-destination-announcement-shortcut";
+        saeivLastAction = String(opts.action || "game-destination-announcement-shortcut");
         syncSaeivExternalState(true);
         return true;
+      }
+      function triggerSaeivDestinationAnnouncementFromShortcut() {
+        return playSaeivDestinationAnnouncementIfAvailable({
+          action: "game-destination-announcement-shortcut",
+          requireShortcutContext: true
+        });
       }
       function listDbusFisRouteStyleFoldersFromDossiers() {
         var rootPath = ensureTrailingSlash(DBUS_FIS_DOSSIERS_ROOT);
@@ -866,6 +917,28 @@
         }
         return out;
       }
+      function readSaeivSignalString(source, keys) {
+        if (!source || typeof source !== "object" || !Array.isArray(keys)) return "";
+        for (var i = 0; i < keys.length; i += 1) {
+          var key = keys[i];
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          var value = source[key];
+          if (value == null) continue;
+          var text = String(value).trim();
+          if (text) return text;
+        }
+        return "";
+      }
+      function readSaeivTelemetrySteamId(signal) {
+        var source = signal && typeof signal === "object" ? signal : null;
+        if (!source) return "";
+        var keys = ["steamid", "steamId", "steamID", "steam_id", "idf_steamid", "idf_steam_id"];
+        var direct = readSaeivSignalString(source, keys);
+        if (direct) return direct;
+        var player = source.player && typeof source.player === "object" ? source.player : null;
+        var identity = source.identity && typeof source.identity === "object" ? source.identity : null;
+        return readSaeivSignalString(player, keys) || readSaeivSignalString(identity, keys);
+      }
       function updateTelemetryEstimatedSpeed(signal, sampleTs) {
         var nowTs = Number(sampleTs);
         if (!Number.isFinite(nowTs)) nowTs = Date.now();
@@ -984,6 +1057,7 @@
           lineSelected: false,
           routeSelected: false,
           dbusVersion: String(dbusDataVersion || ""),
+          steamid: readSaeivTelemetrySteamId(telemetryLastSignal),
           selectedKey: "",
           selectedLineUid: "",
           selectedRouteUid: "",
@@ -1433,11 +1507,17 @@
         setSaeivStoppedAtStop(atStopIndex, entries);
         if (saeivStopAnnouncementSoundsEnabled && targetDistance <= SAEIV_STOP_ANNOUNCE_DISTANCE) {
           if (targetIndex >= lastIndex) {
-            announceStopArrivalOnce(targetEntry, {
+            var finalStopUid = Number(targetEntry && targetEntry.uid);
+            var finalStopWasAlreadyHandled = Number.isFinite(finalStopUid) && saeivAnnouncedStopUids.has(finalStopUid);
+            var finalStopClipName = findSaeivStopClipName(targetEntry);
+            var finalStopAnnouncementQueued = announceStopArrivalOnce(targetEntry, {
               onPlayed: function () {
                 scheduleSaeivTerminusAnnouncement(targetEntry);
               }
             });
+            if (!finalStopAnnouncementQueued && !finalStopWasAlreadyHandled && !finalStopClipName) {
+              scheduleSaeivTerminusAnnouncement(targetEntry);
+            }
           } else {
             announceStopArrivalOnce(targetEntry);
           }
@@ -1672,6 +1752,9 @@
         saeivLastStateKey = "";
         syncSaeivExternalState(true);
         ensureSaeivRouteDestinationSynced(true);
+        if (shouldAutoPlaySaeivDestinationOnStart()) {
+          scheduleSaeivDestinationAnnouncementWhenAudioReady(String(saeivRouteState.selectedKey || ""));
+        }
         return Object.assign({ ok: true, started: true }, buildRouteRuntimeSummary());
       }
       function activateSaeivRouteSelection(line, route, options) {
@@ -1784,6 +1867,7 @@
         saeivRouteAudio.departureClipName = "";
         saeivRouteAudio.terminusClipName = "";
         saeivRouteAudio.terminusAudio = null;
+        saeivRouteAudio.preparePromise = null;
         saeivLastAction = "game-route-selected";
         saeivLastStateKey = "";
         if (!lastBridgeArrowPoint && routeStartPoint) {
@@ -1799,7 +1883,12 @@
         ensureNavStopLinksLoaded().catch(function () { });
         ensureNavBridgesLoaded().catch(function () { });
         ensureSaeivRouteDestinationSynced(true);
-        prepareSaeivRouteAudio(line, route, entries).catch(function () { });
+        var autoAnnounceOnSelection = shouldAutoPlaySaeivDestinationOnSelection();
+        var audioPreparePromise = prepareSaeivRouteAudio(line, route, entries).catch(function () { return false; });
+        saeivRouteAudio.preparePromise = audioPreparePromise;
+        if (autoAnnounceOnSelection) {
+          scheduleSaeivDestinationAnnouncementWhenAudioReady(selectedKey);
+        }
         return Object.assign({ ok: true }, buildRouteRuntimeSummary());
       }
       function findLineByReference(reference, uidOnly, routeReference) {

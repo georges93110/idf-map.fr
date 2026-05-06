@@ -3,6 +3,12 @@
  * Telemetrie, WebSocket, raccourcis clavier.
  * Charge par ../game2-main.js dans une fermeture runtime partagee.
  */
+      var remotePanelBusRouteGeometryCacheKey = "";
+      var remotePanelBusRouteGeometryCache = null;
+      var remotePanelBusRouteGeometryLastSentKey = "";
+      var remotePanelBusRouteGeometryLastSentAt = 0;
+      var REMOTE_PANEL_ROUTE_GEOMETRY_RESEND_MS = 6000;
+
       function isPipBrowserSupported() {
         var dpi = window.documentPictureInPicture;
         return !!(dpi && typeof dpi.requestWindow === "function");
@@ -400,6 +406,7 @@
         var nextMap = normalizeGameContextMapName(mapName);
         var mapChanged = !!previousMap && !!nextMap && previousMap !== nextMap;
         gameContextMapName = mapName;
+        try { sessionStorage.setItem("idf_game2_last_context_map", mapName); } catch (err0) { }
         gameContextMapBlocked = nextMap !== REQUIRED_GAME_CONTEXT_MAP;
         syncGameContextBlockModal();
         if (mapChanged) {
@@ -408,13 +415,10 @@
         return true;
       }
       function refreshTelemetryVisibility() {
-        var isNonInteractive = !FORCE_DEV_UI && telemetryUiMode !== 2;
-        var wsSilent = lastWsMessageAt === 0 || (Date.now() - lastWsMessageAt) > WS_SILENCE_HIDE_MS;
-        var isMenuOpen = document.body.classList.contains("is-main-menu-open");
-        var shouldHide = isNonInteractive && (telemetryPaused || wsSilent) && !isMenuOpen;
         if (el.overlayRoot) {
-          el.overlayRoot.style.visibility = shouldHide ? "hidden" : "";
+          el.overlayRoot.style.removeProperty("visibility");
         }
+        hardSetTelemetryPausedWidgetsHidden(telemetryPaused);
       }
       function hardSetTelemetryPausedWidgetsHidden(hidden) {
         document.body.classList.toggle("is-telemetry-paused-widgets", !!hidden);
@@ -465,16 +469,15 @@
 
         document.body.classList.toggle("is-telemetry-paused", telemetryPaused);
 
-        // En mode 2, les widgets doivent rester visibles même si telemetry est en pause.
-        // En mode 1, la pause telemetry les cache.
-        var shouldHardHideWidgets = telemetryPaused && telemetryUiMode !== 2;
+        // Les widgets sont caches uniquement si le WebSocket signale pause/menu.
+        var shouldHardHideWidgets = telemetryPaused;
         hardSetTelemetryPausedWidgetsHidden(shouldHardHideWidgets);
 
         updateSaeivSimulationPauseState();
         syncWidgetsPauseState();
 
         // Sécurité après sync/rerender.
-        shouldHardHideWidgets = telemetryPaused && telemetryUiMode !== 2;
+        shouldHardHideWidgets = telemetryPaused;
         hardSetTelemetryPausedWidgetsHidden(shouldHardHideWidgets);
       }
       function startTelemetryVisibilityWatch() {
@@ -1107,7 +1110,7 @@
         syncWebsocketMode1HintVisibility();
         syncGlobalLoadingVisibility();
         syncGameContextBlockModal();
-        hardSetTelemetryPausedWidgetsHidden(telemetryPaused && telemetryUiMode !== 2);
+        hardSetTelemetryPausedWidgetsHidden(telemetryPaused);
         // Affichage du menu lors d'une transition vers le mode interactif si le jeu n'est pas encore débloqué
         var loadingScreen = document.getElementById("globalLoadingScreen");
         var loadingInProgress = !!loadingScreen && loadingScreen.classList.contains("is-active");
@@ -1132,8 +1135,21 @@
         }
         return true;
       }
-      function handleDefaultStartupMode() {
+      function resolveConfiguredDefaultStartupMode() {
         var startupMode = normalizeDefaultStartupMode(defaultStartupMode);
+
+        try {
+          var urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.has("dev")) {
+            startupMode = GAME_MODES.FREE;
+          }
+        } catch (e) { }
+
+        return startupMode;
+      }
+
+      function handleDefaultStartupMode() {
+        var startupMode = resolveConfiguredDefaultStartupMode();
 
         // Priorité au paramètre URL ?dev pour le mode libre par défaut
         try {
@@ -1167,6 +1183,27 @@
         startDefaultModeDirectly(startupMode);
       }
 
+      function forceDirectStartupWidgetsVisible() {
+        document.body.classList.add("is-game-unlocked");
+        document.body.classList.remove("is-main-menu-open");
+        if (el.overlayRoot) {
+          el.overlayRoot.style.removeProperty("visibility");
+        }
+        hardSetTelemetryPausedWidgetsHidden(telemetryPaused);
+      }
+
+      function maybeStartConfiguredDefaultGameMode() {
+        var startupMode = resolveConfiguredDefaultStartupMode();
+        if (startupMode === DEFAULT_STARTUP_MODE_MENU) return false;
+        if (!isModeEnabled(startupMode)) return false;
+        if (isGameUnlocked && normalizeGameMode(currentGameMode) === startupMode) {
+          forceDirectStartupWidgetsVisible();
+          return true;
+        }
+        startDefaultModeDirectly(startupMode);
+        return true;
+      }
+
       function startDefaultModeDirectly(mode) {
         var startupMode = normalizeDefaultStartupMode(mode);
 
@@ -1195,6 +1232,7 @@
         }
 
         apply();
+        forceDirectStartupWidgetsVisible();
 
         if (typeof refreshManagerUi === "function") {
           refreshManagerUi();
@@ -1233,17 +1271,525 @@
       function getRemotePanelWsUrl() {
         return normalizeRemotePanelWsUrl(REMOTE_SERVER_WS_DEFAULT_URL);
       }
+      function isRemotePanelEmptyIdentityText(value) {
+        var text = String(value == null ? "" : value).trim();
+        return !text || /^(null|nil|undefined|none|nan|n\/a|unknown|inconnu|anonymous|anonyme)$/i.test(text);
+      }
+      function isRemotePanelTechnicalIdentityText(value) {
+        var text = String(value == null ? "" : value).trim();
+        if (!text) return false;
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(text)) return true;
+        if (/^[0-9a-f]{24,}$/i.test(text)) return true;
+        if (/^\d{15,20}$/.test(text)) return true;
+        if (/^(player|client|user|session|socket)[_-]?[0-9a-f-]{8,}$/i.test(text)) return true;
+        return false;
+      }
+      function normalizeRemotePanelIdentityText(value, allowTechnical) {
+        var text = String(value == null ? "" : value).trim();
+        if (isRemotePanelEmptyIdentityText(text)) return "";
+        if (!allowTechnical && isRemotePanelTechnicalIdentityText(text)) return "";
+        return text;
+      }
+      function readRemotePanelIdentityString(source, keys, allowTechnical) {
+        if (!source || typeof source !== "object") return "";
+        var aliases = Array.isArray(keys) ? keys : [];
+        for (var i = 0; i < aliases.length; i += 1) {
+          var key = aliases[i];
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          var value = normalizeRemotePanelIdentityText(source[key], !!allowTechnical);
+          if (value) return value;
+        }
+        return "";
+      }
+      function readRemotePanelStoredIdentityString(keys, allowTechnical) {
+        var aliases = Array.isArray(keys) ? keys : [];
+        var params = null;
+        try { params = new URLSearchParams(window.location.search || ""); } catch (err0) { params = null; }
+        for (var i = 0; i < aliases.length; i += 1) {
+          var key = aliases[i];
+          var value = "";
+          if (params) {
+            try { value = normalizeRemotePanelIdentityText(params.get(key), !!allowTechnical); } catch (err1) { value = ""; }
+            if (value) return value;
+          }
+          try { value = normalizeRemotePanelIdentityText(window.localStorage && window.localStorage.getItem(key), !!allowTechnical); } catch (err2) { value = ""; }
+          if (value) return value;
+          try { value = normalizeRemotePanelIdentityText(window.sessionStorage && window.sessionStorage.getItem(key), !!allowTechnical); } catch (err3) { value = ""; }
+          if (value) return value;
+        }
+        return "";
+      }
+      function buildRemotePanelPlayerIdentity(raw, signal) {
+        var pools = [
+          raw,
+          raw && raw.data,
+          raw && raw.payload,
+          raw && raw.player,
+          raw && raw.client,
+          raw && raw.user,
+          raw && raw.steam,
+          raw && raw.profile,
+          signal,
+          signal && signal.data,
+          signal && signal.payload,
+          signal && signal.player,
+          signal && signal.client,
+          signal && signal.user,
+          signal && signal.steam,
+          signal && signal.profile
+        ];
+        var steamid = "";
+        var displayname = "";
+        var name = "";
+        for (var i = 0; i < pools.length; i += 1) {
+          var source = pools[i];
+          if (!source || typeof source !== "object") continue;
+          if (!steamid) steamid = readRemotePanelIdentityString(source, ["steamid", "steamId", "steamID", "steam_id"], true);
+          if (!displayname) displayname = readRemotePanelIdentityString(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "personaname", "personaName", "persona_name", "nickname"]);
+          if (!name) name = readRemotePanelIdentityString(source, ["name", "playerName", "player_name", "username", "userName"]);
+        }
+        if (!steamid) steamid = readRemotePanelStoredIdentityString(["steamid", "steamId", "steamID", "steam_id", "idf_steamid", "idf_steam_id"], true);
+        if (!displayname) displayname = readRemotePanelStoredIdentityString(["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "personaname", "personaName", "persona_name", "nickname", "idf_displayname", "idf_steam_name"]);
+        if (!name) name = readRemotePanelStoredIdentityString(["name", "playerName", "player_name", "username", "userName", "idf_name", "idf_player_name"]);
+        if (!steamid && !displayname && !name) return null;
+        var identity = {};
+        if (steamid) identity.steamid = steamid;
+        if (displayname) identity.displayname = displayname;
+        if (name) identity.name = name;
+        return identity;
+      }
+      function remotePanelRoundNumber(value, digits) {
+        var number = Number(value);
+        if (!Number.isFinite(number)) return null;
+        var factor = Math.pow(10, Math.max(0, Math.round(Number(digits) || 0)));
+        return Math.round(number * factor) / factor;
+      }
+      function remotePanelPositiveInt(value) {
+        var number = Number(value);
+        if (!Number.isFinite(number)) return 0;
+        return Math.max(0, Math.round(number));
+      }
+      function remotePanelGameModeLabel(mode, menuOpen) {
+        if (menuOpen) return "Desactive (menu)";
+        var normalized = "";
+        try {
+          normalized = typeof normalizeGameMode === "function" ? normalizeGameMode(mode) : String(mode || "").trim().toLowerCase();
+        } catch (err0) {
+          normalized = String(mode || "").trim().toLowerCase();
+        }
+        if (normalized === "free") return "Mode libre";
+        if (normalized === "bus") return "Mode bus";
+        return normalized || "Mode inconnu";
+      }
+      function remotePanelParseWorldPoint(rawPoint) {
+        if (!rawPoint || typeof rawPoint !== "object") return null;
+        if (typeof parseWorldPoint3D === "function") {
+          try {
+            var parsed = parseWorldPoint3D(rawPoint);
+            if (parsed) return parsed;
+          } catch (err0) { }
+        }
+        var hasZKey =
+          Object.prototype.hasOwnProperty.call(rawPoint, "z") ||
+          Object.prototype.hasOwnProperty.call(rawPoint, "Z");
+        var x = Number(rawPoint.x ?? rawPoint.X);
+        var y = Number(hasZKey ? (rawPoint.z ?? rawPoint.Z) : (rawPoint.y ?? rawPoint.Y));
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        var h = Number(rawPoint.h ?? rawPoint.H ?? rawPoint.height ?? rawPoint.alt ?? rawPoint.altitude);
+        if (!Number.isFinite(h) && hasZKey) h = Number(rawPoint.y ?? rawPoint.Y);
+        var out = { x: x, y: y };
+        if (Number.isFinite(h)) out.h = h;
+        return out;
+      }
+      function remotePanelCompactWorldPoint(rawPoint) {
+        var point = remotePanelParseWorldPoint(rawPoint);
+        if (!point) return null;
+        var out = {
+          x: remotePanelRoundNumber(point.x, 2),
+          y: remotePanelRoundNumber(point.y, 2)
+        };
+        if (Number.isFinite(Number(point.h))) out.h = remotePanelRoundNumber(point.h, 2);
+        return out;
+      }
+      function remotePanelCompactWorldPoints(points) {
+        var source = Array.isArray(points) ? points : [];
+        var out = [];
+        for (var i = 0; i < source.length; i += 1) {
+          var point = remotePanelCompactWorldPoint(source[i]);
+          if (!point) continue;
+          var last = out[out.length - 1];
+          if (last && Math.abs(last.x - point.x) < 0.01 && Math.abs(last.y - point.y) < 0.01) continue;
+          out.push(point);
+        }
+        return out;
+      }
+      function remotePanelGetStopExactWorldPoint(stop) {
+        if (!stop || typeof stop !== "object") return null;
+        if (typeof getSaeivStopExactWorldPoint === "function") {
+          try {
+            var exact = getSaeivStopExactWorldPoint(stop);
+            if (exact) return exact;
+          } catch (err0) { }
+        }
+        var x = Number(stop.X ?? stop.x);
+        var y = Number(stop.Z ?? stop.z ?? stop.Y ?? stop.y);
+        var h = Number(stop.Y ?? stop.h ?? stop.height);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        var out = { x: x, y: y };
+        if (Number.isFinite(h)) out.h = h;
+        return out;
+      }
+      function remotePanelGetServedStopIndices() {
+        var out = [];
+        try {
+          var log = saeivStopServedLog && typeof saeivStopServedLog === "object" ? saeivStopServedLog : null;
+          if (log) {
+            Object.keys(log).forEach(function (key) {
+              if (log[key] !== true) return;
+              var index = Math.floor(Number(key));
+              if (Number.isFinite(index) && index >= 0 && out.indexOf(index) === -1) out.push(index);
+            });
+          }
+        } catch (err0) { }
+        out.sort(function (a, b) { return a - b; });
+        return out;
+      }
+      function remotePanelBuildRouteStopPayload(entries, reachedIndex, targetIndex, servedStopIndices) {
+        var list = Array.isArray(entries) ? entries : [];
+        var servedSet = new Set(Array.isArray(servedStopIndices) ? servedStopIndices : []);
+        var out = [];
+        for (var i = 0; i < list.length; i += 1) {
+          var entry = list[i];
+          var point = remotePanelCompactWorldPoint(remotePanelGetStopExactWorldPoint(entry));
+          if (!point) continue;
+          var served = servedSet.has(i) || (Number.isFinite(reachedIndex) && i <= reachedIndex);
+          out.push({
+            index: i,
+            uid: Number.isFinite(Number(entry && entry.uid)) ? Math.floor(Number(entry.uid)) : null,
+            name: String(entry && entry.name || ""),
+            x: point.x,
+            y: point.y,
+            h: Number.isFinite(Number(point.h)) ? point.h : null,
+            served: served,
+            reached: Number.isFinite(reachedIndex) && i <= reachedIndex,
+            current: Number.isFinite(targetIndex) && i === targetIndex
+          });
+        }
+        return out;
+      }
+      function remotePanelKickBusRouteGeometryLoads() {
+        try {
+          if (typeof ensureNavGraphLoaded === "function") ensureNavGraphLoaded().catch(function () { });
+        } catch (err0) { }
+        try {
+          if (typeof ensureNavStopLinksLoaded === "function") ensureNavStopLinksLoaded().catch(function () { });
+        } catch (err1) { }
+        try {
+          if (typeof ensureNavBridgesLoaded === "function") ensureNavBridgesLoaded().catch(function () { });
+        } catch (err2) { }
+      }
+      function remotePanelBusRouteGeometryReady() {
+        var hasGraph = false;
+        try { hasGraph = !!navGraph; } catch (err0) { hasGraph = false; }
+        var hasStopLinks = false;
+        try { hasStopLinks = navStopLinksLoaded === true; } catch (err1) { hasStopLinks = false; }
+        var hasBridges = false;
+        try { hasBridges = navBridgeLoaded === true; } catch (err2) { hasBridges = false; }
+        return hasGraph && hasStopLinks && hasBridges;
+      }
+      function remotePanelBuildBusRouteGeometryCacheKey(entries, saeiv) {
+        var list = Array.isArray(entries) ? entries : [];
+        var first = list[0] || {};
+        var last = list[list.length - 1] || {};
+        var bridgeRuleId = "";
+        try {
+          var rule = typeof getActiveSaeivNavBridgeRule === "function" ? getActiveSaeivNavBridgeRule() : null;
+          bridgeRuleId = String(rule && rule.id || "");
+        } catch (err0) { bridgeRuleId = ""; }
+        var graphReady = remotePanelBusRouteGeometryReady() ? "1" : "0";
+        var bridgeVersion = "";
+        var stopLinksVersion = "";
+        try { bridgeVersion = String(navBridgeLoadedVersion || ""); } catch (err1) { bridgeVersion = ""; }
+        try { stopLinksVersion = String(navStopLinksLoadedVersion || ""); } catch (err2) { stopLinksVersion = ""; }
+        return [
+          String(saeiv && saeiv.selectedKey || ""),
+          String(saeiv && saeiv.selectedLineUid || ""),
+          String(saeiv && saeiv.selectedRouteUid || ""),
+          String(list.length),
+          String(first && first.uid || ""),
+          String(last && last.uid || ""),
+          graphReady,
+          bridgeVersion,
+          stopLinksVersion,
+          bridgeRuleId
+        ].join("|");
+      }
+      function remotePanelBuildBusRouteGeometrySegments(entries) {
+        var list = Array.isArray(entries) ? entries : [];
+        if (list.length < 2) return [];
+        var fullRoute = [];
+        try {
+          if (typeof buildSaeivMapStyleRouteWorldPoints === "function") {
+            fullRoute = buildSaeivMapStyleRouteWorldPoints(list);
+          }
+        } catch (err0) {
+          fullRoute = [];
+        }
+        var bridgeRule = null;
+        var navOptions = null;
+        try {
+          bridgeRule = typeof getActiveSaeivNavBridgeRule === "function" ? getActiveSaeivNavBridgeRule() : null;
+          navOptions = typeof getNavBridgeOptionsForRule === "function" ? getNavBridgeOptionsForRule(bridgeRule) : null;
+        } catch (err1) {
+          bridgeRule = null;
+          navOptions = null;
+        }
+        var segments = [];
+        for (var i = 0; i < list.length - 1; i += 1) {
+          var points = [];
+          try {
+            if (Array.isArray(fullRoute) && fullRoute.length >= 2 && typeof sliceSaeivRouteWorldPointsBetweenStops === "function") {
+              points = sliceSaeivRouteWorldPointsBetweenStops(fullRoute, list, i, i + 1);
+            }
+          } catch (err2) {
+            points = [];
+          }
+          if ((!Array.isArray(points) || points.length < 2) && typeof buildSaeivWorldPolylineFromStops === "function") {
+            try { points = buildSaeivWorldPolylineFromStops(list, i, i + 1, navOptions); } catch (err3) { points = []; }
+          }
+          var compact = remotePanelCompactWorldPoints(points);
+          if (compact.length < 2) {
+            var fromPoint = remotePanelCompactWorldPoint(remotePanelGetStopExactWorldPoint(list[i]));
+            var toPoint = remotePanelCompactWorldPoint(remotePanelGetStopExactWorldPoint(list[i + 1]));
+            compact = [];
+            if (fromPoint) compact.push(fromPoint);
+            if (toPoint) compact.push(toPoint);
+          }
+          if (compact.length >= 2) {
+            segments.push({
+              fromIndex: i,
+              toIndex: i + 1,
+              points: compact
+            });
+          }
+        }
+        return segments;
+      }
+      function buildRemotePanelBusRouteGeometry(saeiv, reachedIndex, targetIndex) {
+        var state = null;
+        try { state = saeivRouteState && typeof saeivRouteState === "object" ? saeivRouteState : null; } catch (err0) { state = null; }
+        var entries = state && Array.isArray(state.stops) ? state.stops : [];
+        if (!entries.length) return null;
+        remotePanelKickBusRouteGeometryLoads();
+        try {
+          if (typeof applyNavStopLinksToEntries === "function") applyNavStopLinksToEntries(entries);
+        } catch (err1) { }
+        var servedStopIndices = remotePanelGetServedStopIndices();
+        var stops = remotePanelBuildRouteStopPayload(entries, reachedIndex, targetIndex, servedStopIndices);
+        var ready = remotePanelBusRouteGeometryReady();
+        var cacheKey = remotePanelBuildBusRouteGeometryCacheKey(entries, saeiv);
+        if (!ready) {
+          remotePanelBusRouteGeometryCacheKey = "";
+          remotePanelBusRouteGeometryCache = null;
+          return {
+            schema: "idf-map-bus-route-v1",
+            pending: true,
+            cacheKey: cacheKey,
+            reachedIndex: reachedIndex,
+            targetIndex: targetIndex,
+            servedStopIndices: servedStopIndices,
+            stops: stops,
+            segments: []
+          };
+        }
+        if (cacheKey !== remotePanelBusRouteGeometryCacheKey || !remotePanelBusRouteGeometryCache) {
+          var segments = remotePanelBuildBusRouteGeometrySegments(entries);
+          remotePanelBusRouteGeometryCacheKey = cacheKey;
+          remotePanelBusRouteGeometryCache = {
+            schema: "idf-map-bus-route-v1",
+            pending: false,
+            cacheKey: cacheKey,
+            segments: segments,
+            segmentCount: segments.length
+          };
+        }
+        return Object.assign({}, remotePanelBusRouteGeometryCache, {
+          reachedIndex: reachedIndex,
+          targetIndex: targetIndex,
+          servedStopIndices: servedStopIndices,
+          stops: stops
+        });
+      }
+      function shouldSendRemotePanelBusRouteGeometry(geometry) {
+        if (!geometry || typeof geometry !== "object") return false;
+        var key = String(geometry.cacheKey || "");
+        if (!key) return false;
+        var now = Date.now();
+        if (geometry.pending === true) return key !== remotePanelBusRouteGeometryLastSentKey;
+        if (key !== remotePanelBusRouteGeometryLastSentKey) return true;
+        return (now - remotePanelBusRouteGeometryLastSentAt) >= REMOTE_PANEL_ROUTE_GEOMETRY_RESEND_MS;
+      }
+      function markRemotePanelBusRouteGeometrySent(geometry) {
+        if (!geometry || typeof geometry !== "object") return;
+        remotePanelBusRouteGeometryLastSentKey = String(geometry.cacheKey || "");
+        remotePanelBusRouteGeometryLastSentAt = Date.now();
+      }
+      function buildRemotePanelBusLineBonusState(saeiv) {
+        if (!saeiv || typeof saeiv !== "object") return null;
+        var lineSelected = saeiv.lineSelected === true || saeiv.routeSelected === true || saeiv.selected === true;
+        if (!lineSelected) return null;
+        var stopCount = remotePanelPositiveInt(saeiv.routeStopCount);
+        var reachedIndex = Math.floor(Number(saeiv.routeReachedIndex));
+        if (!Number.isFinite(reachedIndex)) reachedIndex = -1;
+        var reachedStops = remotePanelPositiveInt(saeiv.routeReachedStopsCount);
+        if (!reachedStops && reachedIndex >= 0) reachedStops = Math.max(0, reachedIndex + 1);
+        var remainingStops = stopCount;
+        if (stopCount > 0) {
+          remainingStops = saeiv.routeStarted === true ? Math.max(0, stopCount - reachedStops) : stopCount;
+          if (saeiv.routeCompleted === true) remainingStops = 0;
+        }
+        var boardingTotal = remotePanelPositiveInt(saeiv.stopBoardingTotal);
+        var boardingDone = Math.min(boardingTotal, remotePanelPositiveInt(saeiv.stopBoardingDone));
+        var alightingTotal = remotePanelPositiveInt(saeiv.stopAlightingTotal);
+        var alightingDone = Math.min(alightingTotal, remotePanelPositiveInt(saeiv.stopAlightingDone));
+        var targetStopIndex = Math.max(0, Math.round(Number(saeiv.routeTargetIndex) || 0));
+        var routeGeometry = buildRemotePanelBusRouteGeometry(saeiv, reachedIndex, targetStopIndex);
+        var shouldIncludeGeometry = shouldSendRemotePanelBusRouteGeometry(routeGeometry);
+        var state = {
+          active: true,
+          lineNumber: String(saeiv.lineNumber || ""),
+          routeName: String(saeiv.routeName || ""),
+          selectedKey: String(saeiv.selectedKey || ""),
+          started: saeiv.routeStarted === true,
+          waitingStart: saeiv.routeWaitingStart === true,
+          completed: saeiv.routeCompleted === true,
+          currentStopName: String(saeiv.stopName || ""),
+          currentStopLabel: String(saeiv.currentStopLabel || ""),
+          nextStopName: String(saeiv.nextStopName || ""),
+          thirdStopName: String(saeiv.thirdStopName || ""),
+          stopCount: stopCount,
+          reachedStopIndex: reachedIndex,
+          reachedStops: reachedStops,
+          servedStops: remotePanelPositiveInt(saeiv.routeServedStopsCount),
+          remainingStops: remainingStops,
+          targetStopIndex: targetStopIndex,
+          missedStops: remotePanelPositiveInt(saeiv.routeMissedStopsCount),
+          lateStops: remotePanelPositiveInt(saeiv.routeLateStopsCount),
+          passengersInBus: remotePanelPositiveInt(saeiv.passengersInBus),
+          passengersAtStop: remotePanelPositiveInt(saeiv.passengersAtStop),
+          transportedPassengers: remotePanelPositiveInt(saeiv.routeTransportedPassengers),
+          busMaxCapacity: remotePanelPositiveInt(saeiv.busMaxCapacity),
+          busMaxCapacityDisplay: String(saeiv.busMaxCapacityDisplay || saeiv.busMaxCapacity || ""),
+          busMaxCapacityUnlimited: saeiv.busMaxCapacityUnlimited === true,
+          stopRequested: saeiv.stopRequested === true,
+          stopNecessary: saeiv.stopNecessary === true,
+          boardingTotal: boardingTotal,
+          boardingDone: boardingDone,
+          boardingRemaining: Math.max(0, boardingTotal - boardingDone),
+          alightingTotal: alightingTotal,
+          alightingDone: alightingDone,
+          alightingRemaining: Math.max(0, alightingTotal - alightingDone),
+          distanceToCurrentStopM: remotePanelRoundNumber(saeiv.distanceToDisplayStopM ?? saeiv.distanceToDisplayStopGpsM, 1),
+          etaRemainingMinutes: remotePanelRoundNumber(saeiv.etaRemainingMinutes, 1),
+          liveDelayMinutes: remotePanelRoundNumber(saeiv.routeLiveDelayMinutes, 1),
+          liveElapsedMs: remotePanelPositiveInt(saeiv.routeLiveElapsedMs),
+          vehicleAtStop: saeiv.vehicleAtStop === true,
+          vehicleName: String(saeiv.vehicleName || ""),
+          routeGeometryKey: routeGeometry ? String(routeGeometry.cacheKey || "") : "",
+          routeGeometryPending: routeGeometry ? routeGeometry.pending === true : false,
+          routeGeometryUpdatedAt: shouldIncludeGeometry ? Date.now() : 0
+        };
+        if (shouldIncludeGeometry) {
+          state.routeGeometry = routeGeometry;
+          markRemotePanelBusRouteGeometrySent(routeGeometry);
+        }
+        return state;
+      }
+      function buildRemotePanelGame2BonusState() {
+        var menuOpen = false;
+        try { menuOpen = document.body && document.body.classList.contains("is-main-menu-open"); } catch (err0) { menuOpen = false; }
+        var mode = "";
+        try { mode = String(currentGameMode || ""); } catch (err1) { mode = ""; }
+        var normalizedMode = mode;
+        try {
+          normalizedMode = typeof normalizeGameMode === "function" ? normalizeGameMode(mode) : mode;
+        } catch (err2) { }
+        var saeiv = null;
+        try {
+          if (typeof buildSaeivStatePayloadFromGame === "function") saeiv = buildSaeivStatePayloadFromGame();
+        } catch (err3) {
+          saeiv = null;
+        }
+        return {
+          title: "Etat interface IDF Map",
+          kind: "game2_html_state",
+          updatedAt: Date.now(),
+          gameMode: {
+            key: menuOpen ? "disabled" : String(normalizedMode || mode || ""),
+            label: remotePanelGameModeLabel(normalizedMode || mode, menuOpen),
+            raw: String(mode || ""),
+            menuOpen: menuOpen,
+            gameUnlocked: (typeof isGameUnlocked !== "undefined") ? isGameUnlocked === true : null,
+            telemetryPaused: (typeof telemetryPaused !== "undefined") ? telemetryPaused === true : null,
+            telemetryUiMode: (typeof telemetryUiMode !== "undefined") ? Number(telemetryUiMode) : null
+          },
+          busLine: buildRemotePanelBusLineBonusState(saeiv)
+        };
+      }
+      function pickRemotePanelTelemetryMapName(raw, signal) {
+        var mapName = "";
+        try {
+          var context = typeof findGameContextPayload === "function" ? findGameContextPayload(raw) : null;
+          if (context) mapName = pickGameContextMapName(context);
+        } catch (err0) { mapName = ""; }
+        if (!mapName) {
+          var pools = [
+            raw,
+            raw && raw.data,
+            raw && raw.payload,
+            raw && raw.gameContext,
+            raw && raw.game_context,
+            signal,
+            signal && signal.data,
+            signal && signal.payload,
+            signal && signal.gameContext,
+            signal && signal.game_context
+          ];
+          for (var i = 0; i < pools.length; i += 1) {
+            var source = pools[i];
+            if (!source || typeof source !== "object") continue;
+            mapName = pickGameContextMapName(source);
+            if (mapName) break;
+          }
+        }
+        if (!mapName) {
+          try { mapName = String(gameContextMapName || ""); } catch (err1) { mapName = ""; }
+        }
+        if (!mapName) {
+          try { mapName = String(sessionStorage.getItem("idf_game2_last_context_map") || ""); } catch (err2) { mapName = ""; }
+        }
+        return mapName;
+      }
+      function canSendRemotePanelTelemetryForMap(raw, signal) {
+        var mapName = pickRemotePanelTelemetryMapName(raw, signal);
+        if (!mapName) return false;
+        return normalizeGameContextMapName(mapName) === String(REQUIRED_GAME_CONTEXT_MAP || "").trim().toLowerCase();
+      }
       function buildRemotePanelTelemetryPayload(raw, signal) {
         var payload = raw && typeof raw === "object"
           ? raw
           : (signal && typeof signal === "object" ? signal : null);
         if (!payload) return null;
-        return {
+        var message = {
           source: "game2",
           action: "telemetry",
           time: Date.now(),
           data: payload
         };
+        var identity = buildRemotePanelPlayerIdentity(raw, signal);
+        if (identity) message.player = identity;
+        message.bonus = buildRemotePanelGame2BonusState();
+        return message;
       }
       function getRemotePanelWsSocket() {
         return remoteServerWs && remoteServerWs.socket ? remoteServerWs.socket : null;
@@ -1290,6 +1836,10 @@
       function sendTelemetryToRemotePanel(raw, signal) {
         if (!signal || typeof signal !== "object") return;
         if (!getRemotePanelWsUrl()) return;
+        if (!canSendRemotePanelTelemetryForMap(raw, signal)) {
+          remotePanelTelemetryQueuedPayload = null;
+          return;
+        }
         remotePanelTelemetryQueuedPayload = buildRemotePanelTelemetryPayload(raw, signal);
         if (!remotePanelTelemetryQueuedPayload) return;
         if (!isRemotePanelWsOpen()) {
@@ -1299,10 +1849,6 @@
         flushRemotePanelTelemetryQueue();
       }
       function stopRemotePanelWsBridge() {
-        if (remoteServerWsPingTimer) {
-          clearInterval(remoteServerWsPingTimer);
-          remoteServerWsPingTimer = 0;
-        }
         if (remoteServerWsReconnectTimer) {
           clearTimeout(remoteServerWsReconnectTimer);
           remoteServerWsReconnectTimer = 0;
@@ -1323,22 +1869,6 @@
         remoteServerWs = null;
         remoteServerWsPlayersCount = null;
         remoteServerWsLastPongAtMs = 0;
-      }
-      function sendRemotePanelWsPing() {
-        if (!isRemotePanelWsOpen()) return;
-        try {
-          getRemotePanelWsSocket().send(JSON.stringify({
-            type: "ping",
-            time: Date.now()
-          }));
-          if (remoteServerWs) {
-            remoteServerWs.online = true;
-            remoteServerWsLastPongAtMs = Date.now();
-          }
-        } catch (err0) {
-          remoteServerWsLastEventText = "Ping WebSocket panel echoue.";
-          try { getRemotePanelWsSocket().close(); } catch (err1) { }
-        }
       }
       function handleRemotePanelWsMessage(event) {
         if (!remoteServerWs || remoteServerWs.socket !== (event && (event.currentTarget || event.target))) return;
@@ -1366,10 +1896,6 @@
           clearTimeout(remoteServerWsReconnectTimer);
           remoteServerWsReconnectTimer = 0;
         }
-        if (remoteServerWsPingTimer) {
-          clearInterval(remoteServerWsPingTimer);
-          remoteServerWsPingTimer = 0;
-        }
         var socket = null;
         try { socket = new WebSocket(url); } catch (err0) { socket = null; }
         if (!socket) {
@@ -1390,10 +1916,6 @@
           remoteServerWsLastPongAtMs = Date.now();
           remoteServerWsLastEventText = "WebSocket panel connecte.";
           flushRemotePanelTelemetryQueue();
-          sendRemotePanelWsPing();
-          if (!remoteServerWsPingTimer) {
-            remoteServerWsPingTimer = setInterval(sendRemotePanelWsPing, REMOTE_SERVER_WS_PING_INTERVAL_MS);
-          }
         };
         socket.onmessage = handleRemotePanelWsMessage;
         socket.onerror = function () {
@@ -1404,10 +1926,6 @@
         };
         socket.onclose = function () {
           if (!remoteServerWs || remoteServerWs.socket !== socket) return;
-          if (remoteServerWsPingTimer) {
-            clearInterval(remoteServerWsPingTimer);
-            remoteServerWsPingTimer = 0;
-          }
           remoteServerWs.online = false;
           remoteServerWs = null;
           remoteServerWsLastPongAtMs = 0;

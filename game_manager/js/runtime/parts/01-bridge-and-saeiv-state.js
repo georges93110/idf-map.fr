@@ -335,6 +335,50 @@
           syncSaeivExternalState(true);
           return;
         }
+        if (type === "saeiv:service_start_route") {
+          var serviceLineUid = String(data.lineUid || "").trim();
+          var serviceRouteUid = String(data.routeUid || "").trim();
+          if (!serviceLineUid || !serviceRouteUid) {
+            postSaeivBridgeMessage({
+              type: "saeiv:action_result",
+              action: "service_start_route",
+              ok: false,
+              error: "lineUid/routeUid manquants."
+            });
+            return;
+          }
+          Promise.all([
+            ensureDbusDataLoaded(),
+            ensureNavStopLinksLoaded().catch(function () { return new Map(); })
+          ])
+            .then(function () {
+              var selectResult = selectRouteByReferences(serviceLineUid, serviceRouteUid, { uidOnly: true });
+              if (!selectResult || selectResult.ok !== true) {
+                postSaeivBridgeMessage(Object.assign({
+                  type: "saeiv:action_result",
+                  action: "service_start_route"
+                }, selectResult || { ok: false, error: "Selection impossible." }));
+                syncSaeivExternalState(true);
+                return;
+              }
+              var serviceStartResult = startSaeivSelectedRoute();
+              postSaeivBridgeMessage(Object.assign({
+                type: "saeiv:action_result",
+                action: "service_start_route",
+                select: selectResult
+              }, serviceStartResult || { ok: false, error: "Demarrage impossible." }));
+              syncSaeivExternalState(true);
+            })
+            .catch(function (err) {
+              postSaeivBridgeMessage({
+                type: "saeiv:action_result",
+                action: "service_start_route",
+                ok: false,
+                error: String(err && err.message || err || "Chargement DBUS impossible.")
+              });
+            });
+          return;
+        }
         if (type === "saeiv:request_state" || type === "saeiv:ready") {
           syncSaeivExternalState(true);
           return;

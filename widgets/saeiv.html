@@ -674,6 +674,263 @@
       text-align: center;
     }
 
+    .service-complete-pane {
+      position: absolute;
+      left: 1.5%;
+      right: 0;
+      top: 15%;
+      height: 65%;
+      box-sizing: border-box;
+      pointer-events: auto;
+      background: linear-gradient(180deg, rgba(55, 114, 205, 0.58) 0%, rgba(42, 95, 177, 0.52) 100%);
+      box-shadow: inset 0 0 0 0.08em rgba(188, 225, 255, 0.18);
+    }
+
+    .service-complete-pane.is-confirming .service-line-label,
+    .service-complete-pane.is-confirming .service-line-input,
+    .service-complete-pane.is-confirming .service-correct-btn,
+    .service-complete-pane.is-confirming .service-keypad,
+    .service-complete-pane.is-confirming .service-action-btn {
+      display: none;
+    }
+
+    .service-complete-pane.is-confirming {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .service-line-label {
+      position: absolute;
+      left: 6%;
+      top: -2%;
+      width: 18%;
+      height: 22%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      color: #dff3ff;
+      font-weight: 700;
+      line-height: 1;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: clip;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.38);
+    }
+
+    .service-line-input {
+      position: absolute;
+      left: 25%;
+      top: 4%;
+      width: 52%;
+      height: 20%;
+      box-sizing: border-box;
+      border: 0;
+      margin: 0;
+      padding: 0 0.22em;
+      color: #111827;
+      background: rgba(238, 239, 244, 0.94);
+      box-shadow: inset 0 0 0 0.08em rgba(16, 33, 66, 0.42);
+      font-family: var(--font-main);
+      font-weight: 500;
+      line-height: 1;
+      pointer-events: auto;
+      outline: none;
+    }
+
+    .overlay-page-service-complete[data-service-step="matricule"] .service-line-label {
+      left: 1%;
+      width: 22%;
+      font-size: 0.9em !important;
+    }
+
+    .hud .service-line-input {
+      font-size: 1.75em !important;
+    }
+
+    .service-correct-btn,
+    .service-key-btn,
+    .service-action-btn {
+      border: 0.08em solid rgba(170, 216, 255, 0.34);
+      margin: 0;
+      padding: 0;
+      color: #ecf9ff;
+      background: linear-gradient(180deg, rgba(83, 132, 209, 0.92) 0%, rgba(35, 64, 136, 0.95) 100%);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.5);
+      box-shadow: inset 0 0 0 0.06em rgba(255, 255, 255, 0.05);
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .service-correct-btn {
+      position: absolute;
+      right: 5%;
+      top: 4%;
+      width: 17%;
+      height: 20%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.12em;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .service-correct-arrow {
+      display: block;
+      width: 100%;
+      font-size: 1.65em;
+      font-weight: 400;
+      line-height: 1;
+      text-align: right;
+      padding-right: 0.5em;
+      box-sizing: border-box;
+    }
+
+    .service-keypad {
+      position: absolute;
+      left: 40%;
+      top: 27.5%;
+      width: 20%;
+      height: 68.5%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(4, minmax(0, 1fr));
+      gap: 2.5%;
+      pointer-events: auto;
+    }
+
+    .service-key-btn {
+      display: grid;
+      place-items: center;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .hud .service-key-btn {
+      font-size: 1.65em !important;
+    }
+
+    .service-key-zero {
+      grid-column: 1 / -1;
+    }
+
+    .service-action-btn {
+      position: absolute;
+      bottom: 4%;
+      width: 25%;
+      height: 20%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .hud .service-action-btn {
+      font-size: 1.35em !important;
+    }
+
+    .hud .service-correct-btn {
+      font-size: 1.05em !important;
+    }
+
+    .service-cancel-btn {
+      left: 2%;
+    }
+
+    .service-validate-btn {
+      right: 2%;
+    }
+
+    .service-validate-btn:disabled {
+      color: #ccd7e8;
+      background: linear-gradient(180deg, rgba(96, 108, 128, 0.95) 0%, rgba(62, 72, 90, 0.97) 100%);
+      text-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .service-confirm-frame {
+      position: absolute;
+      left: 23%;
+      top: 20%;
+      width: 52%;
+      height: 60%;
+      box-sizing: border-box;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55em;
+      padding: 5% 6%;
+      color: #eef9ff;
+      background: linear-gradient(180deg, rgba(55, 114, 205, 0.58) 0%, rgba(42, 95, 177, 0.52) 100%);
+      border: 0.1em solid rgba(70, 132, 218, 0.88);
+      box-shadow: inset 0 0 0 0.08em rgba(207, 230, 255, 0.36);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.48);
+      z-index: 8;
+      pointer-events: auto;
+    }
+
+    .service-accept-frame {
+      gap: 0.38em;
+      padding: 3.6% 0 0;
+      overflow: hidden;
+    }
+
+    .service-confirm-title {
+      font-size: 1.15em !important;
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .service-confirm-line {
+      font-size: 0.78em !important;
+      font-weight: 600;
+      line-height: 1.08;
+      text-align: center;
+      color: #dff5ff;
+    }
+
+    .service-accept-details {
+      display: grid;
+      gap: 0.18em;
+      width: 100%;
+      padding: 0 7%;
+      box-sizing: border-box;
+    }
+
+    .service-accept-line {
+      font-size: 0.86em !important;
+      font-weight: 700;
+      line-height: 1.05;
+      text-align: center;
+      color: #eef9ff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .service-accept-btn {
+      width: 100%;
+      margin-top: auto;
+      height: 30%;
+      border: 0;
+      border-top: 0.08em solid rgba(207, 230, 255, 0.38);
+      color: #eef9ff;
+      background: linear-gradient(180deg, rgba(102, 168, 242, 0.82) 0%, rgba(70, 131, 215, 0.82) 100%);
+      font-weight: 700;
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.48);
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .hud .service-accept-btn {
+      font-size: 1.2em !important;
+    }
+
     .alarm-scroll {
       grid-column: 3;
       grid-row: 2;
@@ -1359,7 +1616,41 @@
       padding-bottom: 0.7%;
     }
 
+    .mission-unknown-frame {
+      position: absolute;
+      left: 20%;
+      top: 25%;
+      width: 50%;
+      height: 50%;
+      box-sizing: border-box;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 5% 6%;
+      color: #eef9ff;
+      background: linear-gradient(180deg, rgba(55, 114, 205, 0.58) 0%, rgba(42, 95, 177, 0.52) 100%);
+      border: 0.1em solid rgba(70, 132, 218, 0.88);
+      box-shadow: inset 0 0 0 0.08em rgba(207, 230, 255, 0.36);
+      text-shadow: 0 0 0.08em rgba(0, 0, 0, 0.48);
+      z-index: 4;
+    }
+
+    .mission-unknown-text {
+      width: 100%;
+      font-size: 2.2em !important;
+      font-weight: 700;
+      line-height: 1.15;
+      white-space: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+
     .line-main-code {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.35em;
       font-size: 1em !important;
       font-weight: 700;
       line-height: 1.06;
@@ -1369,6 +1660,19 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       text-align: left;
+    }
+
+    .line-main-code-text {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .line-main-code-route {
+      flex: 0 0 auto;
+      min-width: 0.8em;
+      text-align: right;
     }
 
     .line-main-stop {
@@ -1647,8 +1951,15 @@
           </div>
 
           <div class="line-card line-card-main">
-            <div class="line-main-code" id="lineMainCode">000</div>
+            <div class="line-main-code" id="lineMainCode">
+              <span class="line-main-code-text" id="lineMainCodeText">000</span>
+              <span class="line-main-code-route" id="lineMainCodeRoute"></span>
+            </div>
             <div class="line-main-stop" id="lineMainStop">Arrêt</div>
+          </div>
+
+          <div class="mission-unknown-frame" id="missionUnknownFrame" aria-hidden="true">
+            <div class="mission-unknown-text">Mission<br>inconnue</div>
           </div>
 
           <div class="line-card line-card-ref">
@@ -1658,11 +1969,11 @@
             <div class="line-ref-meta" aria-hidden="true">
               <div class="line-ref-meta-row line-ref-meta-row-split">
                 <span class="line-ref-meta-key">Agent-Voiture :</span>
-                <span class="line-ref-meta-value">XXX-XXX</span>
+                <span class="line-ref-meta-value" id="lineRefAgentVehicle">XXX-XXX</span>
               </div>
               <div class="line-ref-meta-row line-ref-meta-row-split">
-                <span class="line-ref-meta-value">Mission EVA</span>
-                <span class="line-ref-meta-value">XXXX</span>
+                <span class="line-ref-meta-value" id="lineRefMission">Mission XXX</span>
+                <span class="line-ref-meta-value" id="lineRefRouteNumber">X</span>
               </div>
             </div>
           </div>
@@ -1701,7 +2012,7 @@
                   <img class="menu-tile-icon" src="../images/saiev/menu_releve.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Relève</span>
                 </button>
-                <button type="button" class="menu-tile" disabled aria-label="Prise de service complete">
+                <button type="button" class="menu-tile is-enabled" data-menu-target="prise-service-complete" aria-label="Prise de service complete">
                   <img class="menu-tile-icon" src="../images/saiev/menu_service_complete.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Prise de service<br>complete</span>
                 </button>
@@ -1846,6 +2157,58 @@
             </div>
           </div>
         </section>
+
+        <section class="overlay-page overlay-page-service-complete" data-page="prise-service-complete" aria-label="Prise de service complete">
+          <div class="service-complete-pane">
+            <label class="service-line-label" id="serviceStepLabel" for="serviceLineInput">LIGNE</label>
+            <input
+              class="service-line-input"
+              id="serviceLineInput"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              spellcheck="false"
+              maxlength="6"
+              aria-label="Ligne"
+            />
+            <button type="button" class="service-correct-btn" id="serviceLineCorrectBtn" aria-label="Correction">
+              <span>CORRECTION</span>
+              <span class="service-correct-arrow" aria-hidden="true">&#10229;  </span>
+            </button>
+
+            <div class="service-keypad" aria-label="Clavier numerique">
+              <button type="button" class="service-key-btn" data-service-key="1">1</button>
+              <button type="button" class="service-key-btn" data-service-key="2">2</button>
+              <button type="button" class="service-key-btn" data-service-key="3">3</button>
+              <button type="button" class="service-key-btn" data-service-key="4">4</button>
+              <button type="button" class="service-key-btn" data-service-key="5">5</button>
+              <button type="button" class="service-key-btn" data-service-key="6">6</button>
+              <button type="button" class="service-key-btn" data-service-key="7">7</button>
+              <button type="button" class="service-key-btn" data-service-key="8">8</button>
+              <button type="button" class="service-key-btn" data-service-key="9">9</button>
+              <button type="button" class="service-key-btn service-key-zero" data-service-key="0">0</button>
+            </div>
+
+            <button type="button" class="service-action-btn service-cancel-btn" id="serviceLineCancelBtn">ANNULER</button>
+            <button type="button" class="service-action-btn service-validate-btn" id="serviceLineValidateBtn" disabled aria-disabled="true">VALIDER</button>
+
+            <div class="service-confirm-frame" id="serviceConfirmFrame" aria-hidden="true">
+              <div class="service-confirm-title">Prise de service</div>
+              <div class="service-confirm-line">Prise de service validée.</div>
+              <div class="service-confirm-line">En attente des paramètres mission...</div>
+            </div>
+
+            <div class="service-confirm-frame service-accept-frame" id="serviceAcceptFrame" aria-hidden="true">
+              <div class="service-confirm-title">Prise de service acceptée</div>
+              <div class="service-accept-details">
+                <div class="service-accept-line" id="serviceAcceptLine">Ligne : -</div>
+                <div class="service-accept-line" id="serviceAcceptAgentVehicle">Agent-Voiture : --- ---</div>
+                <div class="service-accept-line" id="serviceAcceptMission">Mission : -</div>
+              </div>
+              <button type="button" class="service-accept-btn" id="serviceAcceptValidateBtn">VALIDER</button>
+            </div>
+          </div>
+        </section>
       </section>
     </section>
   </div>
@@ -1866,6 +2229,11 @@
       const isHostedByGame = hostParam === "game" || hostParam === "1" || hostParam === "true";
       const SAEIV_HOST_POLL_INTERVAL_MS = 140;
       const SAEIV_STATE_REQUEST_INTERVAL_MS = 1000;
+      const DEFAULT_DBUS_VERSION = "0.1.6a";
+      const SERVICE_LINE_UID_MAX_LENGTH = 6;
+      const SERVICE_VEHICLE_MIN_NUMBER = 1;
+      const SERVICE_VEHICLE_MAX_NUMBER = 30;
+      const SERVICE_MATRICULE_MAX_LENGTH = 32;
       const DEV_RATP_GLOBAL_FOLDER = "../map_files/dbus_fis/global/1_RATP%20%5BGST_TC%5D%20%7B0.25%7D/";
       const DEV_RATP_GLOBAL_CLIPS = [
         "Validez votre titre.mp3",
@@ -1895,9 +2263,14 @@
       const routeLetterEl = document.getElementById("saeivRouteLetter");
       const departEl = document.getElementById("saeivDepartMinutes");
       const lineCodeEl = document.getElementById("lineMainCode");
+      const lineCodeTextEl = document.getElementById("lineMainCodeText");
+      const lineCodeRouteEl = document.getElementById("lineMainCodeRoute");
       const lineStopEl = document.getElementById("lineMainStop");
       const lineRefTimeEl = document.getElementById("lineRefTime");
       const lineRefStopEl = document.getElementById("lineRefStop");
+      const lineRefAgentVehicleEl = document.getElementById("lineRefAgentVehicle");
+      const lineRefMissionEl = document.getElementById("lineRefMission");
+      const lineRefRouteNumberEl = document.getElementById("lineRefRouteNumber");
       const stopAEl = document.getElementById("stopNameA");
       const stopBEl = document.getElementById("stopNameB");
       const stopCEl = document.getElementById("stopNameC");
@@ -1917,6 +2290,7 @@
       const homeMiniLaneDeltaEl = homeMiniLaneEl ? homeMiniLaneEl.querySelector(".home-mini-lane-delta") : null;
       const lineCardMainEl = document.querySelector(".line-card-main");
       const lineCardRefEl = document.querySelector(".line-card-ref");
+      const missionUnknownFrameEl = document.getElementById("missionUnknownFrame");
       const lineTrackBottomDashedEl = document.getElementById("lineTrackBottomDashed");
       const overlayPageLineEl = document.querySelector('[data-page="ligne"]');
       const overlayPageMenuEl = document.querySelector('[data-page="menu"]');
@@ -1924,6 +2298,20 @@
       const overlayPageDiffusionEl = document.querySelector('[data-page="diffusion"]');
       const overlayPageAlarmsEl = document.querySelector('[data-page="alarmes"]');
       const overlayPageMessagesEl = document.querySelector('[data-page="messagerie"]');
+      const overlayPageServiceCompleteEl = document.querySelector('[data-page="prise-service-complete"]');
+      const serviceCompletePaneEl = document.querySelector(".service-complete-pane");
+      const serviceStepLabelEl = document.getElementById("serviceStepLabel");
+      const serviceLineInputEl = document.getElementById("serviceLineInput");
+      const serviceLineCorrectBtnEl = document.getElementById("serviceLineCorrectBtn");
+      const serviceLineCancelBtnEl = document.getElementById("serviceLineCancelBtn");
+      const serviceLineValidateBtnEl = document.getElementById("serviceLineValidateBtn");
+      const serviceConfirmFrameEl = document.getElementById("serviceConfirmFrame");
+      const serviceAcceptFrameEl = document.getElementById("serviceAcceptFrame");
+      const serviceAcceptLineEl = document.getElementById("serviceAcceptLine");
+      const serviceAcceptAgentVehicleEl = document.getElementById("serviceAcceptAgentVehicle");
+      const serviceAcceptMissionEl = document.getElementById("serviceAcceptMission");
+      const serviceAcceptValidateBtnEl = document.getElementById("serviceAcceptValidateBtn");
+      const serviceLineKeyButtons = Array.from(document.querySelectorAll("[data-service-key]"));
       const menuCloseBtnEl = document.getElementById("menuCloseBtn");
       const menuScrollUpBtnEl = document.getElementById("menuScrollUpBtn");
       const menuScrollDownBtnEl = document.getElementById("menuScrollDownBtn");
@@ -1969,6 +2357,19 @@
       let diffusionAudioToken = 0;
       let diffusionAudioPlaying = false;
       let lineRefStopLayoutRetryTimer = null;
+      let serviceLineUidSet = null;
+      let serviceRouteUidMap = new Map();
+      let serviceLineInfoMap = new Map();
+      let serviceRouteInfoMap = new Map();
+      let serviceLineUidLoadPromise = null;
+      let serviceCompleteStep = "line";
+      let serviceSelectedLineUid = "";
+      let serviceSelectedVehicleNumber = "";
+      let serviceSelectedRouteUid = "";
+      let serviceExpectedMatricule = "";
+      let serviceSelectedMatricule = "";
+      let serviceConfirmTimer = 0;
+      let serviceStartFlow = null;
       let pipHudWindow = null;
       let pipResizeHandler = null;
       let pipDrawerOpen = false;
@@ -2420,6 +2821,28 @@
         }
         return null;
       }
+      async function invokeServiceHostFunction(functionName, ...args) {
+        const fnName = String(functionName || "").trim();
+        if (!fnName) return { handled: false, value: null };
+        const targets = getExternalHostWindowCandidates();
+        for (let i = 0; i < targets.length; i += 1) {
+          const target = targets[i];
+          let fn = null;
+          try {
+            fn = target && target[fnName];
+          } catch {
+            fn = null;
+          }
+          if (typeof fn !== "function") continue;
+          try {
+            const value = await Promise.resolve(fn.apply(target, args));
+            return { handled: true, value };
+          } catch {
+            return { handled: true, value: null };
+          }
+        }
+        return { handled: false, value: null };
+      }
       function applyHostSaeivStateSnapshot(snapshot) {
         const raw = snapshot && typeof snapshot === "object" ? snapshot : null;
         if (!raw) return false;
@@ -2476,10 +2899,53 @@
         }, Math.max(600, Number(SAEIV_STATE_REQUEST_INTERVAL_MS) || 1000));
       }
 
+      function setServiceStartButtonBusy(isBusy) {
+        if (!serviceAcceptValidateBtnEl) return;
+        serviceAcceptValidateBtnEl.disabled = !!isBusy;
+        serviceAcceptValidateBtnEl.setAttribute("aria-disabled", isBusy ? "true" : "false");
+      }
+
+      function finishServiceCompleteRouteStart() {
+        serviceStartFlow = null;
+        post("saeiv:request_state");
+        setOverlayPage("ligne");
+      }
+
+      function cancelServiceCompleteRouteStart() {
+        serviceStartFlow = null;
+        setServiceStartButtonBusy(false);
+        post("saeiv:request_state");
+      }
+
+      function handleServiceStartActionResult(data) {
+        if (!serviceStartFlow) return false;
+        const action = String(data && data.action || "").trim();
+        if (action === "select_route") {
+          if (data && data.ok === true) {
+            serviceStartFlow.stage = "start";
+            post("saeiv:request_state");
+            post("saeiv:start_route");
+          } else {
+            cancelServiceCompleteRouteStart();
+          }
+          return true;
+        }
+        if (action === "start_route") {
+          finishServiceCompleteRouteStart();
+          return true;
+        }
+        return false;
+      }
+
       function handleBridgePayload(data) {
         if (!data || typeof data !== "object") return;
         if (!data || data.sourceId !== sourceId) return;
-        if (String(data.type || "") !== "saeiv:state") return;
+        const type = String(data.type || "").trim();
+        if (type === "saeiv:action_result") {
+          handleServiceStartActionResult(data);
+          return;
+        }
+        if (type !== "saeiv:state") return;
         renderState(data.payload || {});
       }
 
@@ -2696,6 +3162,575 @@
         return /^[A-Z]$/.test(letter) ? letter : "";
       }
 
+      function parseDbusVersionTag(value) {
+        const text = String(value || "").trim();
+        const match = /^(\d+)\.(\d+)\.(\d+)([a-z]*)$/i.exec(text);
+        if (!match) return null;
+        return {
+          raw: text,
+          major: Number(match[1]) || 0,
+          minor: Number(match[2]) || 0,
+          patch: Number(match[3]) || 0,
+          suffix: String(match[4] || "").toLowerCase()
+        };
+      }
+
+      function compareDbusVersionTags(a, b) {
+        if (a.major !== b.major) return a.major - b.major;
+        if (a.minor !== b.minor) return a.minor - b.minor;
+        if (a.patch !== b.patch) return a.patch - b.patch;
+        if (a.suffix < b.suffix) return -1;
+        if (a.suffix > b.suffix) return 1;
+        return 0;
+      }
+
+      function getLatestDbusVersionFromManifest() {
+        return fetch("../map_files/versions.json", { cache: "no-store" })
+          .then((res) => {
+            if (!res || !res.ok) return DEFAULT_DBUS_VERSION;
+            return res.json();
+          })
+          .then((data) => {
+            const list = Array.isArray(data)
+              ? data
+              : ((data && Array.isArray(data.versions)) ? data.versions : []);
+            const rawList = list.map((entry) => String(entry || "").trim()).filter(Boolean);
+            const parsed = rawList.map(parseDbusVersionTag).filter(Boolean);
+            if (parsed.length) {
+              parsed.sort(compareDbusVersionTags);
+              return parsed[parsed.length - 1].raw || DEFAULT_DBUS_VERSION;
+            }
+            return rawList[rawList.length - 1] || DEFAULT_DBUS_VERSION;
+          })
+          .catch(() => DEFAULT_DBUS_VERSION);
+      }
+
+      function sanitizeServiceLineUid(raw) {
+        return String(raw || "")
+          .replace(/[^0-9A-Za-z_-]+/g, "")
+          .slice(0, SERVICE_LINE_UID_MAX_LENGTH);
+      }
+
+      function sanitizeServiceVehicleNumber(raw) {
+        return String(raw || "")
+          .replace(/[^0-9]+/g, "")
+          .slice(0, 2);
+      }
+
+      function sanitizeServiceRouteUid(raw) {
+        return String(raw || "")
+          .replace(/[^0-9A-Za-z_-]+/g, "")
+          .slice(0, SERVICE_LINE_UID_MAX_LENGTH);
+      }
+
+      function sanitizeServiceMatricule(raw) {
+        return String(raw || "")
+          .replace(/[^\w-]+/g, "")
+          .slice(0, SERVICE_MATRICULE_MAX_LENGTH);
+      }
+
+      function sanitizeServiceInputValue(raw) {
+        if (serviceCompleteStep === "vehicle") return sanitizeServiceVehicleNumber(raw);
+        if (serviceCompleteStep === "route") return sanitizeServiceRouteUid(raw);
+        if (serviceCompleteStep === "matricule") return sanitizeServiceMatricule(raw);
+        return sanitizeServiceLineUid(raw);
+      }
+
+      function isServiceLineStepValid(value) {
+        const lineUid = sanitizeServiceLineUid(value);
+        return serviceLineUidSet instanceof Set && lineUid.length > 0 && serviceLineUidSet.has(lineUid);
+      }
+
+      function isServiceVehicleStepValid(value) {
+        const vehicleNumber = Number(sanitizeServiceVehicleNumber(value));
+        return Number.isInteger(vehicleNumber) &&
+          vehicleNumber >= SERVICE_VEHICLE_MIN_NUMBER &&
+          vehicleNumber <= SERVICE_VEHICLE_MAX_NUMBER;
+      }
+
+      function isServiceRouteStepValid(value) {
+        const routeUid = sanitizeServiceRouteUid(value);
+        if (!routeUid || !(serviceLineUidSet instanceof Set)) return false;
+        const routeSet = serviceRouteUidMap.get(String(serviceSelectedLineUid || ""));
+        return routeSet instanceof Set && routeSet.has(routeUid);
+      }
+
+      function generateServiceVehicleNumber() {
+        return String(
+          Math.floor(Math.random() * (SERVICE_VEHICLE_MAX_NUMBER - SERVICE_VEHICLE_MIN_NUMBER + 1)) +
+          SERVICE_VEHICLE_MIN_NUMBER
+        );
+      }
+
+      function readServiceString(source, keys) {
+        if (!source || typeof source !== "object" || !Array.isArray(keys)) return "";
+        for (let i = 0; i < keys.length; i += 1) {
+          const key = keys[i];
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          const value = source[key];
+          if (value == null) continue;
+          const text = String(value).trim();
+          if (text) return text;
+        }
+        return "";
+      }
+
+      function getServiceSteamIdFromState(state) {
+        const source = state && typeof state === "object" ? state : {};
+        const keys = ["steamid", "steamId", "steamID", "steam_id", "idf_steamid", "idf_steam_id"];
+        return readServiceString(source, keys) ||
+          readServiceString(source.player, keys) ||
+          readServiceString(source.identity, keys) ||
+          readServiceString(source.telemetry, keys) ||
+          readServiceString(source.raw, keys);
+      }
+
+      function generateServiceFallbackMatricule() {
+        return String(Math.floor(Math.random() * 900000) + 100000);
+      }
+
+      function getServiceMatriculeDefault() {
+        const steamId = sanitizeServiceMatricule(getServiceSteamIdFromState(latestStatePayload));
+        return steamId || generateServiceFallbackMatricule();
+      }
+
+      function isServiceMatriculeStepValid(value) {
+        const expected = sanitizeServiceMatricule(serviceExpectedMatricule);
+        if (!/^\d+$/.test(expected)) return true;
+        return sanitizeServiceMatricule(value) === expected;
+      }
+
+      function updateServiceLineValidation() {
+        if (!serviceLineInputEl || !serviceLineValidateBtnEl) return;
+        const value = sanitizeServiceInputValue(serviceLineInputEl.value);
+        if (serviceLineInputEl.value !== value) serviceLineInputEl.value = value;
+        const hasLoadedLines = serviceLineUidSet instanceof Set;
+        const isValid =
+          serviceCompleteStep === "vehicle"
+            ? isServiceVehicleStepValid(value)
+            : (serviceCompleteStep === "route"
+              ? isServiceRouteStepValid(value)
+              : (serviceCompleteStep === "matricule" ? isServiceMatriculeStepValid(value) : isServiceLineStepValid(value)));
+        serviceLineInputEl.classList.toggle("is-valid", isValid);
+        serviceLineInputEl.classList.toggle(
+          "is-invalid",
+          serviceCompleteStep === "vehicle" || serviceCompleteStep === "route" || serviceCompleteStep === "matricule"
+            ? value.length > 0 && !isValid
+            : hasLoadedLines && value.length > 0 && !isValid
+        );
+        serviceLineValidateBtnEl.disabled = !isValid;
+        serviceLineValidateBtnEl.setAttribute("aria-disabled", isValid ? "false" : "true");
+      }
+
+      function setServiceLineInputValue(nextValue) {
+        if (!serviceLineInputEl) return;
+        serviceLineInputEl.value = sanitizeServiceInputValue(nextValue);
+        updateServiceLineValidation();
+      }
+
+      function setServiceFrameDisplay(el, visible) {
+        if (!el) return;
+        el.style.display = visible ? "flex" : "none";
+        el.setAttribute("aria-hidden", visible ? "false" : "true");
+      }
+
+      function hideServiceConfirmFrame() {
+        if (serviceConfirmTimer) {
+          window.clearTimeout(serviceConfirmTimer);
+          serviceConfirmTimer = 0;
+        }
+        setServiceFrameDisplay(serviceConfirmFrameEl, false);
+        setServiceFrameDisplay(serviceAcceptFrameEl, false);
+        if (serviceCompletePaneEl) serviceCompletePaneEl.classList.remove("is-confirming");
+      }
+
+      function showServiceConfirmFrame() {
+        hideServiceConfirmFrame();
+        if (serviceCompletePaneEl) serviceCompletePaneEl.classList.add("is-confirming");
+        setServiceFrameDisplay(serviceConfirmFrameEl, true);
+        if (serviceLineValidateBtnEl) {
+          serviceLineValidateBtnEl.disabled = true;
+          serviceLineValidateBtnEl.setAttribute("aria-disabled", "true");
+        }
+        serviceConfirmTimer = window.setTimeout(() => {
+          serviceConfirmTimer = 0;
+          setServiceFrameDisplay(serviceConfirmFrameEl, false);
+          showServiceAcceptFrame();
+        }, 3000);
+      }
+
+      function getServiceLineInfo(lineUid) {
+        return serviceLineInfoMap.get(String(lineUid || "")) || null;
+      }
+
+      function getServiceRouteInfo(lineUid, routeUid) {
+        const routeMap = serviceRouteInfoMap.get(String(lineUid || ""));
+        return routeMap instanceof Map ? (routeMap.get(String(routeUid || "")) || null) : null;
+      }
+
+      function parseServiceRouteTerminus(routeName) {
+        const raw = String(routeName || "").trim();
+        if (!raw) return "";
+        const routeTitle = raw.includes(":") ? raw.slice(raw.indexOf(":") + 1).trim() : raw;
+        const parts = routeTitle.split(">");
+        return String(parts[parts.length - 1] || routeTitle).trim();
+      }
+
+      function buildServiceMissionInitials(terminus) {
+        const ignored = new Set(["de", "d", "du", "des"]);
+        return String(terminus || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .split(/[^A-Za-z0-9]+/)
+          .map((part) => String(part || "").trim())
+          .filter((part) => part && !ignored.has(part.toLowerCase()))
+          .map((part) => part.charAt(0).toUpperCase())
+          .join("") || "-";
+      }
+
+      function padServiceTriple(value) {
+        const text = String(value || "").trim();
+        return /^\d+$/.test(text) ? text.padStart(3, "0").slice(-3) : (text || "---");
+      }
+
+      function getPayloadLineUid(payload) {
+        const data = payload && typeof payload === "object" ? payload : {};
+        return String(data.selectedLineUid || data.lineUid || "").trim();
+      }
+
+      function getPayloadRouteUid(payload) {
+        const data = payload && typeof payload === "object" ? payload : {};
+        return String(data.selectedRouteUid || data.routeUid || "").trim();
+      }
+
+      function isServiceSelectionMatchingPayload(payload) {
+        if (!serviceSelectedLineUid || !serviceSelectedRouteUid) return false;
+        const lineUid = getPayloadLineUid(payload);
+        const routeUid = getPayloadRouteUid(payload);
+        if (lineUid && lineUid !== serviceSelectedLineUid) return false;
+        if (routeUid && routeUid !== serviceSelectedRouteUid) return false;
+        return true;
+      }
+
+      function resolveHudRouteUid(payload) {
+        if (isServiceSelectionMatchingPayload(payload)) return String(serviceSelectedRouteUid || "").trim();
+        return getPayloadRouteUid(payload);
+      }
+
+      function resolveHudAgentVehicle(payload) {
+        const routeUid = resolveHudRouteUid(payload);
+        const vehicleNumber = isServiceSelectionMatchingPayload(payload) ? serviceSelectedVehicleNumber : "";
+        if (!routeUid && !vehicleNumber) return "XXX-XXX";
+        return `${padServiceTriple(routeUid)}-${padServiceTriple(vehicleNumber)}`;
+      }
+
+      function resolveHudMissionInitials(payload) {
+        const data = payload && typeof payload === "object" ? payload : {};
+        const lineUid = isServiceSelectionMatchingPayload(data) ? serviceSelectedLineUid : getPayloadLineUid(data);
+        const routeUid = resolveHudRouteUid(data);
+        const routeInfo = getServiceRouteInfo(lineUid, routeUid);
+        const terminus = parseServiceRouteTerminus(
+          (routeInfo && routeInfo.name) ||
+          data.routeName ||
+          data.directionName ||
+          data.terminusStopName ||
+          data.terminus ||
+          ""
+        );
+        return buildServiceMissionInitials(terminus);
+      }
+
+      function setLineMainCodeDisplay(lineCode, routeNumber) {
+        const code = sanitizeLineCode(lineCode);
+        const route = String(routeNumber || "").trim();
+        if (!lineCodeEl) return;
+        if (lineCodeTextEl && lineCodeRouteEl) {
+          lineCodeTextEl.textContent = code;
+          lineCodeRouteEl.textContent = route;
+          lineCodeRouteEl.style.visibility = route ? "visible" : "hidden";
+          return;
+        }
+        lineCodeEl.textContent = route ? `${code} ${route}`.trim() : code;
+      }
+
+      function resetLineRefMeta() {
+        if (lineRefAgentVehicleEl) lineRefAgentVehicleEl.textContent = "XXX-XXX";
+        if (lineRefMissionEl) lineRefMissionEl.textContent = "Mission XXX";
+        if (lineRefRouteNumberEl) lineRefRouteNumberEl.textContent = "X";
+      }
+
+      function updateLineRefMeta(payload) {
+        const routeUid = resolveHudRouteUid(payload);
+        const mission = resolveHudMissionInitials(payload);
+        if (lineRefAgentVehicleEl) lineRefAgentVehicleEl.textContent = resolveHudAgentVehicle(payload);
+        if (lineRefMissionEl) lineRefMissionEl.textContent = `Mission ${mission || "-"}`;
+        if (lineRefRouteNumberEl) lineRefRouteNumberEl.textContent = routeUid || "-";
+      }
+
+      function renderServiceAcceptFrameDetails() {
+        const lineInfo = getServiceLineInfo(serviceSelectedLineUid);
+        const routeInfo = getServiceRouteInfo(serviceSelectedLineUid, serviceSelectedRouteUid);
+        const lineLabel = String(
+          (lineInfo && lineInfo.label) ||
+          (routeInfo && routeInfo.lineNumber) ||
+          serviceSelectedLineUid ||
+          "-"
+        ).trim();
+        const agentVehicle = `${padServiceTriple(serviceSelectedRouteUid)}-${padServiceTriple(serviceSelectedVehicleNumber)}`;
+        const terminus = parseServiceRouteTerminus(routeInfo && routeInfo.name);
+        const mission = buildServiceMissionInitials(terminus);
+        if (serviceAcceptLineEl) serviceAcceptLineEl.textContent = `Ligne : ${lineLabel}`;
+        if (serviceAcceptAgentVehicleEl) serviceAcceptAgentVehicleEl.textContent = `Agent-Voiture : ${agentVehicle}`;
+        if (serviceAcceptMissionEl) serviceAcceptMissionEl.textContent = `Mission : ${mission}`;
+      }
+
+      function showServiceAcceptFrame() {
+        if (serviceCompletePaneEl) serviceCompletePaneEl.classList.add("is-confirming");
+        renderServiceAcceptFrameDetails();
+        if (serviceAcceptValidateBtnEl) {
+          serviceAcceptValidateBtnEl.disabled = false;
+          serviceAcceptValidateBtnEl.setAttribute("aria-disabled", "false");
+        }
+        setServiceFrameDisplay(serviceAcceptFrameEl, true);
+      }
+
+      function ensureServiceLineUidsLoaded() {
+        if (serviceLineUidSet instanceof Set) {
+          updateServiceLineValidation();
+          return Promise.resolve(serviceLineUidSet);
+        }
+        if (serviceLineUidLoadPromise) return serviceLineUidLoadPromise;
+        serviceLineUidLoadPromise = getLatestDbusVersionFromManifest()
+          .then((version) => {
+            const safeVersion = String(version || DEFAULT_DBUS_VERSION).trim() || DEFAULT_DBUS_VERSION;
+            return fetch(`../map_files/${encodeURIComponent(safeVersion)}/DBus/IDF%20MAP/lines.xml`, { cache: "no-store" });
+          })
+          .then((res) => {
+            if (!res || !res.ok) throw new Error("lines_xml_unavailable");
+            return res.text();
+          })
+          .then((xmlText) => {
+            const xml = new DOMParser().parseFromString(String(xmlText || ""), "text/xml");
+            const nextSet = new Set();
+            const nextRouteMap = new Map();
+            const nextLineInfoMap = new Map();
+            const nextRouteInfoMap = new Map();
+            Array.from(xml.getElementsByTagName("line")).forEach((lineNode) => {
+              const uid = String(lineNode.getAttribute("uid") || "").trim();
+              if (!uid) return;
+              const label = String(lineNode.getAttribute("number") || uid).trim() || uid;
+              nextSet.add(uid);
+              nextLineInfoMap.set(uid, { uid, label });
+              const routeSet = new Set();
+              const routeInfoMap = new Map();
+              Array.from(lineNode.getElementsByTagName("route")).forEach((routeNode) => {
+                const routeUid = String(routeNode.getAttribute("uid") || "").trim();
+                if (!routeUid) return;
+                const routeName = String(routeNode.getAttribute("name") || "").trim();
+                routeSet.add(routeUid);
+                routeInfoMap.set(routeUid, {
+                  uid: routeUid,
+                  name: routeName,
+                  lineNumber: label
+                });
+              });
+              nextRouteMap.set(uid, routeSet);
+              nextRouteInfoMap.set(uid, routeInfoMap);
+            });
+            serviceLineUidSet = nextSet;
+            serviceRouteUidMap = nextRouteMap;
+            serviceLineInfoMap = nextLineInfoMap;
+            serviceRouteInfoMap = nextRouteInfoMap;
+            updateServiceLineValidation();
+            return nextSet;
+          })
+          .catch(() => {
+            serviceLineUidSet = new Set();
+            serviceRouteUidMap = new Map();
+            serviceLineInfoMap = new Map();
+            serviceRouteInfoMap = new Map();
+            updateServiceLineValidation();
+            return serviceLineUidSet;
+          })
+          .finally(() => {
+            serviceLineUidLoadPromise = null;
+          });
+        return serviceLineUidLoadPromise;
+      }
+
+      function setServiceCompleteStep(nextStep, options = {}) {
+        serviceCompleteStep =
+          nextStep === "vehicle" || nextStep === "route" || nextStep === "matricule"
+            ? nextStep
+            : "line";
+        if (overlayPageServiceCompleteEl) {
+          overlayPageServiceCompleteEl.setAttribute("data-service-step", serviceCompleteStep);
+        }
+        if (serviceStepLabelEl) {
+          serviceStepLabelEl.textContent =
+            serviceCompleteStep === "vehicle"
+              ? "N° VOITURE"
+              : (serviceCompleteStep === "route"
+                ? "N° AGENT"
+                : (serviceCompleteStep === "matricule" ? "N° MATRICULE" : "LIGNE"));
+        }
+        if (serviceLineInputEl) {
+          const maxLength = serviceCompleteStep === "vehicle"
+            ? 2
+            : (serviceCompleteStep === "matricule" ? SERVICE_MATRICULE_MAX_LENGTH : SERVICE_LINE_UID_MAX_LENGTH);
+          serviceLineInputEl.setAttribute("maxlength", String(maxLength));
+          serviceLineInputEl.setAttribute(
+            "aria-label",
+            serviceCompleteStep === "vehicle"
+              ? "Numero voiture"
+              : (serviceCompleteStep === "route"
+                ? "Numero agent"
+                : (serviceCompleteStep === "matricule" ? "Numero matricule" : "Ligne"))
+          );
+        }
+        setServiceLineInputValue(options.value || "");
+        if (serviceCompleteStep === "line" || serviceCompleteStep === "route") ensureServiceLineUidsLoaded();
+        if (serviceLineInputEl) {
+          window.setTimeout(() => {
+            try { serviceLineInputEl.focus({ preventScroll: true }); } catch {}
+          }, 0);
+        }
+      }
+
+      function resetServiceCompleteLineStep() {
+        hideServiceConfirmFrame();
+        serviceSelectedLineUid = "";
+        serviceSelectedVehicleNumber = "";
+        serviceSelectedRouteUid = "";
+        serviceExpectedMatricule = "";
+        serviceSelectedMatricule = "";
+        setServiceCompleteStep("line");
+      }
+
+      function validateServiceCompleteLineStep() {
+        if (!serviceLineInputEl || !serviceLineUidSet) return;
+        const lineUid = sanitizeServiceLineUid(serviceLineInputEl.value);
+        if (!lineUid || !serviceLineUidSet.has(lineUid)) return;
+        serviceSelectedLineUid = lineUid;
+        if (overlayPageServiceCompleteEl) {
+          overlayPageServiceCompleteEl.setAttribute("data-selected-line-uid", lineUid);
+        }
+        post("saeiv:action", {
+          action: "prise-service-complete-line-validate",
+          lineUid
+        });
+        setServiceCompleteStep("vehicle", { value: generateServiceVehicleNumber() });
+      }
+
+      function validateServiceCompleteVehicleStep() {
+        if (!serviceLineInputEl) return;
+        const vehicleNumber = sanitizeServiceVehicleNumber(serviceLineInputEl.value);
+        if (!isServiceVehicleStepValid(vehicleNumber)) return;
+        serviceSelectedVehicleNumber = vehicleNumber;
+        if (overlayPageServiceCompleteEl) {
+          overlayPageServiceCompleteEl.setAttribute("data-selected-vehicle-number", vehicleNumber);
+        }
+        post("saeiv:action", {
+          action: "prise-service-complete-vehicle-validate",
+          lineUid: serviceSelectedLineUid,
+          vehicleNumber
+        });
+        setServiceCompleteStep("route");
+      }
+
+      function validateServiceCompleteRouteStep() {
+        if (!serviceLineInputEl) return;
+        const routeUid = sanitizeServiceRouteUid(serviceLineInputEl.value);
+        if (!isServiceRouteStepValid(routeUid)) return;
+        serviceSelectedRouteUid = routeUid;
+        if (overlayPageServiceCompleteEl) {
+          overlayPageServiceCompleteEl.setAttribute("data-selected-route-uid", routeUid);
+        }
+        post("saeiv:action", {
+          action: "prise-service-complete-route-validate",
+          lineUid: serviceSelectedLineUid,
+          vehicleNumber: serviceSelectedVehicleNumber,
+          routeUid
+        });
+        serviceExpectedMatricule = getServiceMatriculeDefault();
+        setServiceCompleteStep("matricule", { value: serviceExpectedMatricule });
+      }
+
+      function validateServiceCompleteMatriculeStep() {
+        if (!serviceLineInputEl) return;
+        const matricule = sanitizeServiceMatricule(serviceLineInputEl.value);
+        if (!isServiceMatriculeStepValid(matricule)) return;
+        serviceSelectedMatricule = matricule;
+        if (overlayPageServiceCompleteEl) {
+          overlayPageServiceCompleteEl.setAttribute("data-selected-matricule", matricule);
+        }
+        post("saeiv:action", {
+          action: "prise-service-complete-matricule-validate",
+          lineUid: serviceSelectedLineUid,
+          vehicleNumber: serviceSelectedVehicleNumber,
+          routeUid: serviceSelectedRouteUid,
+          matricule,
+          expectedMatricule: serviceExpectedMatricule
+        });
+        showServiceConfirmFrame();
+      }
+
+      function validateServiceCompleteCurrentStep() {
+        if (serviceCompleteStep === "vehicle") {
+          validateServiceCompleteVehicleStep();
+          return;
+        }
+        if (serviceCompleteStep === "route") {
+          validateServiceCompleteRouteStep();
+          return;
+        }
+        if (serviceCompleteStep === "matricule") {
+          validateServiceCompleteMatriculeStep();
+          return;
+        }
+        validateServiceCompleteLineStep();
+      }
+
+      async function requestServiceCompleteRouteStart() {
+        if (!serviceSelectedLineUid || !serviceSelectedRouteUid) return;
+        setServiceStartButtonBusy(true);
+        serviceStartFlow = {
+          lineUid: serviceSelectedLineUid,
+          routeUid: serviceSelectedRouteUid,
+          stage: "select"
+        };
+
+        const selectResult = await invokeServiceHostFunction(
+          "gameSelectLineRouteByUid",
+          serviceSelectedLineUid,
+          serviceSelectedRouteUid
+        );
+        if (!selectResult.handled) {
+          post("saeiv:select_route", {
+            lineUid: serviceSelectedLineUid,
+            routeUid: serviceSelectedRouteUid
+          });
+          return;
+        }
+        if (!selectResult.value || selectResult.value.ok !== true) {
+          cancelServiceCompleteRouteStart();
+          return;
+        }
+
+        serviceStartFlow.stage = "start";
+        post("saeiv:request_state");
+        const startResult = await invokeServiceHostFunction("gameStartSelectedLineRoute");
+        if (!startResult.handled) {
+          post("saeiv:start_route");
+          return;
+        }
+
+        finishServiceCompleteRouteStart();
+        if (!startResult.value || startResult.value.ok !== true) {
+          post("saeiv:request_state");
+        }
+      }
+
       function setOverlayPage(pageName) {
         const prevPage = currentOverlayPage;
         const rawPage = String(pageName || "").trim().toLowerCase();
@@ -2704,11 +3739,15 @@
           rawPage === "signalement" ||
           rawPage === "diffusion" ||
           rawPage === "alarmes" ||
-          rawPage === "messagerie"
+          rawPage === "messagerie" ||
+          rawPage === "prise-service-complete"
             ? rawPage
             : "ligne";
         if (prevPage === "menu" && nextPage !== "menu") {
           setMenuGridPage(MENU_GRID_MIN_PAGE);
+        }
+        if (prevPage === "prise-service-complete" && nextPage !== "prise-service-complete") {
+          hideServiceConfirmFrame();
         }
         currentOverlayPage = nextPage;
         if (overlayPageLineEl) overlayPageLineEl.classList.toggle("is-active", nextPage === "ligne");
@@ -2717,9 +3756,11 @@
         if (overlayPageDiffusionEl) overlayPageDiffusionEl.classList.toggle("is-active", nextPage === "diffusion");
         if (overlayPageAlarmsEl) overlayPageAlarmsEl.classList.toggle("is-active", nextPage === "alarmes");
         if (overlayPageMessagesEl) overlayPageMessagesEl.classList.toggle("is-active", nextPage === "messagerie");
+        if (overlayPageServiceCompleteEl) overlayPageServiceCompleteEl.classList.toggle("is-active", nextPage === "prise-service-complete");
         if (nextPage === "menu" && prevPage !== "menu") setMenuGridPage(MENU_GRID_MIN_PAGE);
         if (nextPage === "menu") updateMenuTargetButtonsAvailability();
         if (nextPage === "messagerie" && prevPage !== "messagerie") activateMessageTab("regulateur");
+        if (nextPage === "prise-service-complete" && prevPage !== "prise-service-complete") resetServiceCompleteLineStep();
         if (nextPage === "ligne") updateDynamicTrackBounds();
       }
 
@@ -2902,10 +3943,11 @@
 
           if (routeLetterEl) routeLetterEl.textContent = "";
           if (departEl) departEl.textContent = "00";
-          if (lineCodeEl) lineCodeEl.textContent = "";
+          setLineMainCodeDisplay("", "");
           if (lineStopEl) lineStopEl.textContent = "";
           if (lineRefTimeEl) lineRefTimeEl.textContent = "00:00";
           if (lineRefStopEl) lineRefStopEl.textContent = "Arrêt";
+          resetLineRefMeta();
           if (stopAEl) stopAEl.textContent = "";
           if (stopBEl) stopBEl.textContent = "";
           if (stopCEl) stopCEl.textContent = "";
@@ -2918,6 +3960,10 @@
           if (lineStopsEl) lineStopsEl.classList.remove("is-stop-superposed");
           if (lineCardMainEl) lineCardMainEl.style.display = "none";
           if (lineCardRefEl) lineCardRefEl.style.display = "none";
+          if (missionUnknownFrameEl) {
+            missionUnknownFrameEl.style.display = "flex";
+            missionUnknownFrameEl.setAttribute("aria-hidden", "false");
+          }
 
           if (stopRowAEl) stopRowAEl.style.visibility = "hidden";
           if (stopRowBEl) stopRowBEl.style.visibility = "hidden";
@@ -2935,6 +3981,10 @@
         if (lineStopsEl) lineStopsEl.style.display = "";
         if (lineCardMainEl) lineCardMainEl.style.display = "";
         if (lineCardRefEl) lineCardRefEl.style.display = "none";
+        if (missionUnknownFrameEl) {
+          missionUnknownFrameEl.style.display = "none";
+          missionUnknownFrameEl.setAttribute("aria-hidden", "true");
+        }
 
         const linkedStops = Array.isArray(data.audioStopNames)
           ? data.audioStopNames.map((name) => String(name || "").trim()).filter(Boolean)
@@ -2950,10 +4000,11 @@
 
           if (routeLetterEl) routeLetterEl.textContent = "";
           if (departEl) departEl.textContent = "00";
-          if (lineCodeEl) lineCodeEl.textContent = "";
+          setLineMainCodeDisplay("", "");
           if (lineStopEl) lineStopEl.textContent = "";
           if (lineRefTimeEl) lineRefTimeEl.textContent = "00:00";
           if (lineRefStopEl) lineRefStopEl.textContent = "Arrêt";
+          resetLineRefMeta();
           if (stopAEl) stopAEl.textContent = "";
           if (stopBEl) stopBEl.textContent = "";
           if (stopCEl) stopCEl.textContent = "";
@@ -2996,6 +4047,7 @@
         const hasStopAfterTopDot = (displayIndex + 2) <= linkedLastIndex;
         const hasStopBeforeBottomDot = (displayIndex - 2) >= 0;
         const lineCode = buildLineMainCode(data);
+        const routeNumber = resolveHudRouteUid(data);
         const currentStop = String(linkedCurrent || data.stopName || data.stopLabel || "Arrêt").trim() || "Arrêt";
         const terminusStop = String(
           data.terminusStopName ||
@@ -3041,11 +4093,12 @@
         if (lineStopsEl) lineStopsEl.classList.toggle("is-stop-superposed", isVehicleAtStop);
         if (routeLetterEl) routeLetterEl.textContent = directionLetter;
         if (departEl) departEl.textContent = departIn;
-        if (lineCodeEl) lineCodeEl.textContent = lineCode;
+        setLineMainCodeDisplay(lineCode, routeNumber);
         if (lineStopEl) lineStopEl.textContent = lineMainTerminus;
         if (lineCardRefEl) lineCardRefEl.style.display = "flex";
         if (lineRefTimeEl) lineRefTimeEl.textContent = refTime;
         if (lineRefStopEl) lineRefStopEl.textContent = currentStop;
+        updateLineRefMeta(data);
         updateHomeMiniLaneDelayIndicator(refTime);
         if (isVehicleAtStop) {
           if (stopAEl) stopAEl.textContent = "";
@@ -3146,6 +4199,62 @@
       if (messageBackBtnEl) {
         messageBackBtnEl.addEventListener("click", () => {
           setOverlayPage("menu");
+        });
+      }
+
+      if (serviceLineInputEl) {
+        serviceLineInputEl.addEventListener("input", () => {
+          setServiceLineInputValue(serviceLineInputEl.value);
+          if (serviceCompleteStep === "line" || serviceCompleteStep === "route") ensureServiceLineUidsLoaded();
+        });
+        serviceLineInputEl.addEventListener("keydown", (event) => {
+          const key = String(event.key || "");
+          if (key === "Enter") {
+            event.preventDefault();
+            if (serviceLineValidateBtnEl && !serviceLineValidateBtnEl.disabled) validateServiceCompleteCurrentStep();
+          }
+        });
+      }
+
+      if (serviceLineKeyButtons.length) {
+        serviceLineKeyButtons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const key = String(btn.getAttribute("data-service-key") || "").trim();
+            if (!/^\d$/.test(key) || !serviceLineInputEl) return;
+            const nextValue = serviceCompleteStep === "vehicle"
+              ? key
+              : String(serviceLineInputEl.value || "") + key;
+            setServiceLineInputValue(nextValue);
+            if (serviceCompleteStep === "line" || serviceCompleteStep === "route") ensureServiceLineUidsLoaded();
+          });
+        });
+      }
+
+      if (serviceLineCorrectBtnEl) {
+        serviceLineCorrectBtnEl.addEventListener("click", () => {
+          if (!serviceLineInputEl) return;
+          setServiceLineInputValue(String(serviceLineInputEl.value || "").slice(0, -1));
+          if (serviceCompleteStep === "line" || serviceCompleteStep === "route") ensureServiceLineUidsLoaded();
+        });
+      }
+
+      if (serviceLineCancelBtnEl) {
+        serviceLineCancelBtnEl.addEventListener("click", () => {
+          setOverlayPage("menu");
+        });
+      }
+
+      if (serviceLineValidateBtnEl) {
+        serviceLineValidateBtnEl.addEventListener("click", () => {
+          if (serviceLineValidateBtnEl.disabled) return;
+          validateServiceCompleteCurrentStep();
+        });
+      }
+
+      if (serviceAcceptValidateBtnEl) {
+        serviceAcceptValidateBtnEl.addEventListener("click", () => {
+          if (serviceAcceptValidateBtnEl.disabled) return;
+          requestServiceCompleteRouteStart();
         });
       }
 
