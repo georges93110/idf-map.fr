@@ -475,7 +475,7 @@
       var SAEIV_STOP_DWELL_REACH_DISTANCE = 22;
       var SAEIV_STOP_ANNOUNCE_DISTANCE = 75;
       var SAEIV_TERMINUS_ANNOUNCE_DELAY_MS = 500;
-      var SAEIV_SERVICE_ACCEPT_AUDIO_URL = "./game_manager/sounds/start_line.mp3";
+      var SAEIV_SERVICE_ACCEPT_AUDIO_URL = "./sounds/bus/start_line.mp3";
       var SAEIV_SERVICE_ACCEPT_DESTINATION_DELAY_MS = 1000;
       var SAEIV_SERVICE_ACCEPT_AUDIO_START_OFFSET_SEC = 0.5;
       var SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR = 3;
@@ -612,11 +612,11 @@
         coefOn: 0
       };
       var saeivPassengerState = null;
-      var DBUS_FIS_ROOT = "./map_files/dbus_fis";
+      var DBUS_FIS_ROOT = "./sounds/bus/voix_bus";
       var DBUS_FIS_GLOBAL_ROOT = DBUS_FIS_ROOT + "/global";
       var DBUS_FIS_DOSSIERS_ROOT = DBUS_FIS_ROOT + "/dossiers";
       var SAEIV_DEFAULT_GLOBAL_AUDIO_FOLDER = "RATP";
-      var SAEIV_STOP_REQUEST_SOUND_ROOT = "./game_manager/sounds";
+      var SAEIV_STOP_REQUEST_SOUND_ROOT = "./sounds/bus";
       var SAEIV_TRANSDEV_AUTO_VOICE_FOLDER_NAME = "Voix de Synthèse (Transdev)";
       var SAEIV_NEXT_STOP_PREFIX_CLIP_NAME = "Prochain_Arret";
       var LINE_STYLE_LEGACY_TYPES_INDEX = 3;

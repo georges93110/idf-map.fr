@@ -1040,7 +1040,7 @@
     </article>
   </div>
 
-  <script src="../config/line-styles.js"></script>
+  <script src="../config/line-config.js"></script>
   <script>
     (function () {
       var WIDGET_BRIDGE_WS_URL = "ws://localhost:3001";
@@ -1591,7 +1591,7 @@
         return 0;
       }
       function getLatestDbusVersionFromManifest() {
-        return fetch("../map_files/versions.json", { cache: "no-store" })
+        return fetch("../../map_files/versions.json", { cache: "no-store" })
           .then(function (res) {
             if (!res || !res.ok) return null;
             return res.json();
@@ -1650,7 +1650,7 @@
         routeStopConfigLoadPromise = getLatestDbusVersionFromManifest()
           .then(function (version) {
             var safeVersion = String(version || DEFAULT_DBUS_VERSION).trim() || DEFAULT_DBUS_VERSION;
-            return fetch("../map_files/" + safeVersion + "/DBus/IDF%20MAP/lines.xml", { cache: "no-store" });
+            return fetch("../../map_files/" + safeVersion + "/DBus/lines.xml", { cache: "no-store" });
           })
           .then(function (res) {
             if (!res || !res.ok) throw new Error("lines_xml_unavailable");
@@ -2158,8 +2158,8 @@
         var version = String(data && (data.dbusVersion || data.version) || "").trim();
         var safeFile = String(file || "").trim();
         if (!safeFile) return "";
-        if (version) return "../map_files/" + version + "/Overlays/" + safeFile;
-        return "../map_files/0.1.6a/Overlays/" + safeFile;
+        if (version) return "../../map_files/" + version + "/Overlays/" + safeFile;
+        return "../../map_files/0.1.6a/Overlays/" + safeFile;
       }
       function createNetworkBadgeElement(options) {
         var opts = options && typeof options === "object" ? options : {};

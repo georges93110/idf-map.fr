@@ -275,7 +275,7 @@
       function loadDbusFisIndex() {
         if (dbusFisIndex) return Promise.resolve(dbusFisIndex);
         if (dbusFisIndexPromise) return dbusFisIndexPromise;
-        dbusFisIndexPromise = fetch("./map_files/dbus_fis_index.json", { cache: "no-store" })
+        dbusFisIndexPromise = fetch("./sounds/bus/voix_bus_index.json", { cache: "no-store" })
           .then(function (res) {
             if (!res || !res.ok) return {};
             return res.json();
@@ -294,7 +294,7 @@
         return loadDbusFisIndex().then(function (index) {
           var clean = String(path || "")
             .replace(/^\.?\//, "")
-            .replace(/^map_files\/dbus_fis\/?/i, "")
+            .replace(/^sounds\/bus\/voix_bus\/?/i, "")
             .replace(/\/+$/g, "");
           if (!clean) {
             return Object.keys(index).map(function (name) { return { name: name, isDirectory: true }; });
@@ -1337,7 +1337,7 @@
       function loadDbusDataForVersion(version) {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
-        var basePath = "./map_files/" + safeVersion + "/DBus/IDF%20MAP";
+        var basePath = "../map_files/" + safeVersion + "/DBus";
         return Promise.all([
           fetchXmlDoc(basePath + "/stops.xml"),
           fetchXmlDoc(basePath + "/lines.xml")
@@ -2435,8 +2435,8 @@
         var entries = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
         var lastIndex = Math.max(0, entries.length - 1);
         if (entries.length) {
-          saeivRouteState.reachedIndex = 0;
-          saeivRouteState.targetIndex = lastIndex > 0 ? 1 : 0;
+          saeivRouteState.reachedIndex = -1;
+          saeivRouteState.targetIndex = 0;
           setSaeivStoppedAtStop(0, entries);
           resetSaeivPassengerTargetState(entries, saeivRouteState.targetIndex);
         }

@@ -3,7 +3,7 @@ Index des fichiers (pour interactions futures)
 Date: 2026-05-03
 
 1) FICHIER PRINCIPAL
-- game2.html
+- game_manager/game.html
   - Role: Page principale du Game Overlay.
   - CSS charge:
     - game_manager/css/game2.css
@@ -11,12 +11,13 @@ Date: 2026-05-03
     - game_manager/js/core/game2-meta.js
     - game_manager/js/core/game2-hooks.js
     - game_manager/js/i18n/game2-i18n.js
+    - game_manager/config/line-config.js
     - game_manager/js/runtime/game2-main.js
   - Changement: les anciens styles inline ont ete remplaces par des classes CSS.
 
 2) DOSSIER CSS
 - game_manager/css/game2.css
-  - Role: point d'entree CSS unique pour game2.html.
+  - Role: point d'entree CSS unique pour game_manager/game.html.
   - Importe les feuilles organisees par domaine ci-dessous.
 
 - game_manager/css/core/game2-core.css
@@ -29,8 +30,8 @@ Date: 2026-05-03
   - Contenu: styles des blocs widgets et status convoi, pause telemetrie, options de demarrage.
 
 - game_manager/css/components/game2-html.css
-  - Contenu: classes extraites des anciens attributs style="" de game2.html.
-  - Objectif: garder game2.html propre et eviter le CSS inline.
+  - Contenu: classes extraites des anciens attributs style="" de game_manager/game.html.
+  - Objectif: garder game_manager/game.html propre et eviter le CSS inline.
 
 3) DOSSIER JS
 - game_manager/js/core/game2-meta.js
@@ -86,25 +87,25 @@ Date: 2026-05-03
   - Contenu: dictionnaire FR minimal utilise par game2-i18n.js.
   - Objectif: eviter une requete manquante et permettre d'ajouter des traductions plus tard.
 
-5) DOSSIER WIDGETS (conserve)
-- widgets/saeiv.html
+5) DOSSIER WIDGETS
+- game_manager/widgets/saeiv.html
   - Widget SAEIV complet.
-- widgets/saeiv_mini.html
+- game_manager/widgets/saeiv_mini.html
   - HUD ligne simple / version mini.
-- widgets/bus_status.html
+- game_manager/widgets/bus_status.html
   - Statut embarquement passagers.
-- widgets/waze.html
+- game_manager/widgets/waze.html
   - GPS style Waze.
-- widgets/gps_mini.html
+- game_manager/widgets/gps_mini.html
   - GPS compact.
-- widgets/ets2_roadasvisor_old.html
+- game_manager/widgets/ets2_roadasvisor_old.html
   - GPS ETS2 ancien.
-- widgets/ws_dev.html
+- game_manager/widgets/ws_dev.html
   - Outil WebSocket DEV.
 
 6) GARANTIES
 - Les anciens chemins directs game_manager/css/game2-*.css et game_manager/js/game2-*.js ne sont plus les chemins actifs.
-- game2.html utilise maintenant un point d'entree CSS unique et des scripts JS ranges par role.
+- game_manager/game.html utilise maintenant un point d'entree CSS unique et des scripts JS ranges par role.
 - game2-main.js n'est plus le fichier monolithique: la logique principale est decoupee dans runtime/parts/.
-- ./widgets/ est garde.
-- Aucun fichier de logique hors game2.html et ./game_manager/ n'a ete edite pour ce refactoring.
+- game_manager/widgets/ contient les widgets actifs.
+- Les fichiers game2 et divers HTML sont regroupes sous ./game_manager/.

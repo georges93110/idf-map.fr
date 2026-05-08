@@ -1189,7 +1189,7 @@
         const stage = document.getElementById("wazeLeafletStage");
         if (stage) stage.classList.toggle("no-tilt", !useTilt3D);
       })();
-      const MAP_FILES_ROOT = "../map_files";
+      const MAP_FILES_ROOT = "../../map_files";
       const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
 
       function parseVersion(value) {
@@ -2091,8 +2091,10 @@
         const min = map.getMinZoom();
 
         let nextZoom;
-        if (opts.cycle && currentZoom >= (max - 1e-6)) {
+        if (opts.cycle && step > 0 && currentZoom >= (max - 1e-6)) {
           nextZoom = min;
+        } else if (opts.cycle && step < 0 && currentZoom <= (min + 1e-6)) {
+          nextZoom = max;
         } else {
           nextZoom = clampZoomLevel(currentZoom + step);
         }
@@ -2117,7 +2119,7 @@
       }
       function cycleGpsZoom() {
         console.log("[GpsMini] Cycle GPS Zoom triggered via bridge");
-        adjustGpsZoom(manualZoomStep, { cycle: true });
+        adjustGpsZoom(-manualZoomStep, { cycle: true });
       }
       function stopZoomPress() {
         if (zoomPressTimer) {
@@ -2947,7 +2949,7 @@
             }
           } catch { }
           try {
-            const stopsRes = await fetch(dataPath("DBus/IDF%20MAP/stops.xml"), { cache: "no-store" });
+            const stopsRes = await fetch(dataPath("DBus/stops.xml"), { cache: "no-store" });
             if (stopsRes.ok) {
               const xmlRaw = await stopsRes.text();
               const xml = new DOMParser().parseFromString(xmlRaw, "text/xml");
@@ -4986,11 +4988,11 @@
         const payload = raw && typeof raw === "object" ? raw : null;
         if (!payload || String(payload.kind || "") !== "waze-dev") return;
         if (payload.type === "zoom_in") {
-          adjustGpsZoom(manualZoomStep, { cycle: true });
+          adjustGpsZoom(manualZoomStep);
           return;
         }
         if (payload.type === "zoom_out") {
-          adjustGpsZoom(-manualZoomStep);
+          adjustGpsZoom(-manualZoomStep, { cycle: true });
           return;
         }
         if (Object.prototype.hasOwnProperty.call(payload, "routeColor")) {
@@ -6201,7 +6203,7 @@
       window.addEventListener("keydown", (event) => {
         if (event.key === "F5" || event.keyCode === 116) {
           event.preventDefault();
-          adjustGpsZoom(manualZoomStep, { cycle: true });
+          adjustGpsZoom(-manualZoomStep, { cycle: true });
         }
       });
       window.addEventListener("message", (event) => {

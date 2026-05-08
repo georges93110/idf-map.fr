@@ -351,14 +351,14 @@
     <div class="player-legend-row"><span class="player-legend-dot is-anonymous"></span><span>Joueur (aucun pseudo détecté)</span></div>
   </div>
 
-  <script src="../config/line-styles.js"></script>
+  <script src="../config/line-config.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     (function () {
       "use strict";
 
       const WS_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
-      const MAP_FILES_ROOT = "../map_files";
+      const MAP_FILES_ROOT = "../../map_files";
       const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
       const WS_RECONNECT_MS = 2000;
       const PLAYER_WARNING_MS = 1000;

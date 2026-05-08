@@ -837,7 +837,7 @@
       }
 
       function triggerGpsZoomFromShortcut(direction) {
-        var zoomDirection = String(direction || "in").trim().toLowerCase() === "out" ? "out" : "in";
+        var zoomDirection = String(direction || "out").trim().toLowerCase() === "in" ? "in" : "out";
         var zoomSyncState = null;
         document
           .querySelectorAll('iframe[data-widget-type="gps_mini"], iframe[data-widget-type="waze"]')
@@ -1304,7 +1304,7 @@
           // On vérifie si la touche pressée correspond à l'un de nos raccourcis enregistrés
           var zoomGpsShortcut = getEffectiveShortcutForScope(OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS);
           if (zoomGpsShortcut && zoomGpsShortcut.keys && zoomGpsShortcut.keys.indexOf(keyName) >= 0) {
-            triggerGpsZoomFromShortcut(isShiftModifierActive(raw) ? "out" : "in");
+            triggerGpsZoomFromShortcut(isShiftModifierActive(raw) ? "in" : "out");
           }
 
           var hideUiShortcut = getEffectiveShortcutForScope(OVERLAY_SHORTCUT_SCOPE_HIDE_UI);

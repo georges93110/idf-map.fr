@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const ROOT = path.join(process.cwd(), "map_files", "dbus_fis");
-const OUTPUT = path.join(process.cwd(), "map_files", "dbus_fis_index.json");
+const ROOT = path.join(process.cwd(), "game_manager", "sounds", "bus", "voix_bus");
+const OUTPUT = path.join(process.cwd(), "game_manager", "sounds", "bus", "voix_bus_index.json");
 
 function exists(p){
   try { fs.accessSync(p); return true; }
@@ -43,4 +43,4 @@ fs.writeFileSync(
   "utf8"
 );
 
-console.log("dbus_fis_index.json generated.");
+console.log("voix_bus_index.json generated.");

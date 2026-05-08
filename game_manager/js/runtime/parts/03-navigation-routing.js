@@ -139,7 +139,7 @@
         return 0;
       }
       function loadBestNavGraphVersion() {
-        return fetch("./map_files/versions.json", { cache: "no-store" })
+        return fetch("../map_files/versions.json", { cache: "no-store" })
           .then(function (res) {
             if (!res || !res.ok) return null;
             return res.json();
@@ -162,7 +162,7 @@
       function loadNavBridgesForVersion(version) {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
-        return fetch("./map_files/" + safeVersion + "/nav_bridges.json", { cache: "no-store" })
+        return fetch("../map_files/" + safeVersion + "/nav_bridges.json", { cache: "no-store" })
           .then(function (res) {
             if (!res || !res.ok) throw new Error("nav_bridges");
             return res.json();
@@ -262,7 +262,7 @@
       function loadNavStopLinksForVersion(version) {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
-        return fetch("./map_files/" + safeVersion + "/nav_stop_links.json", { cache: "no-store" })
+        return fetch("../map_files/" + safeVersion + "/nav_stop_links.json", { cache: "no-store" })
           .then(function (res) {
             if (!res || !res.ok) throw new Error("nav_stop_links");
             return res.json();
@@ -1478,7 +1478,7 @@
             function tryFetch(index) {
               if (index >= candidates.length) throw new Error("nav_graph");
               var safeVersion = candidates[index];
-              return fetch("./map_files/" + safeVersion + "/nav_graph.json", { cache: "no-store" })
+              return fetch("../map_files/" + safeVersion + "/nav_graph.json", { cache: "no-store" })
                 .then(function (res) {
                   if (!res || !res.ok) throw new Error("nav_graph");
                   return res.json();

@@ -220,7 +220,7 @@
 					<busstop uid="17" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
 			</route>
 
-			<route uid="257" name="114: Château de Vincennes > Place du Général Leclerc">
+			<route uid="7" name="114: Château de Vincennes > Place du Général Leclerc">
 					<busstop uid="244" passengersMin="7" passengersMax="25" coefOn="100" nextStopTime="3" nextStopPrice="0"/>
 					<busstop uid="245" passengersMin="1" passengersMax="2" coefOn="50" nextStopTime="2" nextStopPrice="0"/>
 					<busstop uid="246" passengersMin="1" passengersMax="3" coefOn="50" nextStopTime="4" nextStopPrice="0"/>
@@ -228,7 +228,7 @@
 					<busstop uid="249" passengersMin="2" passengersMax="4" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
 			</route>
 
-			<route uid="258" name="114: Nogent-sur-Marne RER - Pierre Sémard > Château de Vincennes">
+			<route uid="8" name="114: Nogent-sur-Marne RER - Pierre Sémard > Château de Vincennes">
 					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100" nextStopTime="3" nextStopPrice="0"/>
 					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50" nextStopTime="2" nextStopPrice="0"/>
 					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50" nextStopTime="2" nextStopPrice="0"/>

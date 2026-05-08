@@ -1,10 +1,10 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ecran SAEIV</title>
-  <link rel="icon" type="image/png" href="../images/idf_logo_new.png" />
+  <link rel="icon" type="image/png" href="../../images/idf_logo_new.png" />
   <style>
     :root {
       --hud-scale: 1;
@@ -1890,10 +1890,10 @@
       <section class="top-screen" aria-hidden="false">
         <header class="top-bar">
           <button type="button" class="top-btn top-btn-a" data-action="top-left-a" aria-label="Top left A">
-            <img class="top-btn-icon" src="../images/saiev/alarmes_on.png" alt="" aria-hidden="true" />
+            <img class="top-btn-icon" src="../images/widgets/saiev/alarmes_on.png" alt="" aria-hidden="true" />
           </button>
           <button type="button" class="top-btn top-btn-b" data-action="top-left-b" aria-label="Top left B">
-            <img class="top-btn-icon" src="../images/saiev/messagerie.png" alt="" aria-hidden="true" />
+            <img class="top-btn-icon" src="../images/widgets/saiev/messagerie.png" alt="" aria-hidden="true" />
           </button>
           <div class="clock" id="saeivClock" role="button" tabindex="0" aria-label="Basculer heure et date">00:00</div>
         </header>
@@ -1904,28 +1904,28 @@
 
         <footer class="bottom-bar">
           <button type="button" class="call-btn call-btn-left" data-action="call-sup" aria-label="Appel sup">
-            <img class="call-btn-icon" src="../images/saiev/telephone.png" alt="" aria-hidden="true" />
+            <img class="call-btn-icon" src="../images/widgets/saiev/telephone.png" alt="" aria-hidden="true" />
             <span>APPEL SUP</span>
           </button>
 
           <button type="button" class="middle-btn middle-btn-a" data-action="slot-a" aria-label="Onglet 1">
-            <img class="middle-btn-icon" src="../images/saiev/validateurs.png" alt="" aria-hidden="true" />
+            <img class="middle-btn-icon" src="../images/widgets/saiev/validateurs.png" alt="" aria-hidden="true" />
           </button>
 
           <button type="button" class="middle-btn middle-btn-d" data-action="slot-d" aria-label="Onglet 4">
-            <img class="middle-btn-icon" src="../images/saiev/ticket.png" alt="" aria-hidden="true" />
+            <img class="middle-btn-icon" src="../images/widgets/saiev/ticket.png" alt="" aria-hidden="true" />
           </button>
 
           <button type="button" class="middle-btn middle-btn-b" data-action="slot-b" aria-label="Onglet 2">
-            <img class="middle-btn-icon" src="../images/saiev/signalement.png" alt="" aria-hidden="true" />
+            <img class="middle-btn-icon" src="../images/widgets/saiev/signalement.png" alt="" aria-hidden="true" />
           </button>
 
           <button type="button" class="middle-btn middle-btn-c" data-action="slot-c" aria-label="Onglet 3">
-            <img class="middle-btn-icon" src="../images/saiev/diffusion_sonore.png" alt="" aria-hidden="true" />
+            <img class="middle-btn-icon" src="../images/widgets/saiev/diffusion_sonore.png" alt="" aria-hidden="true" />
           </button>
 
           <button type="button" class="call-btn call-btn-right" data-action="call-reg" aria-label="Appel reg">
-            <img class="call-btn-icon" src="../images/saiev/telephone.png" alt="" aria-hidden="true" />
+            <img class="call-btn-icon" src="../images/widgets/saiev/telephone.png" alt="" aria-hidden="true" />
             <span>APPEL REG</span>
           </button>
         </footer>
@@ -1934,7 +1934,7 @@
       <section class="overlay-screen">
         <section class="overlay-page overlay-page-line is-active" data-page="ligne">
           <button type="button" class="menu-rail" data-action="menu" aria-label="Menu">
-            <img class="menu-rail-icon" src="../images/saiev/menu_button.png" alt="" aria-hidden="true" />
+            <img class="menu-rail-icon" src="../images/widgets/saiev/menu_button.png" alt="" aria-hidden="true" />
             <span>Menu</span>
           </button>
 
@@ -2013,55 +2013,55 @@
           <div class="alarm-pane">
             <div class="alarm-title">MENU SAE</div>
             <button type="button" class="alarm-back-btn" id="menuCloseBtn" aria-label="Fermer menu">
-              <img class="alarm-back-icon" src="../images/saiev/menu_fermer.png" alt="" aria-hidden="true" />
+              <img class="alarm-back-icon" src="../images/widgets/saiev/menu_fermer.png" alt="" aria-hidden="true" />
               <span class="alarm-back-text">Fermer<br>Menu</span>
             </button>
             <div class="menu-center">
               <div class="menu-grid is-active" data-menu-grid="1">
                 <button type="button" class="menu-tile" disabled aria-label="Service">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_service.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_service.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Service</span>
                 </button>
                 <button type="button" class="menu-tile is-enabled" data-menu-target="alarmes" aria-label="Liste des alarmes">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_alarme.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_alarme.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Liste des alarmes</span>
                 </button>
                 <button type="button" class="menu-tile is-enabled" data-menu-target="signalement" aria-label="Signalement">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_signalement.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_signalement.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Signalement</span>
                 </button>
                 <button type="button" class="menu-tile is-dark is-enabled" data-menu-target="messagerie" aria-label="Messagerie">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_messagerie.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_messagerie.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Messagerie</span>
                 </button>
                 <button type="button" class="menu-tile is-enabled" data-menu-target="diffusion" aria-label="Diffusion sonore preregistree">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_diffusion_sonore.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_diffusion_sonore.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Diffusion sonore<br>pré-enregistrée</span>
                 </button>
                 <button type="button" class="menu-tile" disabled aria-label="Releve">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_releve.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_releve.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Relève</span>
                 </button>
                 <button type="button" class="menu-tile is-enabled" data-menu-target="prise-service-complete" aria-label="Prise de service complete">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_service_complete.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_service_complete.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Prise de service<br>complète</span>
                 </button>
                 <button type="button" class="menu-tile" disabled aria-label="Test d exploitation">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_test_exploitation.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_test_exploitation.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Test d'exploitation</span>
                 </button>
               </div>
               <div class="menu-grid menu-grid-page-2" data-menu-grid="2">
                 <button type="button" class="menu-tile page-two-1" disabled aria-label="Maintenance">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_maintenance.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_maintenance.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Maintenance</span>
                 </button>
                 <button type="button" class="menu-tile page-two-2" disabled aria-label="Reglages">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_reglages.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_reglages.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Réglages</span>
                 </button>
                 <button type="button" class="menu-tile is-dark page-two-3" disabled aria-label="Info Voyageur">
-                  <img class="menu-tile-icon" src="../images/saiev/menu_info_voyageur.png" alt="" aria-hidden="true" />
+                  <img class="menu-tile-icon" src="../images/widgets/saiev/menu_info_voyageur.png" alt="" aria-hidden="true" />
                   <span class="menu-tile-label">Info. Voyageur</span>
                 </button>
               </div>
@@ -2077,7 +2077,7 @@
           <div class="alarm-pane">
             <div class="alarm-title">SIGNALEMENT</div>
             <button type="button" class="alarm-back-btn" id="signalBackBtn" aria-label="Retour menu">
-              <img class="alarm-back-icon" src="../images/saiev/menu_retour.png" alt="" aria-hidden="true" />
+              <img class="alarm-back-icon" src="../images/widgets/saiev/menu_retour.png" alt="" aria-hidden="true" />
               <span class="alarm-back-text">Retour<br>Menu</span>
             </button>
             <div class="signal-center">
@@ -2107,7 +2107,7 @@
           <div class="alarm-pane">
             <div class="alarm-title">DIFFUSION SONORE PRE-ENREGISTREE</div>
             <button type="button" class="alarm-back-btn" id="diffusionBackBtn" aria-label="Retour menu">
-              <img class="alarm-back-icon" src="../images/saiev/menu_retour.png" alt="" aria-hidden="true" />
+              <img class="alarm-back-icon" src="../images/widgets/saiev/menu_retour.png" alt="" aria-hidden="true" />
               <span class="alarm-back-text">Retour<br>Menu</span>
             </button>
             <div class="diffusion-center">
@@ -2124,7 +2124,7 @@
           <div class="alarm-pane">
             <div class="alarm-title">LISTE DES ALARMES</div>
             <button type="button" class="alarm-back-btn" id="alarmBackBtn" aria-label="Retour menu">
-              <img class="alarm-back-icon" src="../images/saiev/menu_retour.png" alt="" aria-hidden="true" />
+              <img class="alarm-back-icon" src="../images/widgets/saiev/menu_retour.png" alt="" aria-hidden="true" />
               <span class="alarm-back-text">Retour<br>Menu</span>
             </button>
             <div class="alarm-list">
@@ -2145,22 +2145,22 @@
           <div class="alarm-pane">
             <div class="alarm-title">MESSAGERIE</div>
             <button type="button" class="alarm-back-btn" id="messageBackBtn" aria-label="Retour menu">
-              <img class="alarm-back-icon" src="../images/saiev/menu_retour.png" alt="" aria-hidden="true" />
+              <img class="alarm-back-icon" src="../images/widgets/saiev/menu_retour.png" alt="" aria-hidden="true" />
               <span class="alarm-back-text">Retour<br>Menu</span>
             </button>
             <div class="message-center">
               <div class="message-tabs-row">
                 <div class="message-tabs">
                   <button type="button" class="message-tab is-active" data-message-tab="regulateur" aria-label="Messagerie regulateur">
-                    <img class="message-tab-icon" src="../images/saiev/messagerie_regul.png" alt="" aria-hidden="true" />
+                    <img class="message-tab-icon" src="../images/widgets/saiev/messagerie_regul.png" alt="" aria-hidden="true" />
                     <span class="message-tab-label">Cons. messagerie<br>regulateur</span>
                   </button>
                   <button type="button" class="message-tab" data-message-tab="exploitant" aria-label="Messagerie exploitant">
-                    <img class="message-tab-icon" src="../images/saiev/messagerie_regul.png" alt="" aria-hidden="true" />
+                    <img class="message-tab-icon" src="../images/widgets/saiev/messagerie_regul.png" alt="" aria-hidden="true" />
                     <span class="message-tab-label">Cons. messagerie<br>exploitant</span>
                   </button>
                   <button type="button" class="message-tab" data-message-tab="visuelle-passager" aria-label="Messagerie visuelle passager">
-                    <img class="message-tab-icon" src="../images/saiev/messagerie_voyageur.png" alt="" aria-hidden="true" />
+                    <img class="message-tab-icon" src="../images/widgets/saiev/messagerie_voyageur.png" alt="" aria-hidden="true" />
                     <span class="message-tab-label">Cons. messagerie<br>visuelle passager</span>
                   </button>
                 </div>
@@ -2274,7 +2274,7 @@
       const SERVICE_VEHICLE_MIN_NUMBER = 1;
       const SERVICE_VEHICLE_MAX_NUMBER = 30;
       const SERVICE_MATRICULE_MAX_LENGTH = 32;
-      const DEV_RATP_GLOBAL_FOLDER = "../map_files/dbus_fis/global/RATP/";
+      const DEV_RATP_GLOBAL_FOLDER = "../sounds/bus/voix_bus/global/RATP/";
       const DEV_RATP_GLOBAL_CLIPS = [
         "Validez votre titre.mp3",
         "Avancez vers le fond.mp3",
@@ -3258,7 +3258,7 @@
       }
 
       function getLatestDbusVersionFromManifest() {
-        return fetch("../map_files/versions.json", { cache: "no-store" })
+        return fetch("../../map_files/versions.json", { cache: "no-store" })
           .then((res) => {
             if (!res || !res.ok) return DEFAULT_DBUS_VERSION;
             return res.json();
@@ -3615,7 +3615,7 @@
         serviceLineUidLoadPromise = getLatestDbusVersionFromManifest()
           .then((version) => {
             const safeVersion = String(version || DEFAULT_DBUS_VERSION).trim() || DEFAULT_DBUS_VERSION;
-            return fetch(`../map_files/${encodeURIComponent(safeVersion)}/DBus/IDF%20MAP/lines.xml`, { cache: "no-store" });
+            return fetch(`../../map_files/${encodeURIComponent(safeVersion)}/DBus/lines.xml`, { cache: "no-store" });
           })
           .then((res) => {
             if (!res || !res.ok) throw new Error("lines_xml_unavailable");

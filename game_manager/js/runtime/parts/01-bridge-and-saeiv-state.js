@@ -38,7 +38,7 @@
           try {
             document.body.innerHTML =
               '<style>html,body{margin:0;width:100%;height:100%;background:#000;color:#d1d5db;font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;display:grid;place-items:center;padding:14px;text-align:center} .msg{max-width:620px;border:1px solid rgba(148,163,184,.34);border-radius:14px;background:rgba(17,24,39,.92);padding:20px} .msg h2{margin:0 0 8px;font-size:28px;color:#f3f4f6} .msg p{margin:0;color:#9ca3af;line-height:1.45}</style>' +
-              '<div class="msg"><h2>Instance fermee</h2><p>Une autre fenetre game2.html a pris la main.</p></div>';
+              '<div class="msg"><h2>Instance fermee</h2><p>Une autre fenetre game.html a pris la main.</p></div>';
           } catch (err) { }
           try { window.location.replace("about:blank"); } catch (err) { }
         }, 50);
@@ -819,6 +819,26 @@
         if (!range || (range.min === 0 && range.max === 0)) return base;
         return Math.max(0, base + pickSignedRandomIntegerInRange(range.min, range.max));
       }
+      function hasPositiveSaeivPassengerStopConfig(configOrEntry) {
+        var minVal = Math.max(0, Math.round(Number(configOrEntry && configOrEntry.passengersMin) || 0));
+        var maxVal = Math.max(0, Math.round(Number(configOrEntry && configOrEntry.passengersMax) || 0));
+        return minVal > 0 && maxVal > 0;
+      }
+      function ensureSaeivPassengerWorkForConfiguredStop(counts, stopConfig, currentInBus) {
+        var out = counts && typeof counts === "object" ? counts : { board: 0, alight: 0 };
+        out.board = Math.max(0, Math.round(Number(out.board) || 0));
+        out.alight = Math.max(0, Math.round(Number(out.alight) || 0));
+        if (out.board > 0 || out.alight > 0) return out;
+        if (!hasPositiveSaeivPassengerStopConfig(stopConfig)) return out;
+        var inBus = Math.max(0, Math.round(Number(currentInBus) || 0));
+        var coefOn = Math.max(0, Math.min(100, Number(stopConfig && stopConfig.coefOn) || 0));
+        if (coefOn <= 0 && inBus > 0) {
+          out.alight = 1;
+        } else {
+          out.board = 1;
+        }
+        return out;
+      }
       function pickSaeivPassengerSpawnCount(passengersMin, passengersMax, nowTsMs) {
         var minVal = Math.max(0, Math.round(Number(passengersMin) || 0));
         var maxVal = Math.max(minVal, Math.round(Number(passengersMax) || 0));
@@ -875,6 +895,7 @@
 
         var nowTs = getSaeivNowTimestampMs();
         var totalN = applySaeivPassengerLineVariation(pickSaeivPassengerSpawnCount(pMin, pMax, nowTs));
+        if (totalN <= 0 && pMin > 0 && pMax > 0) totalN = 1;
 
         var board = 0;
         var alight = 0;
@@ -923,9 +944,16 @@
         var entry = list[idx] || null;
         var uid = String(list[idx] && list[idx].uid || "");
         var stopConfig = resolveSaeivPassengerConfigForStop(config, entry);
-        var counts = computeSaeivPassengersAtStopValue(stopConfig, idx, lastIndex, entry);
+        var counts = ensureSaeivPassengerWorkForConfiguredStop(
+          computeSaeivPassengersAtStopValue(stopConfig, idx, lastIndex, entry),
+          stopConfig,
+          0
+        );
         var initialPlannedBoard = Math.max(0, Math.round(Number(counts.board) || 0));
         var initialPlannedAlight = 0;
+        if (initialPlannedBoard <= 0 && initialPlannedAlight <= 0 && hasPositiveSaeivPassengerStopConfig(stopConfig)) {
+          initialPlannedBoard = 1;
+        }
         var stopOptionalByConfig = idx > 0 && idx < lastIndex && initialPlannedBoard <= 0 && initialPlannedAlight <= 0;
         return {
           passengersMin: stopConfig.passengersMin,
@@ -988,12 +1016,24 @@
         saeivPassengerState.passengersMax = stopConfig.passengersMax;
         saeivPassengerState.coefOn = stopConfig.coefOn;
         saeivPassengerState.stopOptionalByConfig = isSaeivStopOptionalByConfig(stopConfig);
-        var counts = computeSaeivPassengersAtStopValue(stopConfig, idx, lastIndex, entry);
+        var currentInBusForPlan = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0));
+        var counts = ensureSaeivPassengerWorkForConfiguredStop(
+          computeSaeivPassengersAtStopValue(stopConfig, idx, lastIndex, entry),
+          stopConfig,
+          currentInBusForPlan
+        );
         var plannedBoard = Math.max(0, Math.round(Number(counts.board) || 0));
         var plannedAlight = Math.min(
-          Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0)),
+          currentInBusForPlan,
           Math.max(0, Math.round(Number(counts.alight) || 0))
         );
+        if (plannedBoard <= 0 && plannedAlight <= 0 && hasPositiveSaeivPassengerStopConfig(stopConfig)) {
+          if (Math.max(0, Math.min(100, Number(stopConfig.coefOn) || 0)) <= 0 && currentInBusForPlan > 0) {
+            plannedAlight = 1;
+          } else {
+            plannedBoard = 1;
+          }
+        }
         var stopOptionalByPlan = idx > 0 && idx < lastIndex && plannedBoard <= 0 && plannedAlight <= 0;
         saeivPassengerState.stopOptionalByConfig = stopOptionalByPlan;
         saeivPassengerState.stopOptionalByPlan = stopOptionalByPlan;

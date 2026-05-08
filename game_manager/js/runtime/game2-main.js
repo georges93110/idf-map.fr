@@ -24,7 +24,7 @@
     if (document.currentScript && document.currentScript.src) {
       return document.currentScript.src;
     }
-    return new URL("game_manager/js/runtime/game2-main.js", window.location.href).href;
+    return new URL("js/runtime/game2-main.js", window.location.href).href;
   }
 
   function loadText(url) {

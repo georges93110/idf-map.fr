@@ -1216,9 +1216,9 @@
     .dbus-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, 90px);
-      gap: 4px; 
+      gap: 4px;
       padding: 6px;
-      justify-content: start; 
+      justify-content: start;
       align-items: start;
     }
     .dbus-double {
@@ -1322,7 +1322,7 @@
     }
     .dbus-logo.dim{opacity:.25; filter:grayscale(100%);}
     .dbus-logo.sel{position:relative}
-    
+
     .dbus-logo img{display:block;width:100%;height:100%;object-fit:contain;border-radius:10px}
     .routes-host .dbus-item{margin:2px 6px;padding:8px 10px}
     .line-routes{margin-top:8px;width:100%}
@@ -2842,7 +2842,7 @@
     .result-sechead .chev{ font-size:14px; opacity:.9; transition:transform .18s ease; }
     .result-sechead[aria-expanded="false"] .chev{ transform:rotate(-90deg); }
     .result-secbody[hidden]{ display:none !important; }
-    
+
     .results-filters,
     .search-categories{
       display:flex;
@@ -2871,9 +2871,9 @@
       border-radius:8px;
       min-width:48px;
       text-align:center;
-      position:relative; 
+      position:relative;
     }
-    
+
     .titus-chip{
       height:32px;
       padding:0 8px;
@@ -2921,7 +2921,7 @@
       background:transparent;
       padding:0;
     }
-    
+
     .dbus-badge .noctilien-stripe {
       position:absolute;
       left:0; right:0; bottom:0;
@@ -3253,7 +3253,7 @@
     }
 
   </style>
-  
+
 </head>
 <body>
   <div id="map"></div>
@@ -3370,7 +3370,7 @@
         <button type="button" class="dbus-depart-close" id="dbusDepartIndicatorClose" aria-label="Désactiver">&times;</button>
       </div>
     </div>
-    
+
     <div id="selectedChip" class="selected-chip"></div>
 
     <div id="searchPanel" class="dbus-panel search-panel-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="searchPanelTitle">
@@ -3698,10 +3698,10 @@
           <li>Cliquez sur le bouton <span class="line-preview-audio-code-badge">Charger l’extension non empaquetée</span> en haut à gauche</li>
           <li>Sélectionnez le dossier extrait <span class="line-preview-audio-code-badge">idf_annonces_sonores_extension</span>, ouvrez le et cliquez sur le bouton <span class="line-preview-audio-code-badge">Sélectionner un dossier</span></li>
           <li>
-          Vous devez maintenant configurer vos raccourcis clavier. Rendez-vous sur 
-          <span class="line-preview-audio-code-badge">chrome://extensions/shortcuts</span> 
-          (aucun raccourci n’est défini par défaut).  
-          ATTENTION : pour chaque raccourci, veillez à sélectionner, à droite de l’icône crayon, l’option 
+          Vous devez maintenant configurer vos raccourcis clavier. Rendez-vous sur
+          <span class="line-preview-audio-code-badge">chrome://extensions/shortcuts</span>
+          (aucun raccourci n’est défini par défaut).
+          ATTENTION : pour chaque raccourci, veillez à sélectionner, à droite de l’icône crayon, l’option
           <span class="line-preview-audio-code-badge">Raccourcis globaux</span> dans le menu déroulant.
           </li>
           <li>Revenez ensuite ici et rechargez la page</li>
@@ -3720,7 +3720,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="config/translations.js"></script>
   <script src="config/site-nav.js"></script>
-  <script src="config/line-styles.js"></script>
+  <script src="game_manager/config/line-config.js"></script>
 
   <script>
 
@@ -5248,7 +5248,7 @@
     const OY = parseFloat(QS.get('oy') ?? '0');
     const SX = parseFloat(QS.get('sx') ?? '1');
     const SY = parseFloat(QS.get('sy') ?? '1');
-    
+
     const $search = document.getElementById("search");
     const $devWazeModeRow = document.getElementById("devWazeModeRow");
     const $btnDevWazeMode = document.getElementById("btnDevWazeMode");
@@ -5668,7 +5668,7 @@
     const $dbusDepartIndicatorWrap = document.getElementById("dbusDepartIndicatorWrap");
     const $dbusDepartIndicatorLabel = document.getElementById("dbusDepartIndicatorLabel");
     const $dbusDepartIndicatorClose = document.getElementById("dbusDepartIndicatorClose");
-    
+
     map.on('mousemove', (e) => {
       if (!$analysisHUD) return;
       try{
@@ -6153,15 +6153,15 @@
 
             searchIndex.push({
               type: "Concessionnaire",
-              name: `${btxt}`.trim(),         
-              brand: btxt,                   
+              name: `${btxt}`.trim(),
+              brand: btxt,
               city: ov.City || "",
               center: bounds.getCenter(),
               open: openDealerPopup,
               logo: brandLogo,
               fallbackLogo: overlayPath("dealer_ico.png")
             });
-          
+
         } else {
           const overlay = registerZoomSizedImageOverlay(
             L.imageOverlay(overlayPath(`${ov.IconId}.png`), bounds, { interactive: true, bubblingMouseEvents: false }).addTo(map),
@@ -6201,8 +6201,8 @@
                           `Garage ${ov.City || ""}`;
 
             searchIndex.push({
-              type: typeTag,               
-              name: keywordName.trim(),    
+              type: typeTag,
+              name: keywordName.trim(),
               city: ov.City || "",
               center: bounds.getCenter(),
               open: openIconPopup,
@@ -6318,7 +6318,7 @@
         name,
         city,
         center: bounds.getCenter(),
-        open: () => { 
+        open: () => {
           const p = overlay.getPopup();
           if (p) { p.setLatLng(bounds.getCenter()); }
           overlay.fire('click');
@@ -6331,7 +6331,7 @@
   .catch(err => console.error("Monuments.json error:", err));
 
 
-      
+
     function applyInitialView() {
       const qs = new URLSearchParams(location.search);
       const x = parseFloat(qs.get("x"));
@@ -6374,8 +6374,8 @@
     function startLineAnim(key, poly) { stopLineAnim(key); const h = animatePolyline(poly, { speed: 0.1, dash: "30 10", reverse: true }); routeAnimHandles.set(key, h); }
     function stopLineAnim(key) { const h = routeAnimHandles.get(key); if (h) { h.stop(); routeAnimHandles.delete(key); } }
 
-    const dbusRoot = `${DBUS_BASE}/IDF MAP`;
-    const DBUS_FIS_ROOT = `${MAP_FILES_ROOT}/dbus_fis`;
+    const dbusRoot = DBUS_BASE;
+    const DBUS_FIS_ROOT = "./game_manager/sounds/bus/voix_bus";
     const DBUS_FIS_DOSSIERS_ROOT = `${DBUS_FIS_ROOT}/dossiers`;
     const DBUS_FIS_GLOBAL_ROOT = `${DBUS_FIS_ROOT}/global`;
     const dbusLayers = L.layerGroup().addTo(map);
@@ -7189,7 +7189,7 @@
       if (DBUS_FIS_INDEX) return DBUS_FIS_INDEX;
 
       try {
-        const res = await fetch("./map_files/dbus_fis_index.json", {
+        const res = await fetch("./game_manager/sounds/bus/voix_bus_index.json", {
           cache: "no-store"
         });
         if (!res.ok) {
@@ -7214,11 +7214,11 @@
       // normalise le path
       const clean = String(path || "")
         .replace(/^\.?\//, "")
-        .replace(/^map_files\/dbus_fis\/?/, "")
+        .replace(/^game_manager\/sounds\/bus\/voix_bus\/?/, "")
         .replace(/\/+$/, "");
 
       if (!clean) {
-        // root dbus_fis
+        // root voix_bus
         return Object.keys(index).map(name => ({
           name,
           isDirectory:true
@@ -10129,7 +10129,7 @@
       } catch {}
     }
     function buildWazeModeUrl(){
-      const next = new URL("./widgets/waze.html", location.href);
+      const next = new URL("./game_manager/widgets/waze.html", location.href);
       if (SELECTED_VERSION) next.searchParams.set("version", SELECTED_VERSION);
       next.searchParams.set("bridge", "1");
       return next.toString();
@@ -12484,7 +12484,7 @@
       const [w,h] = size.split("x").map(v=>parseInt(v,10));
       const badge = document.createElement("div");
       badge.className = "badge";
-      badge.style.width = w+"px"; 
+      badge.style.width = w+"px";
       badge.style.height = h+"px";
       badge.style.boxSizing = "border-box";
       badge.style.borderRadius = "8px";
@@ -12495,7 +12495,7 @@
       badge.style.overflow = "hidden";
       badge.style.fontWeight = "400";
       badge.style.fontVariantNumeric = "tabular-nums";
-      badge.style.background = bg; 
+      badge.style.background = bg;
       badge.style.color = text;
       badge.style.textShadow = "0 1px 2px rgba(0,0,0,.35)";
       badge.style.position = "relative";
@@ -12908,7 +12908,7 @@
         cleanNum = cleanNum.replace(/\s*\([^)]*\)/, "").trim();
 
         const [bg, text] = getLineColorsSync(cleanNum);
-        
+
         const stopOrderLabel = `${idx+1} / ${arr.length}`;
         const temporaryStopLabel = escapeHTML(t("temporary_stop"));
         const coordinatesLabel = escapeHTML(t("coordinates"));
@@ -13317,7 +13317,7 @@
         } else {
           durationText = `${route.totalMinutes} ${minuteShortLabel()}`;
         }
-      
+
       title.innerHTML = `${cleanedStart} &gt; ${cleanedEnd}`;
       title.dataset.rawStart = rawStart || "";
       title.dataset.rawEnd = rawEnd || "";
@@ -13480,7 +13480,7 @@
           <div class="dot"></div>
           <div class="name">${withRERIcon(translatedLabel)}${isProvisoire ? ` <span class="stop-flag" aria-label="${temporaryStopLabel}">${temporaryStopLabel}</span>` : ''}</div>
         `;
-        
+
         stopEl.addEventListener('click', ()=>{
           const bundle = dbusRouteLayers.get(currentSelectedKey);
           const mk  = bundle?.stops?.[idx];
@@ -13889,7 +13889,7 @@
     }
     function closeSearchUI({ reset = false } = {}) {
       if (reset) $search.value = '';
-      renderResults([]); 
+      renderResults([]);
       $results.hidden = true;
       $search.blur();
       if ($searchPanel) {
@@ -14687,7 +14687,7 @@
       if (flag) titleEl.dataset.routeFlag = flag;
       let titleHtml = `${dirLabel} : ${withRERIcon(dirText)}`;
       if (flag) titleHtml = titleHtml + ` <span class="route-flag">${flag}</span>`;
-      titleEl.innerHTML = titleHtml; 
+      titleEl.innerHTML = titleHtml;
 
       const duration = document.createElement("div");
       duration.className = "dbus-duration";
@@ -15284,7 +15284,7 @@
 
         const body = document.createElement("div");
         body.className = "dbus-secbody";
-        body.hidden = !isOpenByDefault; 
+        body.hidden = !isOpenByDefault;
         sec.appendChild(body);
 
         head.addEventListener("click", () => {
@@ -15680,7 +15680,7 @@
       }
       appendRouteLogo(item, line, badgeRawNumber, effectiveShowLogo);
       if (lengthMode && effectiveShowLogo && badge) item.classList.add("logo-badge-tight");
-        
+
         const titleEl = document.createElement("div");
         titleEl.className = "rname";
         titleEl.style.flex = "1 1 auto";
@@ -15937,11 +15937,11 @@
       }
       return null;
     }
-      
+
     let sectionState = {};
     function getExpanded(key){ return sectionState[key] !== false; }
     function setExpanded(key, val){ sectionState[key] = !!val; }
-    
+
     const ORDER = [
       ["Ville","Villes"],
       ["Monument","Lieux Emblématiques"],
@@ -16151,7 +16151,7 @@
           } else if (["Atelier","Agence","Garage"].includes(item.type)){
             label = item.city || typeFallbackLabel(item.type);
           } else if (item.type === "Monument"){
-            label = item.city ? `${item.name} - ${item.city}` : item.name; 
+            label = item.city ? `${item.name} - ${item.city}` : item.name;
           } else {
             label = item.city ? `${item.name} - ${item.city}` : item.name;
           }
@@ -16273,7 +16273,7 @@
   </script>
 
   <script>
-    const CLOSED = false 
+    const CLOSED = false
       || (new URLSearchParams(location.search).get('closed') === '1');
 
     if (CLOSED) {

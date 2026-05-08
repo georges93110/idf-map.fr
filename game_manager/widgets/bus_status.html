@@ -267,8 +267,8 @@
       var PASSENGER_VALIDATION_DELAY_MS = 500;
       var PASSENGER_VALIDATION_PASS_CHANCE = 0.79;
       var PASSENGER_VALIDATION_ERROR_CHANCE = 0.01;
-      var PASSENGER_VALIDATION_PASS_URL = "../game_manager/sounds/navigo_ratp_pass.mp3";
-      var PASSENGER_VALIDATION_ERROR_URL = "../game_manager/sounds/navigo_ratp_error.mp3";
+      var PASSENGER_VALIDATION_PASS_URL = "../sounds/bus/navigo_ratp_pass.mp3";
+      var PASSENGER_VALIDATION_ERROR_URL = "../sounds/bus/navigo_ratp_error.mp3";
 
       var activeWalkingPassengers = [];
 
@@ -301,7 +301,7 @@
         if (isFetchingLines || linesData) return;
         isFetchingLines = true;
         var v = version || "0.1.6a";
-        var url = "../map_files/" + v + "/DBus/IDF MAP/lines.xml";
+        var url = "../../map_files/" + v + "/DBus/lines.xml";
 
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
@@ -385,6 +385,27 @@
         var range = readPassengerCountVariationRangeFromState(state);
         if (!range || (range.min === 0 && range.max === 0)) return base;
         return Math.max(0, base + pickSignedRandomIntegerInRange(range.min, range.max));
+      }
+      function hasPositivePassengerStopConfig(passengersMin, passengersMax) {
+        var minVal = Math.max(0, Math.round(Number(passengersMin) || 0));
+        var maxVal = Math.max(0, Math.round(Number(passengersMax) || 0));
+        return minVal > 0 && maxVal > 0;
+      }
+      function ensurePassengerWorkForConfiguredStop(peopleToBoard, peopleToAlight, passengersMin, passengersMax, coefOn, inBusCount) {
+        var out = {
+          board: Math.max(0, Math.round(Number(peopleToBoard) || 0)),
+          alight: Math.max(0, Math.round(Number(peopleToAlight) || 0))
+        };
+        if (out.board > 0 || out.alight > 0) return out;
+        if (!hasPositivePassengerStopConfig(passengersMin, passengersMax)) return out;
+        var inBus = Math.max(0, Math.round(Number(inBusCount) || 0));
+        var coef = Math.max(0, Math.min(100, Number(coefOn) || 0));
+        if (coef <= 0 && inBus > 0) {
+          out.alight = 1;
+        } else {
+          out.board = 1;
+        }
+        return out;
       }
       function pickPassengerSpawnCount(minInclusive, maxInclusive, isPeak) {
         var minVal = Math.max(0, Math.round(Number(minInclusive) || 0));
@@ -1464,6 +1485,9 @@
             var statePlannedBoard = Number(state.plannedStopBoardingTotal);
             var statePlannedAlight = Number(state.plannedStopAlightingTotal);
             var statePassengersAtStop = Number(state.passengersAtStop);
+            var statePassengersMin = Number(state.passengersMin);
+            var statePassengersMax = Number(state.passengersMax);
+            var stateCoefOn = Number(state.coefOn);
             var stateHasPassengerTotals = state.passengerGenerationAvailable === true ||
               state.saeivPassengerGenerationAvailable === true ||
               state.passengerTotalsAvailable === true;
@@ -1490,6 +1514,23 @@
               }
               peopleToBoard = resolvedStateBoard;
               peopleToAlight = Math.min(visualCount, resolvedStateAlight);
+              if (
+                peopleToBoard <= 0 &&
+                peopleToAlight <= 0 &&
+                state.stopOptionalByPlan !== true &&
+                hasPositivePassengerStopConfig(statePassengersMin, statePassengersMax)
+              ) {
+                var ensuredFromState = ensurePassengerWorkForConfiguredStop(
+                  peopleToBoard,
+                  peopleToAlight,
+                  statePassengersMin,
+                  statePassengersMax,
+                  stateCoefOn,
+                  visualCount
+                );
+                peopleToBoard = ensuredFromState.board;
+                peopleToAlight = Math.min(visualCount, ensuredFromState.alight);
+              }
             } else {
               // FALLBACK : Génération locale depuis lines.xml
               loadLinesData(String(state.dbusVersion || state.version || "0.1.6a").trim());
@@ -1521,6 +1562,7 @@
 
                 var isPeak = isPeakPassengerTimeFromState(state);
                 var totalN = applyPassengerCountVariationFromState(pickPassengerSpawnCount(pMin, pMax, isPeak), state);
+                if (totalN <= 0 && pMin > 0 && pMax > 0) totalN = 1;
 
                 for (var i = 0; i < totalN; i++) {
                   if ((Math.random() * 100) < cOn) {
@@ -1530,6 +1572,9 @@
                   }
                 }
                 peopleToAlight = Math.min(visualCount, peopleToAlight);
+                var ensuredFromXml = ensurePassengerWorkForConfiguredStop(peopleToBoard, peopleToAlight, pMin, pMax, cOn, visualCount);
+                peopleToBoard = ensuredFromXml.board;
+                peopleToAlight = Math.min(visualCount, ensuredFromXml.alight);
               } else {
                 // FALLBACK ULTIME (si XML non chargé ou non trouvé)
                 if (visualCount > 0) {

@@ -1111,7 +1111,7 @@
         });
 
         // Tiles
-        L.tileLayer('../map_files/0.1.6a/Tiles/{z}/{x}/{y}.png', {
+        L.tileLayer('../../map_files/0.1.6a/Tiles/{z}/{x}/{y}.png', {
           tileSize: tileSize,
           minNativeZoom: 0,
           maxNativeZoom: 8,
@@ -1120,7 +1120,7 @@
         }).addTo(map);
 
         // Fetch Coord Info
-        fetch('../map_files/0.1.6a/TileMapInfo.json')
+        fetch('../../map_files/0.1.6a/TileMapInfo.json')
           .then(r => r.json())
           .then(info => {
             tileMapInfo = info;

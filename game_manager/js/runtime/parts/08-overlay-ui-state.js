@@ -1165,7 +1165,7 @@
           saeivHelpBtn.addEventListener("click", function (event) {
             event.preventDefault();
             event.stopPropagation();
-            var helpUrl = new URL("game_manager/id_lignes_saeiv.html", window.location.href).href;
+            var helpUrl = new URL("html_divers/id_lignes_saeiv.html", window.location.href).href;
             if (typeof requestOpenUrl === "function") {
               requestOpenUrl(helpUrl);
             } else if (typeof openGame2Tab === "function") {

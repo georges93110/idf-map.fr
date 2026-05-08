@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Game Overlay</title>
-  <link rel="stylesheet" href="game_manager/css/game2.css" />
+  <link rel="stylesheet" href="css/game2.css" />
 </head>
 
 <body>
@@ -79,7 +79,7 @@
       <div id="overlayWorkspace"></div>
       <section id="overlayManager" class="overlay-window" aria-label="Widget Manager">
         <div id="overlayManagerTitlebar" class="overlay-window-titlebar">
-          <img src="images/idf_logo.png" class="overlay-logo" alt="IDF">
+          <img src="../images/idf_logo.png" class="overlay-logo" alt="IDF">
           <span id="overlayManagerTitleText" class="overlay-window-title">Widget Manager</span>
         </div>
       <div class="manager-content">
@@ -122,7 +122,7 @@
     <div id="mainMenuModal" class="main-menu-modal gm-main-menu-layer">
       <div class="main-menu-content">
         <div class="main-menu-titlebar">
-          <img src="images/idf_logo.png" class="overlay-logo" alt="Logo">
+          <img src="../images/idf_logo.png" class="overlay-logo" alt="Logo">
           <h1 class="main-menu-title">
             <span id="mainMenuTitleMain" class="main-menu-title-main">MENU</span>
             <span id="mainMenuTitleVersion" class="main-menu-title-version">VERSION</span>
@@ -186,7 +186,7 @@
                 <div id="playModesContainer" class="play-modes-container">
                   <!-- Mode Libre -->
                   <div id="playModeLibre" class="play-mode-card" data-mode="free">
-                    <img src="./images/modes/normal.png" class="play-mode-image" alt="Mode Bus">
+                    <img src="images/modes/normal.png" class="play-mode-image" alt="Mode Bus">
                     <div class="play-mode-overlay">
                       <div class="play-mode-header">
                         <h3 class="play-mode-title">Mode Libre</h3>
@@ -201,7 +201,7 @@
 
                   <!-- Mode Bus -->
                   <div id="playModeBus" class="play-mode-card" data-mode="bus">
-                    <img src="./images/modes/bus.png" class="play-mode-image" alt="Mode Bus">
+                    <img src="images/modes/bus.png" class="play-mode-image" alt="Mode Bus">
                     <div class="play-mode-overlay">
                       <div class="play-mode-header">
                         <h3 class="play-mode-title">Mode Bus</h3>
@@ -216,7 +216,7 @@
 
                   <!-- Mode Taxi -->
                   <div class="play-mode-card is-disabled">
-                    <img src="./images/modes/taxi.png" class="play-mode-image" alt="Mode Taxi">
+                    <img src="images/modes/taxi.png" class="play-mode-image" alt="Mode Taxi">
                     <div class="play-mode-overlay">
                       <div class="play-mode-header">
                         <h3 class="play-mode-title">Mode Taxi</h3>
@@ -231,7 +231,7 @@
 
                   <!-- Mode Livraisons -->
                   <div class="play-mode-card is-disabled">
-                    <img src="./images/modes/poste.png" class="play-mode-image" alt="Mode Livraisons">
+                    <img src="images/modes/poste.png" class="play-mode-image" alt="Mode Livraisons">
                     <div class="play-mode-overlay">
                       <div class="play-mode-header">
                         <h3 class="play-mode-title">Mode Livraisons Postales</h3>
@@ -246,7 +246,7 @@
 
                   <!-- Mode Livraisons -->
                   <div class="play-mode-card is-disabled">
-                    <img src="./images/modes/colis.png" class="play-mode-image" alt="Mode Livraisons">
+                    <img src="images/modes/colis.png" class="play-mode-image" alt="Mode Livraisons">
                     <div class="play-mode-overlay">
                       <div class="play-mode-header">
                         <h3 class="play-mode-title">Mode Livraisons Colis</h3>
@@ -261,7 +261,7 @@
 
                   <!-- Mode Livraisons -->
                   <div class="play-mode-card is-disabled">
-                    <img src="./images/modes/ubereats.png" class="play-mode-image" alt="Mode Livraisons">
+                    <img src="images/modes/ubereats.png" class="play-mode-image" alt="Mode Livraisons">
                     <div class="play-mode-overlay">
                       <div class="play-mode-header">
                         <h3 class="play-mode-title">Mode Livraisons Repas</h3>
@@ -276,7 +276,7 @@
 
                   <!-- Mode Transport de fonds -->
                   <div class="play-mode-card is-disabled">
-                    <img src="./images/modes/fonds.png" class="play-mode-image" alt="Mode Transport de fonds">
+                    <img src="images/modes/fonds.png" class="play-mode-image" alt="Mode Transport de fonds">
                     <div class="play-mode-overlay">
                       <div class="play-mode-header">
                         <h3 class="play-mode-title">Mode Transport de fonds</h3>
@@ -291,7 +291,7 @@
 
                   <!-- Mode Urgences -->
                   <div class="play-mode-card is-disabled">
-                    <img src="./images/modes/urgences.png" class="play-mode-image" alt="Mode Urgences">
+                    <img src="images/modes/urgences.png" class="play-mode-image" alt="Mode Urgences">
                     <div class="play-mode-overlay">
                       <div class="play-mode-header">
                         <h3 class="play-mode-title">Mode Urgences</h3>
@@ -781,15 +781,15 @@
       <div id="playerListHoldBody" class="player-list-hold-body"></div>
     </section>
   </div>
-  <script src="game_manager/js/core/game2-meta.js"></script>
-  <script src="game_manager/js/core/game2-hooks.js"></script>
-  <script src="game_manager/js/i18n/game2-i18n.js"></script>
-  <script src="config/line-styles.js"></script>
-  <script src="game_manager/js/runtime/game2-main.js"></script>
+  <script src="js/core/game2-meta.js"></script>
+  <script src="js/core/game2-hooks.js"></script>
+  <script src="js/i18n/game2-i18n.js"></script>
+  <script src="config/line-config.js"></script>
+  <script src="js/runtime/game2-main.js"></script>
 <!-- Global Loading Screen -->
   <div id="globalLoadingScreen" class="global-loading-screen">
     <div class="global-loading-content">
-      <img src="images/idf_logo_new.png" class="global-loading-logo" alt="Logo">
+      <img src="../images/idf_logo_new.png" class="global-loading-logo" alt="Logo">
       <div class="global-loading-spinner"></div>
       <div class="global-loading-text">
         CHARGEMENT
