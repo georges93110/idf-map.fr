@@ -438,8 +438,11 @@
       var REMOTE_SERVER_WS_DEFAULT_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       var remotePanelTelemetryInFlight = false;
       var remotePanelTelemetryQueuedPayload = null;
+      var remotePanelTelemetryFlushTimer = 0;
+      var remotePanelTelemetryLastSentAtMs = 0;
       var OVERLAY_NOTIFICATION_MIN_DURATION_MS = 2400;
       var REMOTE_SERVER_WS_RECONNECT_INTERVAL_MS = 2000;
+      var REMOTE_PANEL_TELEMETRY_SEND_INTERVAL_MS = 1000;
       var REMOTE_SERVER_WS_PING_INTERVAL_MS = 1000;
       var REMOTE_SERVER_WS_ONLINE_WINDOW_MS = 30000;
       var REMOTE_SERVER_WS_REQUEST_TIMEOUT_MS = 4500;

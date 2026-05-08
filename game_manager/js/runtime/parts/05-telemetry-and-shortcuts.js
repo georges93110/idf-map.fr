@@ -2314,6 +2314,23 @@
         var socket = getRemotePanelWsSocket();
         return !!socket && socket.readyState === WebSocket.OPEN;
       }
+      function getRemotePanelTelemetrySendIntervalMs() {
+        var value = Math.round(Number(REMOTE_PANEL_TELEMETRY_SEND_INTERVAL_MS));
+        return Number.isFinite(value) && value > 0 ? value : 1000;
+      }
+      function stopRemotePanelTelemetryFlushTimer() {
+        if (!remotePanelTelemetryFlushTimer) return;
+        clearTimeout(remotePanelTelemetryFlushTimer);
+        remotePanelTelemetryFlushTimer = 0;
+      }
+      function scheduleRemotePanelTelemetryFlush(delayMs) {
+        if (remotePanelTelemetryFlushTimer) return;
+        var waitMs = Math.max(0, Math.round(Number(delayMs) || 0));
+        remotePanelTelemetryFlushTimer = window.setTimeout(function () {
+          remotePanelTelemetryFlushTimer = 0;
+          flushRemotePanelTelemetryQueue();
+        }, waitMs);
+      }
       function scheduleRemotePanelWsReconnect() {
         if (remoteServerWsReconnectTimer) return;
         remoteServerWsReconnectTimer = window.setTimeout(function () {
@@ -2342,18 +2359,29 @@
       function flushRemotePanelTelemetryQueue() {
         if (remotePanelTelemetryInFlight || !isRemotePanelWsOpen()) return;
         var payload = remotePanelTelemetryQueuedPayload;
-        remotePanelTelemetryQueuedPayload = null;
         if (!payload) return;
+        var now = Date.now();
+        var intervalMs = getRemotePanelTelemetrySendIntervalMs();
+        var lastSentAt = Number(remotePanelTelemetryLastSentAtMs) || 0;
+        var elapsedMs = lastSentAt > 0 ? (now - lastSentAt) : intervalMs;
+        if (elapsedMs < intervalMs) {
+          scheduleRemotePanelTelemetryFlush(intervalMs - elapsedMs);
+          return;
+        }
+        remotePanelTelemetryQueuedPayload = null;
         remotePanelTelemetryInFlight = true;
-        sendRemotePanelWsPayload(payload);
+        if (sendRemotePanelWsPayload(payload)) {
+          remotePanelTelemetryLastSentAtMs = Date.now();
+        }
         remotePanelTelemetryInFlight = false;
-        if (remotePanelTelemetryQueuedPayload) flushRemotePanelTelemetryQueue();
+        if (remotePanelTelemetryQueuedPayload) scheduleRemotePanelTelemetryFlush(getRemotePanelTelemetrySendIntervalMs());
       }
       function sendTelemetryToRemotePanel(raw, signal) {
         if (!signal || typeof signal !== "object") return;
         if (!getRemotePanelWsUrl()) return;
         if (!canSendRemotePanelTelemetryForMap(raw, signal)) {
           remotePanelTelemetryQueuedPayload = null;
+          stopRemotePanelTelemetryFlushTimer();
           return;
         }
         remotePanelTelemetryQueuedPayload = buildRemotePanelTelemetryPayload(raw, signal);
@@ -2369,6 +2397,7 @@
           clearTimeout(remoteServerWsReconnectTimer);
           remoteServerWsReconnectTimer = 0;
         }
+        stopRemotePanelTelemetryFlushTimer();
         remoteServerWsRequestInFlight = false;
         if (remoteServerWsRequestController) {
           try { remoteServerWsRequestController.abort(); } catch (err0) { }
