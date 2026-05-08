@@ -560,32 +560,6 @@
       stroke-linecap:round;
       stroke-linejoin:round;
     }
-    .audio-panel-icon{
-      width:27px;
-      height:27px;
-      flex:0 0 27px;
-      max-width:none;
-      max-height:none;
-      display:block;
-      stroke:currentColor;
-      fill:none;
-      stroke-width:2;
-      stroke-linecap:round;
-      stroke-linejoin:round;
-    }
-    .saeiv-panel-icon{
-      width:23px;
-      height:23px;
-      flex:0 0 23px;
-      max-width:none;
-      max-height:none;
-      display:block;
-      stroke:currentColor;
-      fill:none;
-      stroke-width:2;
-      stroke-linecap:round;
-      stroke-linejoin:round;
-    }
     .map-topbar .btn{
       background:#1a1a1a;
       border-color:#2c2c2c;
@@ -608,17 +582,6 @@
       border:1px solid rgba(245,158,11,0.45);
       color:#fbbf24;
       font-weight:800;
-    }
-    #settingsSaeivPanelBadge{
-      background:rgba(59,130,246,0.18);
-      border-color:rgba(96,165,250,0.55);
-      color:#93c5fd;
-      text-transform:none;
-      letter-spacing:.02em;
-    }
-    #settingsSaeivPanelToggle:disabled{
-      opacity:.55;
-      cursor:not-allowed;
     }
     .search-input{flex:1;min-width:300px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:color-mix(in oklab, var(--panel) 92%, #000 8%);color:var(--text);font-size:15px;box-shadow:var(--shadow);outline:none}
     .search-input:disabled{opacity:.5;cursor:not-allowed;background:color-mix(in oklab, var(--panel) 85%, #000 15%)}
@@ -3387,21 +3350,7 @@
         </div>
       </div>
       <div class="top-actions">
-        <button id="btnSaeivPanel" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Ecran SAEIV" title="Ecran SAEIV">
-          <svg class="saeiv-panel-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="12" rx="2" ry="2"></rect>
-            <path d="M12 16v4"></path>
-            <path d="M8 20h8"></path>
-          </svg>
-        </button>
-        <button id="btnAudioPanel" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Système d'annonces sonores bus" title="Système d'annonces sonores bus">
-          <svg class="audio-panel-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M11 5 6 9H3v6h3l5 4V5z"></path>
-            <path d="M15 9a5 5 0 0 1 0 6"></path>
-            <path d="M18 6a9 9 0 0 1 0 12"></path>
-          </svg>
-        </button>
-        <button id="btnDbus" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Lignes Dbus World" title="Lignes Dbus World">
+        <button id="btnDbus" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Lignes de bus" title="Lignes de bus">
           <img id="btnDbusLogo" class="dbus-icon-logo" src="map_files/0.1.5a/Overlays/bus_logo_idfm.png" alt="" aria-hidden="true"/>
         </button>
         <button id="btnSettings" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Parametres" title="Parametres">
@@ -3441,7 +3390,7 @@
     <div id="dbusPanel" class="dbus-panel">
       <div class="side-panel-resizer" data-panel-resizer aria-hidden="true"></div>
       <div class="dbus-header">
-        <div class="dbus-title" id="dbusPanelTitle">Lignes Dbus World</div>
+        <div class="dbus-title" id="dbusPanelTitle">Lignes de bus</div>
         <a
           class="line-preview-link dbus-world-link"
           id="dbusWorldLink"
@@ -3523,16 +3472,6 @@
               <label class="dbus-switch">
                 <span class="dbus-switch-label" id="settingsAnimationsLabel">Animations des menus</span>
                 <input type="checkbox" id="settingsAnimationsToggle" checked>
-              </label>
-              <label class="dbus-switch" id="settingsSaeivPanelRow" hidden>
-                <span class="dbus-switch-label" id="settingsSaeivPanelLabel">Ecran SAEIV</span>
-                <span class="lang-toggle-badge" id="settingsSaeivPanelBadge">En développement</span>
-                <input type="checkbox" id="settingsSaeivPanelToggle">
-              </label>
-              <label class="dbus-switch" id="settingsAudioPanelRow" hidden>
-                <span class="dbus-switch-label" id="settingsAudioPanelLabel">Système d'annonces sonores bus</span>
-                <span class="lang-toggle-badge" id="settingsAudioPanelBadge">Expérimental</span>
-                <input type="checkbox" id="settingsAudioPanelToggle">
               </label>
               <label class="dbus-switch" id="settingsTranslateStopsRow">
                 <span class="dbus-switch-label" id="settingsTranslateStopsLabel">Traduire les arrêts</span>
@@ -3836,12 +3775,6 @@
   let LANG = detectInitialLang();
   const STOP_TYPE_TRANSLATION_KEY = "idf_translate_stop_types";
   const UI_ANIMATIONS_KEY = "idf_ui_animations";
-  const SAEIV_PANEL_BUTTON_KEY = "idf_saeiv_panel_button_enabled";
-  const AUDIO_PANEL_BUTTON_KEY = "idf_audio_panel_button_enabled";
-  const SAEIV_SETTINGS_FEATURE_ALLOWED = (() => {
-    const qs = new URLSearchParams(location.search);
-    return qs.has("dev");
-  })();
   const LINE_PREVIEW_LAYOUT_KEY = "idf_line_preview_layout";
   const CENTER_ON_LINE_SELECT_KEY = "idf_center_on_line_select";
   const DBUS_STOP_ICONS_KEY = "idf_dbus_stop_icons";
@@ -3867,14 +3800,6 @@
   let UI_ANIMATIONS = (() => {
     const stored = localStorage.getItem(UI_ANIMATIONS_KEY);
     return !(stored === "0" || stored === "false");
-  })();
-  let SAEIV_PANEL_BUTTON_ENABLED = (() => {
-    const stored = localStorage.getItem(SAEIV_PANEL_BUTTON_KEY);
-    return stored === "1" || stored === "true";
-  })();
-  let AUDIO_PANEL_BUTTON_ENABLED = (() => {
-    const stored = localStorage.getItem(AUDIO_PANEL_BUTTON_KEY);
-    return stored === "1" || stored === "true";
   })();
   let LINE_PREVIEW_LAYOUT = (() => {
     const stored = String(localStorage.getItem(LINE_PREVIEW_LAYOUT_KEY) || "").toLowerCase();
@@ -4228,41 +4153,6 @@
     const toggle = document.getElementById("settingsAnimationsToggle");
     if (toggle) toggle.checked = UI_ANIMATIONS;
   }
-  function isSaeivFeatureAllowed(){
-    return SAEIV_SETTINGS_FEATURE_ALLOWED;
-  }
-  function setSaeivPanelButtonEnabled(enabled, { persist = true, apply = true } = {}) {
-    SAEIV_PANEL_BUTTON_ENABLED = !!enabled;
-    if (persist) {
-      localStorage.setItem(SAEIV_PANEL_BUTTON_KEY, SAEIV_PANEL_BUTTON_ENABLED ? "1" : "0");
-    }
-    const toggle = document.getElementById("settingsSaeivPanelToggle");
-    if (toggle) toggle.checked = isSaeivFeatureAllowed() ? SAEIV_PANEL_BUTTON_ENABLED : false;
-    if (apply) {
-      if (typeof refreshSaeivTopButtonVisibility === "function") {
-        try { refreshSaeivTopButtonVisibility(); } catch {}
-      }
-      if (typeof updateUiOverlays === "function") {
-        try { updateUiOverlays(); } catch {}
-      }
-    }
-  }
-  function setAudioPanelButtonEnabled(enabled, { persist = true, apply = true } = {}) {
-    AUDIO_PANEL_BUTTON_ENABLED = !!enabled;
-    if (persist) {
-      localStorage.setItem(AUDIO_PANEL_BUTTON_KEY, AUDIO_PANEL_BUTTON_ENABLED ? "1" : "0");
-    }
-    const toggle = document.getElementById("settingsAudioPanelToggle");
-    if (toggle) toggle.checked = AUDIO_PANEL_BUTTON_ENABLED;
-    if (apply) {
-      if (typeof refreshLinePreviewAudioTopButtonVisibility === "function") {
-        try { refreshLinePreviewAudioTopButtonVisibility({ closePanelOnHide: true }); } catch {}
-      }
-      if (typeof updateUiOverlays === "function") {
-        try { updateUiOverlays(); } catch {}
-      }
-    }
-  }
   function isLinePreviewHorizontal(){
     return LINE_PREVIEW_LAYOUT === LINE_PREVIEW_LAYOUTS.HORIZONTAL;
   }
@@ -4410,43 +4300,6 @@
       settingsAnimationsToggle.setAttribute("aria-label", label);
       settingsAnimationsToggle.title = label;
       settingsAnimationsToggle.checked = !!UI_ANIMATIONS;
-    }
-    const settingsSaeivPanelRow = document.getElementById("settingsSaeivPanelRow");
-    const settingsSaeivPanelLabel = document.getElementById("settingsSaeivPanelLabel");
-    const settingsSaeivPanelBadge = document.getElementById("settingsSaeivPanelBadge");
-    const settingsSaeivPanelToggle = document.getElementById("settingsSaeivPanelToggle");
-    const showSaeivPanelSetting = LANG === "fr";
-    const disableSaeivPanelSetting = !isSaeivFeatureAllowed();
-    if (settingsSaeivPanelRow) {
-      settingsSaeivPanelRow.hidden = !showSaeivPanelSetting;
-      settingsSaeivPanelRow.style.display = showSaeivPanelSetting ? "" : "none";
-    }
-    if (settingsSaeivPanelLabel) settingsSaeivPanelLabel.textContent = "Ecran SAEIV";
-    if (settingsSaeivPanelBadge) settingsSaeivPanelBadge.textContent = "En développement";
-    if (settingsSaeivPanelToggle) {
-      const label = "Ecran SAEIV";
-      settingsSaeivPanelToggle.setAttribute("aria-label", label);
-      settingsSaeivPanelToggle.title = label;
-      settingsSaeivPanelToggle.checked = disableSaeivPanelSetting ? false : !!SAEIV_PANEL_BUTTON_ENABLED;
-      settingsSaeivPanelToggle.disabled = !showSaeivPanelSetting || disableSaeivPanelSetting;
-    }
-    const settingsAudioPanelRow = document.getElementById("settingsAudioPanelRow");
-    const settingsAudioPanelLabel = document.getElementById("settingsAudioPanelLabel");
-    const settingsAudioPanelBadge = document.getElementById("settingsAudioPanelBadge");
-    const settingsAudioPanelToggle = document.getElementById("settingsAudioPanelToggle");
-    const showAudioPanelSetting = LANG === "fr";
-    if (settingsAudioPanelRow) {
-      settingsAudioPanelRow.hidden = !showAudioPanelSetting;
-      settingsAudioPanelRow.style.display = showAudioPanelSetting ? "" : "none";
-    }
-    if (settingsAudioPanelLabel) settingsAudioPanelLabel.textContent = t("audio_panel_title");
-    if (settingsAudioPanelBadge) settingsAudioPanelBadge.textContent = t("experimental");
-    if (settingsAudioPanelToggle) {
-      const label = t("audio_panel_title");
-      settingsAudioPanelToggle.setAttribute("aria-label", label);
-      settingsAudioPanelToggle.title = label;
-      settingsAudioPanelToggle.checked = !!AUDIO_PANEL_BUTTON_ENABLED;
-      settingsAudioPanelToggle.disabled = !showAudioPanelSetting;
     }
     const settingsTranslateStopsLabel = document.getElementById("settingsTranslateStopsLabel");
     if (settingsTranslateStopsLabel) settingsTranslateStopsLabel.textContent = t("translate_stop_types");
@@ -4660,18 +4513,6 @@
       $btnDbus.setAttribute("aria-label", label);
       $btnDbus.title = label;
     }
-    const $btnSaeivPanel = document.getElementById("btnSaeivPanel");
-    if ($btnSaeivPanel) {
-      const label = "Ecran SAEIV";
-      $btnSaeivPanel.setAttribute("aria-label", label);
-      $btnSaeivPanel.title = label;
-    }
-    const $btnAudioPanel = document.getElementById("btnAudioPanel");
-    if ($btnAudioPanel) {
-      const label = t("audio_panel_title");
-      $btnAudioPanel.setAttribute("aria-label", label);
-      $btnAudioPanel.title = label;
-    }
     updateDbusPanelTitles();
     const $dbusModeLabel = document.getElementById("dbusModeLabel");
     if ($dbusModeLabel) $dbusModeLabel.textContent = t("dbus_mode_label");
@@ -4830,12 +4671,6 @@
     }
     if (typeof updateLinePreviewAudioStyleSelect === "function") {
       updateLinePreviewAudioStyleSelect();
-    }
-    if (typeof refreshSaeivTopButtonVisibility === "function") {
-      refreshSaeivTopButtonVisibility();
-    }
-    if (typeof refreshLinePreviewAudioTopButtonVisibility === "function") {
-      refreshLinePreviewAudioTopButtonVisibility({ closePanelOnHide: true });
     }
     if (typeof refreshLinePreviewAudioButtonVisibility === "function") {
       refreshLinePreviewAudioButtonVisibility();
@@ -5058,28 +4893,6 @@
       setUiAnimationsEnabled(settingsAnimationsToggleEl.checked);
     });
   }
-  const settingsSaeivPanelToggleEl = document.getElementById("settingsSaeivPanelToggle");
-  if (settingsSaeivPanelToggleEl) {
-    settingsSaeivPanelToggleEl.addEventListener("change", () => {
-      if (LANG !== "fr" || !isSaeivFeatureAllowed()) {
-        settingsSaeivPanelToggleEl.checked = false;
-        setSaeivPanelButtonEnabled(false);
-        return;
-      }
-      setSaeivPanelButtonEnabled(settingsSaeivPanelToggleEl.checked);
-    });
-  }
-  const settingsAudioPanelToggleEl = document.getElementById("settingsAudioPanelToggle");
-  if (settingsAudioPanelToggleEl) {
-    settingsAudioPanelToggleEl.addEventListener("change", () => {
-      if (LANG !== "fr") {
-        settingsAudioPanelToggleEl.checked = false;
-        setAudioPanelButtonEnabled(false);
-        return;
-      }
-      setAudioPanelButtonEnabled(settingsAudioPanelToggleEl.checked);
-    });
-  }
   const settingsTranslateStopsToggleEl = document.getElementById("settingsTranslateStopsToggle");
   if (settingsTranslateStopsToggleEl) {
     settingsTranslateStopsToggleEl.addEventListener("change", () => {
@@ -5113,8 +4926,6 @@
     });
   }
   setUiAnimationsEnabled(UI_ANIMATIONS, { persist: false });
-  setSaeivPanelButtonEnabled(SAEIV_PANEL_BUTTON_ENABLED, { persist: false, apply: false });
-  setAudioPanelButtonEnabled(AUDIO_PANEL_BUTTON_ENABLED, { persist: false, apply: false });
   setLinePreviewLayout(LINE_PREVIEW_LAYOUT, { persist: false });
   setCenterOnLineSelectEnabled(CENTER_ON_LINE_SELECT, { persist: false });
   setDbusNavigationType(DBUS_NAVIGATION_TYPE, { persist: false, apply: false });
@@ -5828,8 +5639,6 @@
     const cityMarkers=[],searchIndex=[];
     let selectedCityMarker = null;
 
-    const $btnSaeivPanel = document.getElementById("btnSaeivPanel");
-    const $btnAudioPanel = document.getElementById("btnAudioPanel");
     const $btnDbus = document.getElementById("btnDbus");
     const $panelDbus = document.getElementById("dbusPanel");
     const $dbusList = document.getElementById("dbusList");
@@ -6657,22 +6466,6 @@
     const LINE_PREVIEW_AUDIO_DRAG = { initialized: false };
     const LINE_PREVIEW_AUDIO_POPUP = { win: null, syncTimer: null, htmlCache: "", keepOnTop: true, lastFocusAt: 0, bounds: null, boundsLoaded: false };
     const LINE_PREVIEW_AUDIO_POPUP_BOUNDS_STORAGE_KEY = "idf_map_audio_popup_bounds_v1";
-    const SAEIV_ASPECT_RATIO = 16 / 9;
-    const SAEIV_QUERY_PARAMS = new URLSearchParams(location.search);
-    const SAEIV_DEV_MODE = SAEIV_QUERY_PARAMS.has("dev");
-    const SAEIV_FEATURE_ALLOWED = SAEIV_DEV_MODE;
-    const SAEIV_CHANNEL_NAME = "idf_map_saeiv_v1";
-    const SAEIV_PANEL_STATE = {
-      sourceId: `map-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`,
-      win: null,
-      closeWatchTimer: null,
-      pipCloseHandler: null,
-      usingDocumentPiP: false,
-      channel: null,
-      channelBound: false,
-      lastStateKey: "",
-      lastAction: ""
-    };
     const DBUS_MODES = { LINES: "lines", LENGTH: "length", DEPARTS: "departures" };
     let currentDbusMode = DBUS_MODES.LINES;
     let dbusDisplayMode = "normal";
@@ -8870,9 +8663,6 @@
       LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
       LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier = 1;
       updateLinePreviewAudioButtonsState();
-      if (typeof syncSaeivExternalState === "function") {
-        try { syncSaeivExternalState({ force: false }); } catch {}
-      }
     }
     function updateLinePreviewAudioNowLabel(){
       const now = document.getElementById("lpAudioNowStop");
@@ -9069,9 +8859,6 @@
       updateLinePreviewAudioStyleSelect();
       updateLinePreviewAudioNowLabel();
       updateLinePreviewAudioButtonsState();
-      if (typeof syncSaeivExternalState === "function") {
-        try { syncSaeivExternalState({ force: false }); } catch {}
-      }
     }
     function clearLinePreviewAudioRouteState({ closePanel = false, stopPlayback = true } = {}){
       if (stopPlayback) stopLinePreviewAudioPlayback();
@@ -9086,9 +8873,6 @@
       updateLinePreviewAudioStyleSelect();
       updateLinePreviewAudioNowLabel();
       updateLinePreviewAudioButtonsState();
-      if (typeof syncSaeivExternalState === "function") {
-        try { syncSaeivExternalState({ force: false }); } catch {}
-      }
       if (closePanel) closeLinePreviewAudioPanel({ stopPlayback: false });
     }
     function playLinePreviewAudioClip(folderPath, clipName, token, volumeMultiplier = 1){
@@ -9138,17 +8922,11 @@
       LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = !!lockNavigation;
       LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier = Math.max(0, Math.min(1, safeMul));
       updateLinePreviewAudioButtonsState();
-      if (typeof syncSaeivExternalState === "function") {
-        try { syncSaeivExternalState({ force: false }); } catch {}
-      }
       for (const clip of sequence) {
         if (token !== LINE_PREVIEW_AUDIO_PLAYBACK.token) {
           LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying = false;
           LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
           updateLinePreviewAudioButtonsState();
-          if (typeof syncSaeivExternalState === "function") {
-            try { syncSaeivExternalState({ force: false }); } catch {}
-          }
           return;
         }
         await playLinePreviewAudioClip(folderPath, clip, token, LINE_PREVIEW_AUDIO_PLAYBACK.volumeMultiplier);
@@ -9157,9 +8935,6 @@
         LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying = false;
         LINE_PREVIEW_AUDIO_PLAYBACK.lockNavigation = false;
         updateLinePreviewAudioButtonsState();
-        if (typeof syncSaeivExternalState === "function") {
-          try { syncSaeivExternalState({ force: false }); } catch {}
-        }
         if (advanceOnFinish) {
           const lastIndex = Math.max(0, (LINE_PREVIEW_AUDIO_STATE.stopNames.length || 1) - 1);
           const currentIndex = Math.max(0, Math.min(lastIndex, LINE_PREVIEW_AUDIO_STATE.currentIndex || 0));
@@ -9178,9 +8953,6 @@
       LINE_PREVIEW_AUDIO_STATE.currentIndex = Math.max(0, Math.min(lastIndex, Number(index)));
       updateLinePreviewAudioNowLabel();
       updateLinePreviewAudioButtonsState();
-      if (typeof syncSaeivExternalState === "function") {
-        try { syncSaeivExternalState({ force: false }); } catch {}
-      }
     }
     function playLinePreviewCurrentStop(index, { advanceOnFinish = false } = {}){
       if (!LINE_PREVIEW_AUDIO_STATE.enabled || !LINE_PREVIEW_AUDIO_STATE.stopNames.length) return;
@@ -9363,459 +9135,6 @@
     }
     function isLinePreviewAudioLanguageAllowed(){
       return String(LANG || "").toLowerCase() === "fr";
-    }
-    function ensureSaeivChannel(){
-      if (SAEIV_PANEL_STATE.channel) return SAEIV_PANEL_STATE.channel;
-      if (typeof BroadcastChannel !== "function") return null;
-      const channel = new BroadcastChannel(SAEIV_CHANNEL_NAME);
-      SAEIV_PANEL_STATE.channel = channel;
-      if (!SAEIV_PANEL_STATE.channelBound) {
-        channel.addEventListener("message", (event) => {
-          const data = event?.data || {};
-          if (!data || data.sourceId !== SAEIV_PANEL_STATE.sourceId) return;
-          const type = String(data.type || "");
-          if (type === "saeiv:request_state" || type === "saeiv:ready") {
-            syncSaeivExternalState({ force: true });
-            return;
-          }
-          if (type === "saeiv:action") {
-            const action = String(data.action || "").trim();
-            if (!action) return;
-            if (action.startsWith("diffusion-")) {
-              const actionMatch = /(\d+)$/.exec(action);
-              const slotFromAction = actionMatch ? Number(actionMatch[1]) : 0;
-              const slotRaw = Number(data.diffusionSlot || slotFromAction || 0);
-              const slotIndex = Number.isInteger(slotRaw) && slotRaw > 0 ? slotRaw - 1 : -1;
-              if (slotIndex >= 0) {
-                triggerSaeivGlobalAudioByIndex(slotIndex).catch(() => {});
-              }
-            }
-            SAEIV_PANEL_STATE.lastAction = action;
-            console.log("[SAEIV][TEST]", action);
-            syncSaeivExternalState({ force: true });
-            return;
-          }
-          if (type === "saeiv:closed") {
-            handleSaeivWindowClosed({ update: true });
-          }
-        });
-        SAEIV_PANEL_STATE.channelBound = true;
-      }
-      return channel;
-    }
-    function getSaeivSelectedInfo(){
-      const key = String(currentSelectedKey || "").trim();
-      if (key) {
-        const [lineUidRaw, routeUidRaw] = key.split(":");
-        const lineUid = String(lineUidRaw || "").trim();
-        const routeUid = String(routeUidRaw || "").trim();
-        const line = DBUS_LINES.find((item) => String(item?.uid || "") === lineUid) || null;
-        const route = line ? (line.routes || []).find((item) => String(item?.uid || "") === routeUid) || null : null;
-        const lineNumber = line ? String(getLineNumber(line, route) || line?.number || "").trim() : "";
-        const routeName = String(route?.name || "").trim();
-        return {
-          selected: true,
-          lineUid,
-          routeUid,
-          lineNumber,
-          routeName,
-          key
-        };
-      }
-      const lineUid = String(currentSelectedLineUid || "").trim();
-      if (lineUid) {
-        const line = DBUS_LINES.find((item) => String(item?.uid || "") === lineUid) || null;
-        const lineNumber = line ? String(line?.number || "").trim() : "";
-        return {
-          selected: false,
-          lineUid,
-          routeUid: "",
-          lineNumber,
-          routeName: "",
-          key: ""
-        };
-      }
-      return {
-        selected: false,
-        lineUid: "",
-        routeUid: "",
-        lineNumber: "",
-        routeName: "",
-        key: ""
-      };
-    }
-    function getSaeivSelectedLineRoute(info){
-      const lineUid = String(info?.lineUid || "").trim();
-      const routeUid = String(info?.routeUid || "").trim();
-      if (!lineUid) return { line: null, route: null };
-      const line = DBUS_LINES.find((item) => String(item?.uid || "") === lineUid) || null;
-      const route = line && routeUid
-        ? (line.routes || []).find((item) => String(item?.uid || "") === routeUid) || null
-        : null;
-      return { line, route };
-    }
-    function getSaeivClockText(){
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2, "0");
-      const mm = String(now.getMinutes()).padStart(2, "0");
-      return `${hh}:${mm}`;
-    }
-    function buildSaeivAudioLinkedState(info){
-      const { line, route } = getSaeivSelectedLineRoute(info);
-      const routeStopNames = Array.isArray(route?.stops) ? collectRouteAudioStopNames(route) : [];
-      const audioStopNames = Array.isArray(LINE_PREVIEW_AUDIO_STATE.stopNames)
-        ? LINE_PREVIEW_AUDIO_STATE.stopNames.map((name) => String(name || "").trim()).filter(Boolean)
-        : [];
-      const canUseAudioStops = !!LINE_PREVIEW_AUDIO_STATE.enabled && audioStopNames.length > 0;
-      const linkedStopNames = canUseAudioStops ? audioStopNames : routeStopNames;
-      const linkedLastIndex = Math.max(0, linkedStopNames.length - 1);
-      const linkedIndex = linkedStopNames.length
-        ? Math.max(0, Math.min(linkedLastIndex, Number(LINE_PREVIEW_AUDIO_STATE.currentIndex || 0)))
-        : 0;
-      const currentStopName = String(linkedStopNames[linkedIndex] || "").trim();
-      const nextStopName = linkedIndex < linkedLastIndex
-        ? String(linkedStopNames[linkedIndex + 1] || "").trim()
-        : "";
-      const thirdStopName = (linkedIndex + 2) <= linkedLastIndex
-        ? String(linkedStopNames[linkedIndex + 2] || "").trim()
-        : "";
-      const minutesByToken = new Map();
-      (Array.isArray(route?.stops) ? route.stops : []).forEach((stopRef) => {
-        const rawName = String(DBUS_STOPS.get(stopRef?.uid)?.name || "").trim();
-        if (!rawName) return;
-        const label = stripProvisoire(rawName) || rawName;
-        const token = normalizeAudioNameToken(label);
-        if (!token || minutesByToken.has(token)) return;
-        const minutes = Math.max(0, Number(stopRef?.nextStopTime) || 0);
-        minutesByToken.set(token, minutes);
-      });
-      const currentToken = normalizeAudioNameToken(currentStopName);
-      const departMinutesRaw = currentToken ? Number(minutesByToken.get(currentToken) || 0) : 0;
-      const departMinutes = departMinutesRaw > 0 ? String(departMinutesRaw).padStart(2, "0") : "";
-      return {
-        hasLinkedAudio: canUseAudioStops,
-        audioCurrentIndex: linkedIndex,
-        audioStopNames: linkedStopNames,
-        stopName: currentStopName,
-        nextStopName,
-        thirdStopName,
-        departMinutes,
-        refTime: getSaeivClockText(),
-        routeStopCount: routeStopNames.length,
-        audioFolderPath: String(LINE_PREVIEW_AUDIO_STATE.folderPath || ""),
-        audioVoiceStyle: String((LINE_PREVIEW_AUDIO_STATE.voiceStyles || [])[LINE_PREVIEW_AUDIO_STATE.selectedVoiceIndex]?.name || "")
-      };
-    }
-    function getSaeivGlobalFolderPlayableClips(folder, { includeRawFallback = true } = {}){
-      const filtered = getLinePreviewAudioGlobalPlayableClips(folder);
-      if (filtered.length || !includeRawFallback) return filtered;
-      return (Array.isArray(folder?.clips) ? folder.clips : [])
-        .map((clip) => String(clip || "").trim())
-        .filter(Boolean);
-    }
-    function findSaeivRatpGlobalFolder(folders, { requirePlayable = false } = {}){
-      const list = Array.isArray(folders) ? folders : [];
-      if (!list.length) return null;
-      const tagged = list.filter((folder) => linePreviewAudioGlobalFolderHasTag(folder, "ratp"));
-      if (!tagged.length) return null;
-      if (!requirePlayable) return tagged[0] || null;
-      return tagged.find((folder) => getSaeivGlobalFolderPlayableClips(folder).length > 0) || null;
-    }
-    function buildSaeivGlobalAudioState({ forceRatpDefault = false } = {}){
-      const allFolders = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
-      if (!allFolders.length && !LINE_PREVIEW_AUDIO_GLOBAL_STATE.loadPromise) {
-        ensureLinePreviewAudioGlobalFoldersLoaded()
-          .then(() => {
-            try { syncSaeivExternalState({ force: true }); } catch {}
-          })
-          .catch(() => {});
-      }
-      const filteredFolders = getLinePreviewAudioGlobalAvailableFolders(allFolders);
-      const folders = filteredFolders.length ? filteredFolders : allFolders;
-      let selectedPath = String(LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath || "");
-      let selectedFolder = folders.find((folder) => String(folder?.path || "") === selectedPath) || null;
-      if (forceRatpDefault) {
-        selectedFolder = findSaeivRatpGlobalFolder(folders, { requirePlayable: true })
-          || findSaeivRatpGlobalFolder(folders)
-          || findSaeivRatpGlobalFolder(allFolders, { requirePlayable: true })
-          || findSaeivRatpGlobalFolder(allFolders)
-          || selectedFolder;
-        selectedPath = String(selectedFolder?.path || selectedPath || "");
-        if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
-      }
-      if (!selectedFolder && folders.length) {
-        const preferredIndex = getPreferredGlobalFolderIndex(folders);
-        const fallbackIndex = preferredIndex >= 0 ? preferredIndex : 0;
-        selectedFolder = folders[fallbackIndex] || null;
-        selectedPath = String(selectedFolder?.path || "");
-        if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
-      }
-      let playableClips = getSaeivGlobalFolderPlayableClips(selectedFolder);
-      if (!playableClips.length) {
-        const ratpFallback = findSaeivRatpGlobalFolder(folders, { requirePlayable: true })
-          || findSaeivRatpGlobalFolder(allFolders, { requirePlayable: true });
-        if (ratpFallback) {
-          selectedFolder = ratpFallback;
-          selectedPath = String(ratpFallback?.path || "");
-          if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
-          playableClips = getSaeivGlobalFolderPlayableClips(ratpFallback);
-        }
-      }
-      if (!playableClips.length && folders.length) {
-        const fallbackFolder = folders.find((folder) => {
-          return getSaeivGlobalFolderPlayableClips(folder).length > 0;
-        }) || null;
-        if (fallbackFolder) {
-          selectedFolder = fallbackFolder;
-          selectedPath = String(fallbackFolder?.path || "");
-          if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
-          playableClips = getSaeivGlobalFolderPlayableClips(fallbackFolder);
-        }
-      }
-      const labels = playableClips
-        .map((clipName) => {
-          const meta = parseLinePreviewAudioGlobalClipMeta(clipName);
-          return String(meta?.label || clipName || "").trim();
-        })
-        .filter(Boolean);
-      const urls = selectedPath
-        ? playableClips.map((clipName) => linePreviewAudioClipUrl(selectedPath, clipName))
-        : [];
-      const folderMeta = parseLinePreviewAudioGlobalFolderMeta(selectedFolder?.name || "");
-      const volumeMultiplier = Number.isFinite(Number(folderMeta?.volumeMultiplier))
-        ? Number(folderMeta.volumeMultiplier)
-        : 1;
-      return {
-        globalAudioFolderPath: selectedPath,
-        globalAudioLabels: labels,
-        globalAudioUrls: urls,
-        globalAudioCount: labels.length,
-        globalAudioVolumeMultiplier: volumeMultiplier
-      };
-    }
-    function buildSaeivStatePayload(){
-      const info = getSaeivSelectedInfo();
-      const audioLinkedState = buildSaeivAudioLinkedState(info);
-      const hasLineSelected = !!String(currentSelectedLineUid || "").trim() || !!String(currentSelectedKey || "").trim();
-      const hasRouteSelected = !!String(currentSelectedKey || "").trim();
-      const globalAudioState = buildSaeivGlobalAudioState({ forceRatpDefault: !hasRouteSelected });
-      return {
-        lang: String(LANG || "fr"),
-        canUseFeature: SAEIV_FEATURE_ALLOWED && isLinePreviewAudioLanguageAllowed() && !!SAEIV_PANEL_BUTTON_ENABLED,
-        selected: info.selected,
-        lineSelected: hasLineSelected,
-        routeSelected: hasRouteSelected,
-        selectedKey: info.key,
-        selectedLineUid: info.lineUid,
-        selectedRouteUid: info.routeUid,
-        lineNumber: info.lineNumber,
-        routeName: info.routeName,
-        ...audioLinkedState,
-        ...globalAudioState,
-        audioPlaybackBusy: !!LINE_PREVIEW_AUDIO_PLAYBACK.isPlaying,
-        lastAction: SAEIV_PANEL_STATE.lastAction || ""
-      };
-    }
-    function postSaeivMessage(message){
-      const channel = ensureSaeivChannel();
-      if (!channel) return false;
-      try {
-        channel.postMessage({ ...message, sourceId: SAEIV_PANEL_STATE.sourceId });
-        return true;
-      } catch {
-        return false;
-      }
-    }
-    function syncSaeivExternalState({ force = false } = {}){
-      if (!isSaeivPanelOpen()) return;
-      const payload = buildSaeivStatePayload();
-      const key = JSON.stringify(payload);
-      if (!force && key === SAEIV_PANEL_STATE.lastStateKey) return;
-      SAEIV_PANEL_STATE.lastStateKey = key;
-      postSaeivMessage({ type: "saeiv:state", payload });
-    }
-    function handleSaeivWindowClosed({ update = true } = {}){
-      const win = SAEIV_PANEL_STATE.win;
-      const pipCloseHandler = SAEIV_PANEL_STATE.pipCloseHandler;
-      if (win && pipCloseHandler) {
-        try { win.removeEventListener("pagehide", pipCloseHandler); } catch {}
-      }
-      if (SAEIV_PANEL_STATE.closeWatchTimer) {
-        clearInterval(SAEIV_PANEL_STATE.closeWatchTimer);
-        SAEIV_PANEL_STATE.closeWatchTimer = null;
-      }
-      SAEIV_PANEL_STATE.win = null;
-      SAEIV_PANEL_STATE.pipCloseHandler = null;
-      SAEIV_PANEL_STATE.usingDocumentPiP = false;
-      SAEIV_PANEL_STATE.lastStateKey = "";
-      if (update && typeof updateUiOverlays === "function") {
-        try { updateUiOverlays(); } catch {}
-      }
-    }
-    function isSaeivPanelOpen(){
-      const win = SAEIV_PANEL_STATE.win;
-      return !!(win && !win.closed);
-    }
-    function startSaeivCloseWatcher(){
-      if (SAEIV_PANEL_STATE.closeWatchTimer) return;
-      SAEIV_PANEL_STATE.closeWatchTimer = setInterval(() => {
-        const win = SAEIV_PANEL_STATE.win;
-        if (win && !win.closed) return;
-        handleSaeivWindowClosed({ update: true });
-      }, 400);
-    }
-    function isSaeivDocumentPiPSupported(){
-      return !!(window.documentPictureInPicture && typeof window.documentPictureInPicture.requestWindow === "function");
-    }
-    async function openSaeivPanelInDocumentPiP(width, height, url){
-      if (!isSaeivDocumentPiPSupported()) return null;
-      let pipWindow = null;
-      try {
-        pipWindow = await window.documentPictureInPicture.requestWindow({ width, height });
-      } catch {
-        return null;
-      }
-      if (!pipWindow) return null;
-      const doc = pipWindow.document;
-      try {
-        doc.title = "Ecran SAEIV";
-        doc.body.innerHTML = "";
-        const style = doc.createElement("style");
-        style.textContent = `
-          html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
-          iframe { display: block; width: 100%; height: 100%; border: 0; background: #000; }
-        `;
-        doc.head.appendChild(style);
-        const frame = doc.createElement("iframe");
-        frame.src = url.toString();
-        frame.title = "Ecran SAEIV";
-        doc.body.appendChild(frame);
-      } catch {}
-      return pipWindow;
-    }
-    async function openSaeivPanel(){
-      if (!SAEIV_FEATURE_ALLOWED) return false;
-      const currentWin = SAEIV_PANEL_STATE.win;
-      if (currentWin && !currentWin.closed) {
-        try { currentWin.focus(); } catch {}
-        syncSaeivExternalState({ force: true });
-        return true;
-      }
-      const ratio = Number.isFinite(SAEIV_ASPECT_RATIO) && SAEIV_ASPECT_RATIO > 0 ? SAEIV_ASPECT_RATIO : (16 / 9);
-      const screenAvailW = Math.max(140, Math.round(Number(window.screen?.availWidth) || window.innerWidth || 140));
-      const screenAvailH = Math.max(120, Math.round(Number(window.screen?.availHeight) || window.innerHeight || 120));
-      const maxWindowWidth = Math.max(120, screenAvailW - 12);
-      const maxWindowHeight = Math.max(100, screenAvailH - 12);
-      const widthByHeight = Math.max(120, Math.min(maxWindowWidth, Math.round(maxWindowHeight * ratio)));
-      let width = Math.max(120, Math.min(widthByHeight, Math.round(window.innerWidth * 0.62)));
-      let height = Math.max(100, Math.round(width / ratio));
-      if (height > maxWindowHeight) {
-        height = maxWindowHeight;
-        width = Math.max(120, Math.min(maxWindowWidth, Math.round(height * ratio)));
-      }
-      if (width > maxWindowWidth) {
-        width = maxWindowWidth;
-        height = Math.max(100, Math.min(maxWindowHeight, Math.round(width / ratio)));
-      }
-      const availLeft = Number(window.screen?.availLeft);
-      const availTop = Number(window.screen?.availTop);
-      const minLeft = Number.isFinite(availLeft) ? Math.round(availLeft) : 0;
-      const minTop = Number.isFinite(availTop) ? Math.round(availTop) : 0;
-      const maxLeft = Math.max(minLeft, minLeft + screenAvailW - width);
-      const maxTop = Math.max(minTop, minTop + screenAvailH - height);
-      const centeredLeft = Math.round(window.screenX + ((window.outerWidth - width) / 2));
-      const centeredTop = Math.round(window.screenY + ((window.outerHeight - height) / 2));
-      const left = Math.max(minLeft, Math.min(maxLeft, centeredLeft));
-      const top = Math.max(minTop, Math.min(maxTop, centeredTop));
-      const url = new URL("widgets/saeiv_temp.html", location.href);
-      url.searchParams.set("source", SAEIV_PANEL_STATE.sourceId);
-      if (SAEIV_DEV_MODE) {
-        const win = window.open(url.toString(), "_blank");
-        if (!win) return false;
-        SAEIV_PANEL_STATE.win = win;
-        SAEIV_PANEL_STATE.usingDocumentPiP = false;
-        SAEIV_PANEL_STATE.pipCloseHandler = null;
-        SAEIV_PANEL_STATE.lastStateKey = "";
-        ensureSaeivChannel();
-        startSaeivCloseWatcher();
-        syncSaeivExternalState({ force: true });
-        return true;
-      }
-      const pipWindow = await openSaeivPanelInDocumentPiP(width, height, url);
-      if (pipWindow) {
-        SAEIV_PANEL_STATE.win = pipWindow;
-        SAEIV_PANEL_STATE.usingDocumentPiP = true;
-        SAEIV_PANEL_STATE.lastStateKey = "";
-        ensureSaeivChannel();
-        const onClose = () => handleSaeivWindowClosed({ update: true });
-        SAEIV_PANEL_STATE.pipCloseHandler = onClose;
-        try { pipWindow.addEventListener("pagehide", onClose, { once: true }); } catch {}
-        try { pipWindow.focus(); } catch {}
-        syncSaeivExternalState({ force: true });
-        return true;
-      }
-      const features = [
-        "popup=yes",
-        "resizable=yes",
-        "scrollbars=no",
-        "toolbar=no",
-        "location=no",
-        "menubar=no",
-        "status=no",
-        `width=${width}`,
-        `height=${height}`,
-        `left=${left}`,
-        `top=${top}`
-      ].join(",");
-      const win = window.open(url.toString(), `idf_map_saeiv_${SAEIV_PANEL_STATE.sourceId}`, features);
-      if (!win) return false;
-      SAEIV_PANEL_STATE.win = win;
-      SAEIV_PANEL_STATE.usingDocumentPiP = false;
-      SAEIV_PANEL_STATE.pipCloseHandler = null;
-      SAEIV_PANEL_STATE.lastStateKey = "";
-      ensureSaeivChannel();
-      startSaeivCloseWatcher();
-      syncSaeivExternalState({ force: true });
-      return true;
-    }
-    function closeSaeivPanel({ update = true } = {}){
-      const win = SAEIV_PANEL_STATE.win;
-      const pipCloseHandler = SAEIV_PANEL_STATE.pipCloseHandler;
-      if (win && pipCloseHandler) {
-        try { win.removeEventListener("pagehide", pipCloseHandler); } catch {}
-      }
-      if (win && !win.closed) {
-        try { win.close(); } catch {}
-      }
-      handleSaeivWindowClosed({ update });
-    }
-    function refreshSaeivTopButtonVisibility(){
-      const btn = document.getElementById("btnSaeivPanel");
-      if (!btn) return;
-      const canOpen = SAEIV_FEATURE_ALLOWED && isLinePreviewAudioLanguageAllowed() && !!SAEIV_PANEL_BUTTON_ENABLED;
-      if (!canOpen) {
-        closeSaeivPanel({ update: false });
-      }
-      btn.hidden = !canOpen;
-      btn.style.display = canOpen ? "" : "none";
-      setButtonDisabled(btn, false);
-      const opened = isSaeivPanelOpen();
-      btn.classList.toggle("is-open", opened);
-      btn.setAttribute("aria-expanded", opened ? "true" : "false");
-    }
-    function refreshLinePreviewAudioTopButtonVisibility({ closePanelOnHide = false } = {}){
-      const btn = document.getElementById("btnAudioPanel");
-      if (!btn) return;
-      const canShow = isLinePreviewAudioLanguageAllowed() && !!AUDIO_PANEL_BUTTON_ENABLED;
-      btn.hidden = !canShow;
-      btn.style.display = canShow ? "" : "none";
-      if (!canShow) {
-        btn.classList.remove("is-open");
-        btn.setAttribute("aria-expanded", "false");
-        if (closePanelOnHide && isLinePreviewAudioPanelOpen()) {
-          closeLinePreviewAudioPanel({ stopPlayback: true });
-        }
-      }
     }
     function refreshLinePreviewAudioButtonVisibility({ closePanelOnHide = false } = {}){
       const audioLink = document.getElementById("lpAudioLink");
@@ -14490,8 +13809,6 @@
     }
     function updateUiOverlays() {
       refreshHeaderMetrics();
-      refreshSaeivTopButtonVisibility();
-      refreshLinePreviewAudioTopButtonVisibility({ closePanelOnHide: true });
       const hasSelectedRoute = !!String(currentSelectedKey || "").trim();
       document.body.classList.toggle("route-selected", hasSelectedRoute);
       const isDbusMenuOpen = isDbusOpen() || isDbusStopOpen();
@@ -14513,21 +13830,11 @@
       const lockSearch = isPreviewOpen;
       const isDepartIndicatorOpen = !!$dbusDepartIndicatorWrap && !$dbusDepartIndicatorWrap.hidden;
       const isSearchPanelOpen = isSearchOpen();
-      const isSaeivPanelOpenNow = isSaeivPanelOpen();
-      const isAudioPanelOpen = isLinePreviewAudioPanelOpen();
       if (lockSearch && isSearchPanelOpen && typeof closeSearchUI === "function") {
         closeSearchUI({ reset: true });
       }
       if ($btnSearch) $btnSearch.classList.toggle("is-open", isSearchPanelOpen);
       if ($btnDbus) $btnDbus.classList.toggle("is-open", isDbusMenuOpen || isPreviewOpen || isDepartIndicatorOpen);
-      if ($btnSaeivPanel) {
-        $btnSaeivPanel.classList.toggle("is-open", isSaeivPanelOpenNow);
-        $btnSaeivPanel.setAttribute("aria-expanded", isSaeivPanelOpenNow ? "true" : "false");
-      }
-      if ($btnAudioPanel) {
-        $btnAudioPanel.classList.toggle("is-open", isAudioPanelOpen);
-        $btnAudioPanel.setAttribute("aria-expanded", isAudioPanelOpen ? "true" : "false");
-      }
       if ($btnLang) $btnLang.classList.toggle("is-open", isLangMenuOpen());
       if ($btnSettings) $btnSettings.classList.toggle("is-open", isSettingsPanelOpen);
       if ($topBar) $topBar.classList.toggle("dbus-open", isRightSidePanelOpen);
@@ -14546,11 +13853,6 @@
       setButtonDisabled($btnSearch, lockSearch);
       setButtonDisabled($btnDbus, false);
       setButtonDisabled($btnSettings, false);
-      setButtonDisabled($btnSaeivPanel, !(
-        SAEIV_FEATURE_ALLOWED &&
-        isLinePreviewAudioLanguageAllowed() &&
-        !!SAEIV_PANEL_BUTTON_ENABLED
-      ));
       if ($search) {
         $search.disabled = lockSearch;
         if (lockSearch) $search.setAttribute("aria-disabled", "true");
@@ -14558,7 +13860,6 @@
       }
       const scaleEl = document.getElementById("custom-scale");
       if (scaleEl) scaleEl.hidden = isPreviewOpen;
-      syncSaeivExternalState({ force: false });
     }
     function updateDbusDepartIndicator(){
       if (!$dbusDepartIndicatorWrap) return;
@@ -14690,41 +13991,6 @@
     $settingsFictiveToggle?.addEventListener("change", () => setFictiveFilter($settingsFictiveToggle.checked));
     $dbusSpecialToggle?.addEventListener("change", () => setSpecialFilter($dbusSpecialToggle.checked));
     $settingsSpecialToggle?.addEventListener("change", () => setSpecialFilter($settingsSpecialToggle.checked));
-
-    $btnSaeivPanel?.addEventListener("click", async () => {
-      if (isButtonDisabled($btnSaeivPanel)) return;
-      if (!SAEIV_FEATURE_ALLOWED || !isLinePreviewAudioLanguageAllowed() || !SAEIV_PANEL_BUTTON_ENABLED) {
-        closeSaeivPanel();
-        return;
-      }
-      if (isSaeivPanelOpen()) {
-        closeSaeivPanel();
-        return;
-      }
-      await openSaeivPanel();
-      updateUiOverlays();
-    });
-    window.addEventListener("beforeunload", () => {
-      closeSaeivPanel({ update: false });
-    });
-
-    $btnAudioPanel?.addEventListener("click", () => {
-      if (isButtonDisabled($btnAudioPanel)) return;
-      if (!isLinePreviewAudioLanguageAllowed()) {
-        closeLinePreviewAudioPanel({ stopPlayback: true });
-        updateUiOverlays();
-        return;
-      }
-      if (isLinePreviewAudioPanelOpen()) {
-        closeLinePreviewAudioPanel({ stopPlayback: true });
-        updateUiOverlays();
-        return;
-      }
-      closeSearchUI({ reset: true });
-      try { closeLangMenu(); } catch {}
-      openLinePreviewAudioPanel();
-      updateUiOverlays();
-    });
 
     $btnDbus.addEventListener('click', () => {
       if (isButtonDisabled($btnDbus)) {
@@ -17126,59 +16392,6 @@
       const btn = buttons[idx];
       if (!btn || btn.disabled) return false;
       btn.click();
-      return true;
-    }
-
-    async function triggerSaeivGlobalAudioByIndex(index) {
-      const idx = Number(index);
-      if (!Number.isInteger(idx) || idx < 0) return false;
-      const hasRouteSelected = !!String(currentSelectedKey || "").trim();
-      try { await ensureLinePreviewAudioGlobalFoldersLoaded(); } catch {}
-      if (hasRouteSelected && triggerFisGlobalAudioByIndex(idx)) return true;
-      const allFolders = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
-      const folders = getLinePreviewAudioGlobalAvailableFolders(allFolders);
-      if (!folders.length && !allFolders.length) return false;
-      let selectedPath = String(LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath || "");
-      let selectedFolder = folders.find((folder) => String(folder?.path || "") === selectedPath) || null;
-      if (!hasRouteSelected) {
-        selectedFolder = findSaeivRatpGlobalFolder(folders, { requirePlayable: true })
-          || findSaeivRatpGlobalFolder(folders)
-          || findSaeivRatpGlobalFolder(allFolders, { requirePlayable: true })
-          || findSaeivRatpGlobalFolder(allFolders)
-          || selectedFolder;
-        selectedPath = String(selectedFolder?.path || selectedPath || "");
-        if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
-      }
-      if (!selectedFolder) {
-        selectedFolder = folders[0] || allFolders[0] || null;
-        selectedPath = String(selectedFolder?.path || "");
-        if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
-      }
-      if (!selectedPath || !selectedFolder) return false;
-      let clips = getSaeivGlobalFolderPlayableClips(selectedFolder);
-      if (!clips.length) {
-        const ratpFallback = findSaeivRatpGlobalFolder(folders, { requirePlayable: true })
-          || findSaeivRatpGlobalFolder(allFolders, { requirePlayable: true });
-        if (ratpFallback) {
-          selectedFolder = ratpFallback;
-          selectedPath = String(ratpFallback?.path || "");
-          if (selectedPath) LINE_PREVIEW_AUDIO_GLOBAL_STATE.selectedFolderPath = selectedPath;
-          clips = getSaeivGlobalFolderPlayableClips(ratpFallback);
-        }
-      }
-      if (!clips.length || idx >= clips.length) return false;
-      const clipName = String(clips[idx] || "").trim();
-      if (!clipName) return false;
-      const folderMeta = parseLinePreviewAudioGlobalFolderMeta(selectedFolder?.name || "");
-      const folderVolumeMultiplier = Number.isFinite(Number(folderMeta?.volumeMultiplier))
-        ? Number(folderMeta.volumeMultiplier)
-        : 1;
-      playLinePreviewAudioSequenceFromFolder(selectedPath, [clipName], {
-        advanceOnFinish: false,
-        lockNavigation: false,
-        volumeMultiplier: folderVolumeMultiplier
-      });
-      updateLinePreviewAudioButtonsState();
       return true;
     }
 

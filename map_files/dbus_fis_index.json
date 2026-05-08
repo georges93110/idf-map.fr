@@ -151,10 +151,30 @@
         "Villemomble - Les Coquetiers",
         "Vincennes"
       ]
+    },
+    "Voix de Synthèse (Transdev)": {
+      "_files": [
+        "Auguste Polissard",
+        "Départ_351",
+        "Échangeur de Bagnolet",
+        "Édouard Vaillant",
+        "Gallieni",
+        "Général de Gaulle",
+        "Porte de Vincennes",
+        "Prochain_Arret",
+        "Pyrénées – Docteur Netter",
+        "Terminus"
+      ]
     }
   },
   "global": {
-    "1_RATP [GST_TC] {0.25}": {
+    "FLIXBUS": {
+      "_files": [
+        "Bienvenue (Anglais)",
+        "Bienvenue (Français)"
+      ]
+    },
+    "RATP": {
       "_files": [
         "Avancez vers le fond",
         "Bienvenue à bord",
@@ -162,17 +182,11 @@
         "Validez votre titre"
       ]
     },
-    "9_FLIXBUS [fantransports5245]": {
+    "TRANSDEV": {
       "_files": [
-        "Bienvenue (Anglais)",
-        "Bienvenue (Français)"
+        "Bienvenue à bord"
       ]
     }
   },
-  "validation": {
-    "_files": [
-      "navigo_ratp_error",
-      "navigo_ratp_pass"
-    ]
-  }
+  "validation": {}
 }

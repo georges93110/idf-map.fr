@@ -1501,6 +1501,10 @@
       let destinationArrivalLockPoint = null;
       let destinationArrivalLockLoaded = false;
       let lastDestinationSelectionTs = 0;
+      let lastDestinationLocalNavRepairKey = "";
+      let lastDestinationLocalNavRepairAt = 0;
+      let lastOffRouteRepairKey = "";
+      let lastOffRouteRepairAt = 0;
       let searchOpenGraceUntilTs = 0;
       let searchSelectionLockUntilTs = 0;
       const WAZE_SEARCH_ROUTE_DISTANCE_FROM_QUANTIZE = 10;
@@ -1549,6 +1553,9 @@
       const NAV_ROUTE_FALLBACK_MAX_JOIN_DISTANCE_M = 120;
       const NAV_ROUTE_TARGET_SNAP_MAX_DISTANCE_M = 160;
       const NAV_ROUTE_TARGET_REPAIR_COOLDOWN_MS = 1200;
+      const NAV_DESTINATION_LOCAL_REPAIR_COOLDOWN_MS = 1200;
+      const NAV_ROUTE_OFF_ROUTE_REPAIR_DISTANCE_M = 20;
+      const NAV_ROUTE_OFF_ROUTE_REPAIR_COOLDOWN_MS = 1600;
       const bridgeFollowLerpMoving = 0.86;
       const bridgeFollowLerpStop = 0.92;
       const bridgeFollowSnapDistanceM = 6;
@@ -2361,18 +2368,18 @@
       }
       function getWazeCategoryVisual(kind) {
         const key = String(kind || "").trim();
-        if (key === WAZE_SEARCH_KIND_FUEL) return { icon: "?", color: "#f59e0b" };
-        if (key === WAZE_SEARCH_KIND_RESTAURATION) return { icon: "??", color: "#ef4444" };
-        if (key === WAZE_SEARCH_KIND_SERVICE) return { icon: "??", color: "#3b82f6" };
-        if (key === WAZE_SEARCH_KIND_MALL) return { icon: "??", color: "#8b5cf6" };
-        if (key === WAZE_SEARCH_KIND_PARKING) return { icon: "??", color: "#2563eb" };
-        if (key === WAZE_SEARCH_KIND_MONUMENT) return { icon: "??", color: "#22c55e" };
-        if (key === WAZE_SEARCH_KIND_GARAGE) return { icon: "??", color: "#f97316" };
-        if (key === WAZE_SEARCH_KIND_DEALER) return { icon: "??", color: "#14b8a6" };
-        if (key === WAZE_SEARCH_KIND_STOP) return { icon: "??", color: "#f43f5e" };
-        if (key === WAZE_SEARCH_KIND_BUS) return { icon: "??", color: "#0ea5e9" };
-        if (key === WAZE_SEARCH_KIND_COMPANY) return { icon: "??", color: "#64748b" };
-        if (key === WAZE_SEARCH_KIND_RECRUITMENT) return { icon: "??", color: "#16a34a" };
+        if (key === WAZE_SEARCH_KIND_FUEL) return { icon: "⛽", color: "#f59e0b" };
+        if (key === WAZE_SEARCH_KIND_RESTAURATION) return { icon: "🍽️", color: "#ef4444" };
+        if (key === WAZE_SEARCH_KIND_SERVICE) return { icon: "🔧", color: "#3b82f6" };
+        if (key === WAZE_SEARCH_KIND_MALL) return { icon: "🛍️", color: "#8b5cf6" };
+        if (key === WAZE_SEARCH_KIND_PARKING) return { icon: "🅿️", color: "#2563eb" };
+        if (key === WAZE_SEARCH_KIND_MONUMENT) return { icon: "🏛️", color: "#22c55e" };
+        if (key === WAZE_SEARCH_KIND_GARAGE) return { icon: "🏡", color: "#f97316" };
+        if (key === WAZE_SEARCH_KIND_DEALER) return { icon: "🚗", color: "#14b8a6" };
+        if (key === WAZE_SEARCH_KIND_STOP) return { icon: "🚏", color: "#f43f5e" };
+        if (key === WAZE_SEARCH_KIND_BUS) return { icon: "🚌", color: "#0ea5e9" };
+        if (key === WAZE_SEARCH_KIND_COMPANY) return { icon: "🏢", color: "#64748b" };
+        if (key === WAZE_SEARCH_KIND_RECRUITMENT) return { icon: "💼", color: "#16a34a" };
         return { icon: "?", color: "#6b7280" };
       }
       function getWazeSearchRouteDistanceFromPoint(fromPoint = null) {
@@ -3831,10 +3838,12 @@
           resolvedEnd: resolvedEnd
         };
       }
-      async function applyLocalForceNavRouteToDestination(destinationPoint, destinationName = "") {
+      async function applyLocalForceNavRouteToDestination(destinationPoint, destinationName = "", options = {}) {
+        const opts = options && typeof options === "object" ? options : {};
         const dest = normalizeBridgeWorldPoint(destinationPoint);
         if (!dest) return false;
         const start =
+          normalizeBridgeWorldPoint(opts.startPoint) ||
           normalizeBridgeWorldPoint(lastBridgeArrowWorldPoint) ||
           normalizeBridgeWorldPoint(TARGET_CENTER_WORLD) ||
           dest;
@@ -3898,6 +3907,104 @@
             : Number.NaN
         );
         return true;
+      }
+      function isDirectDestinationRoute(points, startPoint, endPoint) {
+        const list = Array.isArray(points)
+          ? points.map((point) => normalizeBridgeWorldPoint(point)).filter(Boolean)
+          : [];
+        if (list.length < 3) return true;
+        const start = normalizeBridgeWorldPoint(startPoint);
+        const end = normalizeBridgeWorldPoint(endPoint);
+        if (!start || !end) return false;
+        const directDistance = worldDistanceMeters(start, end);
+        const routeDistance = worldPolylineDistanceMeters(list);
+        if (!Number.isFinite(directDistance) || directDistance <= 0 || !Number.isFinite(routeDistance)) return false;
+        return routeDistance <= (directDistance * 1.03);
+      }
+      function scheduleDestinationLocalNavRepair(destinationPoint, destinationName = "", startPoint = null) {
+        const dest = normalizeBridgeWorldPoint(destinationPoint);
+        if (!dest) return false;
+        const start =
+          normalizeBridgeWorldPoint(startPoint) ||
+          normalizeBridgeWorldPoint(lastBridgeArrowWorldPoint) ||
+          normalizeBridgeWorldPoint(TARGET_CENTER_WORLD);
+        if (!start) return false;
+        const key = [
+          Math.round(Number(start.x) / 10),
+          Math.round(Number(start.y) / 10),
+          Math.round(Number(dest.x) / 2),
+          Math.round(Number(dest.y) / 2)
+        ].join("|");
+        const now = Date.now();
+        if (
+          key === lastDestinationLocalNavRepairKey &&
+          (now - lastDestinationLocalNavRepairAt) < NAV_DESTINATION_LOCAL_REPAIR_COOLDOWN_MS
+        ) {
+          return false;
+        }
+        lastDestinationLocalNavRepairKey = key;
+        lastDestinationLocalNavRepairAt = now;
+        routeComputePending = true;
+        refreshDestinationLoadingState();
+        applyLocalForceNavRouteToDestination(dest, destinationName || "Destination", { startPoint: start })
+          .then((ok) => {
+            if (ok) return;
+            routeComputePending = false;
+            refreshDestinationLoadingState();
+          })
+          .catch(() => {
+            routeComputePending = false;
+            refreshDestinationLoadingState();
+          });
+        return true;
+      }
+      function scheduleOffRouteLocalNavRepair(startPoint, destinationPoint, destinationName = "") {
+        const start = normalizeBridgeWorldPoint(startPoint);
+        const dest = normalizeBridgeWorldPoint(destinationPoint);
+        if (!start || !dest) return false;
+        const key = [
+          Math.round(Number(start.x) / 10),
+          Math.round(Number(start.y) / 10),
+          Math.round(Number(dest.x) / 2),
+          Math.round(Number(dest.y) / 2)
+        ].join("|");
+        const now = Date.now();
+        if (
+          key === lastOffRouteRepairKey &&
+          (now - lastOffRouteRepairAt) < NAV_ROUTE_OFF_ROUTE_REPAIR_COOLDOWN_MS
+        ) {
+          return false;
+        }
+        lastOffRouteRepairKey = key;
+        lastOffRouteRepairAt = now;
+        routeComputePending = true;
+        refreshDestinationLoadingState();
+        applyLocalForceNavRouteToDestination(dest, destinationName || "Destination", { startPoint: start })
+          .then((ok) => {
+            if (ok) return;
+            routeComputePending = false;
+            refreshDestinationLoadingState();
+          })
+          .catch(() => {
+            routeComputePending = false;
+            refreshDestinationLoadingState();
+          });
+        return true;
+      }
+      function shouldRepairOffRouteForDestination(startPoint, routeWorldPoints, destinationPoint) {
+        const start = normalizeBridgeWorldPoint(startPoint);
+        const dest = normalizeBridgeWorldPoint(destinationPoint);
+        const route = Array.isArray(routeWorldPoints)
+          ? routeWorldPoints.map((point) => normalizeBridgeWorldPoint(point)).filter(Boolean)
+          : [];
+        if (!start || !dest || route.length < MIN_NAV_ROUTE_POINTS) return false;
+        if (worldDistanceMeters(start, dest) <= destinationArrivalDistanceThresholdM) return false;
+        const nearest = findNearestPointOnWorldRoute(start, route);
+        return !!(
+          nearest &&
+          Number.isFinite(Number(nearest.distanceMeters)) &&
+          Number(nearest.distanceMeters) > NAV_ROUTE_OFF_ROUTE_REPAIR_DISTANCE_M
+        );
       }
       function applyRouteTailPenultimateRule(worldPoints) {
         const list = Array.isArray(worldPoints) ? worldPoints.slice() : [];
@@ -4790,6 +4897,12 @@
           pendingBridgePayload = payload;
           return;
         }
+        const shouldClearNavigationFromPayload =
+          payload.clearNavigation === true ||
+          payload.clearDestination === true;
+        if (shouldClearNavigationFromPayload) {
+          applyLocalCancelledRouteState();
+        }
         const routePoints = Array.isArray(payload.routePoints) ? payload.routePoints : [];
         const routeStops = Array.isArray(payload.routeStops) ? payload.routeStops : [];
         const hasRoutePointsPayloadKey = Object.prototype.hasOwnProperty.call(payload, "routePoints");
@@ -5085,6 +5198,9 @@
         } else {
           clearArrivalFlagMarker();
         }
+        const previousBridgeRouteWorldPoints = Array.isArray(lastBridgeRouteWorldPoints)
+          ? lastBridgeRouteWorldPoints.slice()
+          : [];
         if (navigationActive) {
           if (hasRoutePointsPayloadKey) {
             if (Array.isArray(routePoints) && routePoints.length >= MIN_NAV_ROUTE_POINTS) {
@@ -5106,6 +5222,35 @@
         }
         if (hasRoutePointsPayloadKey) {
           let usePayloadRoute = navigationActive && routePoints.length >= MIN_NAV_ROUTE_POINTS;
+          const destinationRouteNeedsLocalNav =
+            destinationMode &&
+            !isBusStepMode &&
+            !!effectiveEndPoint &&
+            isDirectDestinationRoute(routePoints, startPoint, effectiveEndPoint);
+          if (destinationRouteNeedsLocalNav) {
+            usePayloadRoute = false;
+            lastBridgeRouteWorldPoints = [];
+            scheduleDestinationLocalNavRepair(effectiveEndPoint, headerStopName || lastSearchDestinationName || "Destination", startPoint);
+          }
+          const previousRouteOffForDestination =
+            navigationActive &&
+            !isBusStepMode &&
+            !!effectiveEndPoint &&
+            !destinationRouteNeedsLocalNav &&
+            previousBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS &&
+            shouldRepairOffRouteForDestination(startPoint, previousBridgeRouteWorldPoints, effectiveEndPoint);
+          const payloadRouteOffForDestination =
+            navigationActive &&
+            !isBusStepMode &&
+            !!effectiveEndPoint &&
+            !destinationRouteNeedsLocalNav &&
+            usePayloadRoute &&
+            shouldRepairOffRouteForDestination(startPoint, routePoints, effectiveEndPoint);
+          const routeOffForDestination = previousRouteOffForDestination || payloadRouteOffForDestination;
+          if (routeOffForDestination) {
+            usePayloadRoute = false;
+            scheduleOffRouteLocalNavRepair(startPoint, effectiveEndPoint, headerStopName || lastSearchDestinationName || "Destination");
+          }
           let shouldForceLocalRouteRepair = false;
           let routeRepairKey = "";
           if (usePayloadRoute && targetStopPoint) {
@@ -5179,7 +5324,7 @@
               normalizeBridgeWorldPoint(effectiveEndPoint) ||
               normalizeBridgeWorldPoint(endPoint) ||
               normalizeBridgeWorldPoint(forcedSearchDestinationWorldPoint);
-            if (Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS) {
+            if (!destinationRouteNeedsLocalNav && !routeOffForDestination && Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS) {
               const cachedNearest = findNearestPointOnWorldRoute(fallbackStartPoint, lastBridgeRouteWorldPoints);
               const cachedRouteNearVehicle =
                 !!cachedNearest &&
@@ -5236,7 +5381,37 @@
             normalizeBridgeWorldPoint(effectiveEndPoint) ||
             normalizeBridgeWorldPoint(endPoint) ||
             normalizeBridgeWorldPoint(forcedSearchDestinationWorldPoint);
-          if (Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS) {
+          const destinationRouteNeedsLocalNav =
+            destinationMode &&
+            !isBusStepMode &&
+            !!fallbackEndPoint &&
+            (
+              !Array.isArray(lastBridgeRouteWorldPoints) ||
+              lastBridgeRouteWorldPoints.length < MIN_NAV_ROUTE_POINTS ||
+              isDirectDestinationRoute(lastBridgeRouteWorldPoints, fallbackStartPoint, fallbackEndPoint)
+            );
+          if (destinationRouteNeedsLocalNav) {
+            if (isDirectDestinationRoute(lastBridgeRouteWorldPoints, fallbackStartPoint, fallbackEndPoint)) {
+              lastBridgeRouteWorldPoints = [];
+              if (Array.isArray(navRouteLatLngs) && navRouteLatLngs.length <= MIN_NAV_ROUTE_POINTS) {
+                clearNavigationRoute();
+              }
+            }
+            scheduleDestinationLocalNavRepair(fallbackEndPoint, headerStopName || lastSearchDestinationName || "Destination", fallbackStartPoint);
+          }
+          const routeOffForDestination =
+            navigationActive &&
+            !isBusStepMode &&
+            !!fallbackEndPoint &&
+            !destinationRouteNeedsLocalNav &&
+            (
+              shouldRepairOffRouteForDestination(fallbackStartPoint, previousBridgeRouteWorldPoints, fallbackEndPoint) ||
+              shouldRepairOffRouteForDestination(fallbackStartPoint, lastBridgeRouteWorldPoints, fallbackEndPoint)
+            );
+          if (routeOffForDestination) {
+            scheduleOffRouteLocalNavRepair(fallbackStartPoint, fallbackEndPoint, headerStopName || lastSearchDestinationName || "Destination");
+          }
+          if (!destinationRouteNeedsLocalNav && !routeOffForDestination && Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS) {
             const cachedNearest = findNearestPointOnWorldRoute(fallbackStartPoint, lastBridgeRouteWorldPoints);
             const cachedRouteNearVehicle =
               !!cachedNearest &&

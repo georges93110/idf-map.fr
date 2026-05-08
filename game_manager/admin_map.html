@@ -599,8 +599,70 @@
         return normalized.includes("pause") || normalized.includes("menu");
       }
 
+      function normalizeTelemetryFieldKey(key) {
+        return String(key || "").trim().toLowerCase().replace(/[\s_\-.]/g, "");
+      }
+
+      function readBooleanStateLoose(source, keys) {
+        if (!source || typeof source !== "object") return null;
+        const direct = readBooleanState(source, keys);
+        if (direct !== null) return direct;
+        const wanted = new Set(keys.map(normalizeTelemetryFieldKey));
+        for (const key of Object.keys(source)) {
+          if (!wanted.has(normalizeTelemetryFieldKey(key))) continue;
+          const value = source[key];
+          if (value === true || value === false) return value;
+          if (typeof value === "number" && Number.isFinite(value)) return value !== 0;
+          const text = String(value == null ? "" : value).trim().toLowerCase();
+          if (["true", "1", "yes", "oui", "on"].includes(text)) return true;
+          if (["false", "0", "no", "non", "off"].includes(text)) return false;
+        }
+        return null;
+      }
+
+      function readGameContextInServerRecursive(source, depth = 0, seen = new Set()) {
+        if (!source || typeof source !== "object" || depth > 20 || seen.has(source)) return null;
+        seen.add(source);
+        let foundFalse = false;
+        const direct = readBooleanStateLoose(source, ["inServer"]);
+        if (direct === true) {
+          seen.delete(source);
+          return true;
+        }
+        if (direct === false) foundFalse = true;
+
+        for (const value of Object.values(source)) {
+          if (!value || typeof value !== "object") continue;
+          const nested = readGameContextInServerRecursive(value, depth + 1, seen);
+          if (nested === true) {
+            seen.delete(source);
+            return true;
+          }
+          if (nested === false) foundFalse = true;
+        }
+        seen.delete(source);
+        return foundFalse ? false : null;
+      }
+
+      function readGameContextInServerFromSource(source) {
+        return readGameContextInServerRecursive(source);
+      }
+
+      function readGameContextInServerFromPools(pools) {
+        let foundFalse = false;
+        for (const source of Array.isArray(pools) ? pools : []) {
+          const inServerFlag = readGameContextInServerFromSource(source);
+          if (inServerFlag === true) return true;
+          if (inServerFlag === false) foundFalse = true;
+        }
+        return foundFalse ? false : null;
+      }
+
       function readPlayerGroupFromSource(source) {
         if (!source || typeof source !== "object") return "";
+        const inServerFlag = readGameContextInServerFromSource(source);
+        if (inServerFlag === true) return PLAYER_GROUP_CONVOY;
+        if (inServerFlag === false) return PLAYER_GROUP_SOLO;
         const convoyFlag = readBooleanState(source, [
           "convoy",
           "isConvoy",
@@ -659,6 +721,9 @@
       }
 
       function readPlayerGroupFromPools(pools) {
+        const inServerFlag = readGameContextInServerFromPools(pools);
+        if (inServerFlag === true) return PLAYER_GROUP_CONVOY;
+        if (inServerFlag === false) return PLAYER_GROUP_SOLO;
         for (const source of pools) {
           const group = readPlayerGroupFromSource(source);
           if (group === PLAYER_GROUP_CONVOY) return PLAYER_GROUP_CONVOY;
@@ -676,7 +741,17 @@
           entry.signal,
           entry.gameContext,
           entry.game_context,
+          entry.data && entry.data.gameContext,
+          entry.data && entry.data.game_context,
+          entry.payload && entry.payload.gameContext,
+          entry.payload && entry.payload.game_context,
+          entry.telemetry && entry.telemetry.gameContext,
+          entry.telemetry && entry.telemetry.game_context,
+          entry.signal && entry.signal.gameContext,
+          entry.signal && entry.signal.game_context,
           entry.context,
+          entry.context && entry.context.gameContext,
+          entry.context && entry.context.game_context,
           entry.game,
           entry.position,
           entry.pos,
@@ -899,7 +974,10 @@
       function extractPlayer(entry, fallbackIndex) {
         const pools = entryPools(entry);
         if (!pools.length) return null;
-        const group = readPlayerGroupFromPools(pools);
+        const inServerFlag = readGameContextInServerFromPools(pools);
+        const group = inServerFlag === true
+          ? PLAYER_GROUP_CONVOY
+          : (inServerFlag === false ? PLAYER_GROUP_SOLO : readPlayerGroupFromPools(pools));
         const websocketInfo = buildPlayerWebsocketInfo(entry);
         const game2Bonus = readGame2BonusFromPools([entry].concat(pools));
         const game2Mode = game2Bonus && game2Bonus.gameMode && typeof game2Bonus.gameMode === "object" ? game2Bonus.gameMode : null;
@@ -969,6 +1047,7 @@
           headingUnit,
           headingConvention: headingConvention || "north_ccw",
           group,
+          inServer: inServerFlag,
           isPausedOrMenu,
           speedKmh,
           ets2version,
@@ -1112,6 +1191,12 @@
         return normalizePlayerGroup(group) === PLAYER_GROUP_CONVOY ? "Serveur Convoi" : "Solo";
       }
 
+      function playerGroupLabelForPlayer(player) {
+        if (player && player.inServer === true) return "Serveur Convoi";
+        if (player && player.inServer === false) return "Solo";
+        return playerGroupLabel(player && player.group);
+      }
+
       function playerStateLabel(state) {
         if (state === "paused") return "Pause / menu";
         if (state === "stale") return "Signal perdu";
@@ -1199,7 +1284,8 @@
             playerInfoRow("SteamID", player.steamid, "steamid")
           ]),
           playerInfoSection("Session", [
-            playerInfoRow("Connexion", playerGroupLabel(player.group), "mode"),
+            playerInfoRow("Connexion", playerGroupLabelForPlayer(player), "mode"),
+            playerInfoRow("inServer", player.inServer === true ? "true" : (player.inServer === false ? "false" : ""), "inServer"),
             playerInfoRow("Mode de jeu", player.gameModeLabel, "gameModeLabel"),
             playerInfoRow("ETS2 version", player.ets2version, "ets2version"),
             playerInfoRow("Mods actifs", formatInfoInteger(player.modsCount), "modsCount")
@@ -1272,7 +1358,8 @@
           pseudo: player.label,
           name: player.name,
           steamid: player.steamid,
-          mode: playerGroupLabel(player.group),
+          mode: playerGroupLabelForPlayer(player),
+          inServer: player.inServer === true ? "true" : (player.inServer === false ? "false" : ""),
           htmlStateTitle: player.htmlStateTitle,
           gameModeLabel: player.gameModeLabel,
           ets2version: player.ets2version,
@@ -1403,8 +1490,14 @@
         return group === PLAYER_GROUP_CONVOY ? PLAYER_GROUP_CONVOY : PLAYER_GROUP_SOLO;
       }
 
+      function normalizePlayerGroupForPlayer(player) {
+        if (player && player.inServer === true) return PLAYER_GROUP_CONVOY;
+        if (player && player.inServer === false) return PLAYER_GROUP_SOLO;
+        return normalizePlayerGroup(player && player.group);
+      }
+
       function isPlayerVisibleByFilter(player) {
-        const group = normalizePlayerGroup(player && player.group);
+        const group = normalizePlayerGroupForPlayer(player);
         return playerFilters[group] !== false;
       }
 
@@ -1760,7 +1853,7 @@
           [PLAYER_GROUP_CONVOY]: 0
         };
         for (const record of playerMarkers.values()) {
-          const group = normalizePlayerGroup(record.player && record.player.group);
+          const group = normalizePlayerGroupForPlayer(record.player);
           counts[group] += 1;
         }
         if (soloCount) soloCount.textContent = `(${counts[PLAYER_GROUP_SOLO]})`;
@@ -1867,6 +1960,34 @@
         return merged;
       }
 
+      function readGameContextObject(source, depth = 0, seen = new Set()) {
+        if (!source || typeof source !== "object" || depth > 20 || seen.has(source)) return null;
+        seen.add(source);
+        const direct = source.gameContext || source.game_context;
+        if (direct && typeof direct === "object" && !Array.isArray(direct)) {
+          seen.delete(source);
+          return direct;
+        }
+        for (const value of Object.values(source)) {
+          if (!value || typeof value !== "object") continue;
+          const nested = readGameContextObject(value, depth + 1, seen);
+          if (nested) {
+            seen.delete(source);
+            return nested;
+          }
+        }
+        seen.delete(source);
+        return null;
+      }
+
+      function fillGameContextField(target, source) {
+        if (!target || typeof target !== "object" || Array.isArray(target)) return target;
+        if (target.gameContext && typeof target.gameContext === "object") return target;
+        const gameContext = readGameContextObject(source);
+        if (!gameContext) return target;
+        return Object.assign({}, target, { gameContext });
+      }
+
       function fillGame2BonusField(target, bonus) {
         if (!target || typeof target !== "object" || Array.isArray(target) || !bonus || typeof bonus !== "object") return target;
         return Object.assign({}, target, { game2Bonus: bonus });
@@ -1876,8 +1997,10 @@
         if (!message || typeof message !== "object") return message;
         const payload = Object.prototype.hasOwnProperty.call(message, "data") ? message.data : message;
         const identity = readIdentity(message);
-        if (Array.isArray(payload)) return payload.map((item) => fillIdentityFields(item, identity));
-        return fillIdentityFields(payload, identity);
+        if (Array.isArray(payload)) {
+          return payload.map((item) => fillGameContextField(fillIdentityFields(item, identity), message));
+        }
+        return fillGameContextField(fillIdentityFields(payload, identity), message);
       }
 
       function unwrapTelemetryEnvelope(payload) {
@@ -1890,9 +2013,9 @@
         const identity = readIdentity(payload);
         const bonus = readGame2Bonus(payload);
         if (Array.isArray(inner)) {
-          return inner.map((item) => fillGame2BonusField(fillIdentityFields(item, identity), bonus));
+          return inner.map((item) => fillGame2BonusField(fillGameContextField(fillIdentityFields(item, identity), payload), bonus));
         }
-        return fillGame2BonusField(fillIdentityFields(inner, identity), bonus);
+        return fillGame2BonusField(fillGameContextField(fillIdentityFields(inner, identity), payload), bonus);
       }
 
       function handleTelemetryPayload(payload) {

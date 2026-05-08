@@ -4,7 +4,7 @@
       search_button: "Rechercher",
       search_category_label: "Catégories",
       search_category_all: "Tout",
-      dbus_button: "Lignes Dbus World",
+      dbus_button: "Lignes de bus",
       dbus_mode_label: "Trier par",
       dbus_filter_label: "Filtres",
       dbus_mode_lines: "Catégorie",
@@ -50,7 +50,7 @@
       settings_category_mode: "Mode carte",
       settings_mode_normal: "Euro Truck",
       settings_mode_dbus: "Dbus World",
-      dbus_sorted_routes_title: "Lignes Dbus World",
+      dbus_sorted_routes_title: "Lignes de bus",
       translate_stop_types: "Traduire les arrêts",
       experimental: "Expérimental",
       lang_fr: "Français",
@@ -215,7 +215,7 @@
       search_button: "Search",
       search_category_label: "Categories",
       search_category_all: "All",
-      dbus_button: "DBus Lines",
+      dbus_button: "Bus lines",
       dbus_mode_label: "Categories",
       dbus_filter_label: "Filters",
       dbus_mode_lines: "Default",
@@ -255,7 +255,7 @@
       settings_legend_bus_stops_toggle: "Show",
       dbus_lines_title: "Lines",
       dbus_routes_title: "Routes",
-      dbus_sorted_routes_title: "DBus World Lines",
+      dbus_sorted_routes_title: "Bus lines",
       translate_stop_types: "Translate stops",
       experimental: "Experimental",
       lang_fr: "French",
@@ -420,7 +420,7 @@
       search_button: "Buscar",
       search_category_label: "Categorías",
       search_category_all: "Todo",
-      dbus_button: "Líneas DBus",
+      dbus_button: "Líneas de bus",
       dbus_mode_label: "Ordenar por",
       dbus_filter_label: "Filtros",
       dbus_mode_lines: "Categoría",
@@ -594,7 +594,7 @@
       search_button: "Suche",
       search_category_label: "Kategorien",
       search_category_all: "Alle",
-      dbus_button: "DBus-Linien",
+      dbus_button: "Buslinien",
       dbus_mode_label: "Sortieren nach",
       dbus_filter_label: "Filter",
       dbus_mode_lines: "Kategorie",
@@ -768,7 +768,7 @@
       search_button: "Szukaj",
       search_category_label: "Kategorie",
       search_category_all: "Wszystkie",
-      dbus_button: "Linie DBus",
+      dbus_button: "Linie autobusowe",
       dbus_mode_label: "Sortuj według",
       dbus_filter_label: "Filtry",
       dbus_mode_lines: "Kategoria",
@@ -942,7 +942,7 @@
       search_button: "Pesquisar",
       search_category_label: "Categorias",
       search_category_all: "Tudo",
-      dbus_button: "Linhas DBus",
+      dbus_button: "Linhas de ônibus",
       dbus_mode_label: "Ordenar por",
       dbus_filter_label: "Filtros",
       dbus_mode_lines: "Categoria",
@@ -1116,7 +1116,7 @@
       search_button: "Zoeken",
       search_category_label: "Categorieën",
       search_category_all: "Alles",
-      dbus_button: "DBus-lijnen",
+      dbus_button: "Buslijnen",
       dbus_mode_label: "Sorteren op",
       dbus_filter_label: "Filters",
       dbus_mode_lines: "Categorie",
@@ -1290,7 +1290,7 @@
       search_button: "Cerca",
       search_category_label: "Categorie",
       search_category_all: "Tutto",
-      dbus_button: "Linee DBus",
+      dbus_button: "Linee bus",
       dbus_mode_label: "Ordina per",
       dbus_filter_label: "Filtri",
       dbus_mode_lines: "Categoria",
@@ -1464,7 +1464,7 @@
       search_button: "Поиск",
       search_category_label: "Категории",
       search_category_all: "Все",
-      dbus_button: "Линии DBus",
+      dbus_button: "Автобусные линии",
       dbus_mode_label: "Сортировать по",
       dbus_filter_label: "Фильтры",
       dbus_mode_lines: "Категория",
@@ -1638,7 +1638,7 @@
       search_button: "搜索",
       search_category_label: "类别",
       search_category_all: "全部",
-      dbus_button: "DBus线路",
+      dbus_button: "公交线路",
       dbus_mode_label: "排序依据",
       dbus_filter_label: "筛选",
       dbus_mode_lines: "类别",
@@ -1812,7 +1812,7 @@
       search_button: "검색",
       search_category_label: "카테고리",
       search_category_all: "전체",
-      dbus_button: "DBus 노선",
+      dbus_button: "버스 노선",
       dbus_mode_label: "정렬 기준",
       dbus_filter_label: "필터",
       dbus_mode_lines: "카테고리",
@@ -1986,7 +1986,7 @@
       search_button: "検索",
       search_category_label: "カテゴリ",
       search_category_all: "すべて",
-      dbus_button: "DBus路線",
+      dbus_button: "バス路線",
       dbus_mode_label: "並び替え",
       dbus_filter_label: "フィルター",
       dbus_mode_lines: "カテゴリ",
@@ -2188,7 +2188,7 @@
       dbus_sub_replacement_bus: "BUS DE REMPLACEMENT",
       dbus_lines_title: "Lignes",
       dbus_routes_title: "Routes",
-      dbus_sorted_routes_title: "Lignes Dbus World",
+      dbus_sorted_routes_title: "Lignes de bus",
       nav_label: "Navigation du site",
       nav_group_maps: "Pages du site",
       nav_subgroup_main: "Principal",
@@ -2274,7 +2274,7 @@
       dbus_sub_replacement_bus: "Replacement buses",
       dbus_lines_title: "Lines",
       dbus_routes_title: "Routes",
-      dbus_sorted_routes_title: "Dbus World Lines",
+      dbus_sorted_routes_title: "Bus lines",
       nav_label: "Site navigation",
       nav_group_maps: "Site pages",
       nav_subgroup_main: "Main",
@@ -4705,7 +4705,7 @@
       settings_legend_bus_stops_toggle: "Afficher",
       dbus_lines_title: "Lignes",
       dbus_routes_title: "Routes",
-      dbus_sorted_routes_title: "Lignes Dbus World"
+      dbus_sorted_routes_title: "Lignes de bus"
     },
     en: {
       settings_web_category: "WEB PAGE",
@@ -4731,7 +4731,7 @@
       discord_button: "Discord",
       dbus_world_button: "DBus World Website",
       dbus_routes_title: "Routes",
-      dbus_sorted_routes_title: "DBus World Lines"
+      dbus_sorted_routes_title: "Bus lines"
     },
     es: {
       settings_web_category: "PÁGINA WEB",
@@ -4762,7 +4762,7 @@
       discord_button: "Discord",
       dbus_world_button: "Sitio DBus World",
       dbus_routes_title: "Rutas",
-      dbus_sorted_routes_title: "Líneas Dbus World"
+      dbus_sorted_routes_title: "Líneas de bus"
     },
     de: {
       settings_web_category: "WEBSEITE",
@@ -4793,7 +4793,7 @@
       discord_button: "Discord",
       dbus_world_button: "DBus-World-Website",
       dbus_routes_title: "Routen",
-      dbus_sorted_routes_title: "Dbus-World-Linien"
+      dbus_sorted_routes_title: "Buslinien"
     },
     pl: {
       settings_web_category: "STRONA WWW",
@@ -4824,7 +4824,7 @@
       discord_button: "Discord",
       dbus_world_button: "Witryna DBus World",
       dbus_routes_title: "Trasy",
-      dbus_sorted_routes_title: "Linie Dbus World"
+      dbus_sorted_routes_title: "Linie autobusowe"
     },
     pt: {
       settings_web_category: "PÁGINA WEB",
@@ -4855,7 +4855,7 @@
       discord_button: "Discord",
       dbus_world_button: "Site DBus World",
       dbus_routes_title: "Rotas",
-      dbus_sorted_routes_title: "Linhas Dbus World"
+      dbus_sorted_routes_title: "Linhas de ônibus"
     },
     nl: {
       settings_web_category: "WEBPAGINA",
@@ -4886,7 +4886,7 @@
       discord_button: "Discord",
       dbus_world_button: "DBus World-website",
       dbus_routes_title: "Routes",
-      dbus_sorted_routes_title: "Dbus World-lijnen"
+      dbus_sorted_routes_title: "Buslijnen"
     },
     it: {
       settings_web_category: "PAGINA WEB",
@@ -4917,7 +4917,7 @@
       discord_button: "Discord",
       dbus_world_button: "Sito DBus World",
       dbus_routes_title: "Percorsi",
-      dbus_sorted_routes_title: "Linee Dbus World"
+      dbus_sorted_routes_title: "Linee bus"
     },
     ru: {
       settings_web_category: "ВЕБ-СТРАНИЦА",
@@ -4948,7 +4948,7 @@
       discord_button: "Discord",
       dbus_world_button: "Сайт DBus World",
       dbus_routes_title: "Маршруты",
-      dbus_sorted_routes_title: "Линии Dbus World"
+      dbus_sorted_routes_title: "Автобусные линии"
     },
     zh: {
       settings_web_category: "网页",
@@ -4979,7 +4979,7 @@
       discord_button: "Discord",
       dbus_world_button: "DBus World 网站",
       dbus_routes_title: "路线",
-      dbus_sorted_routes_title: "Dbus World 线路"
+      dbus_sorted_routes_title: "公交线路"
     },
     ko: {
       settings_web_category: "웹 페이지",
@@ -5010,7 +5010,7 @@
       discord_button: "Discord",
       dbus_world_button: "DBus World 사이트",
       dbus_routes_title: "노선",
-      dbus_sorted_routes_title: "Dbus World 노선"
+      dbus_sorted_routes_title: "버스 노선"
     },
     ja: {
       settings_web_category: "WEBページ",
@@ -5041,7 +5041,7 @@
       discord_button: "Discord",
       dbus_world_button: "DBus World サイト",
       dbus_routes_title: "ルート",
-      dbus_sorted_routes_title: "Dbus World 路線"
+      dbus_sorted_routes_title: "バス路線"
     }
   };
 

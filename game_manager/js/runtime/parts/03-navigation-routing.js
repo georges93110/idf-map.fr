@@ -86,6 +86,9 @@
       window.gameStartSelectedLineRoute = function gameStartSelectedLineRoute() {
         return startSaeivSelectedRoute();
       };
+      window.gamePlaySaeivServiceAcceptSound = function gamePlaySaeivServiceAcceptSound() {
+        return playSaeivServiceAcceptAudio();
+      };
       window.gameClearLineRoute = function gameClearLineRoute() {
         return clearSaeivRouteSelection();
       };
@@ -2183,13 +2186,18 @@
               }
             }
             routeStops = entries.map(function (entry, index) {
+              var isOptionalStop = typeof isSaeivRouteStopOptionalForMarker === "function"
+                ? isSaeivRouteStopOptionalForMarker(entry, index, lastIndex)
+                : false;
               return {
                 index: index,
                 uid: Number(entry && entry.uid),
                 name: String(entry && entry.name || ""),
                 x: Number(entry && entry.X),
                 y: Number(entry && entry.Y),
-                z: Number(entry && entry.Z)
+                z: Number(entry && entry.Z),
+                optional: isOptionalStop === true,
+                stopOptional: isOptionalStop === true
               };
             }).filter(function (stop) {
               return Number.isFinite(stop.x) && Number.isFinite(stop.y) && Number.isFinite(stop.z);

@@ -63,6 +63,160 @@
           .trim();
         return raw;
       }
+      function getLineStylesRuntimeConfig() {
+        if (typeof window === "undefined" || !window.LINE_STYLES || typeof window.LINE_STYLES !== "object") {
+          return {};
+        }
+        return window.LINE_STYLES;
+      }
+      function findLineStyleEntryForRuntimeCandidate(candidate) {
+        var wantedRaw = String(candidate || "").trim();
+        if (!wantedRaw) return null;
+        var styles = getLineStylesRuntimeConfig();
+        if (Object.prototype.hasOwnProperty.call(styles, wantedRaw) && Array.isArray(styles[wantedRaw])) {
+          return { key: wantedRaw, entry: styles[wantedRaw] };
+        }
+        var wantedToken = normalizeAudioNameToken(wantedRaw);
+        if (!wantedToken) return null;
+        var wantedCompactToken = wantedToken.replace(/\s+/g, "");
+        var keys = Object.keys(styles || {});
+        for (var i = 0; i < keys.length; i += 1) {
+          var key = keys[i];
+          var keyToken = normalizeAudioNameToken(key);
+          var keyCompactToken = keyToken.replace(/\s+/g, "");
+          if (
+            (keyToken === wantedToken || (!!wantedCompactToken && keyCompactToken === wantedCompactToken)) &&
+            Array.isArray(styles[key])
+          ) {
+            return { key: key, entry: styles[key] };
+          }
+        }
+        return null;
+      }
+      function addLineStyleCandidate(candidates, seen, value) {
+        var text = String(value || "").replace(/\s+/g, " ").trim();
+        if (!text) return;
+        var token = normalizeAudioNameToken(text);
+        if (!token || seen.has(token)) return;
+        seen.add(token);
+        candidates.push(text);
+      }
+      function collectLineStyleCandidates(line, route, state) {
+        var candidates = [];
+        var seen = new Set();
+        var routeName = String(
+          (route && route.name) ||
+          (state && state.routeName) ||
+          ""
+        ).trim();
+        var parsedLineNumber = String(parseRouteName(routeName).lineNumber || "").replace(/\s+/g, " ").trim();
+        var lineNumber = String(
+          getLineNumber(line, route) ||
+          (line && line.number) ||
+          (state && state.lineNumber) ||
+          ""
+        ).replace(/\s+/g, " ").trim();
+        var combined = [parsedLineNumber, lineNumber, routeName, line && line.number, state && state.lineNumber]
+          .map(function (value) { return String(value || ""); })
+          .join(" ");
+        function addExpressCandidate(raw) {
+          var match = /^express\s*([0-9a-z]+)/i.exec(String(raw || "").trim());
+          if (match && match[1]) addLineStyleCandidate(candidates, seen, "Express " + String(match[1]).trim());
+        }
+        addExpressCandidate(parsedLineNumber);
+        addExpressCandidate(lineNumber);
+        addExpressCandidate(routeName);
+        if (/^express/i.test(combined)) addLineStyleCandidate(candidates, seen, "Express");
+        addLineStyleCandidate(candidates, seen, parsedLineNumber);
+        addLineStyleCandidate(candidates, seen, lineNumber);
+        addLineStyleCandidate(candidates, seen, line && line.number);
+        if (/flix\s*bus|flixbus/i.test(combined)) addLineStyleCandidate(candidates, seen, "FLIXBUS");
+        if (/^autocar\b/i.test(combined)) addLineStyleCandidate(candidates, seen, "Autocar");
+        if (/^scolaire\b/i.test(combined)) addLineStyleCandidate(candidates, seen, "Scolaire");
+        if (/^fictives?\b/i.test(combined)) addLineStyleCandidate(candidates, seen, "Fictives");
+        return candidates;
+      }
+      function normalizeLineStyleBoolean(raw, defaultValue) {
+        if (raw === true) return true;
+        if (raw === false) return false;
+        if (typeof raw === "number") {
+          if (!Number.isFinite(raw)) return defaultValue === true;
+          return raw !== 0;
+        }
+        var text = String(raw == null ? "" : raw).trim().toLowerCase();
+        if (!text) return defaultValue === true;
+        if (text === "0" || text === "false" || text === "non" || text === "no" || text === "off") return false;
+        if (text === "1" || text === "true" || text === "oui" || text === "yes" || text === "on") return true;
+        return defaultValue === true;
+      }
+      function normalizeLineStyleAudioBaseName(raw) {
+        var text = String(raw == null ? "" : raw).trim();
+        if (!text || /^false$/i.test(text) || text === "0") return "";
+        if (/^true$/i.test(text)) return "arret_demande_ratp";
+        text = text.replace(/[\\/]+/g, " ").replace(/\.mp3$/i, "").replace(/\s+/g, " ").trim();
+        return text;
+      }
+      function normalizeLineStyleFolderName(raw) {
+        var text = String(raw == null ? "" : raw).trim();
+        if (!text || /^false$/i.test(text) || text === "0") return "";
+        return text.replace(/^[\\/]+|[\\/]+$/g, "").replace(/\s+/g, " ").trim();
+      }
+      function normalizeLineStylePassengerCountVariation(raw) {
+        var minRaw = 0;
+        var maxRaw = 0;
+        if (Array.isArray(raw)) {
+          minRaw = raw[0];
+          maxRaw = raw[1];
+        } else if (raw && typeof raw === "object") {
+          minRaw = raw.min != null ? raw.min : (raw.minimum != null ? raw.minimum : (raw.from != null ? raw.from : raw[0]));
+          maxRaw = raw.max != null ? raw.max : (raw.maximum != null ? raw.maximum : (raw.to != null ? raw.to : raw[1]));
+        } else if (typeof raw === "string") {
+          var matches = raw.match(/-?\d+(?:\.\d+)?/g);
+          if (matches && matches.length >= 2) {
+            minRaw = matches[0];
+            maxRaw = matches[1];
+          }
+        }
+        var minVal = Math.round(Number(minRaw));
+        var maxVal = Math.round(Number(maxRaw));
+        if (!Number.isFinite(minVal) || !Number.isFinite(maxVal)) {
+          return { min: 0, max: 0 };
+        }
+        return {
+          min: Math.min(minVal, maxVal),
+          max: Math.max(minVal, maxVal)
+        };
+      }
+      function resolveSaeivLineAudioConfig(line, route, state) {
+        var config = Object.assign({}, saeivLineAudioConfigDefault);
+        var candidates = collectLineStyleCandidates(line, route, state);
+        var found = null;
+        for (var i = 0; i < candidates.length; i += 1) {
+          found = findLineStyleEntryForRuntimeCandidate(candidates[i]);
+          if (found) break;
+        }
+        if (!found || !Array.isArray(found.entry)) return config;
+        var entry = found.entry;
+        config.styleKey = String(found.key || "");
+        config.legacyTypes = String(entry[LINE_STYLE_LEGACY_TYPES_INDEX] == null ? "" : entry[LINE_STYLE_LEGACY_TYPES_INDEX]).trim();
+        config.validationSoundsAllowed = normalizeLineStyleBoolean(entry[LINE_STYLE_VALIDATION_SOUND_INDEX], true);
+        config.stopRequestSoundName = normalizeLineStyleAudioBaseName(entry[LINE_STYLE_STOP_REQUEST_SOUND_INDEX]);
+        config.globalAudioFolderName = normalizeLineStyleFolderName(entry[LINE_STYLE_GLOBAL_AUDIO_FOLDER_INDEX]);
+        config.autoVoiceFolderName = normalizeLineStyleFolderName(entry[LINE_STYLE_AUTO_VOICE_FOLDER_INDEX]);
+        var passengerCountVariation = normalizeLineStylePassengerCountVariation(entry[LINE_STYLE_PASSENGER_COUNT_VARIATION_INDEX]);
+        config.passengerCountVariationMin = passengerCountVariation.min;
+        config.passengerCountVariationMax = passengerCountVariation.max;
+        return config;
+      }
+      function getActiveSaeivLineAudioConfig() {
+        if (saeivRouteState && typeof saeivRouteState === "object" && saeivRouteState.lineAudioConfig) {
+          return Object.assign({}, saeivLineAudioConfigDefault, saeivRouteState.lineAudioConfig);
+        }
+        if (saeivRouteState && typeof saeivRouteState === "object") {
+          return resolveSaeivLineAudioConfig(null, null, saeivRouteState);
+        }
+        return Object.assign({}, saeivLineAudioConfigDefault);
+      }
       function getSaeivDepartureClipCandidates(line, route) {
         var rawLineLabel = String(getDbusFisLineFolderName(line, route) || "").replace(/\s+/g, " ").trim();
         var lineCode = String(getDbusFisLineCode(line, route) || "").trim();
@@ -108,6 +262,15 @@
       }
       function linePreviewAudioClipUrl(folderPath, clipName) {
         return joinEncodedPath(folderPath, String(clipName || "").trim() + ".mp3");
+      }
+      function toAbsoluteRuntimeAssetUrl(url) {
+        var raw = String(url || "").trim();
+        if (!raw) return "";
+        try {
+          return new URL(raw, window.location.href).href;
+        } catch (err) {
+          return raw;
+        }
       }
       function loadDbusFisIndex() {
         if (dbusFisIndex) return Promise.resolve(dbusFisIndex);
@@ -172,6 +335,139 @@
             .map(function (entry) { return String(entry.name || "").replace(/\.mp3$/i, "").trim(); })
             .filter(Boolean);
         });
+      }
+      function parseAudioFolderVolumeMultiplier(rawFolderName) {
+        var match = String(rawFolderName || "").match(/\{([^}]+)\}/);
+        if (!match) return 1;
+        var value = Number.parseFloat(String(match[1] || "").replace(",", "."));
+        if (!Number.isFinite(value)) return 1;
+        return Math.max(0, value);
+      }
+      function clampRuntimeAudioVolume(value) {
+        var volume = Number(value);
+        if (!Number.isFinite(volume)) volume = 0;
+        return Math.max(0, Math.min(1, volume));
+      }
+      function getSaeivServiceAcceptAudioVolumeFactor() {
+        return clampRuntimeAudioVolume(
+          getGlobalAudioVolumeFactor() / Math.max(1, Number(SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR) || 1)
+        );
+      }
+      function applyRuntimeAudioVolume(audio, volume) {
+        if (!audio) return;
+        try { audio.volume = clampRuntimeAudioVolume(volume); } catch (err) { }
+      }
+      function syncSaeivRuntimeAudioVolumes() {
+        var volume = getGlobalAudioVolumeFactor();
+        if (saeivRouteAudio && saeivRouteAudio.audio) {
+          applyRuntimeAudioVolume(saeivRouteAudio.audio, volume);
+        }
+        if (saeivRouteAudio && saeivRouteAudio.terminusAudio) {
+          applyRuntimeAudioVolume(saeivRouteAudio.terminusAudio, volume);
+        }
+        if (saeivStopRequestAudioState && saeivStopRequestAudioState.audio) {
+          applyRuntimeAudioVolume(saeivStopRequestAudioState.audio, volume);
+        }
+        if (saeivServiceAcceptAudio) {
+          applyRuntimeAudioVolume(saeivServiceAcceptAudio, getSaeivServiceAcceptAudioVolumeFactor());
+        }
+        if (saeivGlobalAudioState && typeof saeivGlobalAudioState === "object") {
+          saeivGlobalAudioState.volumeMultiplier = getSaeivGlobalAudioVolumeMultiplier(saeivGlobalAudioState.folderName);
+        }
+      }
+      function getSaeivGlobalAudioVolumeMultiplier(folderName) {
+        var base = getGlobalAudioVolumeFactor();
+        return Math.max(0, Math.min(1, base * parseAudioFolderVolumeMultiplier(folderName)));
+      }
+      function resetSaeivGlobalAudioState(folderName) {
+        saeivGlobalAudioState.key = String(folderName || "");
+        saeivGlobalAudioState.folderName = String(folderName || "");
+        saeivGlobalAudioState.folderPath = "";
+        saeivGlobalAudioState.labels = [];
+        saeivGlobalAudioState.urls = [];
+        saeivGlobalAudioState.count = 0;
+        saeivGlobalAudioState.volumeMultiplier = getSaeivGlobalAudioVolumeMultiplier(folderName);
+        saeivGlobalAudioState.preparePromise = null;
+      }
+      function getSaeivGlobalAudioFolderNameForCurrentState() {
+        if (!saeivRouteState || typeof saeivRouteState !== "object") {
+          return String(SAEIV_DEFAULT_GLOBAL_AUDIO_FOLDER || "").trim();
+        }
+        return String(getActiveSaeivLineAudioConfig().globalAudioFolderName || "").trim();
+      }
+      function prepareSaeivGlobalAudioFolder(folderName) {
+        var safeFolderName = normalizeLineStyleFolderName(folderName);
+        if (!safeFolderName) {
+          resetSaeivGlobalAudioState("");
+          return Promise.resolve(false);
+        }
+        if (saeivGlobalAudioState.key === safeFolderName && saeivGlobalAudioState.preparePromise) {
+          return saeivGlobalAudioState.preparePromise;
+        }
+        if (saeivGlobalAudioState.key === safeFolderName && saeivGlobalAudioState.folderName === safeFolderName) {
+          return Promise.resolve(saeivGlobalAudioState.count > 0);
+        }
+        resetSaeivGlobalAudioState(safeFolderName);
+        var rootPath = ensureTrailingSlash(DBUS_FIS_GLOBAL_ROOT);
+        var folderPath = ensureTrailingSlash(joinEncodedPath(rootPath, safeFolderName));
+        var promise = listDirectoryMp3BaseNames(folderPath)
+          .then(function (files) {
+            if (saeivGlobalAudioState.key !== safeFolderName) return false;
+            var names = Array.isArray(files) ? files.map(function (name) {
+              return String(name || "").trim();
+            }).filter(Boolean) : [];
+            saeivGlobalAudioState.folderName = safeFolderName;
+            saeivGlobalAudioState.folderPath = names.length ? folderPath : "";
+            saeivGlobalAudioState.labels = names.slice();
+            saeivGlobalAudioState.urls = names.map(function (name) {
+              return toAbsoluteRuntimeAssetUrl(linePreviewAudioClipUrl(folderPath, name));
+            });
+            saeivGlobalAudioState.count = names.length;
+            saeivGlobalAudioState.volumeMultiplier = getSaeivGlobalAudioVolumeMultiplier(safeFolderName);
+            saeivGlobalAudioState.preparePromise = null;
+            saeivLastStateKey = "";
+            syncSaeivExternalState(true);
+            return names.length > 0;
+          })
+          .catch(function () {
+            if (saeivGlobalAudioState.key === safeFolderName) {
+              resetSaeivGlobalAudioState(safeFolderName);
+              saeivLastStateKey = "";
+              syncSaeivExternalState(true);
+            }
+            return false;
+          });
+        saeivGlobalAudioState.preparePromise = promise;
+        return promise;
+      }
+      function applySaeivGlobalAudioStateToPayload(payload) {
+        if (!payload || typeof payload !== "object") return payload;
+        var folderName = getSaeivGlobalAudioFolderNameForCurrentState();
+        if (!folderName) {
+          if (saeivGlobalAudioState.key) resetSaeivGlobalAudioState("");
+          payload.globalAudioFolderPath = "";
+          payload.globalAudioLabels = [];
+          payload.globalAudioUrls = [];
+          payload.globalAudioCount = 0;
+          payload.globalAudioVolumeMultiplier = getGlobalAudioVolumeFactor();
+          return payload;
+        }
+        if (saeivGlobalAudioState.key !== folderName) {
+          prepareSaeivGlobalAudioFolder(folderName);
+        }
+        if (saeivGlobalAudioState.key === folderName && saeivGlobalAudioState.count > 0) {
+          payload.globalAudioFolderPath = String(saeivGlobalAudioState.folderPath || "");
+          payload.globalAudioLabels = Array.isArray(saeivGlobalAudioState.labels) ? saeivGlobalAudioState.labels.slice() : [];
+          payload.globalAudioUrls = Array.isArray(saeivGlobalAudioState.urls) ? saeivGlobalAudioState.urls.slice() : [];
+          payload.globalAudioCount = payload.globalAudioUrls.length;
+        } else {
+          payload.globalAudioFolderPath = "";
+          payload.globalAudioLabels = [];
+          payload.globalAudioUrls = [];
+          payload.globalAudioCount = 0;
+        }
+        payload.globalAudioVolumeMultiplier = getSaeivGlobalAudioVolumeMultiplier(folderName);
+        return payload;
       }
       function buildSaeivRouteAudioTokenMap(files) {
         var byToken = new Map();
@@ -283,6 +579,261 @@
         audio.onerror = finish;
         // audio.onpause = finish; // Removed to allow resume after pause/menu
         audio.play().catch(finish);
+      }
+      function resolveSaeivServiceAcceptAudioWaiters() {
+        var resolve = saeivServiceAcceptAudioReleaseResolve;
+        saeivServiceAcceptAudioReleaseResolve = null;
+        saeivServiceAcceptAudioReleasePromise = null;
+        if (typeof resolve === "function") {
+          try { resolve(); } catch (err) { }
+        }
+      }
+      function createSaeivServiceAcceptAudioWaitPromise() {
+        saeivServiceAcceptAudioReleasePromise = new Promise(function (resolve) {
+          saeivServiceAcceptAudioReleaseResolve = resolve;
+        });
+        return saeivServiceAcceptAudioReleasePromise;
+      }
+      function finishSaeivServiceAcceptAudio(token) {
+        if (token !== saeivServiceAcceptAudioToken) return;
+        saeivServiceAcceptAudio = null;
+        if (saeivServiceAcceptAudioReleaseTimer) {
+          clearTimeout(saeivServiceAcceptAudioReleaseTimer);
+          saeivServiceAcceptAudioReleaseTimer = 0;
+        }
+        saeivServiceAcceptAudioReleaseAtMs = Date.now() + Math.max(0, Number(SAEIV_SERVICE_ACCEPT_DESTINATION_DELAY_MS) || 0);
+        saeivServiceAcceptAudioReleaseTimer = setTimeout(function () {
+          if (token !== saeivServiceAcceptAudioToken) return;
+          saeivServiceAcceptAudioReleaseTimer = 0;
+          saeivServiceAcceptAudioReleaseAtMs = 0;
+          resolveSaeivServiceAcceptAudioWaiters();
+        }, Math.max(0, saeivServiceAcceptAudioReleaseAtMs - Date.now()));
+      }
+      function isSaeivServiceAcceptAudioDelayActive() {
+        if (saeivServiceAcceptAudio) return true;
+        var releaseAt = Number(saeivServiceAcceptAudioReleaseAtMs);
+        return Number.isFinite(releaseAt) && releaseAt > Date.now();
+      }
+      function waitForSaeivServiceAcceptAudioRelease(callback) {
+        if (typeof callback !== "function") return false;
+        var waitLoop = function () {
+          if (!isSaeivServiceAcceptAudioDelayActive()) {
+            callback();
+            return;
+          }
+          var waitPromise = saeivServiceAcceptAudioReleasePromise;
+          if (waitPromise && typeof waitPromise.then === "function") {
+            waitPromise.then(waitLoop).catch(function () { setTimeout(waitLoop, 0); });
+            return;
+          }
+          setTimeout(waitLoop, Math.max(0, Number(saeivServiceAcceptAudioReleaseAtMs) - Date.now()));
+        };
+        waitLoop();
+        return true;
+      }
+      function playSaeivServiceAcceptAudio() {
+        var token = saeivServiceAcceptAudioToken + 1;
+        saeivServiceAcceptAudioToken = token;
+        if (saeivServiceAcceptAudioReleaseTimer) {
+          clearTimeout(saeivServiceAcceptAudioReleaseTimer);
+          saeivServiceAcceptAudioReleaseTimer = 0;
+        }
+        if (saeivServiceAcceptAudio) {
+          try { saeivServiceAcceptAudio.pause(); } catch (err0) { }
+          try { saeivServiceAcceptAudio.src = ""; } catch (err1) { }
+        }
+        saeivServiceAcceptAudio = null;
+        saeivServiceAcceptAudioReleaseAtMs = 0;
+        resolveSaeivServiceAcceptAudioWaiters();
+        createSaeivServiceAcceptAudioWaitPromise();
+        var audio = new Audio(SAEIV_SERVICE_ACCEPT_AUDIO_URL);
+        audio.volume = getSaeivServiceAcceptAudioVolumeFactor();
+        try {
+          audio.currentTime = Math.max(0, Number(SAEIV_SERVICE_ACCEPT_AUDIO_START_OFFSET_SEC) || 0);
+        } catch (err2) { }
+        saeivServiceAcceptAudio = audio;
+        var finished = false;
+        var finish = function () {
+          if (finished) return;
+          finished = true;
+          finishSaeivServiceAcceptAudio(token);
+        };
+        audio.onended = finish;
+        audio.onerror = finish;
+        var playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(finish);
+        }
+        return { ok: true };
+      }
+      function stopSaeivStopRequestAudioPlayback() {
+        var audio = saeivStopRequestAudioState && saeivStopRequestAudioState.audio;
+        if (!audio) return;
+        if (saeivStopRequestAudioState) saeivStopRequestAudioState.audio = null;
+        try { audio.pause(); } catch (err0) { }
+        try { audio.src = ""; } catch (err1) { }
+      }
+      function resetSaeivStopRequestAudioState(routeKey, targetUid, targetIndex, segmentKey, triggerDistanceM, clipName, clipUrl) {
+        stopSaeivStopRequestAudioPlayback();
+        saeivStopRequestAudioState.routeKey = String(routeKey || "");
+        saeivStopRequestAudioState.targetUid = String(targetUid || "");
+        saeivStopRequestAudioState.targetIndex = Number.isFinite(Number(targetIndex)) ? Number(targetIndex) : -1;
+        saeivStopRequestAudioState.segmentKey = String(segmentKey || "");
+        saeivStopRequestAudioState.triggerDistanceM = Number(triggerDistanceM);
+        saeivStopRequestAudioState.played = false;
+        saeivStopRequestAudioState.clipName = String(clipName || "");
+        saeivStopRequestAudioState.clipUrl = String(clipUrl || "");
+        saeivStopRequestAudioState.audio = null;
+      }
+      function buildSaeivStopRequestSoundUrl(clipName) {
+        var safeName = normalizeLineStyleAudioBaseName(clipName);
+        if (!safeName) return "";
+        return joinEncodedPath(ensureTrailingSlash(SAEIV_STOP_REQUEST_SOUND_ROOT), safeName + ".mp3");
+      }
+      function probeSaeivSoundFileAvailability(url) {
+        var safeUrl = String(url || "").trim();
+        if (!safeUrl) return Promise.resolve(false);
+        if (saeivSoundFileAvailabilityCache.has(safeUrl)) {
+          return Promise.resolve(saeivSoundFileAvailabilityCache.get(safeUrl) === true);
+        }
+        if (typeof fetch !== "function") {
+          saeivSoundFileAvailabilityCache.set(safeUrl, true);
+          return Promise.resolve(true);
+        }
+        return fetch(safeUrl, { method: "HEAD", cache: "no-store" })
+          .then(function (res) {
+            var ok = !!(res && (res.ok || res.status === 405));
+            saeivSoundFileAvailabilityCache.set(safeUrl, ok);
+            return ok;
+          })
+          .catch(function () {
+            saeivSoundFileAvailabilityCache.set(safeUrl, true);
+            return true;
+          });
+      }
+      function computeSaeivStopRequestSegmentDistance(entries, targetIndex, targetDistance) {
+        var list = Array.isArray(entries) ? entries : [];
+        var idx = Math.floor(Number(targetIndex));
+        if (!Number.isFinite(idx) || idx <= 0 || idx >= list.length) {
+          return Number(targetDistance);
+        }
+        var prevPoint = parseWorldPoint3D(list[idx - 1] && list[idx - 1].point);
+        var targetPoint = parseWorldPoint3D(list[idx] && list[idx].point);
+        if (prevPoint && targetPoint) {
+          var dist = worldPointDistance(prevPoint, targetPoint);
+          if (Number.isFinite(dist) && dist > 0) return dist;
+        }
+        return Number(targetDistance);
+      }
+      function chooseSaeivStopRequestTriggerDistance(entries, targetIndex, targetDistance) {
+        var segmentDistance = computeSaeivStopRequestSegmentDistance(entries, targetIndex, targetDistance);
+        if (!Number.isFinite(segmentDistance) || segmentDistance <= 0) segmentDistance = Number(targetDistance);
+        if (!Number.isFinite(segmentDistance) || segmentDistance <= 0) return Number.NaN;
+        var minDistance = Math.max(0, Number(SAEIV_STOP_REQUEST_AUDIO_MIN_DISTANCE_M) || 0);
+        if (segmentDistance <= minDistance) return segmentDistance;
+        return minDistance + (Math.random() * (segmentDistance - minDistance));
+      }
+      function ensureSaeivStopRequestAudioTarget(entries, targetIndex, targetDistance) {
+        var activeKey = String(saeivRouteState && saeivRouteState.selectedKey || "");
+        var idx = Math.floor(Number(targetIndex));
+        var list = Array.isArray(entries) ? entries : [];
+        var targetEntry = list[idx] || null;
+        var targetUid = String(targetEntry && targetEntry.uid || "");
+        var previousEntry = list[idx - 1] || null;
+        var previousUid = String(previousEntry && previousEntry.uid || "");
+        var segmentKey = [activeKey, String(idx - 1), previousUid, String(idx), targetUid].join("|");
+        var config = getActiveSaeivLineAudioConfig();
+        var clipName = normalizeLineStyleAudioBaseName(config.stopRequestSoundName);
+        var clipUrl = buildSaeivStopRequestSoundUrl(clipName);
+        var sameTarget =
+          String(saeivStopRequestAudioState.routeKey || "") === activeKey &&
+          String(saeivStopRequestAudioState.targetUid || "") === targetUid &&
+          Number(saeivStopRequestAudioState.targetIndex) === idx &&
+          String(saeivStopRequestAudioState.segmentKey || "") === segmentKey &&
+          String(saeivStopRequestAudioState.clipName || "") === clipName;
+        if (sameTarget) return;
+        resetSaeivStopRequestAudioState(
+          activeKey,
+          targetUid,
+          idx,
+          segmentKey,
+          chooseSaeivStopRequestTriggerDistance(entries, idx, targetDistance),
+          clipName,
+          clipUrl
+        );
+      }
+      function playSaeivStopRequestAudioForCurrentTarget() {
+        var routeKey = String(saeivStopRequestAudioState.routeKey || "");
+        var targetUid = String(saeivStopRequestAudioState.targetUid || "");
+        var targetIndex = Number(saeivStopRequestAudioState.targetIndex);
+        var segmentKey = String(saeivStopRequestAudioState.segmentKey || "");
+        var clipUrl = String(saeivStopRequestAudioState.clipUrl || "").trim();
+        if (!routeKey || !targetUid || !clipUrl) return false;
+        if (
+          typeof getSaeivPassengerRemainingRequestedDropCount === "function" &&
+          getSaeivPassengerRemainingRequestedDropCount(targetIndex, targetUid) <= 0
+        ) {
+          return false;
+        }
+        saeivStopRequestAudioState.played = true;
+        if (segmentKey) saeivStopRequestAudioPlayedSegments.add(segmentKey);
+        probeSaeivSoundFileAvailability(clipUrl).then(function (exists) {
+          if (exists !== true) return;
+          if (!saeivRouteState || String(saeivRouteState.selectedKey || "") !== routeKey) return;
+          if (String(saeivStopRequestAudioState.targetUid || "") !== targetUid) return;
+          if (Number(saeivStopRequestAudioState.targetIndex) !== targetIndex) return;
+          if (
+            typeof getSaeivPassengerRemainingRequestedDropCount === "function" &&
+            getSaeivPassengerRemainingRequestedDropCount(targetIndex, targetUid) <= 0
+          ) {
+            return;
+          }
+          var audio = new Audio(clipUrl);
+          audio.volume = getGlobalAudioVolumeFactor();
+          saeivStopRequestAudioState.audio = audio;
+          var finish = function () {
+            if (saeivStopRequestAudioState.audio === audio) {
+              saeivStopRequestAudioState.audio = null;
+            }
+          };
+          audio.onended = finish;
+          audio.onerror = finish;
+          var playPromise = audio.play();
+          if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(finish);
+          }
+        }).catch(function () { });
+        return true;
+      }
+      function maybePlaySaeivStopRequestAudio(targetDistance, targetIndex, lastIndex) {
+        if (!saeivRouteState || saeivRouteState.started !== true) return false;
+        if (saeivPassengerValidationSoundsEnabled !== true) return false;
+        if (Math.floor(Number(targetIndex)) >= Math.floor(Number(lastIndex))) return false;
+        if (!saeivPassengerState || saeivPassengerState.stopRequested !== true) return false;
+        var targetEntry = Array.isArray(saeivRouteState && saeivRouteState.stops)
+          ? saeivRouteState.stops[Math.floor(Number(targetIndex))]
+          : null;
+        var targetUid = String(targetEntry && targetEntry.uid || "");
+        if (
+          typeof getSaeivPassengerRemainingRequestedDropCount === "function" &&
+          getSaeivPassengerRemainingRequestedDropCount(targetIndex, targetUid) <= 0
+        ) {
+          return false;
+        }
+        if (Math.max(0, Math.round(Number(saeivPassengerState.requestedDropCount) || 0)) <= 0) return false;
+        if (saeivStopRequestAudioState.played === true) return false;
+        var segmentKey = String(saeivStopRequestAudioState.segmentKey || "");
+        if (segmentKey && saeivStopRequestAudioPlayedSegments.has(segmentKey)) return false;
+        if (!String(saeivStopRequestAudioState.clipName || "").trim()) return false;
+        var distance = Number(targetDistance);
+        var triggerDistance = Number(saeivStopRequestAudioState.triggerDistanceM);
+        if (!Number.isFinite(distance) || distance < 0 || !Number.isFinite(triggerDistance)) return false;
+        var entries = Array.isArray(saeivRouteState && saeivRouteState.stops) ? saeivRouteState.stops : [];
+        var segmentDistance = computeSaeivStopRequestSegmentDistance(entries, targetIndex, targetDistance);
+        var minDistance = Math.max(0, Number(SAEIV_STOP_REQUEST_AUDIO_MIN_DISTANCE_M) || 0);
+        if (Number.isFinite(segmentDistance) && segmentDistance > minDistance && distance < minDistance) return false;
+        if (distance > triggerDistance) return false;
+        return playSaeivStopRequestAudioForCurrentTarget();
       }
       function syncSaeivAudioPauseState() {
         var shouldMute = (typeof managerState !== "undefined" && managerState.visible) || (typeof telemetryPaused !== "undefined" && telemetryPaused);
@@ -440,6 +991,13 @@
         var cleanName = stripProvisoire(rawName) || rawName;
         return findSaeivAudioClipName(cleanName);
       }
+      function isSaeivTransdevAutoVoiceActive() {
+        var folderName = String(getActiveSaeivLineAudioConfig().autoVoiceFolderName || "").trim();
+        return !!folderName && normalizeAudioNameToken(folderName) === normalizeAudioNameToken(SAEIV_TRANSDEV_AUTO_VOICE_FOLDER_NAME);
+      }
+      function findSaeivNextStopPrefixClipName() {
+        return findSaeivAudioClipName(SAEIV_NEXT_STOP_PREFIX_CLIP_NAME);
+      }
       function isSaeivHudWidgetTypeActive(type) {
         var safeType = (typeof normalizeWidgetType === "function")
           ? normalizeWidgetType(type)
@@ -466,6 +1024,7 @@
           if (String(saeivRouteState.selectedKey || "").trim() !== expectedKey) return false;
           return playSaeivDestinationAnnouncementIfAvailable({
             action: "game-destination-announcement-auto",
+            expectedRouteKey: expectedKey,
             requireShortcutContext: false
           });
         };
@@ -568,9 +1127,19 @@
         if (!saeivRouteState || typeof saeivRouteState !== "object") return false;
         var activeRouteKey = String(saeivRouteState.selectedKey || "").trim();
         if (!activeRouteKey) return false;
+        var expectedRouteKey = String(opts.expectedRouteKey || "").trim();
+        if (expectedRouteKey && activeRouteKey !== expectedRouteKey) return false;
         if (String(saeivRouteAudio.routeKey || "").trim() !== activeRouteKey) return false;
         var entries = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
         if (!entries.length || !saeivRouteAudio.available) return false;
+        if (opts.deferForServiceAccept !== false && isSaeivServiceAcceptAudioDelayActive()) {
+          waitForSaeivServiceAcceptAudioRelease(function () {
+            playSaeivDestinationAnnouncementIfAvailable(Object.assign({}, opts, {
+              deferForServiceAccept: false
+            }));
+          });
+          return true;
+        }
         if (saeivRouteAudio.playing || (Array.isArray(saeivRouteAudio.queue) && saeivRouteAudio.queue.length > 0)) {
           return false;
         }
@@ -623,6 +1192,7 @@
       }
       function prepareSaeivRouteAudio(line, route, entries) {
         var routeKey = String(line && line.uid || "") + ":" + String(route && route.uid || "");
+        var lineAudioConfig = resolveSaeivLineAudioConfig(line, route, null);
         stopSaeivRouteAudioPlayback();
         saeivRouteAudio.routeKey = routeKey;
         saeivRouteAudio.styleName = "";
@@ -631,45 +1201,27 @@
         saeivRouteAudio.filesByToken = new Map();
         saeivRouteAudio.departureClipName = "";
         var requiredTokens = collectRouteRequiredStopTokens(entries);
-        var lineFolderName = String(getDbusFisLineFolderName(line, route) || "").trim();
-        var routeLineToken = normalizeAudioNameToken(lineFolderName);
-        return listDbusFisRouteStyleFoldersFromDossiers()
-          .then(function (folders) {
-            if (!folders.length) return null;
-            var best = null;
-            var bestLineMatched = null;
-            folders.forEach(function (folder) {
-              var files = Array.isArray(folder && folder.files) ? folder.files : [];
-              if (!files.length) return;
-              var byToken = buildSaeivRouteAudioTokenMap(files);
-              var matchCount = 0;
-              requiredTokens.forEach(function (token) {
-                if (byToken.has(token)) matchCount += 1;
-              });
-              var score = (matchCount * 1000) - (files.length - matchCount);
-              var candidate = {
-                score: score,
-                matchCount: matchCount,
-                byToken: byToken,
-                files: files.slice(),
-                folderPath: ensureTrailingSlash(String(folder.path || "")),
-                styleName: String(folder.name || "."),
-                lineMatched: false
-              };
-              if (routeLineToken) {
-                var styleToken = normalizeAudioNameToken(candidate.styleName);
-                var folderToken = normalizeAudioNameToken(candidate.folderPath);
-                candidate.lineMatched =
-                  (!!styleToken && (styleToken === routeLineToken || styleToken.indexOf(routeLineToken) !== -1)) ||
-                  (!!folderToken && (folderToken === routeLineToken || folderToken.indexOf(routeLineToken) !== -1));
-              }
-              if (!best || candidate.score > best.score) best = candidate;
-              if (candidate.lineMatched) {
-                if (!bestLineMatched || candidate.score > bestLineMatched.score) bestLineMatched = candidate;
-              }
+        var voiceFolderName = normalizeLineStyleFolderName(lineAudioConfig.autoVoiceFolderName);
+        if (!voiceFolderName) return Promise.resolve(false);
+        var folderPath = ensureTrailingSlash(joinEncodedPath(ensureTrailingSlash(DBUS_FIS_DOSSIERS_ROOT), voiceFolderName));
+        return listDirectoryMp3BaseNames(folderPath)
+          .then(function (files) {
+            var names = Array.isArray(files) ? files.map(function (name) {
+              return String(name || "").trim();
+            }).filter(Boolean) : [];
+            if (!names.length) return null;
+            var byToken = buildSaeivRouteAudioTokenMap(names);
+            var matchCount = 0;
+            requiredTokens.forEach(function (token) {
+              if (byToken.has(token)) matchCount += 1;
             });
-            if (bestLineMatched) return bestLineMatched;
-            return best;
+            return {
+              matchCount: matchCount,
+              byToken: byToken,
+              files: names,
+              folderPath: folderPath,
+              styleName: voiceFolderName
+            };
           })
           .then(function (best) {
             if (!best || best.matchCount <= 0) return false;
@@ -917,6 +1469,18 @@
         }
         return out;
       }
+      function isSaeivRouteStopOptionalForMarker(entry, index, lastIndex) {
+        var idx = Math.floor(Number(index));
+        var tail = Math.floor(Number(lastIndex));
+        if (!Number.isFinite(idx) || !Number.isFinite(tail)) return false;
+        if (idx <= 0 || idx >= tail) return false;
+        if (!saeivPassengerState || typeof saeivPassengerState !== "object") return false;
+        if (Math.floor(Number(saeivPassengerState.targetIndex)) !== idx) return false;
+        var entryUid = String(entry && entry.uid || "");
+        var targetUid = String(saeivPassengerState.targetUid || "");
+        if (entryUid && targetUid && entryUid !== targetUid) return false;
+        return saeivPassengerState.stopOptionalByPlan === true;
+      }
       function readSaeivSignalString(source, keys) {
         if (!source || typeof source !== "object" || !Array.isArray(keys)) return "";
         for (var i = 0; i < keys.length; i += 1) {
@@ -996,12 +1560,15 @@
         if (!entry || !Number.isFinite(Number(entry.uid))) return false;
         var opts = options && typeof options === "object" ? options : {};
         var stopUid = Number(entry.uid);
-        if (saeivAnnouncedStopUids.has(stopUid)) return false;
+        var allowRepeat = opts.allowRepeat === true;
+        if (!allowRepeat && saeivAnnouncedStopUids.has(stopUid)) return false;
         var clipName = findSaeivStopClipName(entry);
         if (!clipName) {
-          saeivAnnouncedStopUids.add(stopUid);
+          if (!allowRepeat) saeivAnnouncedStopUids.add(stopUid);
           return false;
         }
+        var prefixClipName = isSaeivTransdevAutoVoiceActive() ? findSaeivNextStopPrefixClipName() : "";
+        var terminusClipName = opts.appendTerminus === true ? findSaeivTerminusClipName() : "";
         var onPlayed = typeof opts.onPlayed === "function" ? opts.onPlayed : null;
         var onStopAnnouncementEnded = function () {
           saeivStopAnnounceEndedAtByUid.set(stopUid, Date.now());
@@ -1009,11 +1576,58 @@
             try { onPlayed(); } catch (errOnPlayed) { }
           }
         };
+        if (prefixClipName) {
+          enqueueSaeivRouteAudioClip(prefixClipName);
+        }
         var queued = enqueueSaeivRouteAudioClip(clipName, {
-          onEnded: onStopAnnouncementEnded
+          onEnded: terminusClipName ? null : onStopAnnouncementEnded
         });
-        if (queued) saeivAnnouncedStopUids.add(stopUid);
+        if (queued && terminusClipName) {
+          enqueueSaeivRouteAudioClip(terminusClipName, {
+            onEnded: onStopAnnouncementEnded
+          });
+        }
+        if (queued && opts.markAnnounced !== false) saeivAnnouncedStopUids.add(stopUid);
         return queued;
+      }
+      function maybeAnnounceSaeivTransdevNextStopOnDeparture(previousStoppedIndex, nextStoppedIndex, currentIndex, targetIndex, lastIndex, entries, options) {
+        if (saeivStopAnnouncementSoundsEnabled !== true) return false;
+        if (!isSaeivTransdevAutoVoiceActive()) return false;
+        var opts = options && typeof options === "object" ? options : {};
+        if (opts.outsideStopArea !== true) return false;
+        var prevIdx = Math.floor(Number(previousStoppedIndex));
+        var nextIdx = Math.floor(Number(nextStoppedIndex));
+        var currentIdx = Math.floor(Number(currentIndex));
+        var targetIdx = Math.floor(Number(targetIndex));
+        if (!Number.isFinite(prevIdx) || prevIdx < 0) return false;
+        if (Number.isFinite(nextIdx) && nextIdx >= 0) return false;
+        if (!Number.isFinite(currentIdx) || prevIdx !== currentIdx) return false;
+        if (!Number.isFinite(targetIdx) || targetIdx <= currentIdx || targetIdx > Math.floor(Number(lastIndex))) return false;
+        var list = Array.isArray(entries) ? entries : [];
+        var targetEntry = list[targetIdx] || null;
+        if (!targetEntry) return false;
+        return announceStopArrivalOnce(targetEntry, {
+          appendTerminus: targetIdx >= Math.floor(Number(lastIndex))
+        });
+      }
+      function maybeAnnounceSaeivTransdevTerminusApproach(targetEntry, options) {
+        if (saeivStopAnnouncementSoundsEnabled !== true) return false;
+        if (!isSaeivTransdevAutoVoiceActive()) return false;
+        var opts = options && typeof options === "object" ? options : {};
+        if (opts.outsideStopArea !== true) return false;
+        if (!targetEntry || !Number.isFinite(Number(targetEntry.uid))) return false;
+        if (!saeivRouteState || typeof saeivRouteState !== "object") return false;
+        var routeKey = String(saeivRouteState.selectedKey || "").trim();
+        if (!routeKey || saeivTransdevTerminusApproachAnnouncedRouteKey === routeKey) return false;
+        var queued = announceStopArrivalOnce(targetEntry, {
+          allowRepeat: true,
+          appendTerminus: true,
+          markAnnounced: false
+        });
+        if (!queued) return false;
+        saeivTransdevTerminusApproachAnnouncedRouteKey = routeKey;
+        saeivTerminusAnnouncedRouteKey = routeKey;
+        return true;
       }
       function getNearestStopIndexFromPoint(worldPoint, entries) {
         if (!worldPoint || !Array.isArray(entries) || !entries.length) return 0;
@@ -1049,7 +1663,21 @@
         if (!Number.isFinite(heading)) return Number(fallbackHeadingDeg);
         return heading;
       }
+      function hasSaeivPassengerWorkInPayload(payload) {
+        if (!payload || typeof payload !== "object") return false;
+        var passengersAtStop = Math.max(0, Math.round(Number(payload.passengersAtStop) || 0));
+        var boardingTotal = Math.max(0, Math.round(Number(payload.stopBoardingTotal) || 0));
+        var alightingTotal = Math.max(0, Math.round(Number(payload.stopAlightingTotal) || 0));
+        var requestedDrop = payload.stopRequested === true ? 1 : 0;
+        return passengersAtStop > 0 || boardingTotal > 0 || alightingTotal > 0 || requestedDrop > 0;
+      }
       function buildSaeivStatePayloadFromGame() {
+        var activeLineAudioConfig = getActiveSaeivLineAudioConfig();
+        var passengerValidationLineEnabled = !saeivRouteState || activeLineAudioConfig.validationSoundsAllowed !== false;
+        var passengerCountVariationMin = Math.round(Number(activeLineAudioConfig.passengerCountVariationMin));
+        var passengerCountVariationMax = Math.round(Number(activeLineAudioConfig.passengerCountVariationMax));
+        if (!Number.isFinite(passengerCountVariationMin)) passengerCountVariationMin = 0;
+        if (!Number.isFinite(passengerCountVariationMax)) passengerCountVariationMax = 0;
         var payload = {
           lang: "fr",
           canUseFeature: true,
@@ -1115,6 +1743,9 @@
           stopBoardingDone: 0,
           stopAlightingTotal: 0,
           stopAlightingDone: 0,
+          plannedStopBoardingTotal: 0,
+          plannedStopAlightingTotal: 0,
+          passengerGenerationAvailable: false,
           busStatusPassengerServiceLinked: false,
           busStatusPassengerServiceActive: false,
           busStatusPassengerServiceReady: false,
@@ -1132,6 +1763,7 @@
           stopHeading: Number.NaN,
           stopRequested: false,
           stopNecessary: false,
+          stopOptionalByPlan: false,
           busSpeedKmh: (telemetryLastSignal && Number.isFinite(telemetryLastSignal.speedKmh)) ? telemetryLastSignal.speedKmh : 0,
           truckDamagePercent: (telemetryLastSignal && Number.isFinite(telemetryLastSignal.truckDamagePercent)) ? telemetryLastSignal.truckDamagePercent : 0,
           audioFolderPath: String(saeivRouteAudio.folderPath || ""),
@@ -1141,11 +1773,20 @@
           globalAudioUrls: [],
           globalAudioCount: 0,
           globalAudioVolumeMultiplier: getGlobalAudioVolumeFactor(),
-          passengerValidationSoundsEnabled: saeivPassengerValidationSoundsEnabled === true,
+          passengerValidationLineEnabled: passengerValidationLineEnabled,
+          passengerValidationSoundsEnabled: saeivPassengerValidationSoundsEnabled === true && passengerValidationLineEnabled,
           passengerValidationSoundVolume: Math.max(0, Math.min(1, getGlobalAudioVolumeFactor() / 2)),
+          lineAudioStyleKey: String(activeLineAudioConfig.styleKey || ""),
+          lineAudioLegacyTypes: String(activeLineAudioConfig.legacyTypes || ""),
+          lineAudioStopRequestSound: String(activeLineAudioConfig.stopRequestSoundName || ""),
+          lineAudioGlobalFolder: String(activeLineAudioConfig.globalAudioFolderName || ""),
+          lineAudioAutoVoiceFolder: String(activeLineAudioConfig.autoVoiceFolderName || ""),
+          passengerCountVariationMin: Math.min(passengerCountVariationMin, passengerCountVariationMax),
+          passengerCountVariationMax: Math.max(passengerCountVariationMin, passengerCountVariationMax),
           audioPlaybackBusy: !!saeivRouteAudio.playing,
           lastAction: String(saeivLastAction || "")
         };
+        applySaeivGlobalAudioStateToPayload(payload);
         var busSignalXVal = Number(telemetryLastSignal && telemetryLastSignal.x);
         var busSignalYVal = Number(telemetryLastSignal && telemetryLastSignal.y);
         var busSignalZVal = Number(telemetryLastSignal && telemetryLastSignal.z);
@@ -1249,15 +1890,19 @@
         payload.busMaxCapacityUnlimited = activeCapacity.unlimited === true;
         payload.busMaxCapacityDisplay = String(activeCapacity.display || payload.busMaxCapacity);
         if (saeivPassengerState && typeof saeivPassengerState === "object") {
+          payload.passengerGenerationAvailable = true;
           payload.passengersInBus = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0));
           payload.passengersAtStop = Math.max(0, Math.round(Number(saeivPassengerState.passengersAtStop) || 0));
           payload.stopBoardingTotal = Math.max(0, Math.round(Number(saeivPassengerState.stopBoardingTotal) || 0));
           payload.stopBoardingDone = Math.max(0, Math.round(Number(saeivPassengerState.stopBoardingDone) || 0));
           payload.stopAlightingTotal = Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingTotal) || 0));
           payload.stopAlightingDone = Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingDone) || 0));
+          payload.plannedStopBoardingTotal = Math.max(0, Math.round(Number(saeivPassengerState.plannedStopBoardingTotal) || 0));
+          payload.plannedStopAlightingTotal = Math.max(0, Math.round(Number(saeivPassengerState.plannedStopAlightingTotal) || 0));
           payload.stopRequested = saeivPassengerState.stopRequested === true;
           payload.stopNecessary = saeivPassengerState.stopNecessary === true;
-          payload.stopOptionalByConfig = saeivPassengerState.stopOptionalByConfig === true || payload.stopOptionalByConfig === true;
+          payload.stopOptionalByPlan = saeivPassengerState.stopOptionalByPlan === true;
+          payload.stopOptionalByConfig = payload.stopOptionalByPlan === true;
           payload.routeMissedStopsCount = Math.max(0, Math.round(Number(saeivPassengerState.missedStops) || 0));
           payload.routeTransportedPassengers = Math.max(0, Math.round(Number(saeivPassengerState.transportedPassengers) || 0));
         }
@@ -1267,13 +1912,25 @@
         }
         var externalPassengerServiceState = getBusStatusPassengerServiceStateNow();
         if (externalPassengerServiceState) {
+          var externalBoardingTotal = Math.max(0, Math.round(Number(externalPassengerServiceState.boardingTotal) || 0));
+          var externalBoardingDone = Math.max(0, Math.round(Number(externalPassengerServiceState.boardingDone) || 0));
+          var externalAlightingTotal = Math.max(0, Math.round(Number(externalPassengerServiceState.alightingTotal) || 0));
+          var externalAlightingDone = Math.max(0, Math.round(Number(externalPassengerServiceState.alightingDone) || 0));
+          var externalServiceHasProgress =
+            externalPassengerServiceState.active === true ||
+            externalBoardingTotal > 0 ||
+            externalBoardingDone > 0 ||
+            externalAlightingTotal > 0 ||
+            externalAlightingDone > 0;
           payload.busStatusPassengerServiceLinked = true;
           payload.busStatusPassengerServiceActive = externalPassengerServiceState.active === true;
           payload.busStatusPassengerServiceReady = externalPassengerServiceState.ready === true;
-          payload.stopBoardingTotal = Math.max(0, Math.round(Number(externalPassengerServiceState.boardingTotal) || 0));
-          payload.stopBoardingDone = Math.max(0, Math.round(Number(externalPassengerServiceState.boardingDone) || 0));
-          payload.stopAlightingTotal = Math.max(0, Math.round(Number(externalPassengerServiceState.alightingTotal) || 0));
-          payload.stopAlightingDone = Math.max(0, Math.round(Number(externalPassengerServiceState.alightingDone) || 0));
+          if (externalServiceHasProgress) {
+            payload.stopBoardingTotal = externalBoardingTotal;
+            payload.stopBoardingDone = externalBoardingDone;
+            payload.stopAlightingTotal = externalAlightingTotal;
+            payload.stopAlightingDone = externalAlightingDone;
+          }
         }
         var isActuallyAtTerminus = reachedIndex >= lastIndex || (saeivStoppedAtStopIndex >= 0 && saeivStoppedAtStopIndex >= lastIndex);
         if (isActuallyAtTerminus) {
@@ -1288,6 +1945,13 @@
           payload.stopAlightingTotal = Math.max(alightTotalNow, computedTerminusTotal);
           payload.stopNecessary = true;
         }
+        payload.stopOptionalByPlan = payload.stopOptionalByPlan === true && hasSaeivPassengerWorkInPayload({
+          passengersAtStop: payload.plannedStopBoardingTotal,
+          stopBoardingTotal: payload.plannedStopBoardingTotal,
+          stopAlightingTotal: payload.plannedStopAlightingTotal,
+          stopRequested: false
+        }) !== true;
+        payload.stopOptionalByConfig = payload.stopOptionalByPlan === true;
 
         var startInfo = getSaeivRouteStartStopInfo(telemetryLastSignal);
         payload.startStopName = String(startInfo && startInfo.startEntry && startInfo.startEntry.name || names[0] || "").trim();
@@ -1457,6 +2121,10 @@
           var startInfo = getSaeivRouteStartStopInfo(signal);
           setSaeivStoppedAtStop(startInfo && startInfo.atStartStop ? 0 : -1, entries);
           resetSaeivPassengerTargetState(entries, 0);
+          if (startInfo && startInfo.atStartStop) {
+            var autoStartResult = startSaeivSelectedRoute();
+            if (autoStartResult && autoStartResult.ok === true) return true;
+          }
           return false;
         }
         var now = Date.now();
@@ -1484,42 +2152,68 @@
         resetSaeivPassengerTargetState(entries, targetIndex);
         var targetDistance = worldPointDistance(vehiclePoint, targetEntry.point);
         if (!Number.isFinite(targetDistance)) return false;
+        ensureSaeivStopRequestAudioTarget(entries, targetIndex, targetDistance);
         if (saeivPassengerState && typeof saeivPassengerState === "object") {
           var bestTargetDistance = Number(saeivPassengerState.targetMinDistanceM);
           if (!Number.isFinite(bestTargetDistance) || targetDistance < bestTargetDistance) {
             saeivPassengerState.targetMinDistanceM = targetDistance;
           }
           maybeRollSaeivStopRequested(targetDistance, now, targetIndex >= lastIndex);
+          maybePlaySaeivStopRequestAudio(targetDistance, targetIndex, lastIndex);
         }
         var speedKmh = telemetrySpeedForStopDecision(speedKmhLive);
         var isStopped = Number.isFinite(speedKmh) && Math.abs(speedKmh) < SAEIV_STOP_DWELL_MAX_SPEED_KMH;
         var reachDistance = Math.max(Number(SAEIV_STOP_REACH_DISTANCE) || 0, Number(SAEIV_STOP_DWELL_REACH_DISTANCE) || 0);
+        var currentStopDistance = Number.POSITIVE_INFINITY;
+        if (currentIndex >= 0 && entries[currentIndex]) {
+          currentStopDistance = worldPointDistance(vehiclePoint, entries[currentIndex].point);
+        }
+        var outsideCurrentStopArea = Number.isFinite(currentStopDistance) && currentStopDistance > reachDistance;
+        var outsideTargetStopArea = Number.isFinite(targetDistance) && targetDistance > reachDistance;
+        var outsideAnyStopAreaForAnnouncement = outsideCurrentStopArea && outsideTargetStopArea;
         var atStopIndex = -1;
         if (isStopped && currentIndex >= 0 && entries[currentIndex]) {
-          var reachedDistance = worldPointDistance(vehiclePoint, entries[currentIndex].point);
-          if (Number.isFinite(reachedDistance) && reachedDistance <= reachDistance) {
+          if (Number.isFinite(currentStopDistance) && currentStopDistance <= reachDistance) {
             atStopIndex = currentIndex;
           }
         }
         if (atStopIndex < 0 && isStopped && targetDistance <= reachDistance) {
           atStopIndex = targetIndex;
         }
+        var previousStoppedAtStopIndex = saeivStoppedAtStopIndex;
         setSaeivStoppedAtStop(atStopIndex, entries);
+        maybeAnnounceSaeivTransdevNextStopOnDeparture(
+          previousStoppedAtStopIndex,
+          atStopIndex,
+          currentIndex,
+          targetIndex,
+          lastIndex,
+          entries,
+          { outsideStopArea: outsideAnyStopAreaForAnnouncement }
+        );
         if (saeivStopAnnouncementSoundsEnabled && targetDistance <= SAEIV_STOP_ANNOUNCE_DISTANCE) {
           if (targetIndex >= lastIndex) {
-            var finalStopUid = Number(targetEntry && targetEntry.uid);
-            var finalStopWasAlreadyHandled = Number.isFinite(finalStopUid) && saeivAnnouncedStopUids.has(finalStopUid);
-            var finalStopClipName = findSaeivStopClipName(targetEntry);
-            var finalStopAnnouncementQueued = announceStopArrivalOnce(targetEntry, {
-              onPlayed: function () {
+            if (isSaeivTransdevAutoVoiceActive()) {
+              maybeAnnounceSaeivTransdevTerminusApproach(targetEntry, {
+                outsideStopArea: outsideAnyStopAreaForAnnouncement
+              });
+            } else {
+              var finalStopUid = Number(targetEntry && targetEntry.uid);
+              var finalStopWasAlreadyHandled = Number.isFinite(finalStopUid) && saeivAnnouncedStopUids.has(finalStopUid);
+              var finalStopClipName = findSaeivStopClipName(targetEntry);
+              var finalStopAnnouncementQueued = announceStopArrivalOnce(targetEntry, {
+                onPlayed: function () {
+                  scheduleSaeivTerminusAnnouncement(targetEntry);
+                }
+              });
+              if (!finalStopAnnouncementQueued && !finalStopWasAlreadyHandled && !finalStopClipName) {
                 scheduleSaeivTerminusAnnouncement(targetEntry);
               }
-            });
-            if (!finalStopAnnouncementQueued && !finalStopWasAlreadyHandled && !finalStopClipName) {
-              scheduleSaeivTerminusAnnouncement(targetEntry);
             }
           } else {
-            announceStopArrivalOnce(targetEntry);
+            if (!isSaeivTransdevAutoVoiceActive() || outsideAnyStopAreaForAnnouncement) {
+              announceStopArrivalOnce(targetEntry);
+            }
           }
         }
         var reachedTerminusNow = targetIndex >= lastIndex;
@@ -1676,6 +2370,7 @@
         saeivRouteState = null;
         saeivRouteStartPoint = null;
         saeivTerminusAnnouncedRouteKey = "";
+        saeivTransdevTerminusApproachAnnouncedRouteKey = "";
         saeivRouteSuffixCache = new Map();
         saeivNominalSegmentDistanceCache = new Map();
         saeivReachedStopsCount = 0;
@@ -1705,6 +2400,8 @@
         telemetryInstantSpeedKmh = Number.POSITIVE_INFINITY;
         telemetryEstimatedSpeedKmh = Number.POSITIVE_INFINITY;
         stopSaeivRouteAudioPlayback();
+        resetSaeivStopRequestAudioState();
+        saeivStopRequestAudioPlayedSegments = new Set();
         saeivRouteAudio.routeKey = "";
         saeivRouteAudio.styleName = "";
         saeivRouteAudio.folderPath = "";
@@ -1736,6 +2433,13 @@
         }
         saeivRouteState.started = true;
         var entries = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
+        var lastIndex = Math.max(0, entries.length - 1);
+        if (entries.length) {
+          saeivRouteState.reachedIndex = 0;
+          saeivRouteState.targetIndex = lastIndex > 0 ? 1 : 0;
+          setSaeivStoppedAtStop(0, entries);
+          resetSaeivPassengerTargetState(entries, saeivRouteState.targetIndex);
+        }
         if (entries.length) {
           var firstUid = Number(entries[0] && entries[0].uid);
           if (Number.isFinite(firstUid)) {
@@ -1772,6 +2476,7 @@
         saeivTerminusReachedAtMs = 0;
         saeivRouteCompletedAtMs = 0;
         saeivTerminusAnnouncedRouteKey = "";
+        saeivTransdevTerminusApproachAnnouncedRouteKey = "";
         var lastIndex = entries.length - 1;
         var reachedIndex = -1;
         var targetIndex = 0;
@@ -1817,6 +2522,7 @@
         saeivRouteStartPoint = routeStartPoint;
         saeivRouteSuffixCache = new Map();
         saeivNominalSegmentDistanceCache = new Map();
+        var lineAudioConfig = resolveSaeivLineAudioConfig(line, route, null);
         saeivRouteState = {
           selectedKey: selectedKey,
           lineUid: String(line.uid || ""),
@@ -1826,7 +2532,8 @@
           stops: entries,
           started: false,
           reachedIndex: reachedIndex,
-          targetIndex: targetIndex
+          targetIndex: targetIndex,
+          lineAudioConfig: lineAudioConfig
         };
         saeivReachedStopsCount = 0;
         saeivServedStopsCount = 0;
@@ -1868,6 +2575,9 @@
         saeivRouteAudio.terminusClipName = "";
         saeivRouteAudio.terminusAudio = null;
         saeivRouteAudio.preparePromise = null;
+        resetSaeivStopRequestAudioState();
+        saeivStopRequestAudioPlayedSegments = new Set();
+        prepareSaeivGlobalAudioFolder(lineAudioConfig.globalAudioFolderName).catch(function () { });
         saeivLastAction = "game-route-selected";
         saeivLastStateKey = "";
         if (!lastBridgeArrowPoint && routeStartPoint) {
@@ -1888,6 +2598,10 @@
         saeivRouteAudio.preparePromise = audioPreparePromise;
         if (autoAnnounceOnSelection) {
           scheduleSaeivDestinationAnnouncementWhenAudioReady(selectedKey);
+        }
+        var autoStartInfo = getSaeivRouteStartStopInfo(telemetryLastSignal);
+        if (autoStartInfo && autoStartInfo.atStartStop && saeivRouteState && saeivRouteState.started !== true) {
+          startSaeivSelectedRoute();
         }
         return Object.assign({ ok: true }, buildRouteRuntimeSummary());
       }

@@ -347,6 +347,9 @@
       function applyPassengerValidationSoundsEnabled(value, options) {
         var opts = options && typeof options === "object" ? options : {};
         saeivPassengerValidationSoundsEnabled = normalizePassengerValidationSoundsEnabled(value);
+        if (saeivPassengerValidationSoundsEnabled !== true && typeof stopSaeivStopRequestAudioPlayback === "function") {
+          stopSaeivStopRequestAudioPlayback();
+        }
         saeivLastStateKey = "";
         if (opts.syncUi !== false) syncPassengerValidationSoundsUi();
         if (opts.syncState !== false) syncSaeivExternalState(true);
@@ -727,18 +730,35 @@
         if (currentGps === desired) return false;
         return applyWidgetSelectionForGroup(GPS_WIDGET_TYPES, desired);
       }
+      function clearRuntimeSessionForGameModeSwitch() {
+        if (saeivRouteState && typeof saeivRouteState === "object" && typeof clearSaeivRouteSelection === "function") {
+          clearSaeivRouteSelection();
+          return true;
+        }
+        if (typeof clearManualWazeBridgeDestination === "function") {
+          return clearManualWazeBridgeDestination();
+        }
+        return false;
+      }
       function setGameMode(mode, options) {
         var opts = options && typeof options === "object" ? options : {};
         var shouldApply = opts.apply !== false;
         var shouldSwapLayout = opts.swapLayout !== false;
+        var previousMode = normalizeGameMode(currentGameMode);
+        var nextMode = normalizeGameMode(mode);
+        var modeChanged = !!previousMode && !!nextMode && previousMode !== nextMode;
 
         // On sauvegarde l'état actuel avant de changer (si un mode était actif)
         if (shouldSwapLayout && currentGameMode) {
           saveWidgetLayoutState();
         }
 
+        if (modeChanged && opts.clearRuntimeSession !== false) {
+          clearRuntimeSessionForGameModeSwitch();
+        }
+
         closeManagerTransientPanels();
-        currentGameMode = normalizeGameMode(mode);
+        currentGameMode = nextMode;
 
         // On restaure l'état du nouveau mode
         if (shouldSwapLayout && currentGameMode) {

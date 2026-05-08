@@ -209,14 +209,14 @@
       function applyGlobalAudioVolumePercent(value, options) {
         var opts = options && typeof options === "object" ? options : {};
         globalAudioVolumePercent = clampGlobalAudioVolumePercent(value);
-        var volume = getGlobalAudioVolumeFactor();
-        if (saeivRouteAudio && saeivRouteAudio.audio) {
-          try { saeivRouteAudio.audio.volume = volume; } catch (err0) { }
-        }
-        if (saeivRouteAudio && saeivRouteAudio.terminusAudio) {
-          try { saeivRouteAudio.terminusAudio.volume = volume; } catch (err1) { }
+        if (typeof syncSaeivRuntimeAudioVolumes === "function") {
+          syncSaeivRuntimeAudioVolumes();
         }
         if (opts.syncUi !== false) syncGlobalAudioVolumeUi();
+        if (opts.syncState !== false && typeof syncSaeivExternalState === "function") {
+          saeivLastStateKey = "";
+          syncSaeivExternalState(true);
+        }
       }
       function playNotificationSound() {
         if (!notificationSoundsEnabled) return;
@@ -1066,7 +1066,7 @@
         applyManagerScalePercent(managerScalePercent, { render: false, syncUi: true });
         applyTelemetryOverlayAlphaPercent(telemetryOverlayAlphaPercent, { syncUi: true });
         applyNotificationScalePercent(notificationScalePercent, { syncUi: true });
-        applyGlobalAudioVolumePercent(globalAudioVolumePercent, { syncUi: true });
+        applyGlobalAudioVolumePercent(globalAudioVolumePercent, { syncUi: true, syncState: false });
         syncSaeivTimeSystemUi();
         syncStopAnnouncementSoundsUi();
         syncPassengerValidationSoundsUi();
@@ -1512,6 +1512,7 @@
         if (el.telemetryErrorOverlay) el.telemetryErrorOverlay.hidden = true;
         document.body.classList.remove("is-telemetry-blocked");
         syncExternalTelemetryBlocks();
+        if (typeof refreshTelemetryVisibility === "function") refreshTelemetryVisibility();
       }
 
       function updatePresetSelectionIndicators() {

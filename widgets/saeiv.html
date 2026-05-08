@@ -879,6 +879,12 @@
       overflow: hidden;
     }
 
+    .service-end-frame {
+      gap: 0.7em;
+      padding: 5% 0 0;
+      overflow: hidden;
+    }
+
     .service-confirm-title {
       font-size: 1.15em !important;
       font-weight: 700;
@@ -929,6 +935,30 @@
 
     .hud .service-accept-btn {
       font-size: 1.2em !important;
+    }
+
+    .service-end-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      height: 30%;
+      margin-top: auto;
+      border-top: 0.08em solid rgba(207, 230, 255, 0.38);
+    }
+
+    .service-end-btn {
+      height: 100%;
+      margin-top: 0;
+      border-top: 0;
+    }
+
+    .service-end-btn + .service-end-btn {
+      border-left: 0.08em solid rgba(207, 230, 255, 0.38);
+    }
+
+    .service-end-btn:disabled {
+      opacity: 0.65;
+      cursor: wait;
     }
 
     .alarm-scroll {
@@ -2014,7 +2044,7 @@
                 </button>
                 <button type="button" class="menu-tile is-enabled" data-menu-target="prise-service-complete" aria-label="Prise de service complete">
                   <img class="menu-tile-icon" src="../images/saiev/menu_service_complete.png" alt="" aria-hidden="true" />
-                  <span class="menu-tile-label">Prise de service<br>complete</span>
+                  <span class="menu-tile-label">Prise de service<br>complète</span>
                 </button>
                 <button type="button" class="menu-tile" disabled aria-label="Test d exploitation">
                   <img class="menu-tile-icon" src="../images/saiev/menu_test_exploitation.png" alt="" aria-hidden="true" />
@@ -2166,6 +2196,7 @@
               id="serviceLineInput"
               type="text"
               inputmode="numeric"
+              pattern="[0-9]*"
               autocomplete="off"
               spellcheck="false"
               maxlength="6"
@@ -2207,6 +2238,15 @@
               </div>
               <button type="button" class="service-accept-btn" id="serviceAcceptValidateBtn">VALIDER</button>
             </div>
+
+            <div class="service-confirm-frame service-end-frame" id="serviceEndFrame" aria-hidden="true">
+              <div class="service-confirm-title">Fin de service</div>
+              <div class="service-confirm-line">Souhaitez-vous forcer la fin de service&nbsp;?</div>
+              <div class="service-end-actions">
+                <button type="button" class="service-accept-btn service-end-btn" id="serviceEndYesBtn">OUI</button>
+                <button type="button" class="service-accept-btn service-end-btn" id="serviceEndNoBtn">NON</button>
+              </div>
+            </div>
           </div>
         </section>
       </section>
@@ -2234,7 +2274,7 @@
       const SERVICE_VEHICLE_MIN_NUMBER = 1;
       const SERVICE_VEHICLE_MAX_NUMBER = 30;
       const SERVICE_MATRICULE_MAX_LENGTH = 32;
-      const DEV_RATP_GLOBAL_FOLDER = "../map_files/dbus_fis/global/1_RATP%20%5BGST_TC%5D%20%7B0.25%7D/";
+      const DEV_RATP_GLOBAL_FOLDER = "../map_files/dbus_fis/global/RATP/";
       const DEV_RATP_GLOBAL_CLIPS = [
         "Validez votre titre.mp3",
         "Avancez vers le fond.mp3",
@@ -2311,6 +2351,9 @@
       const serviceAcceptAgentVehicleEl = document.getElementById("serviceAcceptAgentVehicle");
       const serviceAcceptMissionEl = document.getElementById("serviceAcceptMission");
       const serviceAcceptValidateBtnEl = document.getElementById("serviceAcceptValidateBtn");
+      const serviceEndFrameEl = document.getElementById("serviceEndFrame");
+      const serviceEndYesBtnEl = document.getElementById("serviceEndYesBtn");
+      const serviceEndNoBtnEl = document.getElementById("serviceEndNoBtn");
       const serviceLineKeyButtons = Array.from(document.querySelectorAll("[data-service-key]"));
       const menuCloseBtnEl = document.getElementById("menuCloseBtn");
       const menuScrollUpBtnEl = document.getElementById("menuScrollUpBtn");
@@ -2323,6 +2366,8 @@
       const messageTabButtons = Array.from(document.querySelectorAll("[data-message-tab]"));
       const menuGridPages = Array.from(document.querySelectorAll("[data-menu-grid]"));
       const menuTargetButtons = Array.from(document.querySelectorAll("[data-menu-target]"));
+      const serviceCompleteMenuBtnEl = document.querySelector('[data-menu-target="prise-service-complete"]');
+      const serviceCompleteMenuLabelEl = serviceCompleteMenuBtnEl ? serviceCompleteMenuBtnEl.querySelector(".menu-tile-label") : null;
       const diffusionGridEl = document.getElementById("diffusionGrid");
       const TRACK_DEFAULT_TOP = 15;
       const TRACK_DEFAULT_BOTTOM = 82.1;
@@ -2401,6 +2446,12 @@
         const urls = Array.isArray(payload.globalAudioUrls)
           ? payload.globalAudioUrls.map((url) => String(url || "").trim()).filter(Boolean)
           : [];
+        const hasExplicitGlobalAudioState =
+          Object.prototype.hasOwnProperty.call(payload, "globalAudioUrls") ||
+          Object.prototype.hasOwnProperty.call(payload, "globalAudioLabels") ||
+          Object.prototype.hasOwnProperty.call(payload, "globalAudioFolderPath") ||
+          Object.prototype.hasOwnProperty.call(payload, "globalAudioCount");
+        if (!urls.length && hasExplicitGlobalAudioState) return payload;
         if (urls.length || !isDevMode) return payload;
         const fallbackUrls = DEV_RATP_GLOBAL_CLIPS.map((name) => {
           const encodedName = encodeURIComponent(String(name || "").trim());
@@ -2483,6 +2534,28 @@
           btn.disabled = false;
           btn.setAttribute("aria-disabled", "false");
         });
+      }
+
+      function hasActiveServiceRoute(payload = latestStatePayload) {
+        const data = payload && typeof payload === "object" ? payload : {};
+        return data.routeSelected === true ||
+          data.selected === true ||
+          !!String(data.selectedRouteUid || data.routeUid || data.selectedLineUid || "").trim();
+      }
+
+      function updateServiceCompleteMenuButton(payload = latestStatePayload) {
+        if (!serviceCompleteMenuBtnEl) return;
+        const isEndService = hasActiveServiceRoute(payload);
+        serviceCompleteMenuBtnEl.setAttribute(
+          "aria-label",
+          isEndService ? "Fin de service" : "Prise de service complete"
+        );
+        serviceCompleteMenuBtnEl.setAttribute("data-service-mode", isEndService ? "end" : "start");
+        if (serviceCompleteMenuLabelEl) {
+          serviceCompleteMenuLabelEl.innerHTML = isEndService
+            ? "Fin de service"
+            : "Prise de service<br>complète";
+        }
       }
 
       function applyScale() {
@@ -3205,28 +3278,26 @@
           .catch(() => DEFAULT_DBUS_VERSION);
       }
 
-      function sanitizeServiceLineUid(raw) {
+      function sanitizeServiceDigits(raw, maxLength) {
         return String(raw || "")
-          .replace(/[^0-9A-Za-z_-]+/g, "")
-          .slice(0, SERVICE_LINE_UID_MAX_LENGTH);
+          .replace(/[^0-9]+/g, "")
+          .slice(0, Math.max(0, Number(maxLength) || 0));
+      }
+
+      function sanitizeServiceLineUid(raw) {
+        return sanitizeServiceDigits(raw, SERVICE_LINE_UID_MAX_LENGTH);
       }
 
       function sanitizeServiceVehicleNumber(raw) {
-        return String(raw || "")
-          .replace(/[^0-9]+/g, "")
-          .slice(0, 2);
+        return sanitizeServiceDigits(raw, 2);
       }
 
       function sanitizeServiceRouteUid(raw) {
-        return String(raw || "")
-          .replace(/[^0-9A-Za-z_-]+/g, "")
-          .slice(0, SERVICE_LINE_UID_MAX_LENGTH);
+        return sanitizeServiceDigits(raw, SERVICE_LINE_UID_MAX_LENGTH);
       }
 
       function sanitizeServiceMatricule(raw) {
-        return String(raw || "")
-          .replace(/[^\w-]+/g, "")
-          .slice(0, SERVICE_MATRICULE_MAX_LENGTH);
+        return sanitizeServiceDigits(raw, SERVICE_MATRICULE_MAX_LENGTH);
       }
 
       function sanitizeServiceInputValue(raw) {
@@ -3322,10 +3393,18 @@
         serviceLineValidateBtnEl.setAttribute("aria-disabled", isValid ? "false" : "true");
       }
 
+      function moveServiceLineInputCaretToEnd() {
+        if (!serviceLineInputEl) return;
+        const end = String(serviceLineInputEl.value || "").length;
+        try { serviceLineInputEl.setSelectionRange(end, end); } catch {}
+        try { serviceLineInputEl.scrollLeft = serviceLineInputEl.scrollWidth; } catch {}
+      }
+
       function setServiceLineInputValue(nextValue) {
         if (!serviceLineInputEl) return;
         serviceLineInputEl.value = sanitizeServiceInputValue(nextValue);
         updateServiceLineValidation();
+        moveServiceLineInputCaretToEnd();
       }
 
       function setServiceFrameDisplay(el, visible) {
@@ -3341,6 +3420,15 @@
         }
         setServiceFrameDisplay(serviceConfirmFrameEl, false);
         setServiceFrameDisplay(serviceAcceptFrameEl, false);
+        setServiceFrameDisplay(serviceEndFrameEl, false);
+        if (serviceEndYesBtnEl) {
+          serviceEndYesBtnEl.disabled = false;
+          serviceEndYesBtnEl.setAttribute("aria-disabled", "false");
+        }
+        if (serviceEndNoBtnEl) {
+          serviceEndNoBtnEl.disabled = false;
+          serviceEndNoBtnEl.setAttribute("aria-disabled", "false");
+        }
         if (serviceCompletePaneEl) serviceCompletePaneEl.classList.remove("is-confirming");
       }
 
@@ -3357,6 +3445,12 @@
           setServiceFrameDisplay(serviceConfirmFrameEl, false);
           showServiceAcceptFrame();
         }, 3000);
+      }
+
+      function showServiceEndConfirmFrame() {
+        hideServiceConfirmFrame();
+        if (serviceCompletePaneEl) serviceCompletePaneEl.classList.add("is-confirming");
+        setServiceFrameDisplay(serviceEndFrameEl, true);
       }
 
       function getServiceLineInfo(lineUid) {
@@ -3484,6 +3578,23 @@
         if (serviceAcceptMissionEl) serviceAcceptMissionEl.textContent = `Mission : ${mission}`;
       }
 
+      function notifyServiceAcceptDisplayed() {
+        invokeServiceHostFunction("gamePlaySaeivServiceAcceptSound")
+          .then((result) => {
+            if (result && result.handled) return;
+            post("saeiv:service_accept_displayed", {
+              lineUid: serviceSelectedLineUid,
+              routeUid: serviceSelectedRouteUid
+            });
+          })
+          .catch(() => {
+            post("saeiv:service_accept_displayed", {
+              lineUid: serviceSelectedLineUid,
+              routeUid: serviceSelectedRouteUid
+            });
+          });
+      }
+
       function showServiceAcceptFrame() {
         if (serviceCompletePaneEl) serviceCompletePaneEl.classList.add("is-confirming");
         renderServiceAcceptFrameDetails();
@@ -3492,6 +3603,7 @@
           serviceAcceptValidateBtnEl.setAttribute("aria-disabled", "false");
         }
         setServiceFrameDisplay(serviceAcceptFrameEl, true);
+        notifyServiceAcceptDisplayed();
       }
 
       function ensureServiceLineUidsLoaded() {
@@ -3593,6 +3705,7 @@
         if (serviceLineInputEl) {
           window.setTimeout(() => {
             try { serviceLineInputEl.focus({ preventScroll: true }); } catch {}
+            moveServiceLineInputCaretToEnd();
           }, 0);
         }
       }
@@ -3691,6 +3804,26 @@
         validateServiceCompleteLineStep();
       }
 
+      async function requestForceEndService() {
+        if (serviceEndYesBtnEl) {
+          serviceEndYesBtnEl.disabled = true;
+          serviceEndYesBtnEl.setAttribute("aria-disabled", "true");
+        }
+        if (serviceEndNoBtnEl) {
+          serviceEndNoBtnEl.disabled = true;
+          serviceEndNoBtnEl.setAttribute("aria-disabled", "true");
+        }
+        const clearResult = await invokeServiceHostFunction("gameClearLineRoute");
+        if (!clearResult.handled) {
+          post("saeiv:clear_route");
+        }
+        post("saeiv:request_state");
+        window.setTimeout(() => {
+          post("saeiv:request_state");
+        }, 160);
+        setOverlayPage("ligne");
+      }
+
       async function requestServiceCompleteRouteStart() {
         if (!serviceSelectedLineUid || !serviceSelectedRouteUid) return;
         setServiceStartButtonBusy(true);
@@ -3760,7 +3893,13 @@
         if (nextPage === "menu" && prevPage !== "menu") setMenuGridPage(MENU_GRID_MIN_PAGE);
         if (nextPage === "menu") updateMenuTargetButtonsAvailability();
         if (nextPage === "messagerie" && prevPage !== "messagerie") activateMessageTab("regulateur");
-        if (nextPage === "prise-service-complete" && prevPage !== "prise-service-complete") resetServiceCompleteLineStep();
+        if (nextPage === "prise-service-complete" && prevPage !== "prise-service-complete") {
+          if (hasActiveServiceRoute()) {
+            showServiceEndConfirmFrame();
+          } else {
+            resetServiceCompleteLineStep();
+          }
+        }
         if (nextPage === "ligne") updateDynamicTrackBounds();
       }
 
@@ -3934,6 +4073,7 @@
         applyDiffusionAudioVolumeFromPayload(data);
         updateDiffusionActionButtons(data);
         const hasLineSelection = data.lineSelected === true || !!String(data.selectedLineUid || data.lineNumber || "").trim();
+        updateServiceCompleteMenuButton(data);
 
         if (!hasLineSelection) {
           trackExtendTop = false;
@@ -4212,7 +4352,24 @@
           if (key === "Enter") {
             event.preventDefault();
             if (serviceLineValidateBtnEl && !serviceLineValidateBtnEl.disabled) validateServiceCompleteCurrentStep();
+            return;
           }
+          if (/^[0-9]$/.test(key)) return;
+          if (event.ctrlKey || event.metaKey || event.altKey) return;
+          const allowedKeys = new Set([
+            "Backspace",
+            "Delete",
+            "ArrowLeft",
+            "ArrowRight",
+            "ArrowUp",
+            "ArrowDown",
+            "Home",
+            "End",
+            "Tab",
+            "Escape"
+          ]);
+          if (allowedKeys.has(key)) return;
+          event.preventDefault();
         });
       }
 
@@ -4221,9 +4378,7 @@
           btn.addEventListener("click", () => {
             const key = String(btn.getAttribute("data-service-key") || "").trim();
             if (!/^\d$/.test(key) || !serviceLineInputEl) return;
-            const nextValue = serviceCompleteStep === "vehicle"
-              ? key
-              : String(serviceLineInputEl.value || "") + key;
+            const nextValue = String(serviceLineInputEl.value || "") + key;
             setServiceLineInputValue(nextValue);
             if (serviceCompleteStep === "line" || serviceCompleteStep === "route") ensureServiceLineUidsLoaded();
           });
@@ -4255,6 +4410,22 @@
         serviceAcceptValidateBtnEl.addEventListener("click", () => {
           if (serviceAcceptValidateBtnEl.disabled) return;
           requestServiceCompleteRouteStart();
+        });
+      }
+
+      if (serviceEndYesBtnEl) {
+        serviceEndYesBtnEl.addEventListener("click", () => {
+          if (serviceEndYesBtnEl.disabled) return;
+          requestForceEndService().catch(() => {
+            setOverlayPage("ligne");
+          });
+        });
+      }
+
+      if (serviceEndNoBtnEl) {
+        serviceEndNoBtnEl.addEventListener("click", () => {
+          if (serviceEndNoBtnEl.disabled) return;
+          setOverlayPage("menu");
         });
       }
 
@@ -4294,7 +4465,8 @@
 
       if (menuTargetButtons.length) {
         menuTargetButtons.forEach((btn) => {
-          btn.addEventListener("click", () => {
+          btn.addEventListener("click", (event) => {
+            event.stopPropagation();
             if (btn.disabled) return;
             const page = String(btn.getAttribute("data-menu-target") || "").trim().toLowerCase();
             setOverlayPage(page);

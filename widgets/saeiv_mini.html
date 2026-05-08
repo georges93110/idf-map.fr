@@ -1819,6 +1819,18 @@
           remaining: Math.max(0, total - done)
         };
       }
+      function hasStopPassengerWork(data) {
+        var totals = getStopPassengerServiceTotals(data);
+        var passengersAtStop = Math.max(0, Math.round(Number(data && data.passengersAtStop) || 0));
+        var stopRequested = data && data.stopRequested === true;
+        return passengersAtStop > 0 || totals.boardTotal > 0 || totals.alightTotal > 0 || stopRequested;
+      }
+      function hasStopOptionalPlan(data) {
+        return !!(
+          data &&
+          Object.prototype.hasOwnProperty.call(data, "stopOptionalByPlan")
+        );
+      }
       function hasStopPassengerServiceTotals(data, isAtStop) {
         if (!isAtStop) return false;
         if (!(data && data.busStatusPassengerServiceLinked === true)) return false;
@@ -1867,6 +1879,8 @@
       }
       function isNonMandatoryStop(data, isAtStop, displayIndex) {
         void isAtStop;
+        if (hasStopOptionalPlan(data)) return data.stopOptionalByPlan === true;
+        if (hasStopPassengerWork(data)) return false;
         var lastIndex = Math.max(0, Math.floor(Number(data && data.routeStopCount) || 0) - 1);
         var idx = Number(displayIndex);
         if (!Number.isFinite(idx)) idx = getDisplayIndex(data, lastIndex);
@@ -2425,7 +2439,7 @@
       }
       function syncOptionalStopBadgeLatch(data, shouldLatch, stopIndex, lastIndex) {
         var idx = Number(stopIndex);
-        if (isTerminalStopIndex(idx, lastIndex)) {
+        if (isTerminalStopIndex(idx, lastIndex) || (hasStopOptionalPlan(data) && data.stopOptionalByPlan !== true)) {
           uiOptionalStopBadgeIndex = Number.NaN;
           uiOptionalStopBadgePoint = null;
           return false;

@@ -8,6 +8,14 @@
         var now = Date.now();
         var saeivMiniVisible = typeof findWidgetIdByType === "function" ? !!findWidgetIdByType("saeiv_mini") : false;
         var busStatusVisible = typeof findWidgetIdByType === "function" ? !!findWidgetIdByType("bus_status") : false;
+        var saeivStateForWaze = null;
+        if (typeof buildSaeivStatePayloadFromGame === "function") {
+          try {
+            saeivStateForWaze = buildSaeivStatePayloadFromGame();
+          } catch (err) {
+            saeivStateForWaze = null;
+          }
+        }
         var packet = {
           kind: "waze-dev",
           source: "game",
@@ -26,6 +34,27 @@
           trailerDamage: (telemetryLastSignal && Number.isFinite(telemetryLastSignal.trailerDamagePercent)) ? telemetryLastSignal.trailerDamagePercent : 0,
           cargoDamage: (telemetryLastSignal && Number.isFinite(telemetryLastSignal.cargoDamagePercent)) ? telemetryLastSignal.cargoDamagePercent : 0
         };
+        if (saeivStateForWaze && typeof saeivStateForWaze === "object") {
+          [
+            "passengersInBus",
+            "passengersAtStop",
+            "busMaxCapacity",
+            "busMaxCapacityUnlimited",
+            "busMaxCapacityDisplay",
+            "stopBoardingTotal",
+            "stopBoardingDone",
+            "stopAlightingTotal",
+            "stopAlightingDone",
+            "busStatusPassengerServiceActive",
+            "busStatusPassengerServiceReady",
+            "passengerServiceActive",
+            "passengerServiceReady"
+          ].forEach(function (key) {
+            if (Object.prototype.hasOwnProperty.call(saeivStateForWaze, key)) {
+              packet[key] = saeivStateForWaze[key];
+            }
+          });
+        }
         Object.keys(payload).forEach(function (key) {
           packet[key] = payload[key];
         });
@@ -231,6 +260,11 @@
         var start = lastBridgeArrowPoint || null;
         postWazeBridgePayload({
           step: start ? "A" : "ready",
+          clearNavigation: true,
+          clearDestination: true,
+          routeSelected: false,
+          routeWaitingStart: false,
+          routeStarted: false,
           start: start,
           arrow: start,
           end: null,

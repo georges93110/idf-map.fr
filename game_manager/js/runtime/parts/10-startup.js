@@ -9,7 +9,7 @@
       syncManagerScaleUi();
       applyTelemetryOverlayAlphaPercent(telemetryOverlayAlphaPercent, { syncUi: true });
       applyNotificationScalePercent(notificationScalePercent, { syncUi: true });
-      applyGlobalAudioVolumePercent(globalAudioVolumePercent, { syncUi: true });
+      applyGlobalAudioVolumePercent(globalAudioVolumePercent, { syncUi: true, syncState: false });
 
       (function syncMainMenuHeaderTitle() {
         var titleMainEl = document.getElementById("mainMenuTitleMain");

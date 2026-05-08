@@ -373,8 +373,8 @@
       position: absolute;
       left: 2%;
       top: 2%;
-      width: 55px;
-      height: 55px;
+      width: var(--waze-speed-badge-size);
+      height: var(--waze-speed-badge-size);
       padding: 0;
       border: none;
       border-radius: 20%;
@@ -406,6 +406,86 @@
       text-transform: lowercase;
       color: #ffffff;
       opacity: 0.85;
+    }
+
+    .middle-passenger-badge {
+      position: absolute;
+      left: 2%;
+      top: calc(2% + var(--waze-speed-badge-size) + 6px);
+      width: var(--waze-speed-badge-size);
+      height: 24px;
+      padding: 0 4px;
+      border: none;
+      border-radius: 7px;
+      background: #151516;
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none;
+      pointer-events: none;
+      z-index: 10;
+      box-sizing: border-box;
+      font-variant-numeric: tabular-nums;
+      overflow: visible;
+    }
+
+    .middle-passenger-badge[hidden] {
+      display: none !important;
+    }
+
+    .middle-passenger-flow {
+      width: 9px;
+      height: 9px;
+      display: none;
+      flex: 0 0 9px;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: -13px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .middle-passenger-flow.is-boarding,
+    .middle-passenger-flow.is-alighting {
+      display: inline-flex;
+    }
+
+    .middle-passenger-flow::before {
+      content: "";
+      display: block;
+      width: 9px;
+      height: 9px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #22c55e;
+      border-radius: 50%;
+      box-sizing: border-box;
+      animation: passenger-flow-spin 0.7s linear infinite;
+    }
+
+    @keyframes passenger-flow-spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .middle-passenger-count {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      text-align: center;
+      font-size: 0.68em;
+      font-weight: 800;
+      line-height: 1;
+      color: #ffffff;
+      white-space: nowrap;
+      letter-spacing: 0;
     }
 
 
@@ -958,6 +1038,10 @@
             <span class="middle-speed-value">0</span>
             <span class="middle-speed-unit">km/h</span>
           </div>
+          <div id="gpsPassengerBadge" class="middle-passenger-badge" aria-live="polite" aria-label="Passagers" hidden>
+            <span id="gpsPassengerFlow" class="middle-passenger-flow" aria-hidden="true"></span>
+            <span id="gpsPassengerCount" class="middle-passenger-count">0/0</span>
+          </div>
         </section>
 
         <footer class="nav-footer">
@@ -1053,6 +1137,9 @@
       const mapSpeedValueEl = mapSpeedBadgeEl && mapSpeedBadgeEl.querySelector
         ? mapSpeedBadgeEl.querySelector(".middle-speed-value")
         : null;
+      const gpsPassengerBadgeEl = document.getElementById("gpsPassengerBadge");
+      const gpsPassengerFlowEl = document.getElementById("gpsPassengerFlow");
+      const gpsPassengerCountEl = document.getElementById("gpsPassengerCount");
       const footerSearchBtnEl = document.getElementById("footerSearchBtn");
       const footerFilterBtnEl = document.getElementById("footerFilterBtn");
       const navCenterToastEl = document.getElementById("navCenterToast");
@@ -1367,6 +1454,9 @@
       let manualZoomPinned = false;
       let manualZoomPinnedLevel = NaN;
       let fullBounds = null;
+      let baseTileLayer = null;
+      let leafletContentRefreshRaf = 0;
+      let lastLeafletBridgeRefreshAt = 0;
       let lastHostWidth = 0;
       let lastHostHeight = 0;
       let lastFrameWidth = 0;
@@ -1401,6 +1491,8 @@
       let destinationArrivalLockPoint = null;
       let destinationArrivalLockLoaded = false;
       let lastDestinationSelectionTs = 0;
+      let lastDestinationLocalNavRepairKey = "";
+      let lastDestinationLocalNavRepairAt = 0;
       let searchOpenGraceUntilTs = 0;
       let searchSelectionLockUntilTs = 0;
       const WAZE_SEARCH_ROUTE_DISTANCE_FROM_QUANTIZE = 10;
@@ -1449,6 +1541,7 @@
       const NAV_ROUTE_FALLBACK_MAX_JOIN_DISTANCE_M = 120;
       const NAV_ROUTE_TARGET_SNAP_MAX_DISTANCE_M = 160;
       const NAV_ROUTE_TARGET_REPAIR_COOLDOWN_MS = 1200;
+      const NAV_DESTINATION_LOCAL_REPAIR_COOLDOWN_MS = 1200;
       const bridgeFollowLerpMoving = 0.86;
       const bridgeFollowLerpStop = 0.92;
       const bridgeFollowSnapDistanceM = 6;
@@ -1585,6 +1678,137 @@
         if (!uiSpeedTweenRaf) {
           uiSpeedTweenRaf = requestAnimationFrame(runSpeedTweenLoop);
         }
+      }
+      let gpsPassengerLastInBus = 0;
+      let gpsPassengerLastBoardDone = 0;
+      let gpsPassengerLastAlightDone = 0;
+      let gpsPassengerLastFlow = "";
+      let gpsPassengerBadgeAllowed = false;
+      const gpsPassengerBadgeState = {
+        inBus: 0,
+        cap: 0,
+        capDisplay: "",
+        capUnlimited: false,
+        boardTotal: 0,
+        boardDone: 0,
+        alightTotal: 0,
+        alightDone: 0,
+        serviceActive: false
+      };
+      function hasOwnPayloadKey(payload, key) {
+        return !!(payload && typeof payload === "object" && Object.prototype.hasOwnProperty.call(payload, key));
+      }
+      function readNonNegativeInt(value, fallback = 0) {
+        const n = Math.round(Number(value));
+        return Number.isFinite(n) && n >= 0 ? n : fallback;
+      }
+      function setGpsPassengerBadge(payload, state) {
+        if (!gpsPassengerBadgeEl || !gpsPassengerCountEl || !gpsPassengerFlowEl) return;
+        const data = state && typeof state === "object" ? state : {};
+        if (hasOwnPayloadKey(payload, "gpsMiniPassengerBadgeAllowed")) {
+          gpsPassengerBadgeAllowed = payload.gpsMiniPassengerBadgeAllowed === true;
+        }
+        if (hasOwnPayloadKey(payload, "passengersInBus")) {
+          gpsPassengerBadgeState.inBus = readNonNegativeInt(payload.passengersInBus, gpsPassengerBadgeState.inBus);
+        } else if (hasOwnPayloadKey(payload, "passengerCount")) {
+          gpsPassengerBadgeState.inBus = readNonNegativeInt(payload.passengerCount, gpsPassengerBadgeState.inBus);
+        }
+        if (hasOwnPayloadKey(payload, "busMaxCapacity")) {
+          gpsPassengerBadgeState.cap = readNonNegativeInt(payload.busMaxCapacity, gpsPassengerBadgeState.cap);
+        } else if (Number.isFinite(Number(data.cap)) && data.cap > 0 && gpsPassengerBadgeState.cap <= 0) {
+          gpsPassengerBadgeState.cap = readNonNegativeInt(data.cap, gpsPassengerBadgeState.cap);
+        }
+        if (hasOwnPayloadKey(payload, "busMaxCapacityDisplay")) {
+          gpsPassengerBadgeState.capDisplay = String(payload.busMaxCapacityDisplay || "").trim();
+        } else if (!gpsPassengerBadgeState.capDisplay && data.capDisplay) {
+          gpsPassengerBadgeState.capDisplay = String(data.capDisplay || "").trim();
+        }
+        if (hasOwnPayloadKey(payload, "busMaxCapacityUnlimited")) {
+          gpsPassengerBadgeState.capUnlimited = payload.busMaxCapacityUnlimited === true;
+        } else if (data.capUnlimited === true) {
+          gpsPassengerBadgeState.capUnlimited = true;
+        }
+        if (hasOwnPayloadKey(payload, "stopBoardingTotal")) {
+          gpsPassengerBadgeState.boardTotal = readNonNegativeInt(payload.stopBoardingTotal, gpsPassengerBadgeState.boardTotal);
+        }
+        if (hasOwnPayloadKey(payload, "stopBoardingDone")) {
+          gpsPassengerBadgeState.boardDone = readNonNegativeInt(payload.stopBoardingDone, gpsPassengerBadgeState.boardDone);
+        }
+        if (hasOwnPayloadKey(payload, "stopAlightingTotal")) {
+          gpsPassengerBadgeState.alightTotal = readNonNegativeInt(payload.stopAlightingTotal, gpsPassengerBadgeState.alightTotal);
+        }
+        if (hasOwnPayloadKey(payload, "stopAlightingDone")) {
+          gpsPassengerBadgeState.alightDone = readNonNegativeInt(payload.stopAlightingDone, gpsPassengerBadgeState.alightDone);
+        }
+        if (hasOwnPayloadKey(payload, "busStatusPassengerServiceActive")) {
+          gpsPassengerBadgeState.serviceActive = payload.busStatusPassengerServiceActive === true;
+        } else if (hasOwnPayloadKey(payload, "passengerServiceActive")) {
+          gpsPassengerBadgeState.serviceActive = payload.passengerServiceActive === true;
+        } else if (hasOwnPayloadKey(payload, "busStatusPassengerServiceReady") && payload.busStatusPassengerServiceReady === true) {
+          gpsPassengerBadgeState.serviceActive = false;
+        } else if (hasOwnPayloadKey(payload, "passengerServiceReady") && payload.passengerServiceReady === true) {
+          gpsPassengerBadgeState.serviceActive = false;
+        } else if (data.serviceActive === true) {
+          gpsPassengerBadgeState.serviceActive = true;
+        }
+
+        const allowed = gpsPassengerBadgeAllowed === true;
+        const inBus = gpsPassengerBadgeState.inBus;
+        const capUnlimited = gpsPassengerBadgeState.capUnlimited === true;
+        const cap = gpsPassengerBadgeState.cap;
+        const capDisplayRaw = String(
+          gpsPassengerBadgeState.capDisplay ||
+          (capUnlimited ? "-" : (cap > 0 ? String(cap) : ""))
+        ).trim();
+        const capDisplay = capDisplayRaw || (capUnlimited ? "-" : "");
+        const hasCapacity = capUnlimited || capDisplay || cap > 0;
+        if (!allowed || !hasCapacity) {
+          gpsPassengerBadgeEl.hidden = true;
+          gpsPassengerFlowEl.className = "middle-passenger-flow";
+          gpsPassengerLastFlow = "";
+          gpsPassengerLastInBus = inBus;
+          gpsPassengerLastBoardDone = gpsPassengerBadgeState.boardDone;
+          gpsPassengerLastAlightDone = gpsPassengerBadgeState.alightDone;
+          return;
+        }
+
+        const boardDone = gpsPassengerBadgeState.boardDone;
+        const alightDone = gpsPassengerBadgeState.alightDone;
+        const boardRemaining = Math.max(0, gpsPassengerBadgeState.boardTotal - gpsPassengerBadgeState.boardDone);
+        const alightRemaining = Math.max(0, gpsPassengerBadgeState.alightTotal - gpsPassengerBadgeState.alightDone);
+        const serviceActive = gpsPassengerBadgeState.serviceActive === true;
+        let flow = "";
+        if (serviceActive) {
+          if (alightDone > gpsPassengerLastAlightDone || inBus < gpsPassengerLastInBus) {
+            flow = "alighting";
+          } else if (boardDone > gpsPassengerLastBoardDone || inBus > gpsPassengerLastInBus) {
+            flow = "boarding";
+          } else if (gpsPassengerLastFlow === "alighting" && alightRemaining > 0) {
+            flow = "alighting";
+          } else if (gpsPassengerLastFlow === "boarding" && boardRemaining > 0) {
+            flow = "boarding";
+          } else if (alightRemaining > 0 && boardRemaining <= 0) {
+            flow = "alighting";
+          } else if (boardRemaining > 0 && alightRemaining <= 0) {
+            flow = "boarding";
+          } else if (alightRemaining > 0) {
+            flow = "alighting";
+          } else if (boardRemaining > 0) {
+            flow = "boarding";
+          }
+        }
+
+        gpsPassengerBadgeEl.hidden = false;
+        gpsPassengerCountEl.textContent = String(inBus) + "/" + (capDisplay || String(cap || "-"));
+        gpsPassengerFlowEl.className = "middle-passenger-flow" + (flow ? " is-" + flow : "");
+        const flowLabel = flow === "boarding"
+          ? ", montee en cours"
+          : (flow === "alighting" ? ", descente en cours" : "");
+        gpsPassengerBadgeEl.setAttribute("aria-label", "Passagers " + String(inBus) + " sur " + (capDisplay || String(cap || "-")) + flowLabel);
+        gpsPassengerLastFlow = flow;
+        gpsPassengerLastInBus = inBus;
+        gpsPassengerLastBoardDone = boardDone;
+        gpsPassengerLastAlightDone = alightDone;
       }
       function normalizeIncomingSpeedKmh(rawSpeed, rawUnit = "") {
         const raw = Number(rawSpeed);
@@ -1776,6 +2000,32 @@
         updateNavigationViewRotationOrigin();
         updateGpsZoomButtons();
         saveZoomState();
+      }
+      function refreshLeafletContent(redrawTiles = false) {
+        if (leafletContentRefreshRaf) return;
+        leafletContentRefreshRaf = window.requestAnimationFrame(() => {
+          leafletContentRefreshRaf = 0;
+          try {
+            map.invalidateSize({ pan: false, animate: false });
+          } catch { }
+          if (redrawTiles && baseTileLayer && typeof baseTileLayer.redraw === "function") {
+            try { baseTileLayer.redraw(); } catch { }
+          }
+          const stickyTarget = getStickyTargetLatLng();
+          const zoom = getEffectiveFollowZoom(bridgeSpeedKmh);
+          if (stickyTarget && Number.isFinite(zoom)) {
+            try {
+              map.setView(centerForTarget(stickyTarget, zoom), zoom, { animate: false });
+            } catch { }
+          }
+          refreshNavigationStopMarkersVisuals();
+        });
+      }
+      function scheduleLeafletContentRefreshBurst() {
+        refreshLeafletContent(true);
+        [120, 350, 850, 1600].forEach((delayMs) => {
+          window.setTimeout(() => refreshLeafletContent(delayMs >= 350), delayMs);
+        });
       }
 
       function updateViewOffsetsFromViewport() {
@@ -3799,6 +4049,56 @@
         );
         return true;
       }
+      function isDirectDestinationRoute(points, startPoint, endPoint) {
+        const list = Array.isArray(points)
+          ? points.map((point) => normalizeBridgeWorldPoint(point)).filter(Boolean)
+          : [];
+        if (list.length < 3) return true;
+        const start = normalizeBridgeWorldPoint(startPoint);
+        const end = normalizeBridgeWorldPoint(endPoint);
+        if (!start || !end) return false;
+        const directDistance = worldDistanceMeters(start, end);
+        const routeDistance = worldPolylineDistanceMeters(list);
+        if (!Number.isFinite(directDistance) || directDistance <= 0 || !Number.isFinite(routeDistance)) return false;
+        return routeDistance <= (directDistance * 1.03);
+      }
+      function scheduleDestinationLocalNavRepair(destinationPoint, destinationName = "", startPoint = null) {
+        const dest = normalizeBridgeWorldPoint(destinationPoint);
+        if (!dest) return false;
+        const start =
+          normalizeBridgeWorldPoint(startPoint) ||
+          normalizeBridgeWorldPoint(lastBridgeArrowWorldPoint) ||
+          normalizeBridgeWorldPoint(TARGET_CENTER_WORLD);
+        if (!start) return false;
+        const key = [
+          Math.round(Number(start.x) / 10),
+          Math.round(Number(start.y) / 10),
+          Math.round(Number(dest.x) / 2),
+          Math.round(Number(dest.y) / 2)
+        ].join("|");
+        const now = Date.now();
+        if (
+          key === lastDestinationLocalNavRepairKey &&
+          (now - lastDestinationLocalNavRepairAt) < NAV_DESTINATION_LOCAL_REPAIR_COOLDOWN_MS
+        ) {
+          return false;
+        }
+        lastDestinationLocalNavRepairKey = key;
+        lastDestinationLocalNavRepairAt = now;
+        routeComputePending = true;
+        refreshDestinationLoadingState();
+        applyLocalForceNavRouteToDestination(dest, destinationName || "Destination")
+          .then((ok) => {
+            if (ok) return;
+            routeComputePending = false;
+            refreshDestinationLoadingState();
+          })
+          .catch(() => {
+            routeComputePending = false;
+            refreshDestinationLoadingState();
+          });
+        return true;
+      }
       function applyRouteTailPenultimateRule(worldPoints) {
         const list = Array.isArray(worldPoints) ? worldPoints.slice() : [];
         if (list.length < 3) return list;
@@ -4271,7 +4571,14 @@
         navRouteMarkerLatchedStopIndex = NaN;
         navRouteMarkerLatchedTs = 0;
       }
-      function stopMarkerStyleForIndex(index, reachedIndex, targetIndex) {
+      function isOptionalRouteStopMarker(stop) {
+        if (!stop || typeof stop !== "object") return false;
+        return stop.optional === true ||
+          stop.stopOptional === true ||
+          stop.facultative === true ||
+          stop.isOptional === true;
+      }
+      function stopMarkerStyleForIndex(index, reachedIndex, targetIndex, isOptional) {
         const i = Number(index);
         const reached = Number.isFinite(Number(reachedIndex)) ? Number(reachedIndex) : -1;
         const target = Number.isFinite(Number(targetIndex)) ? Number(targetIndex) : -1;
@@ -4282,6 +4589,7 @@
         let fillColor = "#ffffff";
         let opacity = 0.96;
         let fillOpacity = 0.94;
+        let weight = uiPx(3);
         if (isReached) {
           fillColor = "#c8ecff";
           opacity = 0.72;
@@ -4293,10 +4601,18 @@
           opacity = 0.99;
           fillOpacity = 0.99;
         }
+        if (isOptional === true && !isReached) {
+          radius = isTarget ? uiPx(11) : uiPx(10);
+          color = "#000000";
+          fillColor = "#e21b1b";
+          opacity = 1;
+          fillOpacity = 0.98;
+          weight = uiPx(4);
+        }
         return {
           radius: radius,
           color: color,
-          weight: uiPx(3),
+          weight: weight,
           opacity: opacity,
           fillColor: fillColor,
           fillOpacity: fillOpacity
@@ -4309,7 +4625,7 @@
           const index = Number(marker.__stopIndex);
           const reachedIndex = Number(marker.__reachedIndex);
           const targetIndex = Number(marker.__targetIndex);
-          marker.setStyle(stopMarkerStyleForIndex(index, reachedIndex, targetIndex));
+          marker.setStyle(stopMarkerStyleForIndex(index, reachedIndex, targetIndex, marker.__stopOptional === true));
         });
       }
       function setNavigationStopsFromWorldPoints(stops, reachedIndex, targetIndex) {
@@ -4322,7 +4638,7 @@
           if (!latlng) return null;
           const indexRaw = Number(stop && stop.index);
           const index = Number.isFinite(indexRaw) ? Math.floor(indexRaw) : idx;
-          return { latlng: latlng, index: index };
+          return { latlng: latlng, index: index, optional: isOptionalRouteStopMarker(stop) };
         }).filter(Boolean);
         if (!prepared.length) {
           if (
@@ -4357,10 +4673,11 @@
           const oldStopIndex = marker.__stopIndex;
           const oldReachedIndex = marker.__reachedIndex;
           const oldTargetIndex = marker.__targetIndex;
+          const oldStopOptional = marker.__stopOptional === true;
           const oldLatLng = marker.getLatLng();
 
           const latLngChanged = !oldLatLng || Math.abs(oldLatLng.lat - data.latlng.lat) > 0.0001 || Math.abs(oldLatLng.lng - data.latlng.lng) > 0.0001;
-          const styleChanged = oldStopIndex !== Number(data.index) || oldReachedIndex !== Number(reachedIndex) || oldTargetIndex !== Number(targetIndex);
+          const styleChanged = oldStopIndex !== Number(data.index) || oldReachedIndex !== Number(reachedIndex) || oldTargetIndex !== Number(targetIndex) || oldStopOptional !== (data.optional === true);
 
           if (latLngChanged) {
             marker.setLatLng(data.latlng);
@@ -4369,7 +4686,8 @@
             marker.__stopIndex = Number(data.index);
             marker.__reachedIndex = Number(reachedIndex);
             marker.__targetIndex = Number(targetIndex);
-            marker.setStyle(stopMarkerStyleForIndex(data.index, reachedIndex, targetIndex));
+            marker.__stopOptional = data.optional === true;
+            marker.setStyle(stopMarkerStyleForIndex(data.index, reachedIndex, targetIndex, data.optional === true));
           }
         }
       }
@@ -4690,6 +5008,17 @@
           pendingBridgePayload = payload;
           return;
         }
+        const shouldClearNavigationFromPayload =
+          payload.clearNavigation === true ||
+          payload.clearDestination === true;
+        if (shouldClearNavigationFromPayload) {
+          applyLocalCancelledRouteState();
+        }
+        const bridgeRefreshNow = Date.now();
+        if ((bridgeRefreshNow - lastLeafletBridgeRefreshAt) >= 1200) {
+          lastLeafletBridgeRefreshAt = bridgeRefreshNow;
+          refreshLeafletContent(false);
+        }
         const routePoints = Array.isArray(payload.routePoints) ? payload.routePoints : [];
         const routeStops = Array.isArray(payload.routeStops) ? payload.routeStops : [];
         const hasRoutePointsPayloadKey = Object.prototype.hasOwnProperty.call(payload, "routePoints");
@@ -4823,6 +5152,17 @@
         const cap = Math.round(Number(payload.busMaxCapacity));
         const inBus = Math.max(0, Math.round(Number(payload.passengersInBus) || 0));
         const busFull = !capUnlimited && Number.isFinite(cap) && cap > 0 && inBus >= cap;
+        setGpsPassengerBadge(payload, {
+          inBus: inBus,
+          cap: cap,
+          capDisplay: String(payload.busMaxCapacityDisplay || "").trim(),
+          capUnlimited: capUnlimited,
+          boardDone: boardDone,
+          alightDone: alightDone,
+          boardRemaining: boardRemaining,
+          alightRemaining: alightRemaining,
+          serviceActive: isServiceActive
+        });
 
         if (isStopServiceInProgress) window.__boardingHasStartedAtThisStop = true;
         if (!vehicleAtStop) window.__boardingHasStartedAtThisStop = false;
@@ -5005,6 +5345,16 @@
         }
         if (hasRoutePointsPayloadKey) {
           let usePayloadRoute = navigationActive && routePoints.length >= MIN_NAV_ROUTE_POINTS;
+          const destinationRouteNeedsLocalNav =
+            destinationMode &&
+            !isBusStepMode &&
+            !!effectiveEndPoint &&
+            isDirectDestinationRoute(routePoints, startPoint, effectiveEndPoint);
+          if (destinationRouteNeedsLocalNav) {
+            usePayloadRoute = false;
+            lastBridgeRouteWorldPoints = [];
+            scheduleDestinationLocalNavRepair(effectiveEndPoint, headerStopName || lastSearchDestinationName || "Destination", startPoint);
+          }
           let shouldForceLocalRouteRepair = false;
           let routeRepairKey = "";
           if (usePayloadRoute && targetStopPoint) {
@@ -5078,7 +5428,7 @@
               normalizeBridgeWorldPoint(effectiveEndPoint) ||
               normalizeBridgeWorldPoint(endPoint) ||
               normalizeBridgeWorldPoint(forcedSearchDestinationWorldPoint);
-            if (Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS) {
+            if (!destinationRouteNeedsLocalNav && Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS) {
               const cachedNearest = findNearestPointOnWorldRoute(fallbackStartPoint, lastBridgeRouteWorldPoints);
               const cachedRouteNearVehicle =
                 !!cachedNearest &&
@@ -5135,7 +5485,25 @@
             normalizeBridgeWorldPoint(effectiveEndPoint) ||
             normalizeBridgeWorldPoint(endPoint) ||
             normalizeBridgeWorldPoint(forcedSearchDestinationWorldPoint);
-          if (Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS) {
+          const destinationRouteNeedsLocalNav =
+            destinationMode &&
+            !isBusStepMode &&
+            !!fallbackEndPoint &&
+            (
+              !Array.isArray(lastBridgeRouteWorldPoints) ||
+              lastBridgeRouteWorldPoints.length < MIN_NAV_ROUTE_POINTS ||
+              isDirectDestinationRoute(lastBridgeRouteWorldPoints, fallbackStartPoint, fallbackEndPoint)
+            );
+          if (destinationRouteNeedsLocalNav) {
+            if (isDirectDestinationRoute(lastBridgeRouteWorldPoints, fallbackStartPoint, fallbackEndPoint)) {
+              lastBridgeRouteWorldPoints = [];
+              if (Array.isArray(navRouteLatLngs) && navRouteLatLngs.length <= MIN_NAV_ROUTE_POINTS) {
+                clearNavigationRoute();
+              }
+            }
+            scheduleDestinationLocalNavRepair(fallbackEndPoint, headerStopName || lastSearchDestinationName || "Destination", fallbackStartPoint);
+          }
+          if (!destinationRouteNeedsLocalNav && Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS) {
             const cachedNearest = findNearestPointOnWorldRoute(fallbackStartPoint, lastBridgeRouteWorldPoints);
             const cachedRouteNearVehicle =
               !!cachedNearest &&
@@ -5531,7 +5899,7 @@
         map.unproject(L.point(0, heightPx), maxNativeZoom),
         map.unproject(L.point(widthPx, 0), maxNativeZoom)
       );
-      L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, {
+      baseTileLayer = L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, {
         tileSize: tileSize,
         className: "waze-tiles-bright",
         minNativeZoom: minNativeZoom,
@@ -5548,6 +5916,7 @@
         edgeBufferTiles: 3,        // Le plugin charge 3 rangées cachées d'avance
         keepBuffer: 12             // Garde en mémoire pour éviter de re-télécharger
       }).addTo(map);
+      scheduleLeafletContentRefreshBurst();
       restoreZoomState();
       bindBridgeChannel();
       loadInitialBridgePayload();
@@ -5568,6 +5937,7 @@
           const zoomLevel = getEffectiveFollowZoom(bridgeSpeedKmh);
           map.setView(centerForTarget(targetLatLng, zoomLevel), zoomLevel, { animate: false });
           setFollowTarget(targetLatLng, { immediate: true });
+          scheduleLeafletContentRefreshBurst();
           if (pendingBridgePayload) {
             const payload = pendingBridgePayload;
             pendingBridgePayload = null;
@@ -5775,6 +6145,11 @@
         });
       };
       window.addEventListener("resize", handleViewportResize, { passive: true });
+      window.addEventListener("pageshow", scheduleLeafletContentRefreshBurst, { passive: true });
+      window.addEventListener("focus", scheduleLeafletContentRefreshBurst, { passive: true });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) scheduleLeafletContentRefreshBurst();
+      });
       if (typeof ResizeObserver === "function") {
         const ro = new ResizeObserver(handleViewportResize);
         if (appBackgroundEl) ro.observe(appBackgroundEl);

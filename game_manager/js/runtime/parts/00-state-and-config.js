@@ -175,6 +175,7 @@
         overlayHideUiWhenManagerHidden: document.getElementById("overlayHideUiWhenManagerHidden"),
         overlayHideUiWhenManagerHiddenLabel: document.getElementById("overlayHideUiWhenManagerHiddenLabel"),
         overlayDestinationShortcutBtn: document.getElementById("overlayDestinationShortcutBtn"),
+        overlayPlayerListShortcutBtn: document.getElementById("overlayPlayerListShortcutBtn"),
         overlayUnknownBusCapacitySlider: document.getElementById("overlayUnknownBusCapacitySlider"),
         overlayUnknownBusCapacityValue: document.getElementById("overlayUnknownBusCapacityValue"),
         overlayCapacityRuleText: document.getElementById("overlayCapacityRuleText"),
@@ -184,6 +185,9 @@
         overlayNotificationPreview: document.getElementById("overlayNotificationPreview"),
         overlayNotificationPreviewTitle: document.getElementById("overlayNotificationPreviewTitle"),
         overlayNotificationPreviewDescription: document.getElementById("overlayNotificationPreviewDescription"),
+        playerListHoldPopup: document.getElementById("playerListHoldPopup"),
+        playerListHoldMeta: document.getElementById("playerListHoldMeta"),
+        playerListHoldBody: document.getElementById("playerListHoldBody"),
         overlayReloadPageBtn: document.getElementById("overlayReloadPageBtn"),
         overlayResetLayoutBtn: document.getElementById("overlayResetLayoutBtn"),
         overlayDefaultStartupMode: document.getElementById("overlayDefaultStartupMode"),
@@ -405,6 +409,8 @@
       var convoyStatusViewState = "loading";
       var convoyStatusHasSuccessfulFetch = false;
       var convoyStatusLatest = { online: false, players: 0, ageSeconds: null };
+      var telemetryConvoyActive = null;
+      var telemetryConvoyPlayerList = [];
       var CONVOY_STATUS_REFRESH_MS = 5000;
       var overlayWidgetMenuOpen = false;
       var overlayWidgetSelectedType = "";
@@ -446,6 +452,7 @@
       var remoteServerWsLastMessageText = "";
       var remoteServerWsLastMessageAtMs = 0;
       var remoteServerWsPlayersCount = null;
+      var remoteServerWsPlayerList = [];
       var remoteServerWsLogEntries = [];
       var remoteServerWsManualClose = false;
       var remoteServerWsRequestInFlight = false;
@@ -468,6 +475,10 @@
       var SAEIV_STOP_DWELL_REACH_DISTANCE = 22;
       var SAEIV_STOP_ANNOUNCE_DISTANCE = 75;
       var SAEIV_TERMINUS_ANNOUNCE_DELAY_MS = 500;
+      var SAEIV_SERVICE_ACCEPT_AUDIO_URL = "./game_manager/sounds/start_line.mp3";
+      var SAEIV_SERVICE_ACCEPT_DESTINATION_DELAY_MS = 1000;
+      var SAEIV_SERVICE_ACCEPT_AUDIO_START_OFFSET_SEC = 0.5;
+      var SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR = 3;
       var SAEIV_STOP_ADVANCE_COOLDOWN_MS = 1000;
       var SAEIV_STOP_MISSED_ADVANCE_DISTANCE_MULTIPLIER = 2;
       var SAEIV_STOP_DWELL_MAX_SPEED_KMH = 1;
@@ -475,6 +486,7 @@
       var SAEIV_PASSENGERS_ENABLED = true;
       var SAEIV_ROUTE_START_DELAY_MS = 60000;
       var SAEIV_STOP_REQUEST_MIN_DISTANCE_M = 50;
+      var SAEIV_STOP_REQUEST_AUDIO_MIN_DISTANCE_M = 100;
       var SAEIV_STOP_REQUEST_ROLL_INTERVAL_MS = 650;
       var SAEIV_STOP_REQUEST_BASE_CHANCE = 0.70;
       var SAEIV_PASSENGER_BOARD_STEP_INTERVAL_MS = 400;
@@ -580,6 +592,7 @@
       var saeivRouteSelectedAtMs = 0;
       var saeivRouteStartedAtMs = 0;
       var saeivTerminusAnnouncedRouteKey = "";
+      var saeivTransdevTerminusApproachAnnouncedRouteKey = "";
       var saeivTerminusAnnounceTimer = 0;
       var saeivTerminusReachedAtMs = 0;
       var saeivRouteCompletedAtMs = 0;
@@ -600,9 +613,53 @@
       };
       var saeivPassengerState = null;
       var DBUS_FIS_ROOT = "./map_files/dbus_fis";
+      var DBUS_FIS_GLOBAL_ROOT = DBUS_FIS_ROOT + "/global";
       var DBUS_FIS_DOSSIERS_ROOT = DBUS_FIS_ROOT + "/dossiers";
+      var SAEIV_DEFAULT_GLOBAL_AUDIO_FOLDER = "RATP";
+      var SAEIV_STOP_REQUEST_SOUND_ROOT = "./game_manager/sounds";
+      var SAEIV_TRANSDEV_AUTO_VOICE_FOLDER_NAME = "Voix de Synthèse (Transdev)";
+      var SAEIV_NEXT_STOP_PREFIX_CLIP_NAME = "Prochain_Arret";
+      var LINE_STYLE_LEGACY_TYPES_INDEX = 3;
+      var LINE_STYLE_VALIDATION_SOUND_INDEX = 4;
+      var LINE_STYLE_STOP_REQUEST_SOUND_INDEX = 5;
+      var LINE_STYLE_GLOBAL_AUDIO_FOLDER_INDEX = 6;
+      var LINE_STYLE_AUTO_VOICE_FOLDER_INDEX = 7;
+      var LINE_STYLE_PASSENGER_COUNT_VARIATION_INDEX = 8;
       var dbusFisIndex = null;
       var dbusFisIndexPromise = null;
+      var saeivLineAudioConfigDefault = {
+        styleKey: "",
+        legacyTypes: "",
+        validationSoundsAllowed: true,
+        stopRequestSoundName: "",
+        globalAudioFolderName: "",
+        autoVoiceFolderName: "",
+        passengerCountVariationMin: 0,
+        passengerCountVariationMax: 0
+      };
+      var saeivGlobalAudioState = {
+        key: "",
+        folderName: "",
+        folderPath: "",
+        labels: [],
+        urls: [],
+        count: 0,
+        volumeMultiplier: 1,
+        preparePromise: null
+      };
+      var saeivStopRequestAudioState = {
+        routeKey: "",
+        targetUid: "",
+        targetIndex: -1,
+        segmentKey: "",
+        triggerDistanceM: Number.NaN,
+        played: false,
+        clipName: "",
+        clipUrl: "",
+        audio: null
+      };
+      var saeivStopRequestAudioPlayedSegments = new Set();
+      var saeivSoundFileAvailabilityCache = new Map();
       var saeivRouteAudio = {
         routeKey: "",
         styleName: "",
@@ -620,6 +677,12 @@
         currentClipName: "",
         currentClipEndedHooks: []
       };
+      var saeivServiceAcceptAudio = null;
+      var saeivServiceAcceptAudioToken = 0;
+      var saeivServiceAcceptAudioReleaseAtMs = 0;
+      var saeivServiceAcceptAudioReleaseTimer = 0;
+      var saeivServiceAcceptAudioReleasePromise = null;
+      var saeivServiceAcceptAudioReleaseResolve = null;
       var NAV_GRAPH_MAX_SNAP_DISTANCE = 450 * 8;
       var SAEIV_NAV_STOP_SNAP_DISTANCE = 450;
       var SAEIV_NAV_STOP_CANDIDATES = 6;

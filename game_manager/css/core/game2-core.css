@@ -382,6 +382,116 @@
       text-align: center;
     }
 
+    .player-list-hold-popup {
+      position: fixed;
+      inset: 0;
+      z-index: 20010;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.98);
+      transition: opacity 100ms ease, transform 100ms ease, visibility 100ms ease;
+    }
+
+    .player-list-hold-popup.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+
+    .player-list-hold-card {
+      width: min(430px, calc(100vw - 48px));
+      max-height: min(560px, calc(100vh - 48px));
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background:
+        linear-gradient(180deg, rgba(35, 35, 35, 0.96) 0%, rgba(12, 12, 12, 0.98) 100%);
+      box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.72),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .player-list-hold-header {
+      padding: 15px 16px 11px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .player-list-hold-title {
+      margin: 0;
+      color: #ffffff;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .player-list-hold-meta {
+      margin: 4px 0 0;
+      color: #fbbf24;
+      font-size: 12px;
+      line-height: 1.25;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .player-list-hold-body {
+      display: grid;
+      gap: 7px;
+      padding: 12px;
+      overflow-y: auto;
+      color: #e5e7eb;
+      font-size: 14px;
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .player-list-row {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-height: 34px;
+      padding: 7px 9px;
+      border-radius: 7px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .player-list-row-index {
+      color: #9ca3af;
+      font-size: 12px;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .player-list-row-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #f8fafc;
+    }
+
+    .player-list-empty {
+      margin: 0;
+      padding: 16px 12px;
+      color: #cbd5e1;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.4;
+      font-weight: 750;
+    }
+
     @keyframes telemetryErrorIndeterminate {
       from {
         left: -45%;

@@ -205,14 +205,15 @@
       }
       function syncExternalTelemetryBlocks() {
         var copy = buildTelemetryErrorCopy(telemetryLastErrorReason);
+        var widgetsLive = typeof areTelemetryWidgetsLive === "function" ? areTelemetryWidgetsLive() : telemetryConnected;
         if (pipWindow && !pipWindow.closed) {
-          if (telemetryConnected) clearWindowTelemetryOverlay(pipWindow);
+          if (widgetsLive) clearWindowTelemetryOverlay(pipWindow);
           else ensureWindowTelemetryOverlay(pipWindow, copy);
         }
         Object.keys(tabRefs).forEach(function (id) {
           var ref = tabRefs[id];
           if (!ref || ref.closed) return;
-          if (telemetryConnected) clearWindowTelemetryOverlay(ref);
+          if (widgetsLive) clearWindowTelemetryOverlay(ref);
           else ensureWindowTelemetryOverlay(ref, copy);
         });
       }
@@ -304,18 +305,84 @@
       var lastWsMessageAt = 0;
       var WS_SILENCE_HIDE_MS = 1000;
       var telemetryVisibilityTimer = 0;
+      function normalizeTelemetryBooleanText(value) {
+        var text = String(value == null ? "" : value).trim().toLowerCase();
+        if (!text) return null;
+        if (["true", "1", "yes", "oui", "on", "pause", "paused", "menu", "main_menu", "in_menu"].indexOf(text) >= 0) return true;
+        if (["false", "0", "no", "non", "off", "drive", "driving", "game", "play", "playing"].indexOf(text) >= 0) return false;
+        return null;
+      }
+      function readTelemetryBooleanFlag(source, keys) {
+        if (!source || typeof source !== "object") return null;
+        var foundFalse = false;
+        for (var i = 0; i < keys.length; i += 1) {
+          var key = keys[i];
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          var value = source[key];
+          if (value === true) return true;
+          if (value === false) {
+            foundFalse = true;
+            continue;
+          }
+          if (typeof value === "number" && Number.isFinite(value)) {
+            if (value !== 0) return true;
+            foundFalse = true;
+            continue;
+          }
+          var parsed = normalizeTelemetryBooleanText(value);
+          if (parsed === true) return true;
+          if (parsed === false) foundFalse = true;
+        }
+        return foundFalse ? false : null;
+      }
       function extractTelemetryPaused(data) {
         var payload = data && typeof data === "object" ? data : null;
         if (!payload) return null;
-        var pools = [payload, payload.data, payload.payload];
+        var pools = [
+          payload,
+          payload.data,
+          payload.payload,
+          payload.gameContext,
+          payload.game_context,
+          payload.data && payload.data.gameContext,
+          payload.data && payload.data.game_context,
+          payload.payload && payload.payload.gameContext,
+          payload.payload && payload.payload.game_context
+        ];
+        var pauseKeys = [
+          "paused",
+          "isPaused",
+          "gamePaused",
+          "isGamePaused",
+          "pause",
+          "inMenu",
+          "isInMenu",
+          "menuOpen",
+          "isMenuOpen",
+          "mainMenu",
+          "isMainMenuOpen",
+          "inPauseMenu",
+          "isInPauseMenu"
+        ];
+        var inGameKeys = ["inGame", "isInGame", "gameActive", "isGameActive", "driving", "isDriving"];
+        var foundFalse = false;
         for (var i = 0; i < pools.length; i += 1) {
           var src = pools[i];
           if (!src || typeof src !== "object") continue;
-          if (Object.prototype.hasOwnProperty.call(src, "paused")) {
-            return src.paused === true;
+          var flag = readTelemetryBooleanFlag(src, pauseKeys);
+          if (flag === true) return true;
+          if (flag === false) foundFalse = true;
+          var inGameFlag = readTelemetryBooleanFlag(src, inGameKeys);
+          if (inGameFlag === false) return true;
+          if (inGameFlag === true) foundFalse = true;
+          var state = pickTelemetryString(src, ["state", "status", "mode", "uiMode", "ui_mode", "gameState", "game_state", "screen", "screenName"]);
+          var normalized = state.replace(/[-\s]+/g, "_").toLowerCase();
+          if (normalized.indexOf("pause") >= 0 || normalized.indexOf("menu") >= 0) return true;
+          if (normalized === "drive" || normalized === "driving" || normalized === "game" || normalized === "play" || normalized === "playing") {
+            foundFalse = true;
           }
         }
-        return null;
+        return foundFalse ? false : null;
       }
       function normalizeGameContextMapName(value) {
         var raw = String(value == null ? "" : value).trim();
@@ -418,10 +485,26 @@
         if (el.overlayRoot) {
           el.overlayRoot.style.removeProperty("visibility");
         }
-        hardSetTelemetryPausedWidgetsHidden(telemetryPaused);
+        hardSetTelemetryPausedWidgetsHidden(shouldHideTelemetryWidgets());
+        syncExternalTelemetryBlocks();
+      }
+      function hasRecentTelemetryPositionSignal(nowMs) {
+        var lastPacketAt = Number(telemetryLastPacketAt);
+        if (!Number.isFinite(lastPacketAt) || lastPacketAt <= 0) return false;
+        var now = Number.isFinite(Number(nowMs)) ? Number(nowMs) : Date.now();
+        var maxAge = Math.max(600, Number(TELEMETRY_PACKET_TIMEOUT_MS) || 1000);
+        return now - lastPacketAt <= maxAge;
+      }
+      function shouldHideTelemetryWidgets() {
+        if (telemetryUiMode === 2) return false;
+        return telemetryPaused === true || !hasRecentTelemetryPositionSignal();
+      }
+      function areTelemetryWidgetsLive() {
+        return telemetryConnected === true && !shouldHideTelemetryWidgets();
       }
       function hardSetTelemetryPausedWidgetsHidden(hidden) {
         document.body.classList.toggle("is-telemetry-paused-widgets", !!hidden);
+        document.body.classList.toggle("is-telemetry-widgets-hidden", !!hidden);
 
         document
           .querySelectorAll(".overlay-window[data-widget-type]")
@@ -469,16 +552,14 @@
 
         document.body.classList.toggle("is-telemetry-paused", telemetryPaused);
 
-        // Les widgets sont caches uniquement si le WebSocket signale pause/menu.
-        var shouldHardHideWidgets = telemetryPaused;
-        hardSetTelemetryPausedWidgetsHidden(shouldHardHideWidgets);
+        // Les widgets ne sont visibles qu'avec une position recente et hors pause/menu.
+        refreshTelemetryVisibility();
 
         updateSaeivSimulationPauseState();
         syncWidgetsPauseState();
 
         // Sécurité après sync/rerender.
-        shouldHardHideWidgets = telemetryPaused;
-        hardSetTelemetryPausedWidgetsHidden(shouldHardHideWidgets);
+        refreshTelemetryVisibility();
       }
       function startTelemetryVisibilityWatch() {
         if (telemetryVisibilityTimer) return;
@@ -489,6 +570,8 @@
       var OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE = "idf_telemetry_destination_announcement";
       var OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS = "idf_telemetry_zoom_gps";
       var OVERLAY_SHORTCUT_SCOPE_HIDE_UI = "idf_telemetry_hide_ui";
+      var OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST = "idf_telemetry_player_list";
+      var PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED = true;
       var OVERLAY_ZOOM_GPS_DEFAULT_SHORTCUT = {
         keys: ["F5"],
         display: "F5"
@@ -501,6 +584,10 @@
         keys: ["T"],
         display: "T"
       };
+      var OVERLAY_PLAYER_LIST_DEFAULT_SHORTCUT = {
+        keys: ["Tab"],
+        display: "Tab"
+      };
       var OVERLAY_TOGGLE_DEFAULT_SHORTCUT = {
         keys: ["Delete"],
         display: "Suppr"
@@ -509,6 +596,9 @@
       var overlayDestinationShortcutBtn = null;
       var overlayZoomGpsShortcutBtn = null;
       var overlayHideUiShortcutBtn = null;
+      var overlayPlayerListShortcutBtn = null;
+      var playerListShortcutHoldActive = false;
+      var playerListShortcutUnavailableNotifiedAt = 0;
       var isRecordingShortcut = false;
       var recordingShortcutScope = OVERLAY_SHORTCUT_SCOPE_OVERLAY;
       var overlayShortcutStateByScope = {
@@ -524,6 +614,10 @@
         idf_telemetry_hide_ui: {
           keys: ["F3"],
           display: "F3"
+        },
+        idf_telemetry_player_list: {
+          keys: ["Tab"],
+          display: "Tab"
         }
       };
 
@@ -532,6 +626,7 @@
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE) return OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE;
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS) return OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS;
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_HIDE_UI) return OVERLAY_SHORTCUT_SCOPE_HIDE_UI;
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST) return OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST;
         return OVERLAY_SHORTCUT_SCOPE_OVERLAY;
       }
       function getShortcutScopeLabel(scope) {
@@ -539,6 +634,7 @@
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE) return "Annonce Destination";
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS) return "Zoom GPS";
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_HIDE_UI) return "Cacher l'UI en jeu";
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST) return "Liste joueurs";
         return "Menu Principal";
       }
       function getOverlayShortcutButtonByScope(scope) {
@@ -560,6 +656,12 @@
             overlayHideUiShortcutBtn = document.getElementById("overlayHideUiShortcutBtn");
           }
           return overlayHideUiShortcutBtn;
+        }
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST) {
+          if (!overlayPlayerListShortcutBtn) {
+            overlayPlayerListShortcutBtn = document.getElementById("overlayPlayerListShortcutBtn");
+          }
+          return overlayPlayerListShortcutBtn;
         }
         if (!overlayShortcutBtn) {
           overlayShortcutBtn = document.getElementById("overlayShortcutBtn");
@@ -595,6 +697,15 @@
         if (lower === "shift") return "shift";
         if (lower === "alt") return "alt";
         if (lower === "meta" || lower === "win" || lower === "os") return "win";
+        if (lower === "delete" || lower === "del" || lower === "suppr") return "suppr";
+        if (lower === "escape" || lower === "esc" || lower === "echap") return "echap";
+        if (lower === "enter" || lower === "return" || lower === "entree" || lower === "entrée") return "entree";
+        if (lower === " " || lower === "space" || lower === "espace") return "espace";
+        if (lower === "tab") return "tab";
+        if (lower === "arrowup" || lower === "up" || lower === "haut") return "up";
+        if (lower === "arrowdown" || lower === "down" || lower === "bas") return "down";
+        if (lower === "arrowleft" || lower === "left" || lower === "gauche") return "left";
+        if (lower === "arrowright" || lower === "right" || lower === "droite") return "right";
         return raw.length === 1 ? raw.toUpperCase() : raw;
       }
       function shortcutSignature(shortcut) {
@@ -608,6 +719,15 @@
         if (current) return current;
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE) {
           return cloneShortcutConfig(OVERLAY_DESTINATION_ANNOUNCE_DEFAULT_SHORTCUT);
+        }
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS) {
+          return cloneShortcutConfig(OVERLAY_ZOOM_GPS_DEFAULT_SHORTCUT);
+        }
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_HIDE_UI) {
+          return cloneShortcutConfig(OVERLAY_HIDE_UI_DEFAULT_SHORTCUT);
+        }
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST) {
+          return cloneShortcutConfig(OVERLAY_PLAYER_LIST_DEFAULT_SHORTCUT);
         }
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_OVERLAY) {
           return cloneShortcutConfig(OVERLAY_TOGGLE_DEFAULT_SHORTCUT);
@@ -627,7 +747,8 @@
           OVERLAY_SHORTCUT_SCOPE_OVERLAY,
           OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE,
           OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS,
-          OVERLAY_SHORTCUT_SCOPE_HIDE_UI
+          OVERLAY_SHORTCUT_SCOPE_HIDE_UI,
+          OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST
         ];
         for (var i = 0; i < allScopes.length; i++) {
           var s = allScopes[i];
@@ -643,9 +764,11 @@
         var button = getOverlayShortcutButtonByScope(safeScope);
         if (!button) return;
         var effectiveShortcut = getEffectiveShortcutForScope(safeScope);
-        var fallbackText = safeScope === OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE
-          ? shortcutDisplayText(OVERLAY_DESTINATION_ANNOUNCE_DEFAULT_SHORTCUT, "T")
-          : "[ Aucun ]";
+        var fallbackText = "[ Aucun ]";
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE) fallbackText = shortcutDisplayText(OVERLAY_DESTINATION_ANNOUNCE_DEFAULT_SHORTCUT, "T");
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS) fallbackText = shortcutDisplayText(OVERLAY_ZOOM_GPS_DEFAULT_SHORTCUT, "F5");
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_HIDE_UI) fallbackText = shortcutDisplayText(OVERLAY_HIDE_UI_DEFAULT_SHORTCUT, "F3");
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST) fallbackText = shortcutDisplayText(OVERLAY_PLAYER_LIST_DEFAULT_SHORTCUT, "Tab");
         var textSpan = button.querySelector(".shortcut-text");
         if (textSpan) {
           textSpan.textContent = shortcutDisplayText(effectiveShortcut, fallbackText);
@@ -674,6 +797,9 @@
             triggerHideUiToggleFromShortcut();
             return;
           }
+          if (scope === OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST) {
+            return;
+          }
 
         }
         if (isRecordingShortcut) return;
@@ -684,6 +810,7 @@
             if (scope === OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE) defaultConfig = OVERLAY_DESTINATION_ANNOUNCE_DEFAULT_SHORTCUT;
             if (scope === OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS) defaultConfig = OVERLAY_ZOOM_GPS_DEFAULT_SHORTCUT;
             if (scope === OVERLAY_SHORTCUT_SCOPE_HIDE_UI) defaultConfig = OVERLAY_HIDE_UI_DEFAULT_SHORTCUT;
+            if (scope === OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST) defaultConfig = OVERLAY_PLAYER_LIST_DEFAULT_SHORTCUT;
 
             sendShortcutToBridge(defaultConfig.keys, defaultConfig.display, scope);
           }
@@ -790,12 +917,383 @@
         return false;
       }
 
+      function isRawShortcutModifierActive(raw, name) {
+        if (!raw || typeof raw !== "object") return false;
+        var safeName = String(name || "").trim().toLowerCase();
+        if (!safeName) return false;
+        if (safeName === "ctrl" && (raw.ctrlKey === true || raw.controlKey === true || raw.ctrl === true || raw.control === true)) return true;
+        if (safeName === "shift" && (raw.shiftKey === true || raw.shift === true)) return true;
+        if (safeName === "alt" && (raw.altKey === true || raw.alt === true)) return true;
+        if (safeName === "win" && (raw.metaKey === true || raw.winKey === true || raw.meta === true || raw.win === true)) return true;
+        var keys = Array.isArray(raw.keys) ? raw.keys : [];
+        for (var i = 0; i < keys.length; i += 1) {
+          var key = normalizeShortcutKeyToken(keys[i]).toLowerCase();
+          if (safeName === "ctrl" && key === "ctrl") return true;
+          if (safeName === "shift" && key === "shift") return true;
+          if (safeName === "alt" && key === "alt") return true;
+          if (safeName === "win" && key === "win") return true;
+        }
+        var modifiers = raw.modifiers;
+        if (Array.isArray(modifiers)) {
+          for (var j = 0; j < modifiers.length; j += 1) {
+            if (normalizeShortcutKeyToken(modifiers[j]).toLowerCase() === safeName) return true;
+          }
+        } else if (typeof modifiers === "string") {
+          if (new RegExp("(^|[,+\\s])" + safeName + "($|[,+\\s])", "i").test(modifiers)) return true;
+        } else if (modifiers && typeof modifiers === "object") {
+          if (safeName === "ctrl" && (modifiers.ctrl === true || modifiers.control === true)) return true;
+          if (safeName === "shift" && modifiers.shift === true) return true;
+          if (safeName === "alt" && modifiers.alt === true) return true;
+          if (safeName === "win" && (modifiers.win === true || modifiers.meta === true)) return true;
+        }
+        return false;
+      }
+      function normalizeBrowserShortcutMainKey(key) {
+        var mainKey = String(key || "").trim();
+        if (!mainKey) return "";
+        var lower = mainKey.toLowerCase();
+        if (mainKey === " ") return "Espace";
+        if (lower === "delete" || lower === "del") return "Suppr";
+        if (lower === "escape" || lower === "esc") return "Echap";
+        if (lower === "enter" || lower === "return") return "Entree";
+        if (lower === "arrowup") return "Up";
+        if (lower === "arrowdown") return "Down";
+        if (lower === "arrowleft") return "Left";
+        if (lower === "arrowright") return "Right";
+        if (lower === "backspace") return "Backspace";
+        if (lower === "tab") return "Tab";
+        if (lower === "insert") return "Insert";
+        if (lower === "home") return "Home";
+        if (lower === "end") return "End";
+        if (lower === "pageup") return "PageUp";
+        if (lower === "pagedown") return "PageDown";
+        return mainKey.length === 1 ? mainKey.toUpperCase() : mainKey;
+      }
+      function shortcutMatchesKeySet(scope, keys) {
+        var shortcut = getEffectiveShortcutForScope(scope);
+        var eventShortcut = {
+          keys: Array.isArray(keys) ? keys : [],
+          display: ""
+        };
+        return !!shortcutSignature(eventShortcut) && shortcutSignature(eventShortcut) === shortcutSignature(shortcut);
+      }
+      function shortcutMatchesRawKeyEvent(scope, keyName, raw) {
+        var keys = [];
+        if (isRawShortcutModifierActive(raw, "ctrl")) keys.push("Ctrl");
+        if (isRawShortcutModifierActive(raw, "shift")) keys.push("Shift");
+        if (isRawShortcutModifierActive(raw, "alt")) keys.push("Alt");
+        if (isRawShortcutModifierActive(raw, "win")) keys.push("Win");
+        keys.push(normalizeBrowserShortcutMainKey(keyName));
+        return shortcutMatchesKeySet(scope, keys);
+      }
+      function shortcutMatchesBrowserEvent(scope, event) {
+        if (!event || typeof event !== "object") return false;
+        var keyName = normalizeBrowserShortcutMainKey(event.key);
+        if (!keyName) return false;
+        var keys = [];
+        if (event.ctrlKey) keys.push("Ctrl");
+        if (event.shiftKey) keys.push("Shift");
+        if (event.altKey) keys.push("Alt");
+        if (event.metaKey) keys.push("Win");
+        keys.push(keyName);
+        return shortcutMatchesKeySet(scope, keys);
+      }
+      function extractRemoteServerPlayersCount(parsed) {
+        var roots = [parsed, parsed && parsed.data, parsed && parsed.payload];
+        for (var i = 0; i < roots.length; i += 1) {
+          var root = roots[i];
+          if (!root || typeof root !== "object") continue;
+          var keys = [
+            "players",
+            "playerCount",
+            "player_count",
+            "connectedPlayers",
+            "connected_players",
+            "onlinePlayers",
+            "online_players",
+            "connections",
+            "clients",
+            "count"
+          ];
+          for (var j = 0; j < keys.length; j += 1) {
+            var value = root[keys[j]];
+            if (Array.isArray(value)) return value.length;
+            var n = Number(value);
+            if (Number.isFinite(n) && n >= 0) return Math.max(0, Math.floor(n));
+          }
+        }
+        return null;
+      }
+      function normalizeRemoteServerPlayerListEntry(entry, index) {
+        if (typeof entry === "string") {
+          var text = String(entry || "").trim();
+          return text ? { name: text } : null;
+        }
+        if (!entry || typeof entry !== "object") return null;
+        var keys = [
+          "displayname",
+          "displayName",
+          "display_name",
+          "steamName",
+          "steam_name",
+          "personaname",
+          "personaName",
+          "nickname",
+          "name",
+          "playerName",
+          "player_name",
+          "username",
+          "userName"
+        ];
+        var name = "";
+        for (var i = 0; i < keys.length; i += 1) {
+          var value = String(entry[keys[i]] || "").trim();
+          if (value) {
+            name = value;
+            break;
+          }
+        }
+        if (!name) name = "Joueur " + (index + 1);
+        return { name: name };
+      }
+      function extractRemoteServerPlayerList(parsed) {
+        var roots = [parsed, parsed && parsed.data, parsed && parsed.payload];
+        var keys = [
+          "playerList",
+          "player_list",
+          "playersList",
+          "players_list",
+          "connectedPlayers",
+          "connected_players",
+          "onlinePlayers",
+          "online_players",
+          "clients",
+          "connections",
+          "players"
+        ];
+        for (var i = 0; i < roots.length; i += 1) {
+          var root = roots[i];
+          if (!root || typeof root !== "object") continue;
+          for (var j = 0; j < keys.length; j += 1) {
+            var value = root[keys[j]];
+            var list = [];
+            if (Array.isArray(value)) {
+              list = value;
+            } else if (value && typeof value === "object" && !Number.isFinite(Number(value))) {
+              list = Object.keys(value).map(function (key) { return value[key]; });
+            }
+            if (!list.length) continue;
+            var normalized = list
+              .map(function (entry, index) { return normalizeRemoteServerPlayerListEntry(entry, index); })
+              .filter(Boolean);
+            if (normalized.length) return normalized;
+          }
+        }
+        return [];
+      }
+      function readTelemetryConvoyActiveFromSource(source) {
+        if (!source || typeof source !== "object") return null;
+        var gameContext = source.gameContext || source.game_context;
+        if (gameContext && typeof gameContext === "object") {
+          var inServerValue = gameContext.inServer;
+          if (typeof inServerValue === "boolean") return inServerValue;
+          if (inServerValue === 1 || inServerValue === "1" || inServerValue === "true") return true;
+          if (inServerValue === 0 || inServerValue === "0" || inServerValue === "false") return false;
+        }
+        var keys = ["inServer", "inConvoy", "isInConvoy", "convoyActive", "isConvoy", "multiplayer", "isMultiplayer"];
+        for (var i = 0; i < keys.length; i += 1) {
+          if (!Object.prototype.hasOwnProperty.call(source, keys[i])) continue;
+          var value = source[keys[i]];
+          if (typeof value === "boolean") return value;
+          if (value === 1 || value === "1" || value === "true") return true;
+          if (value === 0 || value === "0" || value === "false") return false;
+        }
+        var convoy = source.convoy || source.Convoy || source.session || source.multiplayerSession;
+        if (convoy && typeof convoy === "object") {
+          return readTelemetryConvoyActiveFromSource(convoy);
+        }
+        return null;
+      }
+      function updateTelemetryConvoyState(raw, signal) {
+        var roots = [
+          raw,
+          raw && raw.data,
+          raw && raw.payload,
+          raw && raw.gameContext,
+          raw && raw.game_context,
+          raw && raw.data && raw.data.gameContext,
+          raw && raw.data && raw.data.game_context,
+          raw && raw.payload && raw.payload.gameContext,
+          raw && raw.payload && raw.payload.game_context,
+          raw && raw.convoy,
+          raw && raw.session,
+          signal,
+          signal && signal.data,
+          signal && signal.payload,
+          signal && signal.gameContext,
+          signal && signal.game_context,
+          signal && signal.data && signal.data.gameContext,
+          signal && signal.data && signal.data.game_context,
+          signal && signal.payload && signal.payload.gameContext,
+          signal && signal.payload && signal.payload.game_context,
+          signal && signal.convoy,
+          signal && signal.session
+        ];
+        var active = null;
+        for (var i = 0; i < roots.length; i += 1) {
+          active = readTelemetryConvoyActiveFromSource(roots[i]);
+          if (active !== null) break;
+        }
+        if (active !== null) {
+          telemetryConvoyActive = active;
+          if (active === false) telemetryConvoyPlayerList = [];
+        }
+        if (typeof extractRemoteServerPlayerList === "function") {
+          for (var j = 0; j < roots.length; j += 1) {
+            var list = [];
+            try { list = extractRemoteServerPlayerList(roots[j]); } catch (errList) { list = []; }
+            if (!list.length) continue;
+            telemetryConvoyPlayerList = list;
+            remoteServerWsPlayerList = list;
+            remoteServerWsPlayersCount = list.length;
+            break;
+          }
+        }
+      }
+      function getKnownConvoyPlayersCount() {
+        if (Array.isArray(telemetryConvoyPlayerList) && telemetryConvoyPlayerList.length > 0) {
+          return telemetryConvoyPlayerList.length;
+        }
+        if (telemetryConvoyActive !== true) return null;
+        var wsCount = Number(remoteServerWsPlayersCount);
+        if (Number.isFinite(wsCount) && wsCount >= 0) return Math.floor(wsCount);
+        var listCount = Array.isArray(remoteServerWsPlayerList) ? remoteServerWsPlayerList.length : 0;
+        if (listCount > 0) return listCount;
+        return null;
+      }
+      function isLocalPlayerInConvoy() {
+        return telemetryConvoyActive === true;
+      }
+      function isPlayerListAvailableForCurrentConvoy() {
+        return isLocalPlayerInConvoy();
+      }
+      function ensurePlayerListHoldPopupElements() {
+        if (!el.playerListHoldPopup) el.playerListHoldPopup = document.getElementById("playerListHoldPopup");
+        if (!el.playerListHoldMeta) el.playerListHoldMeta = document.getElementById("playerListHoldMeta");
+        if (!el.playerListHoldBody) el.playerListHoldBody = document.getElementById("playerListHoldBody");
+        return !!(el.playerListHoldPopup && el.playerListHoldMeta && el.playerListHoldBody);
+      }
+      function renderPlayerListHoldPopup() {
+        if (!ensurePlayerListHoldPopupElements()) return false;
+        var players = Array.isArray(telemetryConvoyPlayerList) && telemetryConvoyPlayerList.length
+          ? telemetryConvoyPlayerList.slice()
+          : (Array.isArray(remoteServerWsPlayerList) ? remoteServerWsPlayerList.slice() : []);
+        var knownPlayersCount = getKnownConvoyPlayersCount();
+        var playersCount = Number.isFinite(Number(knownPlayersCount)) ? Number(knownPlayersCount) : players.length;
+        playersCount = Math.max(0, Math.floor(Number(playersCount) || 0));
+        el.playerListHoldMeta.textContent = Number.isFinite(Number(knownPlayersCount))
+          ? playersCount + " joueur" + (playersCount > 1 ? "s" : "") + " en convoi"
+          : "Convoi actif";
+        el.playerListHoldBody.innerHTML = "";
+        if (players.length) {
+          players.forEach(function (player, index) {
+            var row = document.createElement("div");
+            row.className = "player-list-row";
+            var number = document.createElement("span");
+            number.className = "player-list-row-index";
+            number.textContent = String(index + 1).padStart(2, "0");
+            var name = document.createElement("span");
+            name.className = "player-list-row-name";
+            name.textContent = String(player && player.name || player || ("Joueur " + (index + 1)));
+            row.appendChild(number);
+            row.appendChild(name);
+            el.playerListHoldBody.appendChild(row);
+          });
+        } else {
+          var empty = document.createElement("p");
+          empty.className = "player-list-empty";
+          empty.textContent = playersCount > 0
+            ? "Liste detaillee non recue. " + playersCount + " joueur" + (playersCount > 1 ? "s" : "") + " detecte" + (playersCount > 1 ? "s" : "") + "."
+            : "Liste detaillee non recue.";
+          el.playerListHoldBody.appendChild(empty);
+        }
+        return true;
+      }
+      function showPlayerListHoldPopup() {
+        if (!renderPlayerListHoldPopup()) return false;
+        playerListShortcutHoldActive = true;
+        el.playerListHoldPopup.classList.add("is-visible");
+        el.playerListHoldPopup.setAttribute("aria-hidden", "false");
+        return true;
+      }
+      function hidePlayerListHoldPopup() {
+        playerListShortcutHoldActive = false;
+        if (!ensurePlayerListHoldPopupElements()) return false;
+        el.playerListHoldPopup.classList.remove("is-visible");
+        el.playerListHoldPopup.setAttribute("aria-hidden", "true");
+        return true;
+      }
+      function notifyPlayerListUnavailableInSolo() {
+        var now = Date.now();
+        if (now - playerListShortcutUnavailableNotifiedAt < 1200) return;
+        playerListShortcutUnavailableNotifiedAt = now;
+        if (typeof showOverlayNotification === "function") {
+          showOverlayNotification("Liste des joueurs indisponible en solo", 1800);
+        }
+      }
+      function triggerPlayerListHoldDown(source) {
+        if (PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED) {
+          hidePlayerListHoldPopup();
+          return false;
+        }
+        if (isRecordingShortcut) return false;
+        if (telemetryUiMode !== 1) return false;
+        if (!isPlayerListAvailableForCurrentConvoy()) {
+          hidePlayerListHoldPopup();
+          notifyPlayerListUnavailableInSolo();
+          return true;
+        }
+        return showPlayerListHoldPopup();
+      }
+      function triggerPlayerListHoldUp() {
+        if (PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED) {
+          hidePlayerListHoldPopup();
+          return false;
+        }
+        if (!playerListShortcutHoldActive) return false;
+        return hidePlayerListHoldPopup();
+      }
+      function isRawKeyDownPhase(raw, phase) {
+        if (phase === "down" || phase === "keydown" || phase === "pressed" || phase === "press") return true;
+        if (raw && (raw.down === true || raw.isDown === true || raw.pressed === true)) return true;
+        return false;
+      }
+      function isRawKeyUpPhase(raw, phase) {
+        if (phase === "up" || phase === "keyup" || phase === "released" || phase === "release") return true;
+        if (raw && (raw.up === true || raw.isUp === true || raw.released === true)) return true;
+        return false;
+      }
+
       /**
        * Gestionnaire des evenements clavier natifs envoyes par le serveur telemetry
        * Permet de reagir a des touches precises (ex: VK_E = 0x45)
        */
       function handleKeyEvent(raw) {
         if (!raw || raw.type !== "keyEvent") return;
+        var rawPhase = String(raw.phase || "").trim().toLowerCase();
+        var rawVk = Number(raw.vk);
+        var rawKeyName = VK_MAP[rawVk] || "0x" + rawVk.toString(16).toUpperCase();
+
+        if (!PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED && shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST, rawKeyName, raw)) {
+          if (isRawKeyDownPhase(raw, rawPhase) && !raw.repeat) {
+            triggerPlayerListHoldDown("telemetry");
+            return;
+          }
+          if (isRawKeyUpPhase(raw, rawPhase)) {
+            triggerPlayerListHoldUp();
+            return;
+          }
+        }
 
         // On ne traite que l'appui initial (down) et on ignore l'auto-repeat du clavier
         if (raw.phase === "down" && !raw.repeat) {
@@ -910,6 +1408,7 @@
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE) defaultConfig = OVERLAY_DESTINATION_ANNOUNCE_DEFAULT_SHORTCUT;
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS) defaultConfig = OVERLAY_ZOOM_GPS_DEFAULT_SHORTCUT;
         if (safeScope === OVERLAY_SHORTCUT_SCOPE_HIDE_UI) defaultConfig = OVERLAY_HIDE_UI_DEFAULT_SHORTCUT;
+        if (safeScope === OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST) defaultConfig = OVERLAY_PLAYER_LIST_DEFAULT_SHORTCUT;
 
 
         updateShortcutUIForScope(safeScope, defaultConfig);
@@ -1081,6 +1580,9 @@
         var modeChanged = (nextMode !== telemetryUiMode);
         var transitioningToMode2 = (nextMode === 2 && telemetryUiMode !== 2);
         telemetryUiMode = nextMode;
+        if (telemetryUiMode !== 1 && typeof hidePlayerListHoldPopup === "function") {
+          hidePlayerListHoldPopup();
+        }
         if (telemetryUiMode === 2) {
           firstVisitMode1HintEnabled = false;
         }
@@ -1110,7 +1612,7 @@
         syncWebsocketMode1HintVisibility();
         syncGlobalLoadingVisibility();
         syncGameContextBlockModal();
-        hardSetTelemetryPausedWidgetsHidden(telemetryPaused);
+        refreshTelemetryVisibility();
         // Affichage du menu lors d'une transition vers le mode interactif si le jeu n'est pas encore débloqué
         var loadingScreen = document.getElementById("globalLoadingScreen");
         var loadingInProgress = !!loadingScreen && loadingScreen.classList.contains("is-active");
@@ -1189,7 +1691,7 @@
         if (el.overlayRoot) {
           el.overlayRoot.style.removeProperty("visibility");
         }
-        hardSetTelemetryPausedWidgetsHidden(telemetryPaused);
+        refreshTelemetryVisibility();
       }
 
       function maybeStartConfiguredDefaultGameMode() {
@@ -1653,8 +2155,6 @@
         var alightingTotal = remotePanelPositiveInt(saeiv.stopAlightingTotal);
         var alightingDone = Math.min(alightingTotal, remotePanelPositiveInt(saeiv.stopAlightingDone));
         var targetStopIndex = Math.max(0, Math.round(Number(saeiv.routeTargetIndex) || 0));
-        var routeGeometry = buildRemotePanelBusRouteGeometry(saeiv, reachedIndex, targetStopIndex);
-        var shouldIncludeGeometry = shouldSendRemotePanelBusRouteGeometry(routeGeometry);
         var state = {
           active: true,
           lineNumber: String(saeiv.lineNumber || ""),
@@ -1695,14 +2195,10 @@
           liveElapsedMs: remotePanelPositiveInt(saeiv.routeLiveElapsedMs),
           vehicleAtStop: saeiv.vehicleAtStop === true,
           vehicleName: String(saeiv.vehicleName || ""),
-          routeGeometryKey: routeGeometry ? String(routeGeometry.cacheKey || "") : "",
-          routeGeometryPending: routeGeometry ? routeGeometry.pending === true : false,
-          routeGeometryUpdatedAt: shouldIncludeGeometry ? Date.now() : 0
+          routeGeometryKey: "",
+          routeGeometryPending: false,
+          routeGeometryUpdatedAt: 0
         };
-        if (shouldIncludeGeometry) {
-          state.routeGeometry = routeGeometry;
-          markRemotePanelBusRouteGeometrySent(routeGeometry);
-        }
         return state;
       }
       function buildRemotePanelGame2BonusState() {
@@ -1775,6 +2271,26 @@
         if (!mapName) return false;
         return normalizeGameContextMapName(mapName) === String(REQUIRED_GAME_CONTEXT_MAP || "").trim().toLowerCase();
       }
+      function isRemotePanelSensitiveTelemetryKey(key) {
+        var normalized = String(key || "").trim().toLowerCase().replace(/[\s_\-.]/g, "");
+        return normalized === "homedir" || normalized === "homedirectory" || normalized === "homepath";
+      }
+      function sanitizeRemotePanelTelemetryValue(value, depth) {
+        var level = Math.max(0, Math.floor(Number(depth) || 0));
+        if (value == null || typeof value !== "object") return value;
+        if (level > 20) return null;
+        if (Array.isArray(value)) {
+          return value.map(function (entry) {
+            return sanitizeRemotePanelTelemetryValue(entry, level + 1);
+          });
+        }
+        var out = {};
+        Object.keys(value).forEach(function (key) {
+          if (isRemotePanelSensitiveTelemetryKey(key)) return;
+          out[key] = sanitizeRemotePanelTelemetryValue(value[key], level + 1);
+        });
+        return out;
+      }
       function buildRemotePanelTelemetryPayload(raw, signal) {
         var payload = raw && typeof raw === "object"
           ? raw
@@ -1784,7 +2300,7 @@
           source: "game2",
           action: "telemetry",
           time: Date.now(),
-          data: payload
+          data: sanitizeRemotePanelTelemetryValue(payload, 0)
         };
         var identity = buildRemotePanelPlayerIdentity(raw, signal);
         if (identity) message.player = identity;
@@ -1868,6 +2384,7 @@
         }
         remoteServerWs = null;
         remoteServerWsPlayersCount = null;
+        remoteServerWsPlayerList = [];
         remoteServerWsLastPongAtMs = 0;
       }
       function handleRemotePanelWsMessage(event) {
@@ -1885,6 +2402,12 @@
             try { playersCount = extractRemoteServerPlayersCount(parsed); } catch (err1) { playersCount = null; }
           }
           if (playersCount !== null) remoteServerWsPlayersCount = playersCount;
+          if (parsed && typeof extractRemoteServerPlayerList === "function") {
+            var playersList = [];
+            try { playersList = extractRemoteServerPlayerList(parsed); } catch (errList) { playersList = []; }
+            if (playersList.length || playersCount === 0) remoteServerWsPlayerList = playersList;
+          }
+          if (playerListShortcutHoldActive) renderPlayerListHoldPopup();
         } catch (err2) { }
       }
       function startRemotePanelWsBridge() {
@@ -1909,6 +2432,7 @@
           online: false,
           lastFailureText: ""
         };
+        remoteServerWsPlayerList = [];
         remoteServerWsLastEventText = "Connexion WebSocket au panel en cours...";
         socket.onopen = function () {
           if (!remoteServerWs || remoteServerWs.socket !== socket) return;
@@ -1941,7 +2465,10 @@
         telemetryInstantSpeedKmh = Number.POSITIVE_INFINITY;
         telemetryEstimatedSpeedKmh = Number.POSITIVE_INFINITY;
         telemetryOfflineLock = false;
+        telemetryConvoyActive = null;
+        telemetryConvoyPlayerList = [];
         setTelemetryConnectionState(false, "Aucun signal telemetrie.");
+        refreshTelemetryVisibility();
         var ws = null;
         try { ws = new WebSocket(TELEMETRY_WS_URL); } catch (err) { ws = null; }
         if (!ws) {
@@ -1985,6 +2512,24 @@
               version: 1
             }));
           } catch (err3) { }
+          try {
+            ws.send(JSON.stringify({
+              type: "overlayShortcut",
+              action: "get",
+              scope: OVERLAY_SHORTCUT_SCOPE_HIDE_UI,
+              version: 1
+            }));
+          } catch (err4) { }
+          if (!PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED) {
+            try {
+              ws.send(JSON.stringify({
+                type: "overlayShortcut",
+                action: "get",
+                scope: OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST,
+                version: 1
+              }));
+            } catch (err5) { }
+          }
         };
         ws.onmessage = function (event) {
           if (FORCE_DEV_UI) {
@@ -1999,6 +2544,7 @@
           }
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          updateTelemetryConvoyState(raw, null);
           updateSaeivGameClockFromTelemetry(raw);
           var nextUiMode = extractTelemetryUiMode(raw);
           if (nextUiMode !== null) applyTelemetryUiMode(nextUiMode);
@@ -2023,12 +2569,16 @@
           if (signal && !signalVehicleName && String(signal.vehicleName || "").trim()) {
             saeivVehicleName = String(signal.vehicleName || "").trim();
           }
+          updateTelemetryConvoyState(raw, signal);
           var nextVehicleName = String(saeivVehicleName || "").trim();
           if (nextVehicleName && nextVehicleName !== previousVehicleName) {
             saeivLastStateKey = "";
             syncSaeivExternalState(true);
           }
-          if (!signal) return;
+          if (!signal) {
+            refreshTelemetryVisibility();
+            return;
+          }
           lastWsMessageAt = Date.now();
           telemetryLastSignal = signal;
           updateWazeBridgePoseFromTelemetry(signal);
@@ -2043,6 +2593,7 @@
           } else {
             setTelemetryConnectionState(false, "Signal detecte, validation en cours...");
           }
+          refreshTelemetryVisibility();
         };
         ws.onerror = function () {
           telemetryValidBurstCount = 0;
@@ -2087,12 +2638,14 @@
           if (!telemetryLastPacketAt) {
             telemetryValidBurstCount = 0;
             setTelemetryConnectionState(false, "Connecte, mais aucun paquet X/Y/Z/Heading.");
+            refreshTelemetryVisibility();
             return;
           }
           var age = Date.now() - telemetryLastPacketAt;
           if (age > TELEMETRY_PACKET_TIMEOUT_MS) {
             telemetryValidBurstCount = 0;
             setTelemetryConnectionState(false, "Signal telemetrie perdu (X/Y/Z/Heading).");
+            refreshTelemetryVisibility();
           }
         }, TELEMETRY_WATCHDOG_INTERVAL_MS);
         window.addEventListener("pagehide", stopTelemetryConnectionWatch);
@@ -2165,6 +2718,30 @@
           });
         });
       }
+      window.addEventListener("keydown", function (event) {
+        if (PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED) return;
+        if (isRecordingShortcut) return;
+        if (!shortcutMatchesBrowserEvent(OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST, event)) return;
+        var handled = triggerPlayerListHoldDown("browser");
+        if (handled) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }, true);
+      window.addEventListener("keyup", function (event) {
+        if (PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED) return;
+        if (!shortcutMatchesBrowserEvent(OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST, event)) return;
+        if (triggerPlayerListHoldUp()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }, true);
+      window.addEventListener("blur", function () {
+        hidePlayerListHoldPopup();
+      });
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) hidePlayerListHoldPopup();
+      });
       window.addEventListener("keydown", function (event) {
         if (!telemetryConnected && event.key === "Enter") {
           event.preventDefault();

@@ -130,6 +130,11 @@
             if (typeof resetShortcutForScope === "function") {
               resetShortcutForScope(OVERLAY_SHORTCUT_SCOPE_OVERLAY, true);
               resetShortcutForScope(OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE, true);
+              resetShortcutForScope(OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS, true);
+              resetShortcutForScope(OVERLAY_SHORTCUT_SCOPE_HIDE_UI, true);
+              if (typeof PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED === "undefined" || !PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED) {
+                resetShortcutForScope(OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST, true);
+              }
             }
 
             syncSaeivExternalState(true);
@@ -514,6 +519,73 @@
           }
           return null;
         }
+        function normalizeRemoteServerPlayerListEntry(entry, index) {
+          if (typeof entry === "string") {
+            var text = String(entry || "").trim();
+            return text ? { name: text } : null;
+          }
+          if (!entry || typeof entry !== "object") return null;
+          var keys = [
+            "displayname",
+            "displayName",
+            "display_name",
+            "steamName",
+            "steam_name",
+            "personaname",
+            "personaName",
+            "nickname",
+            "name",
+            "playerName",
+            "player_name",
+            "username",
+            "userName"
+          ];
+          var name = "";
+          for (var i = 0; i < keys.length; i += 1) {
+            var value = String(entry[keys[i]] || "").trim();
+            if (value) {
+              name = value;
+              break;
+            }
+          }
+          if (!name) name = "Joueur " + (index + 1);
+          return { name: name };
+        }
+        function extractRemoteServerPlayerList(parsed) {
+          var roots = [parsed, parsed && parsed.data, parsed && parsed.payload];
+          var keys = [
+            "playerList",
+            "player_list",
+            "playersList",
+            "players_list",
+            "connectedPlayers",
+            "connected_players",
+            "onlinePlayers",
+            "online_players",
+            "clients",
+            "connections",
+            "players"
+          ];
+          for (var i = 0; i < roots.length; i += 1) {
+            var root = roots[i];
+            if (!root || typeof root !== "object") continue;
+            for (var j = 0; j < keys.length; j += 1) {
+              var value = root[keys[j]];
+              var list = [];
+              if (Array.isArray(value)) {
+                list = value;
+              } else if (value && typeof value === "object" && !Number.isFinite(Number(value))) {
+                list = Object.keys(value).map(function (key) { return value[key]; });
+              }
+              if (!list.length) continue;
+              var normalized = list
+                .map(function (entry, index) { return normalizeRemoteServerPlayerListEntry(entry, index); })
+                .filter(Boolean);
+              if (normalized.length) return normalized;
+            }
+          }
+          return [];
+        }
         function describeRemoteServerWsReadyState() {
           if (!remoteServerWs) return "STOPPED";
           if (isRemoteServerWsOnline()) return "ONLINE";
@@ -646,6 +718,11 @@
             remoteServerWsLastPongAtMs = Date.now();
             var playersCount = extractRemoteServerPlayersCount(parsed);
             if (playersCount !== null) remoteServerWsPlayersCount = playersCount;
+            var playersList = extractRemoteServerPlayerList(parsed);
+            if (playersList.length || playersCount === 0) remoteServerWsPlayerList = playersList;
+            if (typeof playerListShortcutHoldActive !== "undefined" && playerListShortcutHoldActive && typeof renderPlayerListHoldPopup === "function") {
+              renderPlayerListHoldPopup();
+            }
 
             var becameOnline = !remoteServerWs.online;
             remoteServerWs.online = true;
@@ -686,6 +763,7 @@
           }
           remoteServerWs = null;
           remoteServerWsPlayersCount = null;
+          remoteServerWsPlayerList = [];
           remoteServerWsLastPongAtMs = 0;
           renderRemoteServerWsUi();
         }
@@ -765,6 +843,7 @@
           closeRemoteServerWs({ manual: false, reason: "Reconnect" });
           remoteServerWsManualClose = false;
           remoteServerWsPlayersCount = null;
+          remoteServerWsPlayerList = [];
           remoteServerWsLastPongAtMs = 0;
           remoteServerWsLastMessageAtMs = 0;
           remoteServerWsLastMessageText = "";
@@ -1056,6 +1135,7 @@
 
         var shortcutBtn = document.getElementById("overlayShortcutBtn");
         var destinationShortcutBtn = document.getElementById("overlayDestinationShortcutBtn");
+        var playerListShortcutBtn = document.getElementById("overlayPlayerListShortcutBtn");
         if (shortcutBtn) {
           shortcutBtn.addEventListener("click", function (event) {
             event.preventDefault();
@@ -1112,6 +1192,24 @@
             } else {
               if (isRecordingShortcut) stopShortcutRecording();
               startShortcutRecording(OVERLAY_SHORTCUT_SCOPE_HIDE_UI);
+            }
+          });
+        }
+        if (
+          playerListShortcutBtn &&
+          (typeof PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED === "undefined" || !PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED)
+        ) {
+          playerListShortcutBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (
+              isRecordingShortcut &&
+              normalizeOverlayShortcutScope(recordingShortcutScope) === OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST
+            ) {
+              stopShortcutRecording();
+            } else {
+              if (isRecordingShortcut) stopShortcutRecording();
+              startShortcutRecording(OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST);
             }
           });
         }

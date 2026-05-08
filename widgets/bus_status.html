@@ -244,6 +244,7 @@
       var PIXELS_PER_METER = 8;
       var PLATFORM_ANGLE_OFFSET_DEG = 0;
       var PLATFORM_SIDE_OFFSET_PX = 50;
+      var PLATFORM_FORWARD_OFFSET_PX = -8;
 
       var currentCount = 0;
       var visualCount = 0;
@@ -262,11 +263,12 @@
       var currentBusMaxCapacityUnlimited = false;
       var passengerValidationSoundsEnabled = false;
       var passengerValidationSoundVolume = 0.25;
+      var passengerValidationActiveAudio = null;
       var PASSENGER_VALIDATION_DELAY_MS = 500;
       var PASSENGER_VALIDATION_PASS_CHANCE = 0.79;
       var PASSENGER_VALIDATION_ERROR_CHANCE = 0.01;
-      var PASSENGER_VALIDATION_PASS_URL = "../map_files/dbus_fis/validation/navigo_ratp_pass.mp3";
-      var PASSENGER_VALIDATION_ERROR_URL = "../map_files/dbus_fis/validation/navigo_ratp_error.mp3";
+      var PASSENGER_VALIDATION_PASS_URL = "../game_manager/sounds/navigo_ratp_pass.mp3";
+      var PASSENGER_VALIDATION_ERROR_URL = "../game_manager/sounds/navigo_ratp_error.mp3";
 
       var activeWalkingPassengers = [];
 
@@ -343,6 +345,46 @@
         var minVal = Math.max(0, Math.round(Number(minInclusive) || 0));
         var maxVal = Math.max(minVal, Math.round(Number(maxInclusive) || 0));
         return minVal + Math.floor(Math.random() * ((maxVal - minVal) + 1));
+      }
+      function pickSignedRandomIntegerInRange(minInclusive, maxInclusive) {
+        var minVal = Math.round(Number(minInclusive) || 0);
+        var maxVal = Math.round(Number(maxInclusive) || 0);
+        var from = Math.min(minVal, maxVal);
+        var to = Math.max(minVal, maxVal);
+        return from + Math.floor(Math.random() * ((to - from) + 1));
+      }
+      function readPassengerCountVariationRangeFromState(state) {
+        var raw = state && (state.passengerCountVariation || state.linePassengerCountVariation || state.passengerVariation);
+        var minRaw = state && (
+          Object.prototype.hasOwnProperty.call(state, "passengerCountVariationMin") ? state.passengerCountVariationMin :
+            (Object.prototype.hasOwnProperty.call(state, "linePassengerCountVariationMin") ? state.linePassengerCountVariationMin : state.passengerVariationMin)
+        );
+        var maxRaw = state && (
+          Object.prototype.hasOwnProperty.call(state, "passengerCountVariationMax") ? state.passengerCountVariationMax :
+            (Object.prototype.hasOwnProperty.call(state, "linePassengerCountVariationMax") ? state.linePassengerCountVariationMax : state.passengerVariationMax)
+        );
+        if (Array.isArray(raw)) {
+          minRaw = raw[0];
+          maxRaw = raw[1];
+        } else if (raw && typeof raw === "object") {
+          minRaw = raw.min != null ? raw.min : (raw.minimum != null ? raw.minimum : (raw.from != null ? raw.from : raw[0]));
+          maxRaw = raw.max != null ? raw.max : (raw.maximum != null ? raw.maximum : (raw.to != null ? raw.to : raw[1]));
+        }
+        var minVal = Math.round(Number(minRaw));
+        var maxVal = Math.round(Number(maxRaw));
+        if (!Number.isFinite(minVal) || !Number.isFinite(maxVal)) {
+          return { min: 0, max: 0 };
+        }
+        return {
+          min: Math.min(minVal, maxVal),
+          max: Math.max(minVal, maxVal)
+        };
+      }
+      function applyPassengerCountVariationFromState(total, state) {
+        var base = Math.max(0, Math.round(Number(total) || 0));
+        var range = readPassengerCountVariationRangeFromState(state);
+        if (!range || (range.min === 0 && range.max === 0)) return base;
+        return Math.max(0, base + pickSignedRandomIntegerInRange(range.min, range.max));
       }
       function pickPassengerSpawnCount(minInclusive, maxInclusive, isPeak) {
         var minVal = Math.max(0, Math.round(Number(minInclusive) || 0));
@@ -490,6 +532,7 @@
         var transform =
           "translate(" + x + "px, " + y + "px) " +
           "rotate(" + angle + "deg) " +
+          "translateY(" + (-PLATFORM_FORWARD_OFFSET_PX) + "px) " +
           "translateX(" + PLATFORM_SIDE_OFFSET_PX + "px)";
         if (immediate === true) {
           platformContainer.style.transition = "none";
@@ -549,6 +592,13 @@
         clearTimeout(passState.validationSoundTimer);
         passState.validationSoundTimer = 0;
       }
+      function stopPassengerValidationActiveAudio() {
+        var audio = passengerValidationActiveAudio;
+        if (!audio) return;
+        passengerValidationActiveAudio = null;
+        try { audio.pause(); } catch (err0) { }
+        try { audio.src = ""; } catch (err1) { }
+      }
       function playPassengerValidationSound() {
         if (passengerValidationSoundsEnabled !== true) return;
         var roll = Math.random();
@@ -561,14 +611,22 @@
         if (!src) return;
         var audio = new Audio(src);
         audio.volume = clamp01(passengerValidationSoundVolume, 0.25);
+        passengerValidationActiveAudio = audio;
 
         var randomRate = 0.98 + (Math.random() * 0.02);
         audio.playbackRate = randomRate;
         if ('preservesPitch' in audio) {
           audio.preservesPitch = false;
         }
+        var clearActiveAudio = function () {
+          if (passengerValidationActiveAudio === audio) {
+            passengerValidationActiveAudio = null;
+          }
+        };
+        audio.onended = clearActiveAudio;
+        audio.onerror = clearActiveAudio;
 
-        audio.play().catch(function () { });
+        audio.play().catch(clearActiveAudio);
       }
       function schedulePassengerValidationSound(passState) {
         if (!passState || passState.type !== "in") return;
@@ -1242,6 +1300,15 @@
         }
         if (Object.prototype.hasOwnProperty.call(state, "passengerValidationSoundsEnabled")) {
           passengerValidationSoundsEnabled = readPassengerValidationSoundEnabled(state.passengerValidationSoundsEnabled);
+          if (
+            Object.prototype.hasOwnProperty.call(state, "passengerValidationLineEnabled") &&
+            readPassengerValidationSoundEnabled(state.passengerValidationLineEnabled) !== true
+          ) {
+            passengerValidationSoundsEnabled = false;
+          }
+        }
+        if (passengerValidationSoundsEnabled !== true) {
+          stopPassengerValidationActiveAudio();
         }
         var validationVolumeRaw = Number(state.passengerValidationSoundVolume);
         if (Number.isFinite(validationVolumeRaw)) {
@@ -1251,6 +1318,11 @@
           if (Number.isFinite(globalVolumeRaw)) {
             passengerValidationSoundVolume = clamp01(globalVolumeRaw / 2, 0.25);
           }
+        }
+        if (passengerValidationActiveAudio) {
+          try {
+            passengerValidationActiveAudio.volume = clamp01(passengerValidationSoundVolume, 0.25);
+          } catch (errValidationVolume) { }
         }
         if (previousCapacity !== Number(currentBusMaxCapacity) || previousUnlimited !== (currentBusMaxCapacityUnlimited === true)) {
           enforceCapacityLimitImmediately();
@@ -1389,16 +1461,35 @@
             // PRIORITÉ : Utiliser les valeurs fournies par le state (pour être synchro avec le SAEIV)
             var stateBoard = Number(state.stopBoardingTotal);
             var stateAlight = Number(state.stopAlightingTotal);
+            var statePlannedBoard = Number(state.plannedStopBoardingTotal);
+            var statePlannedAlight = Number(state.plannedStopAlightingTotal);
+            var statePassengersAtStop = Number(state.passengersAtStop);
+            var stateHasPassengerTotals = state.passengerGenerationAvailable === true ||
+              state.saeivPassengerGenerationAvailable === true ||
+              state.passengerTotalsAvailable === true;
 
             if (isAtTerminus) {
               // TOUT LE MONDE DESCEND, PERSONNE NE MONTE
               peopleToBoard = 0;
               peopleToAlight = visualCount;
               if (isDevMode) console.log("[BusStatus] Terminus reached: forcing 0 board, 100% alight");
-            } else if (Number.isFinite(stateBoard) && Number.isFinite(stateAlight) && (stateBoard > 0 || stateAlight > 0)) {
+            } else if (stateHasPassengerTotals && Number.isFinite(stateBoard) && Number.isFinite(stateAlight)) {
               // Priorité aux valeurs fournies par le state si non-terminus
-              peopleToBoard = stateBoard;
-              peopleToAlight = Math.min(visualCount, stateAlight);
+              var resolvedStateBoard = Math.max(0, Math.round(stateBoard));
+              var resolvedStateAlight = Math.max(0, Math.round(stateAlight));
+              if (resolvedStateBoard <= 0 && resolvedStateAlight <= 0) {
+                if (Number.isFinite(statePlannedBoard)) {
+                  resolvedStateBoard = Math.max(0, Math.round(statePlannedBoard));
+                }
+                if (Number.isFinite(statePlannedAlight)) {
+                  resolvedStateAlight = Math.max(0, Math.round(statePlannedAlight));
+                }
+                if (resolvedStateBoard <= 0 && Number.isFinite(statePassengersAtStop) && statePassengersAtStop > 0) {
+                  resolvedStateBoard = Math.max(0, Math.round(statePassengersAtStop));
+                }
+              }
+              peopleToBoard = resolvedStateBoard;
+              peopleToAlight = Math.min(visualCount, resolvedStateAlight);
             } else {
               // FALLBACK : Génération locale depuis lines.xml
               loadLinesData(String(state.dbusVersion || state.version || "0.1.6a").trim());
@@ -1429,7 +1520,7 @@
                 cOn = Math.max(0, Math.min(100, cOn));
 
                 var isPeak = isPeakPassengerTimeFromState(state);
-                var totalN = pickPassengerSpawnCount(pMin, pMax, isPeak);
+                var totalN = applyPassengerCountVariationFromState(pickPassengerSpawnCount(pMin, pMax, isPeak), state);
 
                 for (var i = 0; i < totalN; i++) {
                   if ((Math.random() * 100) < cOn) {

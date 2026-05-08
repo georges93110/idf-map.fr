@@ -608,6 +608,38 @@
                     </div>
                   </div>
 
+                  <div class="manager-scale-row gm-shortcut-row" hidden data-temporary-disabled="player-list-tab">
+                    <p class="manager-section-title gm-shortcut-title">
+                      Liste joueurs <span class="settings-mode-badge">SERVEUR CONVOI</span>
+                    </p>
+                    <div class="manager-widget-select-wrap gm-shortcut-wrap">
+                      <button type="button" class="shortcut-reset-btn" data-scope="idf_telemetry_player_list"
+                        title="Reinitialiser">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                          stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                          <path d="M3 3v5h5"></path>
+                        </svg>
+                      </button>
+                      <button id="overlayPlayerListShortcutBtn" class="manager-widget-select gm-shortcut-button" type="button">
+                        <svg class="gm-muted-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                          <line x1="6" y1="8" x2="6" y2="8"></line>
+                          <line x1="10" y1="8" x2="10" y2="8"></line>
+                          <line x1="14" y1="8" x2="14" y2="8"></line>
+                          <line x1="18" y1="8" x2="18" y2="8"></line>
+                          <line x1="6" y1="12" x2="6" y2="12"></line>
+                          <line x1="10" y1="12" x2="10" y2="12"></line>
+                          <line x1="14" y1="12" x2="14" y2="12"></line>
+                          <line x1="18" y1="12" x2="18" y2="12"></line>
+                          <line x1="7" y1="16" x2="17" y2="16"></line>
+                        </svg>
+                        <span class="shortcut-text">Tab</span>
+                      </button>
+                    </div>
+                  </div>
+
                   <div class="manager-scale-row gm-shortcut-row">
                     <p class="manager-section-title gm-shortcut-title">
                       Annonce Destination <span class="settings-mode-badge">MODE BUS</span>
@@ -660,7 +692,7 @@
                   </label>
 
                   <label class="manager-toggle" for="overlayPassengerValidationSounds">
-                    <span class="manager-toggle-label">Sons validation passagers</span>
+                    <span class="manager-toggle-label">Sons validation passagers et demande d'arrêt</span>
                     <input id="overlayPassengerValidationSounds" type="checkbox" checked />
                     <span class="manager-toggle-check" aria-hidden="true"></span>
                   </label>
@@ -740,9 +772,19 @@
     <p id="overlayNotificationPreviewDescription" class="overlay-notification-preview-description">Aucun signal
       re&ccedil;u. V&eacute;rifiez la connexion puis relancez.</p>
   </div>
+  <div id="playerListHoldPopup" class="player-list-hold-popup" aria-hidden="true">
+    <section class="player-list-hold-card" role="dialog" aria-label="Liste joueurs">
+      <div class="player-list-hold-header">
+        <p class="player-list-hold-title">Liste joueurs</p>
+        <p id="playerListHoldMeta" class="player-list-hold-meta">Convoi indisponible</p>
+      </div>
+      <div id="playerListHoldBody" class="player-list-hold-body"></div>
+    </section>
+  </div>
   <script src="game_manager/js/core/game2-meta.js"></script>
   <script src="game_manager/js/core/game2-hooks.js"></script>
   <script src="game_manager/js/i18n/game2-i18n.js"></script>
+  <script src="config/line-styles.js"></script>
   <script src="game_manager/js/runtime/game2-main.js"></script>
 <!-- Global Loading Screen -->
   <div id="globalLoadingScreen" class="global-loading-screen">
