@@ -364,6 +364,7 @@
       const PLAYER_WARNING_MS = 1000;
       const PLAYER_STALE_MS = 10000;
       const PLAYER_STATE_REFRESH_MS = 500;
+      const PLAYER_POSITION_INTERPOLATION_MS = 1000;
       const PLAYER_GROUP_SOLO = "solo";
       const PLAYER_GROUP_CONVOY = "convoy";
 
@@ -388,6 +389,7 @@
       let hasCenteredOnPlayer = false;
       let socket = null;
       let reconnectTimer = 0;
+      let playerAnimationFrame = 0;
       const playerMarkers = new Map();
       const playerFilters = {
         [PLAYER_GROUP_SOLO]: true,
@@ -1866,6 +1868,86 @@
         updatePlayerFilterCounts();
       }
 
+      function cloneLatLng(latlng) {
+        if (!latlng) return null;
+        return L.latLng(Number(latlng.lat), Number(latlng.lng));
+      }
+
+      function interpolateLatLng(from, to, ratio) {
+        if (!from || !to) return to || from || null;
+        const t = Math.max(0, Math.min(1, Number(ratio) || 0));
+        return L.latLng(
+          from.lat + ((to.lat - from.lat) * t),
+          from.lng + ((to.lng - from.lng) * t)
+        );
+      }
+
+      function stopPlayerPositionAnimation(record) {
+        if (!record) return;
+        record.positionAnimation = null;
+      }
+
+      function updatePlayerPositionAnimation(record, now) {
+        if (!record || !record.marker || !record.positionAnimation) return false;
+        const anim = record.positionAnimation;
+        const duration = Math.max(1, Number(anim.durationMs) || PLAYER_POSITION_INTERPOLATION_MS);
+        const elapsed = Math.max(0, Number(now) - Number(anim.startAtMs));
+        const ratio = Math.min(1, elapsed / duration);
+        const nextLatLng = interpolateLatLng(anim.fromLatLng, anim.toLatLng, ratio);
+        if (nextLatLng) record.marker.setLatLng(nextLatLng);
+        if (ratio >= 1) {
+          record.marker.setLatLng(anim.toLatLng);
+          record.displayLatLng = cloneLatLng(anim.toLatLng);
+          stopPlayerPositionAnimation(record);
+          return false;
+        }
+        record.displayLatLng = cloneLatLng(nextLatLng);
+        return true;
+      }
+
+      function tickPlayerPositionAnimations(now) {
+        playerAnimationFrame = 0;
+        let hasActiveAnimation = false;
+        const ts = Number.isFinite(Number(now)) ? Number(now) : performance.now();
+        for (const record of playerMarkers.values()) {
+          if (updatePlayerPositionAnimation(record, ts)) hasActiveAnimation = true;
+        }
+        if (hasActiveAnimation) {
+          playerAnimationFrame = requestAnimationFrame(tickPlayerPositionAnimations);
+        }
+      }
+
+      function startPlayerPositionAnimationLoop() {
+        if (playerAnimationFrame) return;
+        playerAnimationFrame = requestAnimationFrame(tickPlayerPositionAnimations);
+      }
+
+      function setPlayerMarkerTargetLatLng(record, targetLatLng) {
+        if (!record || !record.marker || !targetLatLng) return;
+        const toLatLng = cloneLatLng(targetLatLng);
+        const currentLatLng = cloneLatLng(record.marker.getLatLng && record.marker.getLatLng()) ||
+          cloneLatLng(record.displayLatLng) ||
+          cloneLatLng(toLatLng);
+        if (!currentLatLng || !toLatLng) return;
+        const samePosition =
+          Math.abs(currentLatLng.lat - toLatLng.lat) < 1e-9 &&
+          Math.abs(currentLatLng.lng - toLatLng.lng) < 1e-9;
+        if (samePosition) {
+          stopPlayerPositionAnimation(record);
+          record.displayLatLng = toLatLng;
+          record.marker.setLatLng(toLatLng);
+          return;
+        }
+        record.positionAnimation = {
+          fromLatLng: currentLatLng,
+          toLatLng,
+          startAtMs: performance.now(),
+          durationMs: PLAYER_POSITION_INTERPOLATION_MS
+        };
+        record.displayLatLng = currentLatLng;
+        startPlayerPositionAnimationLoop();
+      }
+
       function updatePlayerMarkers(players) {
         const now = Date.now();
 
@@ -1884,13 +1966,13 @@
               bubblingMouseEvents: false,
               riseOnHover: true
             });
-            record = { marker, player, lastSeen: now, state: markerState, popupBound: false, busRouteLayer: null, busRouteKey: "" };
+            record = { marker, player, lastSeen: now, state: markerState, popupBound: false, busRouteLayer: null, busRouteKey: "", displayLatLng: cloneLatLng(latlng), positionAnimation: null };
             playerMarkers.set(player.id, record);
             bindPlayerPopup(record);
           } else {
             player = preservePreviousBusRouteGeometry(player, record.player);
             record.player = player;
-            record.marker.setLatLng(latlng);
+            setPlayerMarkerTargetLatLng(record, latlng);
             record.marker.setIcon(playerIcon(player, markerState));
             record.marker.options.title = playerDisplayTitle(player);
             record.lastSeen = now;
