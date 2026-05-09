@@ -97,6 +97,30 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
     }
 
+    body.is-pcc-map-mode .player-marker {
+      width: 22px;
+      height: 22px;
+    }
+
+    body.is-pcc-map-mode .player-marker-dot {
+      width: 22px;
+      height: 22px;
+      border-width: 2px;
+    }
+
+    body.is-pcc-map-mode .player-marker-dot::before {
+      border-left-width: 4px;
+      border-right-width: 4px;
+      border-bottom-width: 11px;
+    }
+
+    body.is-pcc-map-mode .player-marker-label {
+      top: 25px;
+      max-width: 190px;
+      padding: 2px 5px;
+      font-size: 10px;
+    }
+
     .map-error {
       position: fixed;
       left: 12px;
@@ -115,10 +139,11 @@
       display: none !important;
     }
 
+    .admin-map-mode-panel,
+    .pcc-lines-panel,
     .player-filter-panel,
     .player-legend {
       position: fixed;
-      right: 12px;
       z-index: 1000;
       width: min(260px, calc(100vw - 24px));
       border: 1px solid rgba(255, 255, 255, 0.16);
@@ -130,7 +155,132 @@
       box-sizing: border-box;
     }
 
+    .admin-map-mode-panel {
+      left: 12px;
+      top: 12px;
+      padding: 10px;
+    }
+
+    .admin-map-mode-title,
+    .pcc-lines-title {
+      margin-bottom: 8px;
+      font: 800 12px/1.2 Arial, Helvetica, sans-serif;
+      color: rgba(255, 255, 255, 0.9);
+      text-transform: uppercase;
+    }
+
+    .admin-map-mode-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .admin-map-mode-btn,
+    .pcc-line-btn {
+      min-height: 30px;
+      padding: 7px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font: 800 11px/1.15 Arial, Helvetica, sans-serif;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .admin-map-mode-btn {
+      text-align: center;
+    }
+
+    .admin-map-mode-btn.is-active,
+    .pcc-line-btn.is-active {
+      border-color: rgba(47, 140, 255, 0.72);
+      background: rgba(47, 140, 255, 0.28);
+    }
+
+    .pcc-lines-panel {
+      left: 12px;
+      top: 105px;
+      max-height: calc(100vh - 130px);
+      padding: 10px;
+      overflow: auto;
+    }
+
+    .pcc-lines-panel[hidden] {
+      display: none !important;
+    }
+
+    .pcc-lines-meta,
+    .pcc-selected-player-list {
+      color: rgba(255, 255, 255, 0.72);
+      font: 700 11px/1.3 Arial, Helvetica, sans-serif;
+    }
+
+    .pcc-line-list {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .pcc-line-btn {
+      display: grid;
+      grid-template-columns: 12px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pcc-line-color {
+      width: 10px;
+      height: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      border-radius: 999px;
+      background: var(--line-color, #7dd3fc);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.46);
+    }
+
+    .pcc-line-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pcc-line-count {
+      color: rgba(255, 255, 255, 0.72);
+      font-weight: 800;
+    }
+
+    .pcc-selected-player-list {
+      display: grid;
+      gap: 5px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .pcc-selected-player {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2px;
+      align-items: center;
+    }
+
+    .pcc-selected-player-name {
+      min-width: 0;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .pcc-selected-player-route {
+      color: rgba(255, 255, 255, 0.56);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .player-filter-panel {
+      right: 12px;
       top: 12px;
       padding: 10px;
     }
@@ -181,6 +331,7 @@
     }
 
     .player-legend {
+      right: 12px;
       bottom: 12px;
       padding: 9px 10px;
     }
@@ -381,6 +532,19 @@
   <div id="map" aria-label="Carte live"></div>
   <pre id="output" hidden></pre>
   <div id="mapError" class="map-error" hidden></div>
+  <div class="admin-map-mode-panel" aria-label="Mode carte admin">
+    <div class="admin-map-mode-title">Mode</div>
+    <div class="admin-map-mode-actions">
+      <button type="button" class="admin-map-mode-btn is-active" data-admin-map-mode="admin" aria-pressed="true">Admin</button>
+      <button type="button" class="admin-map-mode-btn" data-admin-map-mode="pcc" aria-pressed="false">PCC</button>
+    </div>
+  </div>
+  <div id="pccLinesPanel" class="pcc-lines-panel" aria-label="Lignes PCC" hidden>
+    <div class="pcc-lines-title">Lignes</div>
+    <div id="pccLinesMeta" class="pcc-lines-meta">Aucune ligne en cours</div>
+    <div id="pccLineList" class="pcc-line-list"></div>
+    <div id="pccSelectedPlayers" class="pcc-selected-player-list"></div>
+  </div>
   <div class="player-filter-panel" aria-label="Filtres joueurs">
     <div class="player-filter-head">
       <span>Joueurs</span>
@@ -421,11 +585,18 @@
       const PLAYER_POSITION_INTERPOLATION_MS = 1000;
       const PLAYER_GROUP_SOLO = "solo";
       const PLAYER_GROUP_CONVOY = "convoy";
+      const ADMIN_MAP_MODE_ADMIN = "admin";
+      const ADMIN_MAP_MODE_PCC = "pcc";
+      const PCC_OUT_OF_SERVICE_KEY = "__hors_service__";
+      const PCC_OUT_OF_SERVICE_LABEL = "Hors Service";
       const PCC_VOICE_ACTION = "pcc_voice";
       const PCC_VOICE_MAX_DURATION_MS = 12000;
       const PCC_VOICE_MAX_BYTES = 3000000;
       const PCC_VOICE_CHUNK_CHARS = 48000;
       const PCC_VOICE_CHUNK_DELAY_MS = 8;
+      const PCC_LINE_VISIBLE_CONFIG_INDEX = 9;
+      const PCC_DBUS_NAV_MAX_SNAP_DISTANCE = 450;
+      const PCC_DBUS_NAV_STOP_CANDIDATES = 6;
       const PCC_VOICE_FILTERS = [
         ["radio", "Filtre radio"],
         ["souffle", "Souffle"],
@@ -433,12 +604,15 @@
         ["perte_signal", "Perte de signal"],
         ["signal_faible", "Signal faible"],
         ["latence", "Latence"],
-        ["saturation", "Saturation"],
         ["interferences", "Interferences"]
       ];
 
       const output = document.getElementById("output");
       const mapError = document.getElementById("mapError");
+      const pccLinesPanel = document.getElementById("pccLinesPanel");
+      const pccLinesMeta = document.getElementById("pccLinesMeta");
+      const pccLineList = document.getElementById("pccLineList");
+      const pccSelectedPlayers = document.getElementById("pccSelectedPlayers");
       const filterSolo = document.getElementById("filterSolo");
       const filterConvoy = document.getElementById("filterConvoy");
       const soloCount = document.getElementById("soloCount");
@@ -459,6 +633,17 @@
       let socket = null;
       let reconnectTimer = 0;
       let playerAnimationFrame = 0;
+      let adminMapMode = ADMIN_MAP_MODE_ADMIN;
+      let selectedPccLineKey = "";
+      let selectedPccLineSetByUser = false;
+      let pccRouteRenderKey = "";
+      let dbusDataLoadPromise = null;
+      let dbusStopsById = new Map();
+      let dbusLines = [];
+      let pccDbusNavGraph = null;
+      let pccDbusNavBridges = [];
+      const pccDbusNavNodesByStopId = new Map();
+      const pccDbusNavPathCache = new Map();
       let pccRecording = null;
       let pccRecordTimeout = 0;
       const playerMarkers = new Map();
@@ -514,6 +699,7 @@
       const busStopPane = map.createPane("busStopPane");
       busStopPane.style.zIndex = "520";
       busStopPane.style.pointerEvents = "none";
+      const pccRouteOverlayLayer = L.layerGroup().addTo(map);
 
       const fullBounds = L.latLngBounds(
         map.unproject(L.point(0, heightPx), maxNativeZoom),
@@ -599,6 +785,293 @@
         return (Array.isArray(points) ? points : [])
           .map(routePointToLatLng)
           .filter(Boolean);
+      }
+
+      async function fetchXmlDoc(url) {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const text = await response.text();
+        const xml = new DOMParser().parseFromString(text, "application/xml");
+        if (xml.querySelector("parsererror")) throw new Error("xml_parse_error");
+        return xml;
+      }
+
+      async function fetchJsonDoc(url) {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      }
+
+      function getLineStyleEntryByNumber(lineNumber) {
+        const styles = window.LINE_STYLES && typeof window.LINE_STYLES === "object" ? window.LINE_STYLES : {};
+        const original = String(lineNumber || "").trim();
+        const wanted = original.toLowerCase();
+        if (!wanted) return null;
+        const direct = styles[original];
+        if (Array.isArray(direct)) return direct;
+        let hit = null;
+        Object.keys(styles).some(function (key) {
+          if (String(key || "").trim().toLowerCase() !== wanted) return false;
+          hit = styles[key];
+          return true;
+        });
+        return Array.isArray(hit) ? hit : null;
+      }
+
+      function isPccLineVisibleByNumber(lineNumber) {
+        const entry = getLineStyleEntryByNumber(lineNumber);
+        return Array.isArray(entry) && entry[PCC_LINE_VISIBLE_CONFIG_INDEX] === true;
+      }
+
+      function getPccLineTraceColorByNumber(lineNumber) {
+        const entry = getLineStyleEntryByNumber(lineNumber);
+        if (Array.isArray(entry) && entry.length) return normalizeCssHexColor(entry[0], getFallbackLineColor(lineNumber));
+        return getFallbackLineColor(lineNumber);
+      }
+
+      function readDbusStopText(node, tagName) {
+        const child = node && node.querySelector ? node.querySelector(tagName) : null;
+        return String(child && child.textContent || "").trim();
+      }
+
+      function parseDbusStopsXml(xml) {
+        const out = new Map();
+        const nodes = Array.prototype.slice.call((xml && xml.querySelectorAll) ? xml.querySelectorAll("busstops > busstop") : []);
+        nodes.forEach(function (node) {
+          const id = parseInt(readDbusStopText(node, "id") || "0", 10);
+          if (!Number.isFinite(id)) return;
+          const name = readDbusStopText(node, "name");
+          const parts = readDbusStopText(node, "location").split(";").map(function (value) { return Number(value); });
+          const X = Number(parts[0]);
+          const Y = Number(parts[1]);
+          const Z = Number(parts[2]);
+          if (!Number.isFinite(X) || !Number.isFinite(Z)) return;
+          const stop = {
+            id,
+            name,
+            X,
+            Y: Number.isFinite(Y) ? Y : 0,
+            Z,
+            latlng: toLatLng(X, Z)
+          };
+          out.set(id, stop);
+        });
+        return out;
+      }
+
+      function parseDbusLinesXml(xml) {
+        const seenLineUids = new Map();
+        const lineNodes = Array.prototype.slice.call((xml && xml.querySelectorAll) ? xml.querySelectorAll("lines > line") : []);
+        return lineNodes.map(function (lineNode, lineIndex) {
+          const rawUid = String(lineNode.getAttribute("uid") || "").trim();
+          const number = String(lineNode.getAttribute("number") || "?").trim() || "?";
+          const uidBase = rawUid || ("line_" + String(lineIndex));
+          const seenCount = (seenLineUids.get(uidBase) || 0) + 1;
+          seenLineUids.set(uidBase, seenCount);
+          const safeNumber = number
+            .toLowerCase()
+            .replace(/[^a-z0-9_-]+/g, "_")
+            .replace(/^_+|_+$/g, "") || "line";
+          const lineUid = seenCount === 1 ? uidBase : (uidBase + "__" + safeNumber + "__" + String(lineIndex));
+          const routeNodes = Array.prototype.slice.call(lineNode.querySelectorAll(":scope > route"));
+          const routes = routeNodes.map(function (routeNode) {
+            const routeUid = String(routeNode.getAttribute("uid") || "").trim();
+            const routeName = String(routeNode.getAttribute("name") || "").trim();
+            const stopNodes = Array.prototype.slice.call(routeNode.querySelectorAll(":scope > busstop"));
+            const stops = stopNodes.map(function (stopNode) {
+              return {
+                uid: parseInt(String(stopNode.getAttribute("uid") || "0"), 10),
+                nextStopTime: parseInt(String(stopNode.getAttribute("nextStopTime") || "0"), 10)
+              };
+            }).filter(function (stopRef) {
+              return Number.isFinite(stopRef.uid);
+            });
+            return { uid: routeUid, name: routeName, stops };
+          });
+          return { uid: lineUid, uidRaw: rawUid, number, routes };
+        });
+      }
+
+      function parsePccWorldPoint(rawPoint) {
+        if (!rawPoint || typeof rawPoint !== "object") return null;
+        const hasZKey =
+          Object.prototype.hasOwnProperty.call(rawPoint, "z") ||
+          Object.prototype.hasOwnProperty.call(rawPoint, "Z");
+        const x = Number(rawPoint.x ?? rawPoint.X);
+        const y = Number(hasZKey ? (rawPoint.z ?? rawPoint.Z) : (rawPoint.y ?? rawPoint.Y));
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        const h = Number(rawPoint.h ?? rawPoint.H ?? rawPoint.height ?? rawPoint.alt ?? rawPoint.altitude);
+        const out = { x, y };
+        if (Number.isFinite(h)) out.h = h;
+        return out;
+      }
+
+      function pccWorldPointDistance(a, b) {
+        const pa = parsePccWorldPoint(a);
+        const pb = parsePccWorldPoint(b);
+        if (!pa || !pb) return Number.POSITIVE_INFINITY;
+        const dx = pa.x - pb.x;
+        const dy = pa.y - pb.y;
+        if (Number.isFinite(pa.h) && Number.isFinite(pb.h)) return Math.hypot(dx, dy, pa.h - pb.h);
+        return Math.hypot(dx, dy);
+      }
+
+      function appendUniquePccWorldPoint(target, point) {
+        const parsed = parsePccWorldPoint(point);
+        if (!parsed) return;
+        const last = target[target.length - 1];
+        if (last && Math.abs(Number(last.x) - parsed.x) < 0.001 && Math.abs(Number(last.y) - parsed.y) < 0.001) return;
+        target.push(parsed);
+      }
+
+      function pccWorldPointsToLatLngs(points) {
+        return (Array.isArray(points) ? points : [])
+          .map(function (point) { return toLatLng(Number(point && point.x), Number(point && point.y)); })
+          .filter(Boolean);
+      }
+
+      function createPccMinHeap() {
+        const arr = [];
+        const swap = function (a, b) {
+          const tmp = arr[a];
+          arr[a] = arr[b];
+          arr[b] = tmp;
+        };
+        const bubbleUp = function (index) {
+          let i = index;
+          while (i > 0) {
+            const parent = Math.floor((i - 1) / 2);
+            if (arr[parent].f <= arr[i].f) break;
+            swap(parent, i);
+            i = parent;
+          }
+        };
+        const bubbleDown = function (index) {
+          let i = index;
+          for (;;) {
+            const left = (i * 2) + 1;
+            const right = left + 1;
+            let smallest = i;
+            if (left < arr.length && arr[left].f < arr[smallest].f) smallest = left;
+            if (right < arr.length && arr[right].f < arr[smallest].f) smallest = right;
+            if (smallest === i) break;
+            swap(i, smallest);
+            i = smallest;
+          }
+        };
+        return {
+          push: function (item) {
+            arr.push(item);
+            bubbleUp(arr.length - 1);
+          },
+          pop: function () {
+            if (!arr.length) return null;
+            const first = arr[0];
+            const last = arr.pop();
+            if (arr.length && last) {
+              arr[0] = last;
+              bubbleDown(0);
+            }
+            return first;
+          },
+          get size() {
+            return arr.length;
+          }
+        };
+      }
+
+      function buildPccDbusNavGraph(raw) {
+        const nodes = Array.isArray(raw && raw.nodes) ? raw.nodes : [];
+        const edges = Array.isArray(raw && raw.edges) ? raw.edges : [];
+        if (!nodes.length || !edges.length) return null;
+        const nodesById = new Map();
+        const nodeList = [];
+        nodes.forEach(function (node) {
+          const point = parsePccWorldPoint(node);
+          const id = Number(node && node.id);
+          if (!point || !Number.isFinite(id)) return;
+          const rec = {
+            id,
+            x: point.x,
+            y: point.y,
+            kind: String(node && node.kind || "")
+          };
+          if (Number.isFinite(point.h)) rec.h = point.h;
+          nodesById.set(id, rec);
+          nodeList.push(rec);
+        });
+        const adjacency = new Map();
+        const edgeList = [];
+        const edgesById = new Map();
+        const addTransition = function (from, to, weight, points, reverse, edgeId) {
+          if (!adjacency.has(from)) adjacency.set(from, []);
+          adjacency.get(from).push({ from, to, weight, points, reverse, edgeId });
+        };
+        edges.forEach(function (edge) {
+          const edgeId = Number(edge && edge.id);
+          const from = Number(edge && edge.from);
+          const to = Number(edge && edge.to);
+          const fromNode = nodesById.get(from);
+          const toNode = nodesById.get(to);
+          if (!fromNode || !toNode) return;
+          let weight = Number(edge && edge.length);
+          if (!Number.isFinite(weight) || weight <= 0) weight = pccWorldPointDistance(fromNode, toNode);
+          const points = Array.isArray(edge && edge.polyline)
+            ? edge.polyline.map(parsePccWorldPoint).filter(Boolean)
+            : [];
+          const safePoints = points.length ? points : [fromNode, toNode];
+          const edgeRec = {
+            id: edgeId,
+            from,
+            to,
+            oneWay: !!(edge && edge.one_way),
+            length: weight,
+            polyline: safePoints
+          };
+          edgeList.push(edgeRec);
+          if (Number.isFinite(edgeId)) edgesById.set(edgeId, edgeRec);
+          addTransition(from, to, weight, safePoints, false, edgeId);
+          if (!(edge && edge.one_way)) addTransition(to, from, weight, safePoints, true, edgeId);
+        });
+        return { nodesById, nodeList, adjacency, edgeList, edgesById };
+      }
+
+      function getPccLineNumberFromDbusLine(line, route) {
+        const direct = String(line && line.number || "").trim();
+        const routeName = String(route && route.name || "").trim();
+        const match = /^([^:]+)\s*:/.exec(routeName);
+        const routeLine = match ? match[1].trim() : "";
+        if (routeLine && isPccLineVisibleByNumber(routeLine)) return routeLine;
+        if (direct && isPccLineVisibleByNumber(direct)) return direct;
+        return routeLine || direct;
+      }
+
+      function ensurePccDbusDataLoaded() {
+        if (dbusStopsById.size && dbusLines.length && pccDbusNavGraph) {
+          return Promise.resolve({ stops: dbusStopsById, lines: dbusLines });
+        }
+        if (dbusDataLoadPromise) return dbusDataLoadPromise;
+        const basePath = `${dataBase}/DBus`;
+        dbusDataLoadPromise = Promise.all([
+          fetchXmlDoc(`${basePath}/stops.xml`),
+          fetchXmlDoc(`${basePath}/lines.xml`),
+          fetchJsonDoc(`${dataBase}/nav_graph.json`).catch(function () { return null; }),
+          fetchJsonDoc(`${dataBase}/nav_bridges.json`).catch(function () { return null; })
+        ]).then(function (list) {
+          dbusStopsById = parseDbusStopsXml(list[0]);
+          dbusLines = parseDbusLinesXml(list[1]);
+          pccDbusNavGraph = buildPccDbusNavGraph(list[2]);
+          pccDbusNavBridges = Array.isArray(list[3] && list[3].rules)
+            ? list[3].rules.filter(function (rule) { return rule && rule.enabled !== false; })
+            : [];
+          pccDbusNavNodesByStopId.clear();
+          pccDbusNavPathCache.clear();
+          return { stops: dbusStopsById, lines: dbusLines };
+        }).catch(function (err) {
+          dbusDataLoadPromise = null;
+          throw err;
+        });
+        return dbusDataLoadPromise;
       }
 
       function readNumber(source, keys) {
@@ -1016,6 +1489,10 @@
         return normalizeVisiblePlayerName(player && player.label) || "Joueur sans pseudo";
       }
 
+      function playerMarkerLabel(player) {
+        return normalizeVisiblePlayerName(player && player.label);
+      }
+
       function sortWebsocketDataForDisplay(value, depth = 0, seen = new Set()) {
         if (value == null || typeof value !== "object") return value;
         if (seen.has(value)) return "[circular]";
@@ -1208,7 +1685,7 @@
 
       function playerIcon(player, state = "live") {
         const heading = headingToMarkerRotationDeg(player.heading, player.headingConvention, player.headingUnit);
-        const label = normalizeVisiblePlayerName(player && player.label);
+        const label = playerMarkerLabel(player);
         const labelHtml = label ? `<div class="player-marker-label">${escapeHtml(label)}</div>` : "";
         const stateClass = state === "paused" ? " is-paused" : (state === "stale" ? " is-stale" : "");
         const nameClass = isAnonymousPlayer(player) ? " is-anonymous" : "";
@@ -1436,18 +1913,26 @@
         const title = playerDisplayTitle(player);
         const stateClass = state === "paused" ? " is-paused" : (state === "stale" ? " is-stale" : "");
         const anonymousClass = isAnonymousPlayer(player) ? " is-anonymous" : "";
+        const popupMode = adminMapMode === ADMIN_MAP_MODE_PCC ? ADMIN_MAP_MODE_PCC : ADMIN_MAP_MODE_ADMIN;
+        if (popupMode === ADMIN_MAP_MODE_PCC) {
+          return [
+            `<div class="player-info-popup" data-popup-mode="${ADMIN_MAP_MODE_PCC}">`,
+            `<h3 class="player-info-title" data-player-info="title">${escapeHtml(title)}</h3>`,
+            buildPccVoiceSection(player),
+            `</div>`
+          ].join("");
+        }
         const statusHtml =
           `<span class="player-info-status"><span class="player-info-status-dot${anonymousClass}${stateClass}" data-player-info-status-dot></span><span data-player-info="status">${escapeHtml(playerStateLabel(state))}</span></span>`;
 
         return [
-          `<div class="player-info-popup">`,
+          `<div class="player-info-popup" data-popup-mode="${ADMIN_MAP_MODE_ADMIN}">`,
           `<h3 class="player-info-title" data-player-info="title">${escapeHtml(title)}</h3>`,
           playerInfoSection("Joueur", [
             playerInfoRow("Pseudo", player.label, "pseudo"),
             playerInfoRow("Nom", player.name, "name"),
             playerInfoRow("SteamID", player.steamid, "steamid")
           ]),
-          buildPccVoiceSection(player),
           playerInfoSection("Session", [
             playerInfoRow("Connexion", playerGroupLabelForPlayer(player), "mode"),
             playerInfoRow("inServer", player.inServer === true ? "true" : (player.inServer === false ? "false" : ""), "inServer"),
@@ -1607,6 +2092,9 @@
         const popup = record.marker.getPopup();
         const element = popup && popup.getElement ? popup.getElement() : null;
         if (!element) return false;
+        const popupRoot = element.querySelector(".player-info-popup");
+        const expectedMode = adminMapMode === ADMIN_MAP_MODE_PCC ? ADMIN_MAP_MODE_PCC : ADMIN_MAP_MODE_ADMIN;
+        if (popupRoot && popupRoot.getAttribute("data-popup-mode") !== expectedMode) return false;
         const values = getPlayerInfoValues(record);
         Object.keys(values).forEach(function (key) {
           const node = element.querySelector(`[data-player-info="${key}"]`);
@@ -1985,9 +2473,53 @@
         return normalizePlayerGroup(player && player.group);
       }
 
+      function normalizePccLineKey(value) {
+        return String(value == null ? "" : value).trim().replace(/\s+/g, " ").toLowerCase();
+      }
+
+      function isPccOutOfServiceKey(key) {
+        return String(key || "") === PCC_OUT_OF_SERVICE_KEY;
+      }
+
+      function getPccLineNumberFromBusLine(busLine) {
+        if (!busLine || typeof busLine !== "object") return "";
+        const direct = String(busLine.lineNumber || busLine.line || busLine.lineName || "").trim();
+        const route = String(busLine.routeName || "").trim();
+        const match = /^([^:]+)\s*:/.exec(route);
+        const routeLine = match ? match[1].trim() : "";
+        if (routeLine && isPccLineVisibleByNumber(routeLine)) return routeLine;
+        if (direct && isPccLineVisibleByNumber(direct)) return direct;
+        return direct || routeLine;
+      }
+
+      function getPccLineKeyForPlayer(player) {
+        const busLine = getPlayerBusLine(player);
+        if (!busLine) return "";
+        return normalizePccLineKey(getPccLineNumberFromBusLine(busLine));
+      }
+
+      function getPccLineLabelForPlayer(player) {
+        const busLine = getPlayerBusLine(player);
+        return getPccLineNumberFromBusLine(busLine) || "Ligne inconnue";
+      }
+
+      function isPccLineVisibleForBusLine(busLine) {
+        return isPccLineVisibleByNumber(getPccLineNumberFromBusLine(busLine));
+      }
+
+      function isPlayerVisibleInPccMode(player) {
+        if (isPccOutOfServiceKey(selectedPccLineKey)) return !getPlayerBusLine(player);
+        const busLine = getPlayerBusLine(player);
+        if (!isPccLineVisibleForBusLine(busLine)) return false;
+        const key = getPccLineKeyForPlayer(player);
+        return !!key && !!selectedPccLineKey && key === selectedPccLineKey;
+      }
+
       function isPlayerVisibleByFilter(player) {
         const group = normalizePlayerGroupForPlayer(player);
-        return playerFilters[group] !== false;
+        if (playerFilters[group] === false) return false;
+        if (adminMapMode === ADMIN_MAP_MODE_PCC) return isPlayerVisibleInPccMode(player);
+        return true;
       }
 
       function isRecordPopupOpen(record) {
@@ -2283,6 +2815,10 @@
 
       function syncPlayerBusRouteLayer(record) {
         if (!record || !record.player) return;
+        if (adminMapMode === ADMIN_MAP_MODE_PCC) {
+          removePlayerBusRouteLayer(record);
+          return;
+        }
         if (!isRecordPopupOpen(record)) {
           removePlayerBusRouteLayer(record);
           return;
@@ -2324,6 +2860,723 @@
         return player;
       }
 
+      function sortPccLineSummaries(a, b) {
+        if (isPccOutOfServiceKey(a && a.key)) return -1;
+        if (isPccOutOfServiceKey(b && b.key)) return 1;
+        return String(a.label || "").localeCompare(String(b.label || ""), "fr", {
+          numeric: true,
+          sensitivity: "base"
+        });
+      }
+
+      function collectPccLineSummaries() {
+        const byKey = new Map();
+        byKey.set(PCC_OUT_OF_SERVICE_KEY, {
+          key: PCC_OUT_OF_SERVICE_KEY,
+          label: PCC_OUT_OF_SERVICE_LABEL,
+          count: 0,
+          color: "#8b949e",
+          routeNames: new Set(),
+          activeRouteNames: new Set()
+        });
+        dbusLines.forEach(function (line) {
+          (Array.isArray(line.routes) ? line.routes : []).forEach(function (route) {
+            const lineNumber = getPccLineNumberFromDbusLine(line, route);
+            if (!isPccLineVisibleByNumber(lineNumber)) return;
+            const key = normalizePccLineKey(lineNumber);
+            if (!key) return;
+            if (!byKey.has(key)) {
+              byKey.set(key, {
+                key,
+                label: lineNumber || "Ligne inconnue",
+                count: 0,
+                color: getPccLineTraceColorByNumber(lineNumber),
+                routeNames: new Set(),
+                activeRouteNames: new Set()
+              });
+            }
+            const item = byKey.get(key);
+            const routeName = String(route && route.name || "").trim();
+            if (routeName) item.routeNames.add(routeName);
+          });
+        });
+        for (const record of playerMarkers.values()) {
+          const player = record && record.player ? record.player : null;
+          const busLine = getPlayerBusLine(player);
+          if (!busLine) {
+            const off = byKey.get(PCC_OUT_OF_SERVICE_KEY);
+            if (off) off.count += 1;
+            continue;
+          }
+          if (!isPccLineVisibleForBusLine(busLine)) continue;
+          const key = getPccLineKeyForPlayer(player);
+          if (!key) continue;
+          let item = byKey.get(key);
+          if (!item) {
+            const label = getPccLineLabelForPlayer(player);
+            item = {
+              key,
+              label,
+              count: 0,
+              color: getPccLineTraceColorByNumber(label),
+              routeNames: new Set(),
+              activeRouteNames: new Set()
+            };
+            byKey.set(key, item);
+          }
+          item.count += 1;
+          const routeName = String(busLine.routeName || "").trim();
+          if (routeName) item.activeRouteNames.add(routeName);
+        }
+        return Array.from(byKey.values()).sort(sortPccLineSummaries);
+      }
+
+      function getPccSelectedRecords() {
+        if (!selectedPccLineKey) return [];
+        const out = [];
+        for (const record of playerMarkers.values()) {
+          if (record && isPlayerVisibleByFilter(record.player)) out.push(record);
+        }
+        out.sort(function (a, b) {
+          return playerDisplayTitle(a && a.player).localeCompare(playerDisplayTitle(b && b.player), "fr", {
+            numeric: true,
+            sensitivity: "base"
+          });
+        });
+        return out;
+      }
+
+      function renderPccLineList(lines) {
+        if (!pccLineList) return;
+        pccLineList.innerHTML = "";
+        lines.forEach(function (line) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "pcc-line-btn" + (line.key === selectedPccLineKey ? " is-active" : "");
+          btn.setAttribute("data-pcc-line-key", line.key);
+          btn.style.setProperty("--line-color", line.color || "#7dd3fc");
+          btn.innerHTML =
+            `<span class="pcc-line-color"></span>` +
+            `<span class="pcc-line-label">${escapeHtml(line.label)}</span>` +
+            `<span class="pcc-line-count">${escapeHtml(line.count)}</span>`;
+          pccLineList.appendChild(btn);
+        });
+      }
+
+      function renderPccSelectedPlayers() {
+        if (!pccSelectedPlayers) return;
+        pccSelectedPlayers.innerHTML = "";
+        const records = getPccSelectedRecords();
+        if (!records.length) {
+          const empty = document.createElement("div");
+          empty.textContent = isPccOutOfServiceKey(selectedPccLineKey)
+            ? "Aucun joueur hors service."
+            : (selectedPccLineKey ? "Aucun bus sur cette ligne." : "Selectionnez une ligne.");
+          pccSelectedPlayers.appendChild(empty);
+          return;
+        }
+        records.forEach(function (record) {
+          const player = record.player || {};
+          const busLine = getPlayerBusLine(player);
+          const routeText = busLine
+            ? (String(busLine.routeName || "").trim() || formatBusLineStatus(busLine))
+            : PCC_OUT_OF_SERVICE_LABEL;
+          const row = document.createElement("div");
+          row.className = "pcc-selected-player";
+          row.innerHTML =
+            `<span class="pcc-selected-player-name">${escapeHtml(playerDisplayTitle(player))}</span>` +
+            `<span class="pcc-selected-player-route">${escapeHtml(routeText)}</span>`;
+          row.title = busLine ? formatBusLineName(busLine) : "Aucune ligne active";
+          row.addEventListener("click", function () {
+            openPlayerPopup(record);
+            const latlng = record.displayLatLng || (record.marker && record.marker.getLatLng && record.marker.getLatLng());
+            if (latlng) map.panTo(latlng, { animate: true, duration: 0.35 });
+          });
+          pccSelectedPlayers.appendChild(row);
+        });
+      }
+
+      function getPccDbusRouteEntriesForSelectedKey() {
+        const out = [];
+        if (!selectedPccLineKey) return [];
+        dbusLines.forEach(function (line) {
+          (Array.isArray(line.routes) ? line.routes : []).forEach(function (route) {
+            const lineNumber = getPccLineNumberFromDbusLine(line, route);
+            if (normalizePccLineKey(lineNumber) !== selectedPccLineKey) return;
+            if (!isPccLineVisibleByNumber(lineNumber)) return;
+            out.push({ line, route });
+          });
+        });
+        return out;
+      }
+
+      function getPccRouteStops(route) {
+        return (Array.isArray(route && route.stops) ? route.stops : [])
+          .map(function (stopRef) { return dbusStopsById.get(Number(stopRef && stopRef.uid)); })
+          .filter(function (stop) { return stop && stop.latlng; });
+      }
+
+      function pccNavHeuristic(fromId, toId) {
+        const graph = pccDbusNavGraph;
+        if (!graph) return 0;
+        const a = graph.nodesById.get(fromId);
+        const b = graph.nodesById.get(toId);
+        if (!a || !b) return 0;
+        return pccWorldPointDistance(a, b);
+      }
+
+      function findPccNavPathTransitions(fromId, toId, options) {
+        if (fromId === toId) return [];
+        const graph = pccDbusNavGraph;
+        if (!graph) return null;
+        const blockedEdgeIds = options && options.blockedEdgeIds instanceof Set ? options.blockedEdgeIds : null;
+        const open = createPccMinHeap();
+        const best = new Map([[fromId, 0]]);
+        const prev = new Map();
+        open.push({ id: fromId, g: 0, f: pccNavHeuristic(fromId, toId) });
+        while (open.size > 0) {
+          const current = open.pop();
+          if (!current) break;
+          const known = best.get(current.id);
+          if (!Number.isFinite(known) || current.g > known + 1e-9) continue;
+          if (current.id === toId) break;
+          const transitions = graph.adjacency.get(current.id) || [];
+          transitions.forEach(function (transition) {
+            if (blockedEdgeIds && Number.isFinite(transition.edgeId) && blockedEdgeIds.has(transition.edgeId)) return;
+            const nextG = current.g + (Number(transition.weight) || 0);
+            const knownNext = best.get(transition.to);
+            if (Number.isFinite(knownNext) && nextG >= knownNext - 1e-9) return;
+            best.set(transition.to, nextG);
+            prev.set(transition.to, { from: current.id, transition });
+            open.push({ id: transition.to, g: nextG, f: nextG + pccNavHeuristic(transition.to, toId) });
+          });
+        }
+        if (!prev.has(toId)) return null;
+        const out = [];
+        let cursor = toId;
+        while (cursor !== fromId) {
+          const step = prev.get(cursor);
+          if (!step) return null;
+          out.push(step.transition);
+          cursor = step.from;
+        }
+        return out.reverse();
+      }
+
+      function appendPccTransitionWorldPoints(target, transition) {
+        const graph = pccDbusNavGraph;
+        if (!graph || !transition) return;
+        const rawPoints = Array.isArray(transition.points) ? transition.points : [];
+        if (rawPoints.length) {
+          if (transition.reverse) {
+            for (let i = rawPoints.length - 1; i >= 0; i -= 1) appendUniquePccWorldPoint(target, rawPoints[i]);
+          } else {
+            rawPoints.forEach(function (point) { appendUniquePccWorldPoint(target, point); });
+          }
+        } else {
+          appendUniquePccWorldPoint(target, graph.nodesById.get(transition.from));
+          appendUniquePccWorldPoint(target, graph.nodesById.get(transition.to));
+        }
+        appendUniquePccWorldPoint(target, graph.nodesById.get(transition.to));
+      }
+
+      function getPccNavPathBetweenNodes(fromId, toId, options) {
+        const blockedEdgeIds = options && options.blockedEdgeIds instanceof Set ? options.blockedEdgeIds : null;
+        const key = blockedEdgeIds && blockedEdgeIds.size ? "" : `${fromId}>${toId}`;
+        if (key && pccDbusNavPathCache.has(key)) return pccDbusNavPathCache.get(key);
+        const graph = pccDbusNavGraph;
+        if (!graph) return null;
+        const fromNode = graph.nodesById.get(fromId);
+        const toNode = graph.nodesById.get(toId);
+        if (!fromNode || !toNode) return null;
+        const transitions = findPccNavPathTransitions(fromId, toId, options);
+        if (!transitions) {
+          if (key) pccDbusNavPathCache.set(key, null);
+          return null;
+        }
+        const points = [];
+        let cost = 0;
+        appendUniquePccWorldPoint(points, fromNode);
+        transitions.forEach(function (transition) {
+          cost += Number(transition.weight) || 0;
+          appendPccTransitionWorldPoints(points, transition);
+        });
+        appendUniquePccWorldPoint(points, toNode);
+        const out = points.length ? { points, cost } : null;
+        if (key) pccDbusNavPathCache.set(key, out);
+        return out;
+      }
+
+      function getPccStopWorldPoint(stop) {
+        if (!stop) return null;
+        const x = Number(stop.X);
+        const z = Number(stop.Z);
+        const h = Number(stop.Y);
+        if (!Number.isFinite(x) || !Number.isFinite(z)) return null;
+        const point = { x, y: z };
+        if (Number.isFinite(h)) point.h = h;
+        return point;
+      }
+
+      function getNearestPccNavNodesForStop(stop, limit) {
+        const graph = pccDbusNavGraph;
+        if (!graph || !stop) return [];
+        const stopId = Number(stop.id);
+        const wanted = Math.max(1, Math.floor(Number(limit) || PCC_DBUS_NAV_STOP_CANDIDATES));
+        if (Number.isFinite(stopId) && pccDbusNavNodesByStopId.has(stopId)) {
+          return (pccDbusNavNodesByStopId.get(stopId) || []).slice(0, wanted);
+        }
+        const stopPoint = getPccStopWorldPoint(stop);
+        if (!stopPoint) return [];
+        const candidates = [];
+        graph.nodeList.forEach(function (node) {
+          const distance = pccWorldPointDistance(node, stopPoint);
+          if (distance > PCC_DBUS_NAV_MAX_SNAP_DISTANCE) return;
+          candidates.push({ nodeId: node.id, distance });
+        });
+        candidates.sort(function (a, b) { return a.distance - b.distance; });
+        const out = candidates.slice(0, PCC_DBUS_NAV_STOP_CANDIDATES);
+        if (Number.isFinite(stopId)) pccDbusNavNodesByStopId.set(stopId, out);
+        return out.slice(0, wanted);
+      }
+
+      function pickBestPccNavSegment(fromStop, toStop, options) {
+        const fromCandidates = getNearestPccNavNodesForStop(fromStop);
+        const toCandidates = getNearestPccNavNodesForStop(toStop);
+        if (!fromCandidates.length || !toCandidates.length) return null;
+        let best = null;
+        fromCandidates.forEach(function (fromCandidate) {
+          toCandidates.forEach(function (toCandidate) {
+            let path = null;
+            if (fromCandidate.nodeId === toCandidate.nodeId) {
+              const node = pccDbusNavGraph && pccDbusNavGraph.nodesById.get(fromCandidate.nodeId);
+              if (!node) return;
+              path = { points: [node], cost: 0 };
+            } else {
+              path = getPccNavPathBetweenNodes(fromCandidate.nodeId, toCandidate.nodeId, options);
+              if (!path) return;
+            }
+            const cost = (Number(path.cost) || 0) + fromCandidate.distance + toCandidate.distance;
+            if (!best || cost < best.cost) best = { cost, path };
+          });
+        });
+        return best;
+      }
+
+      function buildPccDbusWorldPolylineFromStops(routeStops, startIndex, endIndex, options) {
+        const stops = Array.isArray(routeStops) ? routeStops : [];
+        if (!stops.length) return [];
+        const start = Math.max(0, Math.min(stops.length - 1, Math.floor(Number(startIndex) || 0)));
+        const end = Math.max(0, Math.min(stops.length - 1, Math.floor(Number(endIndex) || 0)));
+        if (start > end) return [];
+        const worldPoints = [];
+        if (start === end) {
+          appendUniquePccWorldPoint(worldPoints, getPccStopWorldPoint(stops[start]));
+          return worldPoints;
+        }
+        for (let i = start; i < end; i += 1) {
+          const fromStop = stops[i];
+          const toStop = stops[i + 1];
+          const fromPoint = getPccStopWorldPoint(fromStop);
+          const toPoint = getPccStopWorldPoint(toStop);
+          if (i === start) appendUniquePccWorldPoint(worldPoints, fromPoint);
+          const segment = pickBestPccNavSegment(fromStop, toStop, options);
+          if (segment && segment.path && Array.isArray(segment.path.points) && segment.path.points.length) {
+            segment.path.points.forEach(function (point) { appendUniquePccWorldPoint(worldPoints, point); });
+          } else {
+            appendUniquePccWorldPoint(worldPoints, fromPoint);
+            appendUniquePccWorldPoint(worldPoints, toPoint);
+          }
+          appendUniquePccWorldPoint(worldPoints, toPoint);
+        }
+        return worldPoints;
+      }
+
+      function parsePccRouteName(name) {
+        const raw = String(name || "").trim();
+        const colon = raw.indexOf(":");
+        const lineNumber = colon >= 0 ? raw.slice(0, colon).replace(/\s*\([^)]*\)/g, "").trim() : "";
+        const routeTitle = colon >= 0 ? raw.slice(colon + 1).trim() : raw;
+        return { lineNumber, routeTitle };
+      }
+
+      function normalizePccBridgeText(value) {
+        let text = String(value || "");
+        try { text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); } catch (err) { }
+        return text.replace(/\s+/g, " ").trim().toLowerCase();
+      }
+
+      function matchPccDbusNavBridgeRule(rule, line, route) {
+        if (!rule || !line || !route) return false;
+        const scope = rule.scope && typeof rule.scope === "object" ? rule.scope : {};
+        const routeName = String(route.name || "").trim();
+        const parsed = parsePccRouteName(routeName);
+        const lineNumber = String(line.number || "").trim();
+        if (scope.line != null) {
+          const wanted = normalizePccBridgeText(scope.line);
+          const lineNorm = normalizePccBridgeText(lineNumber);
+          const parsedLineNorm = normalizePccBridgeText(parsed.lineNumber);
+          if (!(wanted && (lineNorm === wanted || parsedLineNorm === wanted || lineNorm.includes(wanted) || parsedLineNorm.includes(wanted)))) return false;
+        }
+        if (scope.direction != null) {
+          const wanted = normalizePccBridgeText(scope.direction);
+          const routeTitleNorm = normalizePccBridgeText(parsed.routeTitle);
+          const routeNameNorm = normalizePccBridgeText(routeName);
+          if (!(wanted && (routeTitleNorm === wanted || routeNameNorm === wanted || routeTitleNorm.includes(wanted) || routeNameNorm.includes(wanted)))) return false;
+        }
+        if (scope.route_uid != null && normalizePccBridgeText(scope.route_uid) !== normalizePccBridgeText(route.uid)) return false;
+        if (scope.line_uid != null && normalizePccBridgeText(scope.line_uid) !== normalizePccBridgeText(line.uid)) return false;
+        return true;
+      }
+
+      function getPccDbusNavBridgeRuleForRoute(line, route) {
+        if (!line || !route || !Array.isArray(pccDbusNavBridges) || !pccDbusNavBridges.length) return null;
+        return pccDbusNavBridges.find(function (rule) { return matchPccDbusNavBridgeRule(rule, line, route); }) || null;
+      }
+
+      function parsePccBridgeControlPoints(rawList) {
+        return (Array.isArray(rawList) ? rawList : [])
+          .map(parsePccWorldPoint)
+          .filter(Boolean);
+      }
+
+      function normalizePccBridgePointPair(raw) {
+        if (!raw || typeof raw !== "object") return null;
+        const from = parsePccWorldPoint(raw.from || raw.start || raw.a);
+        const to = parsePccWorldPoint(raw.to || raw.end || raw.b);
+        return from && to ? { from, to } : null;
+      }
+
+      function findNearestPccWorldPointMatch(points, worldPoint, maxDistance) {
+        const list = Array.isArray(points) ? points : [];
+        const ref = parsePccWorldPoint(worldPoint);
+        let bestIndex = -1;
+        let bestDistance = Number.POSITIVE_INFINITY;
+        if (!list.length || !ref) return { index: -1, distance: bestDistance };
+        list.forEach(function (point, index) {
+          const distance = pccWorldPointDistance(point, ref);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            bestIndex = index;
+          }
+        });
+        const limit = Number.isFinite(Number(maxDistance)) ? Number(maxDistance) : Number.POSITIVE_INFINITY;
+        if (!Number.isFinite(bestDistance) || bestDistance > limit) return { index: -1, distance: bestDistance };
+        return { index: bestIndex, distance: bestDistance };
+      }
+
+      function insertPccBridgeControlPointsAtIndex(worldPoints, insertIndex, controlPoints, mode) {
+        const base = Array.isArray(worldPoints) ? worldPoints : [];
+        const points = Array.isArray(controlPoints) ? controlPoints : [];
+        if (!base.length || !points.length) return null;
+        const idx = Math.max(0, Math.min(base.length - 1, Math.floor(Number(insertIndex) || 0)));
+        const beforeMode = String(mode || "").toLowerCase() === "before";
+        const out = [];
+        for (let i = 0; i < base.length; i += 1) {
+          if (beforeMode && i === idx) points.forEach(function (point) { appendUniquePccWorldPoint(out, point); });
+          appendUniquePccWorldPoint(out, base[i]);
+          if (!beforeMode && i === idx) points.forEach(function (point) { appendUniquePccWorldPoint(out, point); });
+        }
+        return out.length >= 2 ? out : null;
+      }
+
+      function insertPccBridgeControlPointsRelativeToPoint(worldPoints, refPoint, controlPoints, mode) {
+        const match = findNearestPccWorldPointMatch(worldPoints, refPoint, PCC_DBUS_NAV_MAX_SNAP_DISTANCE * 10);
+        if (!(match.index >= 0)) return null;
+        return insertPccBridgeControlPointsAtIndex(worldPoints, match.index, controlPoints, mode);
+      }
+
+      function insertPccBridgeControlPointsRelativeToStop(worldPoints, routeStops, stopNumber, controlPoints, mode) {
+        const stops = Array.isArray(routeStops) ? routeStops : [];
+        const stopIndex = Math.floor(Number(stopNumber)) - 1;
+        if (!(stopIndex >= 0 && stopIndex < stops.length)) return null;
+        return insertPccBridgeControlPointsRelativeToPoint(worldPoints, getPccStopWorldPoint(stops[stopIndex]), controlPoints, mode);
+      }
+
+      function removePccBridgeIgnoredPoints(worldPoints, ignoredRefs) {
+        const base = Array.isArray(worldPoints) ? worldPoints : [];
+        const ignored = (Array.isArray(ignoredRefs) ? ignoredRefs : [ignoredRefs])
+          .map(parsePccWorldPoint)
+          .filter(Boolean);
+        if (!ignored.length) return base;
+        const out = [];
+        base.forEach(function (point) {
+          const remove = ignored.some(function (ignoredPoint) {
+            return pccWorldPointDistance(point, ignoredPoint) <= 1.5;
+          });
+          if (!remove) appendUniquePccWorldPoint(out, point);
+        });
+        return out.length >= 2 ? out : base;
+      }
+
+      function applyPccBridgeInsertionOperation(worldPoints, routeStops, operation) {
+        if (!operation || typeof operation !== "object") return null;
+        const controlPoints = parsePccBridgeControlPoints(operation.points || operation.control_points);
+        if (!controlPoints.length) return null;
+        const basePoints = removePccBridgeIgnoredPoints(
+          worldPoints,
+          operation.ignore_points || operation.ignore_point || operation.ignore_nodes || operation.ignore_node
+        );
+        const position = String(operation.position || "").trim().toLowerCase();
+        if (position === "after_stop") {
+          return insertPccBridgeControlPointsRelativeToStop(basePoints, routeStops, operation.stop_number ?? operation.stop ?? operation.after_stop, controlPoints, "after");
+        }
+        if (position === "before_stop") {
+          return insertPccBridgeControlPointsRelativeToStop(basePoints, routeStops, operation.stop_number ?? operation.stop ?? operation.before_stop, controlPoints, "before");
+        }
+        if (position === "after_point" || operation.after_point || operation.node_point) {
+          return insertPccBridgeControlPointsRelativeToPoint(basePoints, operation.point || operation.after_point || operation.node_point, controlPoints, "after");
+        }
+        if (position === "before_point" || operation.before_point) {
+          return insertPccBridgeControlPointsRelativeToPoint(basePoints, operation.point || operation.before_point, controlPoints, "before");
+        }
+        return null;
+      }
+
+      function buildPccDbusRoutePolylineLatLngs(routeStops, line, route) {
+        const direct = routeStops.map(function (stop) { return stop && stop.latlng; }).filter(Boolean);
+        if (direct.length < 2 || !pccDbusNavGraph) return direct;
+        const bridgeRule = getPccDbusNavBridgeRuleForRoute(line, route);
+        const blockedEdgeIds = new Set(
+          (Array.isArray(bridgeRule && bridgeRule.remove_links) ? bridgeRule.remove_links : [])
+            .map(function (id) { return Number(id); })
+            .filter(function (id) { return Number.isFinite(id); })
+        );
+        const navOptions = blockedEdgeIds.size ? { blockedEdgeIds } : null;
+        let worldPoints = buildPccDbusWorldPolylineFromStops(routeStops, 0, routeStops.length - 1, navOptions);
+        if (!worldPoints.length) return direct;
+
+        const replaceBetweenPoints = normalizePccBridgePointPair(bridgeRule && bridgeRule.replace_between_points);
+        const forcedPointChain = parsePccBridgeControlPoints(bridgeRule && bridgeRule.force_point_chain);
+        if (forcedPointChain.length >= 2) {
+          const fromPoint = (replaceBetweenPoints && replaceBetweenPoints.from) || forcedPointChain[0];
+          const toPoint = (replaceBetweenPoints && replaceBetweenPoints.to) || forcedPointChain[forcedPointChain.length - 1];
+          const startMatch = findNearestPccWorldPointMatch(worldPoints, fromPoint);
+          const endMatch = findNearestPccWorldPointMatch(worldPoints, toPoint);
+          if (startMatch.index >= 0 && endMatch.index > startMatch.index) {
+            const merged = [];
+            for (let i = 0; i <= startMatch.index; i += 1) appendUniquePccWorldPoint(merged, worldPoints[i]);
+            forcedPointChain.forEach(function (point) { appendUniquePccWorldPoint(merged, point); });
+            for (let i = endMatch.index; i < worldPoints.length; i += 1) appendUniquePccWorldPoint(merged, worldPoints[i]);
+            if (merged.length >= 2) worldPoints = merged;
+          } else {
+            const full = [];
+            appendUniquePccWorldPoint(full, getPccStopWorldPoint(routeStops[0]));
+            forcedPointChain.forEach(function (point) { appendUniquePccWorldPoint(full, point); });
+            appendUniquePccWorldPoint(full, getPccStopWorldPoint(routeStops[routeStops.length - 1]));
+            if (full.length >= 2) worldPoints = full;
+          }
+        }
+
+        const insertionOps = [];
+        if (bridgeRule && bridgeRule.insert_control_points_after_node && typeof bridgeRule.insert_control_points_after_node === "object") {
+          const legacy = bridgeRule.insert_control_points_after_node;
+          insertionOps.push({
+            position: "after_point",
+            point: legacy.after_point || legacy.node_point,
+            points: legacy.points || legacy.control_points
+          });
+        }
+        if (Array.isArray(bridgeRule && bridgeRule.insert_control_points)) {
+          bridgeRule.insert_control_points.forEach(function (operation) {
+            if (operation && typeof operation === "object") insertionOps.push(operation);
+          });
+        }
+        insertionOps.forEach(function (operation) {
+          const injected = applyPccBridgeInsertionOperation(worldPoints, routeStops, operation);
+          if (Array.isArray(injected) && injected.length >= 2) worldPoints = injected;
+        });
+
+        const latlngs = pccWorldPointsToLatLngs(worldPoints);
+        return latlngs.length >= 2 ? latlngs : direct;
+      }
+
+      function buildPccDbusRouteLayer(line, route) {
+        const routeStops = getPccRouteStops(route);
+        const latlngs = buildPccDbusRoutePolylineLatLngs(routeStops, line, route);
+        if (latlngs.length < 2) return null;
+        const group = L.layerGroup();
+        const lineNumber = getPccLineNumberFromDbusLine(line, route);
+        const lineColor = getPccLineTraceColorByNumber(lineNumber);
+        addBusPolylinePair(group, latlngs, false, lineColor);
+        routeStops.forEach(function (stop, index) {
+          L.circleMarker(stop.latlng, {
+            pane: "busStopPane",
+            radius: index === 0 || index === routeStops.length - 1 ? 5 : 4,
+            color: "#05070a",
+            weight: 2,
+            opacity: 0.72,
+            fillColor: lineColor,
+            fillOpacity: 0.9,
+            interactive: false
+          }).addTo(group);
+        });
+        return group.getLayers().length ? group : null;
+      }
+
+      function clearPccRouteOverlay() {
+        pccRouteOverlayLayer.clearLayers();
+        pccRouteRenderKey = "";
+      }
+
+      function refreshPccLineRouteLayers() {
+        if (adminMapMode !== ADMIN_MAP_MODE_PCC) {
+          clearPccRouteOverlay();
+          return;
+        }
+        if (isPccOutOfServiceKey(selectedPccLineKey)) {
+          if (pccRouteRenderKey === selectedPccLineKey + "||off") return;
+          pccRouteOverlayLayer.clearLayers();
+          pccRouteRenderKey = selectedPccLineKey + "||off";
+          return;
+        }
+        if (!dbusLines.length && dataBase) {
+          ensurePccDbusDataLoaded()
+            .then(function () {
+              refreshPccModeUi();
+              refreshPccLineRouteLayers();
+            })
+            .catch(function () { });
+        }
+        const selectedRouteEntries = getPccDbusRouteEntriesForSelectedKey();
+        if (selectedRouteEntries.length) {
+          const routeKeys = [];
+          selectedRouteEntries.forEach(function (entry) {
+            routeKeys.push(String(entry.line && entry.line.uid || "") + ":" + String(entry.route && entry.route.uid || ""));
+          });
+          routeKeys.sort();
+          const nextKey = selectedPccLineKey + "||dbus||" + routeKeys.join("||");
+          if (nextKey === pccRouteRenderKey) return;
+          pccRouteOverlayLayer.clearLayers();
+          pccRouteRenderKey = nextKey;
+          selectedRouteEntries.forEach(function (entry) {
+            const layer = buildPccDbusRouteLayer(entry.line, entry.route);
+            if (layer) pccRouteOverlayLayer.addLayer(layer);
+          });
+          return;
+        }
+        const records = getPccSelectedRecords();
+        const routeKeys = records
+          .map(function (record) { return getPlayerBusRouteRenderKey(record.player); })
+          .filter(Boolean)
+          .sort();
+        const nextKey = selectedPccLineKey + "||" + routeKeys.join("||");
+        if (nextKey === pccRouteRenderKey) return;
+        pccRouteOverlayLayer.clearLayers();
+        pccRouteRenderKey = nextKey;
+        records.forEach(function (record) {
+          const layer = buildPlayerBusRouteLayer(record.player);
+          if (layer) pccRouteOverlayLayer.addLayer(layer);
+        });
+      }
+
+      function refreshPccModeUi() {
+        if (adminMapMode === ADMIN_MAP_MODE_PCC && !dbusLines.length && dataBase) {
+          ensurePccDbusDataLoaded()
+            .then(function () {
+              refreshPccModeUi();
+              refreshPccLineRouteLayers();
+            })
+            .catch(function () { });
+        }
+        const lines = collectPccLineSummaries();
+        const hasSelected = lines.some(function (line) { return line.key === selectedPccLineKey; });
+        const offLine = lines.find(function (line) {
+          return isPccOutOfServiceKey(line.key);
+        });
+        const shouldAutoSelect =
+          !hasSelected ||
+          (
+            !selectedPccLineSetByUser &&
+            isPccOutOfServiceKey(selectedPccLineKey) &&
+            (!offLine || Number(offLine.count) <= 0) &&
+            lines.some(function (line) { return !isPccOutOfServiceKey(line.key); })
+          );
+        if (shouldAutoSelect) {
+          const activeLine = lines.find(function (line) {
+            return !isPccOutOfServiceKey(line.key) && Number(line.count) > 0;
+          });
+          const firstLine = lines.find(function (line) {
+            return !isPccOutOfServiceKey(line.key);
+          });
+          selectedPccLineKey = (activeLine || firstLine || offLine || {}).key || "";
+        }
+        if (pccLinesMeta) {
+          const selected = lines.find(function (line) { return line.key === selectedPccLineKey; });
+          const routeCount = selected
+            ? (selected.routeNames.size || selected.activeRouteNames.size || 0)
+            : 0;
+          pccLinesMeta.textContent = selected
+            ? `${selected.count} bus - ${routeCount || 0} route(s)`
+            : "Aucune ligne en cours";
+        }
+        renderPccLineList(lines);
+        renderPccSelectedPlayers();
+      }
+
+      function syncAdminMapModeUi() {
+        document.body.classList.toggle("is-pcc-map-mode", adminMapMode === ADMIN_MAP_MODE_PCC);
+        if (pccLinesPanel) pccLinesPanel.hidden = adminMapMode !== ADMIN_MAP_MODE_PCC;
+        document.querySelectorAll("[data-admin-map-mode]").forEach(function (button) {
+          const mode = button.getAttribute("data-admin-map-mode") === ADMIN_MAP_MODE_PCC
+            ? ADMIN_MAP_MODE_PCC
+            : ADMIN_MAP_MODE_ADMIN;
+          const active = mode === adminMapMode;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+      }
+
+      function rebuildOpenPlayerPopupsForCurrentMode() {
+        for (const record of playerMarkers.values()) {
+          if (!isRecordPopupOpen(record)) continue;
+          updatePlayerPopup(record, {
+            force: true,
+            preserveScroll: false,
+            allowRebuildOpen: true
+          });
+        }
+      }
+
+      function refreshAllPlayerMarkerIcons() {
+        for (const record of playerMarkers.values()) {
+          if (!record || !record.marker) continue;
+          const player = record.player || {};
+          const state = record.state || getPlayerMarkerState(player, Date.now(), record.lastSeen || Date.now());
+          record.marker.setIcon(playerIcon(player, state));
+          record.marker.options.title = playerDisplayTitle(player);
+        }
+      }
+
+      function setAdminMapMode(mode) {
+        const nextMode = mode === ADMIN_MAP_MODE_PCC ? ADMIN_MAP_MODE_PCC : ADMIN_MAP_MODE_ADMIN;
+        if (adminMapMode === nextMode) {
+          syncAdminMapModeUi();
+          refreshAllPlayerMarkerIcons();
+          refreshPccModeUi();
+          refreshPccLineRouteLayers();
+          return;
+        }
+        adminMapMode = nextMode;
+        syncAdminMapModeUi();
+        refreshAllPlayerMarkerIcons();
+        rebuildOpenPlayerPopupsForCurrentMode();
+        refreshPccModeUi();
+        syncAllPlayerFilterUi();
+        refreshPccLineRouteLayers();
+      }
+
+      function selectPccLine(key) {
+        const safeKey = normalizePccLineKey(key);
+        if (!safeKey) return;
+        selectedPccLineSetByUser = true;
+        if (safeKey === selectedPccLineKey) return;
+        selectedPccLineKey = safeKey;
+        refreshPccModeUi();
+        syncAllPlayerFilterUi();
+        refreshPccLineRouteLayers();
+      }
+
       function syncPlayerMarkerVisibility(record) {
         if (!record || !record.marker) return;
         const shouldShow = isPlayerVisibleByFilter(record.player);
@@ -2351,8 +3604,10 @@
       }
 
       function syncAllPlayerFilterUi() {
+        refreshPccModeUi();
         for (const record of playerMarkers.values()) syncPlayerMarkerVisibility(record);
         updatePlayerFilterCounts();
+        refreshPccLineRouteLayers();
       }
 
       function cloneLatLng(latlng) {
@@ -2475,7 +3730,7 @@
         }
 
         refreshPlayerMarkerStates(now);
-        updatePlayerFilterCounts();
+        syncAllPlayerFilterUi();
       }
 
       function getPlayerMarkerState(player, now, lastSeen) {
@@ -2506,7 +3761,7 @@
           updatePlayerPopup(record, { force: true });
           syncPlayerMarkerVisibility(record);
         }
-        if (changedCount) updatePlayerFilterCounts();
+        if (changedCount) syncAllPlayerFilterUi();
       }
 
       function show(text) {
@@ -2686,6 +3941,23 @@
         updatePlayerFilterCounts();
       }
 
+      function bindAdminMapModeEvents() {
+        document.querySelectorAll("[data-admin-map-mode]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            setAdminMapMode(button.getAttribute("data-admin-map-mode") || ADMIN_MAP_MODE_ADMIN);
+          });
+        });
+        if (pccLineList) {
+          pccLineList.addEventListener("click", function (event) {
+            const button = event.target && event.target.closest ? event.target.closest("[data-pcc-line-key]") : null;
+            if (!button) return;
+            selectPccLine(button.getAttribute("data-pcc-line-key") || "");
+          });
+        }
+        syncAdminMapModeUi();
+        refreshPccModeUi();
+      }
+
       async function boot() {
         try {
           selectedVersion = await selectMapVersion();
@@ -2713,6 +3985,12 @@
           map.fitBounds(innerBounds(64), { animate: false });
           applyBounds();
           map.on("zoomend resize", applyBounds);
+          ensurePccDbusDataLoaded()
+            .then(function () {
+              refreshPccModeUi();
+              refreshPccLineRouteLayers();
+            })
+            .catch(function () { });
 
           connect();
         } catch (err) {
@@ -2722,6 +4000,7 @@
       }
 
       bindPlayerFilterEvents();
+      bindAdminMapModeEvents();
       bindPlayerMarkerDomClick();
       document.addEventListener("click", handlePccVoicePopupClick, true);
       window.setInterval(refreshPlayerMarkerStates, PLAYER_STATE_REFRESH_MS);

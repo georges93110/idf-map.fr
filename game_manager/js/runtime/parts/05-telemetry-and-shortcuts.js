@@ -2524,7 +2524,6 @@
           low_signal: "signal_faible",
           latence: "latence",
           latency: "latence",
-          saturation: "saturation",
           interferences: "interferences",
           interference: "interferences"
         };
@@ -2589,16 +2588,22 @@
       }
       function playResolvedPccVoiceMessage(message, audio, dataUrl, filters) {
         var selectedFilters = Array.isArray(filters) ? filters : readPccVoiceFilters(message, audio);
-        if (typeof showOverlayNotification === "function") {
-          showOverlayNotification("Message PCC recu", "Message vocal cible recu.", 2200);
-        }
-        if (playPccVoiceAudioDataUrl(dataUrl, audio && audio.volume, selectedFilters)) {
-          if (typeof showOverlayNotification === "function") {
-            showOverlayNotification("Message PCC", "Lecture du message vocal.", 2200);
+        playPccVoiceIntroThenMessage(dataUrl, audio && audio.volume, selectedFilters);
+      }
+      function playPccVoiceIntroThenMessage(dataUrl, volume, filters) {
+        preparePccVoiceIntroChainPlayback(dataUrl, volume, filters).then(function (playPreparedChain) {
+          if (typeof playPreparedChain === "function") {
+            playPreparedChain();
+            return;
           }
-        } else if (typeof showOverlayNotification === "function") {
-          showOverlayNotification("Message PCC recu", "Audio illisible ou absent.", 2600);
-        }
+          preparePccVoicePlayback(dataUrl, volume, filters).then(function (preparedPlayback) {
+            if (typeof preparedPlayback === "function") preparedPlayback();
+            else playPccVoiceAudioDataUrl(dataUrl, volume, []);
+          });
+        }).catch(function () {
+          playPccVoiceAudioDataUrl(dataUrl, volume, []);
+        });
+        return true;
       }
       function handlePccVoiceChunkMessage(message) {
         var info = getPccVoiceChunkInfo(message);
@@ -2624,10 +2629,7 @@
           };
           pccVoiceChunkBuffers.set(id, existing);
         }
-        if (!existing.notified && typeof showOverlayNotification === "function") {
-          existing.notified = true;
-          showOverlayNotification("Message PCC recu", "Reception audio en cours...", 1800);
-        }
+        existing.notified = true;
         if (existing.chunks[info.index] == null) {
           existing.chunks[info.index] = info.chunk;
           existing.received += 1;
@@ -2636,9 +2638,6 @@
         }
         if (existing.charCount > PCC_VOICE_MAX_DATA_URL_CHARS) {
           pccVoiceChunkBuffers.delete(id);
-          if (typeof showOverlayNotification === "function") {
-            showOverlayNotification("Message PCC recu", "Audio trop long, lecture bloquee.", 2600);
-          }
           return true;
         }
         if (existing.received < existing.total) return true;
@@ -2673,16 +2672,6 @@
         }
         return buffer;
       }
-      function createPccVoiceSaturationCurve(amount) {
-        var n = 2048;
-        var curve = new Float32Array(n);
-        var k = Math.max(1, Number(amount) || 30);
-        for (var i = 0; i < n; i += 1) {
-          var x = (i * 2 / n) - 1;
-          curve[i] = ((1 + k) * x) / (1 + k * Math.abs(x));
-        }
-        return curve;
-      }
       function schedulePccVoiceDropouts(gain, ctx, startAt, duration, baseGain, filters) {
         if (!gain || !gain.gain) return;
         var endAt = startAt + Math.max(0.1, Number(duration) || 0.1);
@@ -2714,12 +2703,7 @@
             });
           });
       }
-      function playPccVoiceFilteredDataUrl(src, volume, filters) {
-        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) return false;
-        var ctx = null;
-        try { ctx = new AudioContextClass(); } catch (err0) { ctx = null; }
-        if (!ctx) return false;
+      function createPccVoiceFilteredActive(ctx) {
         var active = {
           ctx: ctx,
           source: null,
@@ -2736,116 +2720,269 @@
             try { ctx.close(); } catch (err3) { }
           }
         };
-        pccVoiceActiveAudio = active;
-        decodePccVoiceDataUrl(ctx, src).then(function (buffer) {
-          if (active.stopped || pccVoiceActiveAudio !== active) return;
-          var source = ctx.createBufferSource();
-          source.buffer = buffer;
-          active.source = source;
+        return active;
+      }
+      function startPccVoiceFilteredBuffer(active, buffer, volume, filters, scheduledStartAt, onEnded) {
+        if (!active || active.stopped || !buffer) return false;
+        var ctx = active.ctx;
+        if (!ctx) return false;
+        var source = ctx.createBufferSource();
+        source.buffer = buffer;
+        active.source = source;
+        active.nodes.push(source);
 
-          var current = source;
-          if (hasPccVoiceFilter(filters, "radio")) {
-            var hp = ctx.createBiquadFilter();
-            hp.type = "highpass";
-            hp.frequency.value = 320;
-            var lp = ctx.createBiquadFilter();
-            lp.type = "lowpass";
-            lp.frequency.value = 3300;
-            current.connect(hp);
-            hp.connect(lp);
-            current = lp;
+        var current = source;
+        if (hasPccVoiceFilter(filters, "radio")) {
+          var hp = ctx.createBiquadFilter();
+          hp.type = "highpass";
+          hp.frequency.value = 320;
+          var lp = ctx.createBiquadFilter();
+          lp.type = "lowpass";
+          lp.frequency.value = 3300;
+          current.connect(hp);
+          hp.connect(lp);
+          current = lp;
+        }
+        var finalGain = ctx.createGain();
+        var baseVolume = typeof getGlobalAudioVolumeFactor === "function"
+          ? getGlobalAudioVolumeFactor()
+          : Math.max(0, Math.min(1, Number(volume) || 1));
+        if (hasPccVoiceFilter(filters, "signal_faible")) baseVolume *= 0.45;
+        finalGain.gain.value = baseVolume;
+        current.connect(finalGain);
+
+        var duration = Math.max(0.1, Number(buffer.duration) || 0.1);
+        var startAt = Number.isFinite(Number(scheduledStartAt))
+          ? Math.max(ctx.currentTime, Number(scheduledStartAt))
+          : ctx.currentTime;
+        var stopAt = startAt + duration + 0.35;
+
+        if (hasPccVoiceFilter(filters, "souffle") || hasPccVoiceFilter(filters, "signal_faible") || hasPccVoiceFilter(filters, "perte_signal")) {
+          var noise = ctx.createBufferSource();
+          noise.buffer = createPccVoiceNoiseBuffer(ctx, duration + 0.6, "noise");
+          var noiseGain = ctx.createGain();
+          noiseGain.gain.value =
+            (hasPccVoiceFilter(filters, "perte_signal") ? 0.052 : 0) +
+            (hasPccVoiceFilter(filters, "signal_faible") ? 0.032 : 0) +
+            (hasPccVoiceFilter(filters, "souffle") ? 0.026 : 0);
+          var noiseFilter = ctx.createBiquadFilter();
+          noiseFilter.type = "highpass";
+          noiseFilter.frequency.value = 900;
+          noise.connect(noiseFilter);
+          noiseFilter.connect(noiseGain);
+          noiseGain.connect(finalGain);
+          noise.start(startAt);
+          noise.stop(stopAt);
+          active.nodes.push(noise);
+        }
+
+        if (hasPccVoiceFilter(filters, "gresillement")) {
+          var crackle = ctx.createBufferSource();
+          crackle.buffer = createPccVoiceNoiseBuffer(ctx, duration + 0.6, "crackle");
+          var crackleGain = ctx.createGain();
+          crackleGain.gain.value = 0.16;
+          crackle.connect(crackleGain);
+          crackleGain.connect(finalGain);
+          crackle.start(startAt);
+          crackle.stop(stopAt);
+          active.nodes.push(crackle);
+        }
+
+        if (hasPccVoiceFilter(filters, "interferences")) {
+          [780, 1240].forEach(function (freq, index) {
+            var osc = ctx.createOscillator();
+            var oscGain = ctx.createGain();
+            osc.type = index ? "triangle" : "sine";
+            osc.frequency.value = freq;
+            oscGain.gain.value = index ? 0.012 : 0.018;
+            osc.connect(oscGain);
+            oscGain.connect(finalGain);
+            osc.start(startAt);
+            osc.stop(stopAt);
+            active.nodes.push(osc);
+          });
+        }
+
+        schedulePccVoiceDropouts(finalGain, ctx, startAt, duration, baseVolume, filters);
+        finalGain.connect(ctx.destination);
+        source.onended = function () {
+          if (pccVoiceActiveAudio === active) pccVoiceActiveAudio = null;
+          if (typeof onEnded === "function") {
+            try { onEnded(); } catch (errEnded) { }
           }
-          if (hasPccVoiceFilter(filters, "saturation")) {
-            var shaper = ctx.createWaveShaper();
-            shaper.curve = createPccVoiceSaturationCurve(38);
-            shaper.oversample = "2x";
-            current.connect(shaper);
-            current = shaper;
+          window.setTimeout(function () {
+            try { ctx.close(); } catch (errClose) { }
+          }, 500);
+        };
+        var resumePromise = ctx.state === "suspended" && typeof ctx.resume === "function" ? ctx.resume() : null;
+        if (resumePromise && typeof resumePromise.catch === "function") resumePromise.catch(function () { });
+        source.start(startAt);
+        return true;
+      }
+      function getPccVoiceEffectiveBufferDuration(buffer) {
+        if (!buffer || !Number.isFinite(Number(buffer.duration))) return 0;
+        var sampleRate = Number(buffer.sampleRate) || 44100;
+        var channelCount = Math.max(1, Math.min(Number(buffer.numberOfChannels) || 1, 2));
+        var threshold = 0.0025;
+        var lastAudible = -1;
+        for (var i = buffer.length - 1; i >= 0; i -= 1) {
+          for (var ch = 0; ch < channelCount; ch += 1) {
+            var data = buffer.getChannelData(ch);
+            if (Math.abs(data[i] || 0) > threshold) {
+              lastAudible = i;
+              break;
+            }
           }
-
-          var finalGain = ctx.createGain();
-          var baseVolume = typeof getGlobalAudioVolumeFactor === "function"
-            ? getGlobalAudioVolumeFactor()
-            : Math.max(0, Math.min(1, Number(volume) || 1));
-          if (hasPccVoiceFilter(filters, "signal_faible")) baseVolume *= 0.45;
-          finalGain.gain.value = baseVolume;
-          current.connect(finalGain);
-
-          var duration = Math.max(0.1, Number(buffer.duration) || 0.1);
-          var startDelay = hasPccVoiceFilter(filters, "latence") ? 0.32 : 0.015;
-          var startAt = ctx.currentTime + startDelay;
-          var stopAt = startAt + duration + 0.35;
-
-          if (hasPccVoiceFilter(filters, "souffle") || hasPccVoiceFilter(filters, "signal_faible") || hasPccVoiceFilter(filters, "perte_signal")) {
-            var noise = ctx.createBufferSource();
-            noise.buffer = createPccVoiceNoiseBuffer(ctx, duration + 0.6, "noise");
-            var noiseGain = ctx.createGain();
-            noiseGain.gain.value =
-              (hasPccVoiceFilter(filters, "perte_signal") ? 0.052 : 0) +
-              (hasPccVoiceFilter(filters, "signal_faible") ? 0.032 : 0) +
-              (hasPccVoiceFilter(filters, "souffle") ? 0.026 : 0);
-            var noiseFilter = ctx.createBiquadFilter();
-            noiseFilter.type = "highpass";
-            noiseFilter.frequency.value = 900;
-            noise.connect(noiseFilter);
-            noiseFilter.connect(noiseGain);
-            noiseGain.connect(finalGain);
-            noise.start(startAt);
-            noise.stop(stopAt);
-            active.nodes.push(noise);
-          }
-
-          if (hasPccVoiceFilter(filters, "gresillement")) {
-            var crackle = ctx.createBufferSource();
-            crackle.buffer = createPccVoiceNoiseBuffer(ctx, duration + 0.6, "crackle");
-            var crackleGain = ctx.createGain();
-            crackleGain.gain.value = 0.16;
-            crackle.connect(crackleGain);
-            crackleGain.connect(finalGain);
-            crackle.start(startAt);
-            crackle.stop(stopAt);
-            active.nodes.push(crackle);
-          }
-
-          if (hasPccVoiceFilter(filters, "interferences")) {
-            [780, 1240].forEach(function (freq, index) {
-              var osc = ctx.createOscillator();
-              var oscGain = ctx.createGain();
-              osc.type = index ? "triangle" : "sine";
-              osc.frequency.value = freq;
-              oscGain.gain.value = index ? 0.012 : 0.018;
-              osc.connect(oscGain);
-              oscGain.connect(finalGain);
-              osc.start(startAt);
-              osc.stop(stopAt);
-              active.nodes.push(osc);
-            });
-          }
-
-          schedulePccVoiceDropouts(finalGain, ctx, startAt, duration, baseVolume, filters);
-          finalGain.connect(ctx.destination);
+          if (lastAudible >= 0) break;
+        }
+        if (lastAudible < 0) return Math.max(0, Number(buffer.duration) || 0);
+        return Math.min(Number(buffer.duration) || 0, (lastAudible / sampleRate) + 0.001);
+      }
+      function startPccVoicePlainBufferAt(active, buffer, volume, scheduledStartAt, onEnded) {
+        if (!active || active.stopped || !buffer) return false;
+        var ctx = active.ctx;
+        if (!ctx) return false;
+        var source = ctx.createBufferSource();
+        var gain = ctx.createGain();
+        var baseVolume = typeof getGlobalAudioVolumeFactor === "function"
+          ? getGlobalAudioVolumeFactor()
+          : Math.max(0, Math.min(1, Number(volume) || 1));
+        source.buffer = buffer;
+        gain.gain.value = baseVolume;
+        source.connect(gain);
+        gain.connect(ctx.destination);
+        active.nodes.push(source);
+        var startAt = Number.isFinite(Number(scheduledStartAt))
+          ? Math.max(ctx.currentTime, Number(scheduledStartAt))
+          : ctx.currentTime;
+        if (typeof onEnded === "function") {
           source.onended = function () {
             if (pccVoiceActiveAudio === active) pccVoiceActiveAudio = null;
+            try { onEnded(); } catch (errEnded) { }
             window.setTimeout(function () {
               try { ctx.close(); } catch (errClose) { }
             }, 500);
           };
-          var resumePromise = ctx.state === "suspended" && typeof ctx.resume === "function" ? ctx.resume() : null;
-          if (resumePromise && typeof resumePromise.catch === "function") {
-            resumePromise.catch(function () {
-              if (typeof showOverlayNotification === "function") {
-                showOverlayNotification("Message PCC bloque", "Cliquez dans la fenetre pour autoriser l'audio.", 2600);
-              }
-            });
-          }
-          source.start(startAt);
+        }
+        source.start(startAt);
+        return true;
+      }
+      function preparePccVoiceIntroChainPlayback(dataUrl, volume, filters) {
+        var src = String(dataUrl || "").trim();
+        if (!/^data:audio\//i.test(src)) return Promise.resolve(null);
+        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return Promise.resolve(null);
+        var ctx = null;
+        try { ctx = new AudioContextClass(); } catch (err0) { ctx = null; }
+        if (!ctx) return Promise.resolve(null);
+        var selectedFilters = Array.isArray(filters) ? filters.filter(Boolean) : [];
+        return Promise.all([
+          decodePccVoiceDataUrl(ctx, PCC_VOICE_PRE_SOUND_URL),
+          decodePccVoiceDataUrl(ctx, src)
+        ]).then(function (buffers) {
+          var introBuffer = buffers[0];
+          var messageBuffer = buffers[1];
+          if (!introBuffer || !messageBuffer) return null;
+          return function () {
+            stopPccVoiceActiveAudio();
+            var active = createPccVoiceFilteredActive(ctx);
+            pccVoiceActiveAudio = active;
+            var startAt = ctx.currentTime + 0.018;
+            startPccVoicePlainBufferAt(active, introBuffer, volume, startAt);
+            var messageStartAt = startAt + getPccVoiceEffectiveBufferDuration(introBuffer);
+            var ended = function () { };
+            if (selectedFilters.length) {
+              startPccVoiceFilteredBuffer(active, messageBuffer, volume, selectedFilters, messageStartAt, ended);
+            } else {
+              startPccVoicePlainBufferAt(active, messageBuffer, volume, messageStartAt, ended);
+            }
+            var resumePromise = ctx.state === "suspended" && typeof ctx.resume === "function" ? ctx.resume() : null;
+            if (resumePromise && typeof resumePromise.catch === "function") resumePromise.catch(function () { });
+            return true;
+          };
         }).catch(function () {
-          if (pccVoiceActiveAudio === active) pccVoiceActiveAudio = null;
+          try { ctx.close(); } catch (errClose) { }
+          return null;
+        });
+      }
+      function preparePccVoiceFilteredPlayback(src, volume, filters) {
+        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return Promise.resolve(null);
+        var ctx = null;
+        try { ctx = new AudioContextClass(); } catch (err0) { ctx = null; }
+        if (!ctx) return Promise.resolve(null);
+        return decodePccVoiceDataUrl(ctx, src).then(function (buffer) {
+          var active = createPccVoiceFilteredActive(ctx);
+          return function () {
+            stopPccVoiceActiveAudio();
+            pccVoiceActiveAudio = active;
+            return startPccVoiceFilteredBuffer(active, buffer, volume, filters);
+          };
+        }).catch(function () {
           try { ctx.close(); } catch (errDecode) { }
-          if (typeof showOverlayNotification === "function") {
-            showOverlayNotification("Message PCC recu", "Filtre audio impossible, lecture normale tentee.", 2600);
+          return null;
+        });
+      }
+      function preparePccVoicePlainPlayback(src, volume) {
+        return new Promise(function (resolve) {
+          var audio = null;
+          try { audio = new Audio(src); } catch (err0) { audio = null; }
+          if (!audio) {
+            resolve(null);
+            return;
           }
-          playPccVoiceAudioDataUrl(src, volume, []);
+          try {
+            audio.preload = "auto";
+            audio.volume = typeof getGlobalAudioVolumeFactor === "function"
+              ? getGlobalAudioVolumeFactor()
+              : Math.max(0, Math.min(1, Number(volume) || 1));
+          } catch (err1) { }
+          var done = false;
+          var finish = function () {
+            if (done) return;
+            done = true;
+            resolve(function () {
+              stopPccVoiceActiveAudio();
+              pccVoiceActiveAudio = audio;
+              try { audio.currentTime = 0; } catch (err2) { }
+              var clear = function () {
+                if (pccVoiceActiveAudio === audio) pccVoiceActiveAudio = null;
+              };
+              audio.onended = clear;
+              audio.onerror = clear;
+              var promise = null;
+              try { promise = audio.play(); } catch (err3) {
+                clear();
+                return false;
+              }
+              if (promise && typeof promise.catch === "function") promise.catch(clear);
+              return true;
+            });
+          };
+          audio.oncanplaythrough = finish;
+          audio.oncanplay = finish;
+          audio.onloadeddata = finish;
+          audio.onerror = function () { resolve(null); };
+          try { audio.load(); } catch (err4) { }
+          window.setTimeout(finish, 1800);
+        });
+      }
+      function preparePccVoicePlayback(dataUrl, volume, filters) {
+        var src = String(dataUrl || "").trim();
+        if (!/^data:audio\//i.test(src)) return Promise.resolve(null);
+        var selectedFilters = Array.isArray(filters) ? filters.filter(Boolean) : [];
+        if (selectedFilters.length) {
+          return preparePccVoiceFilteredPlayback(src, volume, selectedFilters).then(function (playPrepared) {
+            if (typeof playPrepared === "function") return playPrepared;
+            return preparePccVoicePlainPlayback(src, volume);
+          });
+        }
+        return preparePccVoicePlainPlayback(src, volume);
+      }
+      function playPccVoiceFilteredDataUrl(src, volume, filters) {
+        preparePccVoiceFilteredPlayback(src, volume, filters).then(function (playPrepared) {
+          if (typeof playPrepared === "function") playPrepared();
+          else playPccVoiceAudioDataUrl(src, volume, []);
         });
         return true;
       }
@@ -2877,9 +3014,6 @@
         if (promise && typeof promise.catch === "function") {
           promise.catch(function () {
             clear();
-            if (typeof showOverlayNotification === "function") {
-              showOverlayNotification("Message PCC bloque", "Cliquez dans la fenetre pour autoriser l'audio.", 2600);
-            }
           });
         }
         return true;
@@ -2890,15 +3024,9 @@
         var targetSteamId = getPccVoiceTargetSteamId(message);
         var localSteamId = getLocalPccVoiceSteamId();
         if (!targetSteamId) {
-          if (typeof showOverlayNotification === "function") {
-            showOverlayNotification("Message PCC recu", "Cible SteamID absente, lecture bloquee.", 2600);
-          }
           return true;
         }
         if (!localSteamId) {
-          if (typeof showOverlayNotification === "function") {
-            showOverlayNotification("Message PCC recu", "SteamID local non reconnu, lecture bloquee.", 2600);
-          }
           return true;
         }
         if (!targetSteamId || !localSteamId || targetSteamId !== localSteamId) return true;
