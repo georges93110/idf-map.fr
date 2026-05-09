@@ -1886,12 +1886,12 @@
           var source = pools[i];
           if (!source || typeof source !== "object") continue;
           if (!steamid) steamid = readRemotePanelIdentityString(source, ["steamid", "steamId", "steamID", "steam_id"], true);
-          if (!displayname) displayname = readRemotePanelIdentityString(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "personaname", "personaName", "persona_name", "nickname"]);
-          if (!name) name = readRemotePanelIdentityString(source, ["name", "playerName", "player_name", "username", "userName"]);
+          if (!displayname) displayname = readRemotePanelIdentityString(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "steamPersonaName", "steam_persona_name", "personaname", "personaName", "persona_name", "nickname", "nick"]);
+          if (!name) name = readRemotePanelIdentityString(source, ["name", "playerName", "player_name", "playerNick", "player_nick", "username", "userName", "user_name"]);
         }
         if (!steamid) steamid = readRemotePanelStoredIdentityString(["steamid", "steamId", "steamID", "steam_id", "idf_steamid", "idf_steam_id"], true);
-        if (!displayname) displayname = readRemotePanelStoredIdentityString(["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "personaname", "personaName", "persona_name", "nickname", "idf_displayname", "idf_steam_name"]);
-        if (!name) name = readRemotePanelStoredIdentityString(["name", "playerName", "player_name", "username", "userName", "idf_name", "idf_player_name"]);
+        if (!displayname) displayname = readRemotePanelStoredIdentityString(["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "steamPersonaName", "steam_persona_name", "personaname", "personaName", "persona_name", "nickname", "nick", "idf_displayname", "idf_steam_name"]);
+        if (!name) name = readRemotePanelStoredIdentityString(["name", "playerName", "player_name", "playerNick", "player_nick", "username", "userName", "user_name", "idf_name", "idf_player_name"]);
         if (!steamid && !displayname && !name) return null;
         var identity = {};
         if (steamid) identity.steamid = steamid;

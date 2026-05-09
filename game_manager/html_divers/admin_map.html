@@ -660,10 +660,15 @@
         "name",
         "steamName",
         "steam_name",
+        "steamPersonaName",
+        "steam_persona_name",
         "playerName",
         "player_name",
+        "playerNick",
+        "player_nick",
         "username",
         "userName",
+        "user_name",
         "personaname",
         "displayname",
         "displayName",
@@ -671,11 +676,20 @@
         "steamDisplayName",
         "steam_display_name",
         "nickname",
+        "nick",
         "from",
         "playerId",
         "player_id"
       ];
-      const visibleIdentityKeys = identityKeys.filter((key) => !["from", "playerId", "player_id"].includes(key));
+      const visibleIdentityKeys = identityKeys.filter((key) => ![
+        "from",
+        "playerId",
+        "player_id",
+        "steamid",
+        "steamId",
+        "steamID",
+        "steam_id"
+      ].includes(key));
 
       const map = L.map("map", {
         crs: L.CRS.Simple,
@@ -1486,11 +1500,15 @@
       }
 
       function playerDisplayTitle(player) {
-        return normalizeVisiblePlayerName(player && player.label) || "Joueur sans pseudo";
+        return normalizeVisiblePlayerName(player && player.label) ||
+          normalizeVisiblePlayerName(player && player.displayname) ||
+          normalizeVisiblePlayerName(player && player.name) ||
+          "Joueur sans pseudo";
       }
 
       function playerMarkerLabel(player) {
-        return normalizeVisiblePlayerName(player && player.label);
+        const title = playerDisplayTitle(player);
+        return title === "Joueur sans pseudo" ? "" : title;
       }
 
       function sortWebsocketDataForDisplay(value, depth = 0, seen = new Set()) {
@@ -1585,8 +1603,8 @@
           if (!headingUnit) headingUnit = readString(source, ["headingUnit", "heading_unit", "unit"]);
           if (!headingConvention) headingConvention = readString(source, ["headingConvention", "heading_convention", "headingMode", "heading_mode"]);
           if (!steamid) steamid = readString(source, ["steamid", "steamId", "steamID", "steam_id"]);
-          if (!displayname) displayname = readVisiblePlayerName(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "personaname", "personaName", "persona_name", "nickname"]);
-          if (!name) name = readVisiblePlayerName(source, ["name", "playerName", "player_name", "username", "userName"]);
+          if (!displayname) displayname = readVisiblePlayerName(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "steamPersonaName", "steam_persona_name", "personaname", "personaName", "persona_name", "nickname", "nick"]);
+          if (!name) name = readVisiblePlayerName(source, ["name", "playerName", "player_name", "playerNick", "player_nick", "username", "userName", "user_name"]);
           if (!technicalId) technicalId = readString(source, ["playerId", "player_id", "from"]);
           if (!isPausedOrMenu && isPausedOrMenuSource(source)) isPausedOrMenu = true;
           if (speedKmh === null) speedKmh = readNumber(source, ["speedKmh", "speed_kmh", "speed", "truckSpeed", "truck_speed"]);
@@ -1602,6 +1620,11 @@
           if (!profileName) profileName = readString(source, ["profileName", "profile_name", "name", "Name", "displayName", "display_name"]);
           if (!profileId) profileId = readString(source, ["profileId", "profileID", "profile_id", "id", "ID"]);
         }
+
+        const recursiveIdentity = readIdentity(entry);
+        if (!steamid) steamid = readString(recursiveIdentity, ["steamid", "steamId", "steamID", "steam_id"]);
+        if (!displayname) displayname = readVisiblePlayerName(recursiveIdentity, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "steamPersonaName", "steam_persona_name", "personaname", "personaName", "persona_name", "nickname", "nick"]);
+        if (!name) name = readVisiblePlayerName(recursiveIdentity, ["name", "playerName", "player_name", "playerNick", "player_nick", "username", "userName", "user_name"]);
 
         if (x === null || z === null) return null;
         displayname = normalizeVisiblePlayerName(displayname);
