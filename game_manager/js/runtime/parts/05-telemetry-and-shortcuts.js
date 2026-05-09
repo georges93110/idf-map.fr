@@ -2722,6 +2722,17 @@
         };
         return active;
       }
+      function getPccVoiceVolumeFactor(volume) {
+        var baseVolume = typeof getGlobalAudioVolumeFactor === "function"
+          ? getGlobalAudioVolumeFactor()
+          : Math.max(0, Math.min(1, Number(volume) || 1));
+        var multiplier = Number(PCC_VOICE_VOLUME_MULTIPLIER);
+        if (!Number.isFinite(multiplier) || multiplier <= 0) multiplier = 1;
+        return Math.max(0, baseVolume * multiplier);
+      }
+      function getPccVoiceHtmlAudioVolume(volume) {
+        return Math.max(0, Math.min(1, getPccVoiceVolumeFactor(volume)));
+      }
       function startPccVoiceFilteredBuffer(active, buffer, volume, filters, scheduledStartAt, onEnded) {
         if (!active || active.stopped || !buffer) return false;
         var ctx = active.ctx;
@@ -2744,9 +2755,7 @@
           current = lp;
         }
         var finalGain = ctx.createGain();
-        var baseVolume = typeof getGlobalAudioVolumeFactor === "function"
-          ? getGlobalAudioVolumeFactor()
-          : Math.max(0, Math.min(1, Number(volume) || 1));
+        var baseVolume = getPccVoiceVolumeFactor(volume);
         if (hasPccVoiceFilter(filters, "signal_faible")) baseVolume *= 0.45;
         finalGain.gain.value = baseVolume;
         current.connect(finalGain);
@@ -2844,9 +2853,7 @@
         if (!ctx) return false;
         var source = ctx.createBufferSource();
         var gain = ctx.createGain();
-        var baseVolume = typeof getGlobalAudioVolumeFactor === "function"
-          ? getGlobalAudioVolumeFactor()
-          : Math.max(0, Math.min(1, Number(volume) || 1));
+        var baseVolume = getPccVoiceVolumeFactor(volume);
         source.buffer = buffer;
         gain.gain.value = baseVolume;
         source.connect(gain);
@@ -2933,9 +2940,7 @@
           }
           try {
             audio.preload = "auto";
-            audio.volume = typeof getGlobalAudioVolumeFactor === "function"
-              ? getGlobalAudioVolumeFactor()
-              : Math.max(0, Math.min(1, Number(volume) || 1));
+            audio.volume = getPccVoiceHtmlAudioVolume(volume);
           } catch (err1) { }
           var done = false;
           var finish = function () {
@@ -2996,9 +3001,7 @@
         try { audio = new Audio(src); } catch (err0) { audio = null; }
         if (!audio) return false;
         try {
-          audio.volume = typeof getGlobalAudioVolumeFactor === "function"
-            ? getGlobalAudioVolumeFactor()
-            : Math.max(0, Math.min(1, Number(volume) || 1));
+          audio.volume = getPccVoiceHtmlAudioVolume(volume);
         } catch (err1) { }
         pccVoiceActiveAudio = audio;
         var clear = function () {
