@@ -2422,7 +2422,13 @@
         remoteServerWsLastMessageAtMs = Date.now();
         remoteServerWsLastMessageText = String(event && event.data || "");
         if (remoteServerWs) remoteServerWs.online = true;
-        if (!event || typeof event.data !== "string" || !event.data) return;
+        if (!event || typeof event.data !== "string" || !event.data) {
+          if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
+          if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
+            syncConvoyStatusFromRemotePanelWs();
+          }
+          return;
+        }
         try {
           var parsed = null;
           try { parsed = JSON.parse(event.data); } catch (err0) { parsed = null; }
@@ -2436,8 +2442,19 @@
             try { playersList = extractRemoteServerPlayerList(parsed); } catch (errList) { playersList = []; }
             if (playersList.length || playersCount === 0) remoteServerWsPlayerList = playersList;
           }
+          if (typeof renderRemoteServerWsUi === "function") {
+            renderRemoteServerWsUi();
+          }
+          if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
+            syncConvoyStatusFromRemotePanelWs();
+          }
           if (playerListShortcutHoldActive) renderPlayerListHoldPopup();
-        } catch (err2) { }
+        } catch (err2) {
+          if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
+          if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
+            syncConvoyStatusFromRemotePanelWs();
+          }
+        }
       }
       function startRemotePanelWsBridge() {
         var url = getRemotePanelWsUrl();
@@ -2463,11 +2480,17 @@
         };
         remoteServerWsPlayerList = [];
         remoteServerWsLastEventText = "Connexion WebSocket au panel en cours...";
+        if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
         socket.onopen = function () {
           if (!remoteServerWs || remoteServerWs.socket !== socket) return;
           remoteServerWs.online = true;
           remoteServerWsLastPongAtMs = Date.now();
           remoteServerWsLastEventText = "WebSocket panel connecte.";
+          if (typeof pushRemoteServerWsLog === "function") pushRemoteServerWsLog("open", "WebSocket panel connecte.");
+          if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
+          if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
+            syncConvoyStatusFromRemotePanelWs();
+          }
           flushRemotePanelTelemetryQueue();
         };
         socket.onmessage = handleRemotePanelWsMessage;
@@ -2475,6 +2498,11 @@
           if (!remoteServerWs || remoteServerWs.socket !== socket) return;
           remoteServerWs.online = false;
           remoteServerWsLastEventText = "Erreur WebSocket panel.";
+          if (typeof pushRemoteServerWsLog === "function") pushRemoteServerWsLog("error", remoteServerWsLastEventText);
+          if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
+          if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
+            syncConvoyStatusFromRemotePanelWs();
+          }
           try { socket.close(); } catch (err0) { }
         };
         socket.onclose = function () {
@@ -2483,6 +2511,11 @@
           remoteServerWs = null;
           remoteServerWsLastPongAtMs = 0;
           remoteServerWsLastEventText = "WebSocket panel deconnecte, reconnexion...";
+          if (typeof pushRemoteServerWsLog === "function") pushRemoteServerWsLog("error", remoteServerWsLastEventText);
+          if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
+          if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
+            syncConvoyStatusFromRemotePanelWs();
+          }
           scheduleRemotePanelWsReconnect();
         };
       }

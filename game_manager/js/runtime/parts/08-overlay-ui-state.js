@@ -1111,6 +1111,7 @@
         frame.src = meta.url;
         frame.title = meta.label;
         frame.setAttribute("frameborder", "0");
+        frame.setAttribute("allow", "autoplay");
         frame.dataset.widgetType = type;
         content.appendChild(frame);
 

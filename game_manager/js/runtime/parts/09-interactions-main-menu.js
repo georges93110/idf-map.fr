@@ -364,6 +364,52 @@
           res += seconds + "s";
           return res;
         }
+        function normalizeConvoyStatusPayload(payload) {
+          if (!payload || typeof payload !== "object") return null;
+          var players = Number(payload.players);
+          var ageSeconds = Number(payload.ageSeconds);
+          if (!Number.isFinite(ageSeconds)) ageSeconds = Number(payload.age);
+          return {
+            online: !!payload.online,
+            players: Number.isFinite(players) ? Math.max(0, Math.floor(players)) : 0,
+            ageSeconds: Number.isFinite(ageSeconds) ? Math.max(0, Math.floor(ageSeconds)) : 0
+          };
+        }
+        function readConvoyStatusFromRemoteServerWs() {
+          var hasWsState = !!remoteServerWs || remoteServerWsLastPongAtMs > 0;
+          if (!hasWsState) return null;
+          var players = Number(remoteServerWsPlayersCount);
+          if (!Number.isFinite(players)) {
+            players = Array.isArray(remoteServerWsPlayerList) ? remoteServerWsPlayerList.length : 0;
+          }
+          var ageSeconds = remoteServerWsLastPongAtMs > 0
+            ? Math.max(0, Math.floor((Date.now() - remoteServerWsLastPongAtMs) / 1000))
+            : 0;
+          return {
+            online: typeof isRemoteServerWsOnline === "function" ? isRemoteServerWsOnline() : !!(remoteServerWs && remoteServerWs.online),
+            players: players,
+            ageSeconds: ageSeconds
+          };
+        }
+        function applyConvoyStatusPayload(payload) {
+          var normalized = normalizeConvoyStatusPayload(payload);
+          if (!normalized) return false;
+          convoyStatusLatest = normalized;
+          convoyStatusAgeBaseSeconds = convoyStatusLatest.ageSeconds;
+          convoyStatusAgeBaseAtMs = Date.now();
+          convoyStatusViewState = "ready";
+          setConvoyStatusVisualState("ready");
+          renderConvoyStatusAge();
+          renderRemoteServerWsUi();
+          return true;
+        }
+        function syncConvoyStatusFromRemotePanelWs() {
+          var panel = document.getElementById("mainMenuTab_status");
+          var isStatusVisible = !!(panel && panel.classList.contains("is-active"));
+          if (!isStatusVisible && convoyStatusViewState !== "ready") return false;
+          var fallback = readConvoyStatusFromRemoteServerWs();
+          return fallback ? applyConvoyStatusPayload(fallback) : false;
+        }
 
         function convoyAgeSecondsNow() {
           if (!Number.isFinite(convoyStatusAgeBaseSeconds) || convoyStatusAgeBaseSeconds === null) return null;
@@ -417,7 +463,7 @@
                 if (playersCount >= 16) imageName = "16etplus.png";
                 else imageName = playersCount + ".png";
               }
-              elImg.src = "./ressources/" + imageName;
+              elImg.src = "../ressources/" + imageName;
             }
           }
         }
@@ -430,29 +476,20 @@
             if (requestId !== convoyStatusRequestId) return;
 
             if (!payload) {
-              setConvoyStatusVisualState("error");
-              renderConvoyStatusAge();
+              if (!syncConvoyStatusFromRemotePanelWs()) {
+                setConvoyStatusVisualState("error");
+                renderConvoyStatusAge();
+              }
               return;
             }
 
-            convoyStatusLatest = {
-              online: !!payload.online,
-              players: parseInt(payload.players) || 0,
-              ageSeconds: parseInt(payload.age) || 0
-            };
-
-            convoyStatusAgeBaseSeconds = convoyStatusLatest.ageSeconds;
-            convoyStatusAgeBaseAtMs = Date.now();
-            convoyStatusViewState = "ready";
-
-            setConvoyStatusVisualState("ready");
-            renderConvoyStatusAge();
-            renderRemoteServerWsUi();
+            applyConvoyStatusPayload(payload);
           });
         }
 
         function startConvoyStatusPolling() {
           if (convoyStatusPollTimer) return;
+          if (typeof startRemotePanelWsBridge === "function") startRemotePanelWsBridge();
           refreshConvoyStatus();
           convoyStatusPollTimer = window.setInterval(refreshConvoyStatus, CONVOY_STATUS_REFRESH_MS);
           if (!convoyStatusAgeTicker) {
@@ -473,8 +510,10 @@
         function normalizeRemoteServerWsUrl(raw) {
           var url = String(raw || "").trim();
           if (!url) return "";
-          if (!/^https?:\/\//i.test(url)) return "";
-          return url.replace(/\/+$/, "");
+          if (/^wss?:\/\//i.test(url)) return url.replace(/\/+$/, "");
+          if (/^https:\/\//i.test(url)) return url.replace(/^https:\/\//i, "wss://").replace(/\/+$/, "");
+          if (/^http:\/\//i.test(url)) return url.replace(/^http:\/\//i, "ws://").replace(/\/+$/, "");
+          return "";
         }
         function shortenRemoteServerText(value, maxLen) {
           var text = String(value == null ? "" : value);
@@ -486,7 +525,10 @@
           return normalizeRemoteServerWsUrl(REMOTE_SERVER_WS_DEFAULT_URL);
         }
         function isRemoteServerWsOnline() {
+          var socket = remoteServerWs && remoteServerWs.socket;
           return !!remoteServerWs &&
+            remoteServerWs.online === true &&
+            (!socket || socket.readyState === WebSocket.OPEN) &&
             remoteServerWsLastPongAtMs > 0 &&
             (Date.now() - remoteServerWsLastPongAtMs) <= REMOTE_SERVER_WS_ONLINE_WINDOW_MS;
         }
@@ -589,6 +631,7 @@
         function describeRemoteServerWsReadyState() {
           if (!remoteServerWs) return "STOPPED";
           if (isRemoteServerWsOnline()) return "ONLINE";
+          if (remoteServerWs.socket && remoteServerWs.socket.readyState === WebSocket.CONNECTING) return "CONNECTING";
           if (remoteServerWsRequestInFlight) return "POLLING";
           return "WAITING";
         }
@@ -607,7 +650,7 @@
           return parts.join(" | ");
         }
         function formatRemoteServerWsClose(reason) {
-          var parts = ["Polling HTTP arr\u00eat\u00e9"];
+          var parts = ["WebSocket panel arr\u00eat\u00e9"];
           var text = String(reason || "").trim();
           if (text) parts.push("reason=" + text);
           return parts.join(" | ");
@@ -648,7 +691,7 @@
           if (!remoteServerWs || remoteServerWsRequestInFlight) return;
           var url = getRemoteServerWsUrl();
           if (!url) {
-            remoteServerWsLastEventText = "Adresse HTTP invalide.";
+            remoteServerWsLastEventText = "Adresse WebSocket invalide.";
             renderRemoteServerWsUi();
             return;
           }
@@ -761,6 +804,14 @@
             renderRemoteServerWsUi();
             return;
           }
+          var socket = remoteServerWs.socket;
+          if (socket) {
+            try { socket.onopen = null; } catch (err1) { }
+            try { socket.onmessage = null; } catch (err2) { }
+            try { socket.onerror = null; } catch (err3) { }
+            try { socket.onclose = null; } catch (err4) { }
+            try { socket.close(); } catch (err5) { }
+          }
           remoteServerWs = null;
           remoteServerWsPlayersCount = null;
           remoteServerWsPlayerList = [];
@@ -785,11 +836,11 @@
             if (!hasRemoteServerWsSession()) {
               el.remoteServerWsState.textContent = remoteServerWsLastEventText || "Aucune connexion active.";
             } else if (state === "online") {
-              el.remoteServerWsState.textContent = "Serveur joignable. Heartbeat HTTP actif.";
+              el.remoteServerWsState.textContent = "Serveur joignable. WebSocket panel actif.";
             } else if (remoteServerWsLastPongAtMs > 0) {
               el.remoteServerWsState.textContent = remoteServerWsLastEventText || "Connexion perdue, nouvelle tentative...";
             } else {
-              el.remoteServerWsState.textContent = remoteServerWsLastEventText || "Connexion HTTP au serveur en cours...";
+              el.remoteServerWsState.textContent = remoteServerWsLastEventText || "Connexion WebSocket au serveur en cours...";
             }
           }
           if (el.remoteServerWsConnectBtn) {
@@ -836,7 +887,7 @@
         function connectRemoteServerWs() {
           var url = getRemoteServerWsUrl();
           if (!url) {
-            remoteServerWsLastEventText = "Adresse HTTP invalide.";
+            remoteServerWsLastEventText = "Adresse WebSocket invalide.";
             pushRemoteServerWsLog("error", remoteServerWsLastEventText);
             return;
           }
@@ -847,20 +898,22 @@
           remoteServerWsLastPongAtMs = 0;
           remoteServerWsLastMessageAtMs = 0;
           remoteServerWsLastMessageText = "";
-          remoteServerWsLastEventText = "Connexion HTTP au serveur en cours...";
-          remoteServerWs = {
-            url: url,
-            online: false,
-            lastFailureText: ""
-          };
-          pushRemoteServerWsLog("info", "D\u00e9marrage du polling HTTP sur " + url);
+          remoteServerWsLastEventText = "Connexion WebSocket au serveur en cours...";
+          pushRemoteServerWsLog("info", "Connexion WebSocket sur " + url);
           renderRemoteServerWsUi();
-          startRemoteServerWsPing();
+          if (typeof startRemotePanelWsBridge === "function") {
+            startRemotePanelWsBridge();
+          }
         }
         function disconnectRemoteServerWs() {
           remoteServerWsLastEventText = formatRemoteServerWsClose("User disconnect");
           pushRemoteServerWsLog("info", remoteServerWsLastEventText);
-          closeRemoteServerWs({ manual: true, reason: "User disconnect" });
+          if (typeof stopRemotePanelWsBridge === "function") {
+            stopRemotePanelWsBridge();
+          } else {
+            closeRemoteServerWs({ manual: true, reason: "User disconnect" });
+          }
+          renderRemoteServerWsUi();
         }
         function syncServerSectionSystemName() {
           var resolved = "";
@@ -1136,6 +1189,18 @@
         var shortcutBtn = document.getElementById("overlayShortcutBtn");
         var destinationShortcutBtn = document.getElementById("overlayDestinationShortcutBtn");
         var playerListShortcutBtn = document.getElementById("overlayPlayerListShortcutBtn");
+        if (typeof PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED !== "undefined" && PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED) {
+          document.querySelectorAll('[data-temporary-disabled="player-list-tab"]').forEach(function (row) {
+            row.hidden = true;
+            row.setAttribute("aria-hidden", "true");
+            row.style.setProperty("display", "none", "important");
+            row.querySelectorAll("button").forEach(function (button) {
+              button.disabled = true;
+              button.setAttribute("aria-disabled", "true");
+              button.setAttribute("tabindex", "-1");
+            });
+          });
+        }
         if (shortcutBtn) {
           shortcutBtn.addEventListener("click", function (event) {
             event.preventDefault();

@@ -608,12 +608,13 @@
                     </div>
                   </div>
 
-                  <div class="manager-scale-row gm-shortcut-row" hidden data-temporary-disabled="player-list-tab">
+                  <div class="manager-scale-row gm-shortcut-row" hidden aria-hidden="true" style="display:none !important" data-temporary-disabled="player-list-tab">
                     <p class="manager-section-title gm-shortcut-title">
                       Liste joueurs <span class="settings-mode-badge">SERVEUR CONVOI</span>
                     </p>
                     <div class="manager-widget-select-wrap gm-shortcut-wrap">
                       <button type="button" class="shortcut-reset-btn" data-scope="idf_telemetry_player_list"
+                        disabled tabindex="-1" aria-disabled="true"
                         title="Reinitialiser">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                           stroke-linecap="round" stroke-linejoin="round">
@@ -621,7 +622,8 @@
                           <path d="M3 3v5h5"></path>
                         </svg>
                       </button>
-                      <button id="overlayPlayerListShortcutBtn" class="manager-widget-select gm-shortcut-button" type="button">
+                      <button id="overlayPlayerListShortcutBtn" class="manager-widget-select gm-shortcut-button" type="button"
+                        disabled tabindex="-1" aria-disabled="true">
                         <svg class="gm-muted-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>

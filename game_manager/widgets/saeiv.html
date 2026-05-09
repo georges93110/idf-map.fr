@@ -3932,21 +3932,24 @@
         setDiffusionAudioPlaying(false);
       }
 
-      function playDiffusionAudioBySlot(slotNumber) {
+      function playDiffusionAudioBySlot(slotNumber, explicitUrl) {
         const slot = Number(slotNumber);
         if (!Number.isInteger(slot) || slot <= 0) return;
         const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
         const urls = Array.isArray(state.globalAudioUrls)
-          ? state.globalAudioUrls.map((url) => String(url || "").trim()).filter(Boolean)
+          ? state.globalAudioUrls.map((url) => String(url || "").trim())
           : [];
-        const targetUrl = String(urls[slot - 1] || "").trim();
+        const targetUrl = String(explicitUrl || urls[slot - 1] || "").trim();
         if (!targetUrl) return;
         const token = diffusionAudioToken + 1;
         stopDiffusionAudioPlayback();
         diffusionAudioToken = token;
-        const audio = new Audio(targetUrl);
+        let playableUrl = targetUrl;
+        try { playableUrl = new URL(targetUrl, location.href).href; } catch {}
+        const audio = new Audio(playableUrl);
         diffusionAudioEl = audio;
         audio.volume = resolveGlobalAudioVolumeMultiplier(state);
+        audio.preload = "auto";
         const finish = () => {
           if (token !== diffusionAudioToken) return;
           diffusionAudioEl = null;
@@ -3972,11 +3975,10 @@
           ? data.globalAudioLabels.map((label) => String(label || "").trim()).filter(Boolean)
           : [];
         const globalUrls = Array.isArray(data.globalAudioUrls)
-          ? data.globalAudioUrls.map((url) => String(url || "").trim()).filter(Boolean)
+          ? data.globalAudioUrls.map((url) => String(url || "").trim())
           : [];
         const hasGlobalFolder = !!String(data.globalAudioFolderPath || "").trim();
-        const isAudioBusy = !!data.audioPlaybackBusy || diffusionAudioPlaying;
-        const enabledBase = hasGlobalFolder && !isAudioBusy;
+        const enabledBase = hasGlobalFolder;
         diffusionGridEl.innerHTML = "";
         if (!globalLabels.length) {
           const empty = document.createElement("div");
@@ -3992,6 +3994,7 @@
           btn.textContent = label;
           btn.dataset.diffusionSlot = String(index + 1);
           btn.dataset.diffusionLabel = label;
+          btn.dataset.diffusionUrl = String(globalUrls[index] || "");
           const enabled = enabledBase && !!globalUrls[index];
           btn.disabled = !enabled;
           btn.setAttribute("aria-disabled", enabled ? "false" : "true");
@@ -4436,7 +4439,7 @@
           if (!btn || btn.disabled) return;
           const slot = Number(btn.getAttribute("data-diffusion-slot") || 0);
           if (!Number.isInteger(slot) || slot <= 0) return;
-          playDiffusionAudioBySlot(slot);
+          playDiffusionAudioBySlot(slot, btn.getAttribute("data-diffusion-url"));
           const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
           post("saeiv:action", {
             action: `saeiv-local-diffusion-slot-${slot}`,

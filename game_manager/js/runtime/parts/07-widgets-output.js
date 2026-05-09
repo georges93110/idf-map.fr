@@ -222,6 +222,7 @@
         frame.src = meta.url;
         frame.title = meta.label;
         frame.setAttribute("frameborder", "0");
+        frame.setAttribute("allow", "autoplay");
         frame.dataset.widgetType = widget.type;
 
         section.appendChild(frame);
@@ -325,6 +326,7 @@
         frame.src = meta.url;
         frame.title = meta.label;
         frame.setAttribute("frameborder", "0");
+        frame.setAttribute("allow", "autoplay");
         frame.dataset.widgetType = widget.type;
         section.appendChild(frame);
         return section;
@@ -340,6 +342,7 @@
           frame = pane.ownerDocument.createElement("iframe");
           frame.className = "pane-frame";
           frame.setAttribute("frameborder", "0");
+          frame.setAttribute("allow", "autoplay");
           frame.dataset.widgetType = widget.type;
           pane.appendChild(frame);
         }
