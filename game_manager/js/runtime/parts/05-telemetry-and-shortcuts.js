@@ -1330,6 +1330,9 @@
             if (mainMenu && mainMenu.classList.contains("is-open")) {
               if (!mainMenu.classList.contains("is-forced")) {
                 mainMenu.classList.remove("is-open");
+                document.body.classList.remove("is-main-menu-open");
+                if (typeof window.pauseGuideVideo === "function") window.pauseGuideVideo();
+                if (typeof window.closeMainMenuInfoView === "function") window.closeMainMenuInfoView();
                 renderManager();
                 if (typeof refreshManagerUi === "function") refreshManagerUi();
               }
@@ -1587,8 +1590,10 @@
           firstVisitMode1HintEnabled = false;
         }
         if (modeChanged) {
-          if (typeof closeMainMenuInfoView === "function") {
-            closeMainMenuInfoView();
+          if (typeof window.pauseGuideVideo === "function") window.pauseGuideVideo();
+          if (typeof window.pauseMainMenuInfoVideos === "function") window.pauseMainMenuInfoVideos();
+          if (typeof window.closeMainMenuInfoView === "function") {
+            window.closeMainMenuInfoView();
           } else {
             var infoViewFallback = document.getElementById("mainMenuInfoView");
             var mainMenuBodyFallback = document.getElementById("mainMenuBody");
@@ -1634,6 +1639,8 @@
         if (loadingInProgress && mainMenuModal) {
           mainMenuModal.classList.remove("is-open", "is-forced");
           document.body.classList.remove("is-main-menu-open");
+          if (typeof window.pauseGuideVideo === "function") window.pauseGuideVideo();
+          if (typeof window.closeMainMenuInfoView === "function") window.closeMainMenuInfoView();
         }
         return true;
       }
@@ -1723,6 +1730,8 @@
         var mainMenuModal = document.getElementById("mainMenuModal");
         if (mainMenuModal) {
           mainMenuModal.classList.remove("is-open", "is-forced");
+          if (typeof window.pauseGuideVideo === "function") window.pauseGuideVideo();
+          if (typeof window.closeMainMenuInfoView === "function") window.closeMainMenuInfoView();
         }
 
         document.body.classList.remove("is-main-menu-open");
@@ -1826,19 +1835,49 @@
           raw,
           raw && raw.data,
           raw && raw.payload,
+          raw && raw.identity,
+          raw && raw.playerIdentity,
+          raw && raw.player_identity,
+          raw && raw.data && raw.data.identity,
+          raw && raw.data && raw.data.playerIdentity,
+          raw && raw.data && raw.data.player_identity,
+          raw && raw.payload && raw.payload.identity,
+          raw && raw.payload && raw.payload.playerIdentity,
+          raw && raw.payload && raw.payload.player_identity,
           raw && raw.player,
           raw && raw.client,
           raw && raw.user,
           raw && raw.steam,
           raw && raw.profile,
+          raw && raw.gameContext && raw.gameContext.identity,
+          raw && raw.gameContext && raw.gameContext.playerIdentity,
+          raw && raw.gameContext && raw.gameContext.player_identity,
+          raw && raw.game_context && raw.game_context.identity,
+          raw && raw.game_context && raw.game_context.playerIdentity,
+          raw && raw.game_context && raw.game_context.player_identity,
           signal,
           signal && signal.data,
           signal && signal.payload,
+          signal && signal.identity,
+          signal && signal.playerIdentity,
+          signal && signal.player_identity,
+          signal && signal.data && signal.data.identity,
+          signal && signal.data && signal.data.playerIdentity,
+          signal && signal.data && signal.data.player_identity,
+          signal && signal.payload && signal.payload.identity,
+          signal && signal.payload && signal.payload.playerIdentity,
+          signal && signal.payload && signal.payload.player_identity,
           signal && signal.player,
           signal && signal.client,
           signal && signal.user,
           signal && signal.steam,
-          signal && signal.profile
+          signal && signal.profile,
+          signal && signal.gameContext && signal.gameContext.identity,
+          signal && signal.gameContext && signal.gameContext.playerIdentity,
+          signal && signal.gameContext && signal.gameContext.player_identity,
+          signal && signal.game_context && signal.game_context.identity,
+          signal && signal.game_context && signal.game_context.playerIdentity,
+          signal && signal.game_context && signal.game_context.player_identity
         ];
         var steamid = "";
         var displayname = "";
@@ -2303,7 +2342,10 @@
           data: sanitizeRemotePanelTelemetryValue(payload, 0)
         };
         var identity = buildRemotePanelPlayerIdentity(raw, signal);
-        if (identity) message.player = identity;
+        if (identity) {
+          remotePanelLocalPlayerIdentity = identity;
+          message.player = identity;
+        }
         message.bonus = buildRemotePanelGame2BonusState();
         return message;
       }
@@ -2392,6 +2434,487 @@
         }
         flushRemotePanelTelemetryQueue();
       }
+      function normalizePccVoiceSteamId(value) {
+        return String(value == null ? "" : value).trim().replace(/\s+/g, "").toLowerCase();
+      }
+      function readPccVoiceString(source, keys) {
+        if (!source || typeof source !== "object") return "";
+        var aliases = Array.isArray(keys) ? keys : [];
+        for (var i = 0; i < aliases.length; i += 1) {
+          var key = aliases[i];
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          var value = String(source[key] == null ? "" : source[key]).trim();
+          if (value) return value;
+        }
+        return "";
+      }
+      function findPccVoiceMessagePayload(source, depth) {
+        var level = Math.max(0, Math.floor(Number(depth) || 0));
+        if (!source || typeof source !== "object" || level > 4) return null;
+        var action = String(source.action || source.type || source.event || source.kind || "").trim().toLowerCase();
+        if (action === PCC_VOICE_ACTION || source.pccVoice === true) return source;
+        var candidates = [
+          source.data,
+          source.payload,
+          source.message,
+          source.body,
+          source.audioMessage
+        ];
+        for (var i = 0; i < candidates.length; i += 1) {
+          var candidate = candidates[i];
+          if (!candidate || typeof candidate !== "object" || candidate === source) continue;
+          var found = findPccVoiceMessagePayload(candidate, level + 1);
+          if (found) return found;
+        }
+        return null;
+      }
+      function getPccVoiceTargetSteamId(message) {
+        if (!message || typeof message !== "object") return "";
+        var target = message.target && typeof message.target === "object" ? message.target : null;
+        return normalizePccVoiceSteamId(
+          readPccVoiceString(message, ["targetSteamId", "target_steamid", "targetSteamID", "steamid", "steamId", "steamID", "steam_id"]) ||
+          readPccVoiceString(target, ["steamid", "steamId", "steamID", "steam_id", "targetSteamId", "target_steamid"])
+        );
+      }
+      function getLocalPccVoiceSteamId() {
+        var cached = normalizePccVoiceSteamId(remotePanelLocalPlayerIdentity && remotePanelLocalPlayerIdentity.steamid);
+        if (cached) return cached;
+        var identity = null;
+        try {
+          identity = typeof buildRemotePanelPlayerIdentity === "function"
+            ? buildRemotePanelPlayerIdentity(null, telemetryLastSignal)
+            : null;
+        } catch (err0) {
+          identity = null;
+        }
+        return normalizePccVoiceSteamId(identity && identity.steamid);
+      }
+      function rememberPccVoiceMessageId(id) {
+        var text = String(id || "").trim();
+        if (!text) return false;
+        if (pccVoiceSeenMessageSet.has(text)) return true;
+        pccVoiceSeenMessageSet.add(text);
+        pccVoiceSeenMessageIds.push(text);
+        while (pccVoiceSeenMessageIds.length > PCC_VOICE_SEEN_LIMIT) {
+          var old = pccVoiceSeenMessageIds.shift();
+          if (old) pccVoiceSeenMessageSet.delete(old);
+        }
+        return false;
+      }
+      function normalizePccVoiceFilterKey(value) {
+        var text = String(value == null ? "" : value).trim().toLowerCase();
+        if (!text) return "";
+        try { text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); } catch (err0) { }
+        text = text.replace(/[\s.-]+/g, "_").replace(/[^a-z0-9_]/g, "");
+        var aliases = {
+          filtre_radio: "radio",
+          radio_filter: "radio",
+          radio: "radio",
+          souffle: "souffle",
+          gresillement: "gresillement",
+          gresillements: "gresillement",
+          crackle: "gresillement",
+          coupure: "coupures",
+          coupures: "coupures",
+          perte_signal: "perte_signal",
+          perte_de_signal: "perte_signal",
+          signal_loss: "perte_signal",
+          signal_faible: "signal_faible",
+          faible_signal: "signal_faible",
+          low_signal: "signal_faible",
+          latence: "latence",
+          latency: "latence",
+          saturation: "saturation",
+          interferences: "interferences",
+          interference: "interferences"
+        };
+        return aliases[text] || "";
+      }
+      function collectPccVoiceFilterValues(value, out, seen) {
+        if (value == null) return;
+        if (Array.isArray(value)) {
+          for (var i = 0; i < value.length; i += 1) collectPccVoiceFilterValues(value[i], out, seen);
+          return;
+        }
+        var text = String(value || "");
+        text.split(/[|,;]/).forEach(function (part) {
+          var key = normalizePccVoiceFilterKey(part);
+          if (!key || seen[key]) return;
+          seen[key] = true;
+          out.push(key);
+        });
+      }
+      function readPccVoiceFilters(message, audio) {
+        var out = [];
+        var seen = {};
+        collectPccVoiceFilterValues(message && message.filters, out, seen);
+        collectPccVoiceFilterValues(message && message.effects, out, seen);
+        collectPccVoiceFilterValues(message && message.filter, out, seen);
+        collectPccVoiceFilterValues(audio && audio.filters, out, seen);
+        collectPccVoiceFilterValues(audio && audio.effects, out, seen);
+        collectPccVoiceFilterValues(audio && audio.filter, out, seen);
+        return out;
+      }
+      function hasPccVoiceFilter(filters, key) {
+        return Array.isArray(filters) && filters.indexOf(key) >= 0;
+      }
+      function getPccVoiceMessageId(message) {
+        return String(message && (message.id || message.messageId || message.message_id || message.time) || "").trim();
+      }
+      function getPccVoiceAudioObject(message) {
+        return message && message.audio && typeof message.audio === "object" ? message.audio : message;
+      }
+      function getPccVoiceChunkInfo(message) {
+        if (!message || typeof message !== "object") return null;
+        var audio = getPccVoiceAudioObject(message);
+        var total = Number(message.chunkTotal ?? message.chunk_total ?? audio.chunkTotal ?? audio.chunk_total);
+        var index = Number(message.chunkIndex ?? message.chunk_index ?? audio.chunkIndex ?? audio.chunk_index);
+        var chunk = readPccVoiceString(message, ["audioChunk", "dataUrlChunk", "chunk", "dataChunk"]) ||
+          readPccVoiceString(audio, ["audioChunk", "dataUrlChunk", "chunk", "dataChunk"]);
+        var chunked = message.chunked === true || audio.chunked === true || total > 1 || !!chunk;
+        if (!chunked) return null;
+        total = Math.floor(total);
+        index = Math.floor(index);
+        if (!Number.isFinite(total) || total < 1 || total > PCC_VOICE_MAX_CHUNKS) return null;
+        if (!Number.isFinite(index) || index < 0 || index >= total) return null;
+        if (!chunk) return null;
+        return { index: index, total: total, chunk: chunk, audio: audio };
+      }
+      function cleanupPccVoiceChunkBuffers() {
+        var now = Date.now();
+        pccVoiceChunkBuffers.forEach(function (buffer, id) {
+          if (!buffer || now - Number(buffer.updatedAt || buffer.createdAt || 0) <= PCC_VOICE_CHUNK_TTL_MS) return;
+          pccVoiceChunkBuffers.delete(id);
+        });
+      }
+      function playResolvedPccVoiceMessage(message, audio, dataUrl, filters) {
+        var selectedFilters = Array.isArray(filters) ? filters : readPccVoiceFilters(message, audio);
+        if (typeof showOverlayNotification === "function") {
+          showOverlayNotification("Message PCC recu", "Message vocal cible recu.", 2200);
+        }
+        if (playPccVoiceAudioDataUrl(dataUrl, audio && audio.volume, selectedFilters)) {
+          if (typeof showOverlayNotification === "function") {
+            showOverlayNotification("Message PCC", "Lecture du message vocal.", 2200);
+          }
+        } else if (typeof showOverlayNotification === "function") {
+          showOverlayNotification("Message PCC recu", "Audio illisible ou absent.", 2600);
+        }
+      }
+      function handlePccVoiceChunkMessage(message) {
+        var info = getPccVoiceChunkInfo(message);
+        if (!info) return false;
+        var id = getPccVoiceMessageId(message);
+        if (!id) return true;
+        if (pccVoiceSeenMessageSet.has(id)) return true;
+        cleanupPccVoiceChunkBuffers();
+        var existing = pccVoiceChunkBuffers.get(id);
+        if (!existing || existing.total !== info.total) {
+          existing = {
+            id: id,
+            total: info.total,
+            received: 0,
+            chunks: new Array(info.total),
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            message: message,
+            audio: info.audio,
+            filters: readPccVoiceFilters(message, info.audio),
+            charCount: 0,
+            notified: false
+          };
+          pccVoiceChunkBuffers.set(id, existing);
+        }
+        if (!existing.notified && typeof showOverlayNotification === "function") {
+          existing.notified = true;
+          showOverlayNotification("Message PCC recu", "Reception audio en cours...", 1800);
+        }
+        if (existing.chunks[info.index] == null) {
+          existing.chunks[info.index] = info.chunk;
+          existing.received += 1;
+          existing.charCount += info.chunk.length;
+          existing.updatedAt = Date.now();
+        }
+        if (existing.charCount > PCC_VOICE_MAX_DATA_URL_CHARS) {
+          pccVoiceChunkBuffers.delete(id);
+          if (typeof showOverlayNotification === "function") {
+            showOverlayNotification("Message PCC recu", "Audio trop long, lecture bloquee.", 2600);
+          }
+          return true;
+        }
+        if (existing.received < existing.total) return true;
+        var dataUrl = existing.chunks.join("");
+        pccVoiceChunkBuffers.delete(id);
+        if (rememberPccVoiceMessageId(id)) return true;
+        playResolvedPccVoiceMessage(existing.message, existing.audio, dataUrl, existing.filters);
+        return true;
+      }
+      function stopPccVoiceActiveAudio() {
+        var audio = pccVoiceActiveAudio;
+        pccVoiceActiveAudio = null;
+        if (!audio) return;
+        if (typeof audio.stop === "function") {
+          try { audio.stop(); } catch (errStop) { }
+          return;
+        }
+        try { audio.pause(); } catch (err0) { }
+        try { audio.src = ""; } catch (err1) { }
+      }
+      function createPccVoiceNoiseBuffer(ctx, duration, mode) {
+        var sampleRate = ctx.sampleRate || 44100;
+        var length = Math.max(1, Math.ceil(sampleRate * Math.max(0.1, Number(duration) || 0.1)));
+        var buffer = ctx.createBuffer(1, length, sampleRate);
+        var data = buffer.getChannelData(0);
+        for (var i = 0; i < length; i += 1) {
+          if (mode === "crackle") {
+            data[i] = Math.random() > 0.992 ? ((Math.random() * 2) - 1) : 0;
+          } else {
+            data[i] = (Math.random() * 2) - 1;
+          }
+        }
+        return buffer;
+      }
+      function createPccVoiceSaturationCurve(amount) {
+        var n = 2048;
+        var curve = new Float32Array(n);
+        var k = Math.max(1, Number(amount) || 30);
+        for (var i = 0; i < n; i += 1) {
+          var x = (i * 2 / n) - 1;
+          curve[i] = ((1 + k) * x) / (1 + k * Math.abs(x));
+        }
+        return curve;
+      }
+      function schedulePccVoiceDropouts(gain, ctx, startAt, duration, baseGain, filters) {
+        if (!gain || !gain.gain) return;
+        var endAt = startAt + Math.max(0.1, Number(duration) || 0.1);
+        gain.gain.cancelScheduledValues(startAt);
+        gain.gain.setValueAtTime(baseGain, startAt);
+        var hasCuts = hasPccVoiceFilter(filters, "coupures");
+        var hasLoss = hasPccVoiceFilter(filters, "perte_signal");
+        if (!hasCuts && !hasLoss) return;
+        var t = startAt + 0.22;
+        while (t < endAt - 0.12) {
+          var gap = hasLoss ? (0.55 + Math.random() * 0.85) : (0.28 + Math.random() * 0.42);
+          var cutDuration = hasLoss ? (0.18 + Math.random() * 0.38) : (0.045 + Math.random() * 0.11);
+          t += gap;
+          if (t >= endAt - 0.08) break;
+          var low = baseGain * (hasLoss ? 0.02 : 0.08);
+          gain.gain.setValueAtTime(baseGain, t);
+          gain.gain.linearRampToValueAtTime(low, t + 0.012);
+          gain.gain.setValueAtTime(low, Math.min(endAt, t + cutDuration));
+          gain.gain.linearRampToValueAtTime(baseGain, Math.min(endAt, t + cutDuration + 0.04));
+        }
+      }
+      function decodePccVoiceDataUrl(ctx, src) {
+        return fetch(src)
+          .then(function (response) { return response.arrayBuffer(); })
+          .then(function (arrayBuffer) {
+            return new Promise(function (resolve, reject) {
+              var result = ctx.decodeAudioData(arrayBuffer, resolve, reject);
+              if (result && typeof result.then === "function") result.then(resolve, reject);
+            });
+          });
+      }
+      function playPccVoiceFilteredDataUrl(src, volume, filters) {
+        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return false;
+        var ctx = null;
+        try { ctx = new AudioContextClass(); } catch (err0) { ctx = null; }
+        if (!ctx) return false;
+        var active = {
+          ctx: ctx,
+          source: null,
+          nodes: [],
+          stopped: false,
+          stop: function () {
+            active.stopped = true;
+            active.nodes.forEach(function (node) {
+              try { node.stop(0); } catch (err1) { }
+            });
+            if (active.source) {
+              try { active.source.stop(0); } catch (err2) { }
+            }
+            try { ctx.close(); } catch (err3) { }
+          }
+        };
+        pccVoiceActiveAudio = active;
+        decodePccVoiceDataUrl(ctx, src).then(function (buffer) {
+          if (active.stopped || pccVoiceActiveAudio !== active) return;
+          var source = ctx.createBufferSource();
+          source.buffer = buffer;
+          active.source = source;
+
+          var current = source;
+          if (hasPccVoiceFilter(filters, "radio")) {
+            var hp = ctx.createBiquadFilter();
+            hp.type = "highpass";
+            hp.frequency.value = 320;
+            var lp = ctx.createBiquadFilter();
+            lp.type = "lowpass";
+            lp.frequency.value = 3300;
+            current.connect(hp);
+            hp.connect(lp);
+            current = lp;
+          }
+          if (hasPccVoiceFilter(filters, "saturation")) {
+            var shaper = ctx.createWaveShaper();
+            shaper.curve = createPccVoiceSaturationCurve(38);
+            shaper.oversample = "2x";
+            current.connect(shaper);
+            current = shaper;
+          }
+
+          var finalGain = ctx.createGain();
+          var baseVolume = typeof getGlobalAudioVolumeFactor === "function"
+            ? getGlobalAudioVolumeFactor()
+            : Math.max(0, Math.min(1, Number(volume) || 1));
+          if (hasPccVoiceFilter(filters, "signal_faible")) baseVolume *= 0.45;
+          finalGain.gain.value = baseVolume;
+          current.connect(finalGain);
+
+          var duration = Math.max(0.1, Number(buffer.duration) || 0.1);
+          var startDelay = hasPccVoiceFilter(filters, "latence") ? 0.32 : 0.015;
+          var startAt = ctx.currentTime + startDelay;
+          var stopAt = startAt + duration + 0.35;
+
+          if (hasPccVoiceFilter(filters, "souffle") || hasPccVoiceFilter(filters, "signal_faible") || hasPccVoiceFilter(filters, "perte_signal")) {
+            var noise = ctx.createBufferSource();
+            noise.buffer = createPccVoiceNoiseBuffer(ctx, duration + 0.6, "noise");
+            var noiseGain = ctx.createGain();
+            noiseGain.gain.value =
+              (hasPccVoiceFilter(filters, "perte_signal") ? 0.052 : 0) +
+              (hasPccVoiceFilter(filters, "signal_faible") ? 0.032 : 0) +
+              (hasPccVoiceFilter(filters, "souffle") ? 0.026 : 0);
+            var noiseFilter = ctx.createBiquadFilter();
+            noiseFilter.type = "highpass";
+            noiseFilter.frequency.value = 900;
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(finalGain);
+            noise.start(startAt);
+            noise.stop(stopAt);
+            active.nodes.push(noise);
+          }
+
+          if (hasPccVoiceFilter(filters, "gresillement")) {
+            var crackle = ctx.createBufferSource();
+            crackle.buffer = createPccVoiceNoiseBuffer(ctx, duration + 0.6, "crackle");
+            var crackleGain = ctx.createGain();
+            crackleGain.gain.value = 0.16;
+            crackle.connect(crackleGain);
+            crackleGain.connect(finalGain);
+            crackle.start(startAt);
+            crackle.stop(stopAt);
+            active.nodes.push(crackle);
+          }
+
+          if (hasPccVoiceFilter(filters, "interferences")) {
+            [780, 1240].forEach(function (freq, index) {
+              var osc = ctx.createOscillator();
+              var oscGain = ctx.createGain();
+              osc.type = index ? "triangle" : "sine";
+              osc.frequency.value = freq;
+              oscGain.gain.value = index ? 0.012 : 0.018;
+              osc.connect(oscGain);
+              oscGain.connect(finalGain);
+              osc.start(startAt);
+              osc.stop(stopAt);
+              active.nodes.push(osc);
+            });
+          }
+
+          schedulePccVoiceDropouts(finalGain, ctx, startAt, duration, baseVolume, filters);
+          finalGain.connect(ctx.destination);
+          source.onended = function () {
+            if (pccVoiceActiveAudio === active) pccVoiceActiveAudio = null;
+            window.setTimeout(function () {
+              try { ctx.close(); } catch (errClose) { }
+            }, 500);
+          };
+          var resumePromise = ctx.state === "suspended" && typeof ctx.resume === "function" ? ctx.resume() : null;
+          if (resumePromise && typeof resumePromise.catch === "function") {
+            resumePromise.catch(function () {
+              if (typeof showOverlayNotification === "function") {
+                showOverlayNotification("Message PCC bloque", "Cliquez dans la fenetre pour autoriser l'audio.", 2600);
+              }
+            });
+          }
+          source.start(startAt);
+        }).catch(function () {
+          if (pccVoiceActiveAudio === active) pccVoiceActiveAudio = null;
+          try { ctx.close(); } catch (errDecode) { }
+          if (typeof showOverlayNotification === "function") {
+            showOverlayNotification("Message PCC recu", "Filtre audio impossible, lecture normale tentee.", 2600);
+          }
+          playPccVoiceAudioDataUrl(src, volume, []);
+        });
+        return true;
+      }
+      function playPccVoiceAudioDataUrl(dataUrl, volume, filters) {
+        var src = String(dataUrl || "").trim();
+        if (!/^data:audio\//i.test(src)) return false;
+        var selectedFilters = Array.isArray(filters) ? filters.filter(Boolean) : [];
+        if (selectedFilters.length && playPccVoiceFilteredDataUrl(src, volume, selectedFilters)) return true;
+        stopPccVoiceActiveAudio();
+        var audio = null;
+        try { audio = new Audio(src); } catch (err0) { audio = null; }
+        if (!audio) return false;
+        try {
+          audio.volume = typeof getGlobalAudioVolumeFactor === "function"
+            ? getGlobalAudioVolumeFactor()
+            : Math.max(0, Math.min(1, Number(volume) || 1));
+        } catch (err1) { }
+        pccVoiceActiveAudio = audio;
+        var clear = function () {
+          if (pccVoiceActiveAudio === audio) pccVoiceActiveAudio = null;
+        };
+        audio.onended = clear;
+        audio.onerror = clear;
+        var promise = null;
+        try { promise = audio.play(); } catch (err2) {
+          clear();
+          return false;
+        }
+        if (promise && typeof promise.catch === "function") {
+          promise.catch(function () {
+            clear();
+            if (typeof showOverlayNotification === "function") {
+              showOverlayNotification("Message PCC bloque", "Cliquez dans la fenetre pour autoriser l'audio.", 2600);
+            }
+          });
+        }
+        return true;
+      }
+      function handlePccVoiceMessage(parsed) {
+        var message = findPccVoiceMessagePayload(parsed, 0);
+        if (!message) return false;
+        var targetSteamId = getPccVoiceTargetSteamId(message);
+        var localSteamId = getLocalPccVoiceSteamId();
+        if (!targetSteamId) {
+          if (typeof showOverlayNotification === "function") {
+            showOverlayNotification("Message PCC recu", "Cible SteamID absente, lecture bloquee.", 2600);
+          }
+          return true;
+        }
+        if (!localSteamId) {
+          if (typeof showOverlayNotification === "function") {
+            showOverlayNotification("Message PCC recu", "SteamID local non reconnu, lecture bloquee.", 2600);
+          }
+          return true;
+        }
+        if (!targetSteamId || !localSteamId || targetSteamId !== localSteamId) return true;
+        if (getPccVoiceChunkInfo(message)) return handlePccVoiceChunkMessage(message);
+        var messageId = getPccVoiceMessageId(message);
+        if (rememberPccVoiceMessageId(messageId)) return true;
+        var audio = getPccVoiceAudioObject(message);
+        var dataUrl = readPccVoiceString(audio, ["dataUrl", "dataURL", "data_uri", "dataUri", "src"]);
+        if (!dataUrl && typeof audio.base64 === "string") {
+          var mime = readPccVoiceString(audio, ["mimeType", "mime", "type"]) || "audio/webm";
+          dataUrl = "data:" + mime + ";base64," + String(audio.base64 || "").trim();
+        }
+        var filters = readPccVoiceFilters(message, audio);
+        playResolvedPccVoiceMessage(message, audio, dataUrl, filters);
+        return true;
+      }
       function stopRemotePanelWsBridge() {
         if (remoteServerWsReconnectTimer) {
           clearTimeout(remoteServerWsReconnectTimer);
@@ -2432,6 +2955,13 @@
         try {
           var parsed = null;
           try { parsed = JSON.parse(event.data); } catch (err0) { parsed = null; }
+          if (handlePccVoiceMessage(parsed)) {
+            if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
+            if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
+              syncConvoyStatusFromRemotePanelWs();
+            }
+            return;
+          }
           var playersCount = null;
           if (parsed && typeof extractRemoteServerPlayersCount === "function") {
             try { playersCount = extractRemoteServerPlayersCount(parsed); } catch (err1) { playersCount = null; }
@@ -2606,6 +3136,10 @@
           }
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          try {
+            var localIdentity = buildRemotePanelPlayerIdentity(raw, null);
+            if (localIdentity) remotePanelLocalPlayerIdentity = localIdentity;
+          } catch (errIdentity) { }
           updateTelemetryConvoyState(raw, null);
           updateSaeivGameClockFromTelemetry(raw);
           var nextUiMode = extractTelemetryUiMode(raw);

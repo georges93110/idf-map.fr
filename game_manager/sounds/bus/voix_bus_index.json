@@ -177,15 +177,14 @@
     "RATP": {
       "_files": [
         "Avancez vers le fond",
-        "Bienvenue à bord",
+        "Avancez vers le fond (Ancien)",
+        "Bienvenue sur cette ligne IDFM",
         "Montée par l’avant",
-        "Validez votre titre"
+        "Montée par l’avant (Ancien)",
+        "Validez votre titre",
+        "Validez votre titre (Ancien)"
       ]
     },
-    "TRANSDEV": {
-      "_files": [
-        "Bienvenue à bord"
-      ]
-    }
+    "TRANSDEV": {}
   }
 }

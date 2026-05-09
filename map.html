@@ -4944,6 +4944,7 @@
     }
     const DEV_MODE = QS.has("dev");
     const DEV_LOCAL_ONLY = DEV_MODE && isStrictLocalRuntime();
+    const DEV_LINES_EDITOR_ENABLED = false;
     const DEV_GRAPH = QS.has("dev_graph");
     const DEV_NAV_POINTS_DEBUG = DEV_MODE || DEV_GRAPH;
     const DEV_NAV_BRIDGES_DEBUG = DEV_GRAPH || QS.has("dev_bridges");
@@ -7023,7 +7024,7 @@
       $devLinesEditorModal.hidden = true;
     }
     function openDevLinesEditor(){
-      if (!DEV_LOCAL_ONLY) {
+      if (!DEV_LINES_EDITOR_ENABLED || !DEV_LOCAL_ONLY) {
         setDevLinesEditorStatus("Disponible uniquement en local (localhost / 127.0.0.1 / file:).", true);
         return;
       }
@@ -11108,9 +11109,9 @@
         return;
       }
       if ($btnDevLinesXmlEditorToggle) {
-        $btnDevLinesXmlEditorToggle.hidden = !DEV_LOCAL_ONLY;
+        $btnDevLinesXmlEditorToggle.hidden = true;
       }
-      if (!DEV_LOCAL_ONLY && $devLinesEditorModal) {
+      if ((!DEV_LINES_EDITOR_ENABLED || !DEV_LOCAL_ONLY) && $devLinesEditorModal) {
         $devLinesEditorModal.hidden = true;
       }
       $devNavDebugRow.hidden = false;
@@ -11159,7 +11160,7 @@
           void toggleDevUberRestaurantsOverlay();
         });
       }
-      if (DEV_LOCAL_ONLY) {
+      if (DEV_LINES_EDITOR_ENABLED && DEV_LOCAL_ONLY) {
         if ($btnDevLinesXmlEditorToggle) {
           $btnDevLinesXmlEditorToggle.addEventListener("click", () => {
             openDevLinesEditor();
@@ -16428,9 +16429,6 @@
     </script>
 </body>
 </html>
-
-
-
 
 
 

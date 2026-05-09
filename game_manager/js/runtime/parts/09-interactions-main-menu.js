@@ -49,7 +49,7 @@
           globalAudioVolumePercent = clampGlobalAudioVolumePercent(GLOBAL_AUDIO_VOLUME_DEFAULT);
           applySaeivTimeSystem(SAEIV_TIME_SYSTEM_DEFAULT, { syncUi: true, persist: true });
           applyStopAnnouncementSoundsEnabled(true, { syncUi: true });
-          applyPassengerValidationSoundsEnabled(false, { syncUi: true, syncState: false });
+          applyPassengerValidationSoundsEnabled(true, { syncUi: true, syncState: false });
           applyHideUiWhenManagerHidden(false, { syncUi: true, render: false });
           applyUnknownBusCapacityInputValue(String(SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT), { syncUi: true, syncState: false });
           applyForceListedCapacityForAllBuses(false, { syncUi: true, syncState: false });
@@ -114,7 +114,7 @@
             globalAudioVolumePercent = clampGlobalAudioVolumePercent(GLOBAL_AUDIO_VOLUME_DEFAULT);
             applySaeivTimeSystem(SAEIV_TIME_SYSTEM_DEFAULT, { syncUi: true, persist: true });
             applyStopAnnouncementSoundsEnabled(true, { syncUi: true });
-            applyPassengerValidationSoundsEnabled(false, { syncUi: true, syncState: false });
+            applyPassengerValidationSoundsEnabled(true, { syncUi: true, syncState: false });
             applyHideUiWhenManagerHidden(false, { syncUi: true, render: false });
             applyDefaultStartupMode(DEFAULT_STARTUP_MODE_MENU, { syncUi: true });
             applyNotificationSoundsEnabled(true, { syncUi: true });
@@ -215,11 +215,16 @@
       function pauseGuideVideo() {
         var iframe = document.getElementById("guideVideoIframe");
         if (iframe && iframe.contentWindow) {
+          var pause = function () {
             try {
               iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
             } catch (err) { }
-          }
+          };
+          pause();
+          setTimeout(pause, 120);
+          setTimeout(pause, 350);
         }
+      }
 
         function pauseMainMenuInfoVideos() {
           document.querySelectorAll("#mainMenuInfoView iframe").forEach(function (iframe) {
@@ -243,6 +248,10 @@
           if (indicator) indicator.textContent = "Informations";
           pauseMainMenuInfoVideos();
         }
+
+        window.pauseGuideVideo = pauseGuideVideo;
+        window.pauseMainMenuInfoVideos = pauseMainMenuInfoVideos;
+        window.closeMainMenuInfoView = closeMainMenuInfoView;
 
         function openMainMenuInfoView(targetId) {
           var infoView = document.getElementById("mainMenuInfoView");
@@ -951,6 +960,7 @@
             event.preventDefault();
             if (mainMenuModal.classList.contains("is-forced")) return;
             mainMenuModal.classList.remove("is-open");
+            document.body.classList.remove("is-main-menu-open");
             closeMainMenuInfoView();
             pauseGuideVideo();
             renderManager();
@@ -978,6 +988,7 @@
           var finalizeLaunch = function () {
             isGameUnlocked = true;
             closeMainMenuInfoView();
+            pauseGuideVideo();
             if (mainMenuModal) {
               mainMenuModal.classList.remove("is-forced");
               mainMenuModal.classList.remove("is-open");
@@ -1030,6 +1041,8 @@
             if (mainMenuModal) {
               mainMenuModal.classList.remove("is-open");
               document.body.classList.remove("is-main-menu-open");
+              closeMainMenuInfoView();
+              pauseGuideVideo();
             }
 
             // Délai de chargement simulé (+2 secondes demandées)
@@ -1084,6 +1097,8 @@
             if (mainMenuModal) {
               mainMenuModal.classList.remove("is-forced", "is-open");
               document.body.classList.remove("is-main-menu-open");
+              closeMainMenuInfoView();
+              pauseGuideVideo();
               renderStage();
               renderManager();
             }
@@ -1096,6 +1111,7 @@
             if (mainMenuModal.classList.contains("is-forced")) return;
             if (event.target === mainMenuModal) {
               mainMenuModal.classList.remove("is-open");
+              document.body.classList.remove("is-main-menu-open");
               closeMainMenuInfoView();
               pauseGuideVideo();
               renderStage();
@@ -1849,8 +1865,57 @@
         });
 
         // Gestionnaire pour l'aperçu de la vidéo YouTube
+        function buildGuideVideoEmbedUrl() {
+          var configured = "https://www.youtube.com/embed/EBilEKEllIQ?enablejsapi=1";
+          try {
+            if (window.SITE_LINKS && window.SITE_LINKS.guide && window.SITE_LINKS.guide.manual_video_embed) {
+              configured = String(window.SITE_LINKS.guide.manual_video_embed || configured);
+            }
+          } catch (err0) { }
+          var url;
+          try {
+            url = new URL(configured, window.location.href);
+          } catch (err1) {
+            url = new URL("https://www.youtube.com/embed/EBilEKEllIQ?enablejsapi=1");
+          }
+          url.searchParams.set("enablejsapi", "1");
+          url.searchParams.set("autoplay", "1");
+          url.searchParams.set("playsinline", "1");
+          url.searchParams.set("rel", "0");
+          if (/^https?:$/i.test(window.location.protocol)) {
+            url.searchParams.set("origin", window.location.origin);
+          }
+          return url.href;
+        }
+
+        function playGuideVideo() {
+          var wrapper = document.getElementById("guideVideoWrapper");
+          if (!wrapper) return;
+          wrapper.innerHTML = "";
+          var iframe = document.createElement("iframe");
+          iframe.id = "guideVideoIframe";
+          iframe.width = "100%";
+          iframe.height = "100%";
+          iframe.title = "Guide Video";
+          iframe.frameBorder = "0";
+          iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+          iframe.allowFullscreen = true;
+          iframe.referrerPolicy = "strict-origin-when-cross-origin";
+          iframe.src = buildGuideVideoEmbedUrl();
+          wrapper.appendChild(iframe);
+        }
+
         var videoPreview = document.getElementById("videoPreview");
         if (videoPreview) {
+          videoPreview.addEventListener("click", function (event) {
+            if (event && event.cancelable) event.preventDefault();
+            if (event && typeof event.stopImmediatePropagation === "function") {
+              event.stopImmediatePropagation();
+            }
+            playGuideVideo();
+          }, true);
+        }
+        if (false && videoPreview) {
           videoPreview.addEventListener("click", function () {
             var wrapper = document.getElementById("guideVideoWrapper");
             if (wrapper) {

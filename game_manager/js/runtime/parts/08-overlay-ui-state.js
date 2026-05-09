@@ -703,6 +703,7 @@
             showExperimentalWidgets: showExperimentalWidgets === true,
             stopAnnouncementSoundsEnabled: saeivStopAnnouncementSoundsEnabled === true,
             passengerValidationSoundsEnabled: saeivPassengerValidationSoundsEnabled === true,
+            passengerValidationSoundsVersion: PASSENGER_VALIDATION_SOUNDS_SETTING_VERSION,
             hideUiWhenManagerHidden: hideUiWhenManagerHidden === true,
             unknownBusCapacityValue: Math.max(1, Math.round(Number(saeivUnknownBusCapacityInputValue) || SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT)),
             unknownBusCapacityUnlimited: saeivUnknownBusCapacityUnlimited === true,
@@ -742,6 +743,7 @@
             showExperimentalWidgets: showExperimentalWidgets === true,
             stopAnnouncementSoundsEnabled: saeivStopAnnouncementSoundsEnabled === true,
             passengerValidationSoundsEnabled: saeivPassengerValidationSoundsEnabled === true,
+            passengerValidationSoundsVersion: PASSENGER_VALIDATION_SOUNDS_SETTING_VERSION,
             notificationSoundsEnabled: notificationSoundsEnabled === true,
             hideUiWhenManagerHidden: hideUiWhenManagerHidden === true,
             defaultStartupMode: normalizeDefaultStartupMode(defaultStartupMode),
@@ -877,8 +879,16 @@
             storedStopAnnouncementSounds = normalizeStopAnnouncementSoundsEnabled(parsed.manager.stopAnnouncementSoundsEnabled);
           }
           if (Object.prototype.hasOwnProperty.call(parsed.manager, "passengerValidationSoundsEnabled")) {
-            hasStoredPassengerValidationSounds = true;
-            storedPassengerValidationSounds = normalizePassengerValidationSoundsEnabled(parsed.manager.passengerValidationSoundsEnabled);
+            var parsedPassengerValidationSounds = normalizePassengerValidationSoundsEnabled(parsed.manager.passengerValidationSoundsEnabled);
+            var parsedPassengerValidationSoundsVersion = Number(parsed.manager.passengerValidationSoundsVersion);
+            if (
+              parsedPassengerValidationSounds === true ||
+              (Number.isFinite(parsedPassengerValidationSoundsVersion) &&
+                parsedPassengerValidationSoundsVersion >= PASSENGER_VALIDATION_SOUNDS_SETTING_VERSION)
+            ) {
+              hasStoredPassengerValidationSounds = true;
+              storedPassengerValidationSounds = parsedPassengerValidationSounds;
+            }
           }
           if (Object.prototype.hasOwnProperty.call(parsed.manager, "hideUiWhenManagerHidden")) {
             hasStoredHideUiWhenManagerHidden = true;
@@ -946,8 +956,16 @@
                 storedStopAnnouncementSounds = normalizeStopAnnouncementSoundsEnabled(managerParsed.stopAnnouncementSoundsEnabled);
               }
               if (Object.prototype.hasOwnProperty.call(managerParsed, "passengerValidationSoundsEnabled")) {
-                hasStoredPassengerValidationSounds = true;
-                storedPassengerValidationSounds = normalizePassengerValidationSoundsEnabled(managerParsed.passengerValidationSoundsEnabled);
+                var fallbackPassengerValidationSounds = normalizePassengerValidationSoundsEnabled(managerParsed.passengerValidationSoundsEnabled);
+                var fallbackPassengerValidationSoundsVersion = Number(managerParsed.passengerValidationSoundsVersion);
+                if (
+                  fallbackPassengerValidationSounds === true ||
+                  (Number.isFinite(fallbackPassengerValidationSoundsVersion) &&
+                    fallbackPassengerValidationSoundsVersion >= PASSENGER_VALIDATION_SOUNDS_SETTING_VERSION)
+                ) {
+                  hasStoredPassengerValidationSounds = true;
+                  storedPassengerValidationSounds = fallbackPassengerValidationSounds;
+                }
               }
               if (Object.prototype.hasOwnProperty.call(managerParsed, "notificationSoundsEnabled")) {
                 notificationSoundsEnabled = normalizeNotificationSoundsEnabled(managerParsed.notificationSoundsEnabled);
@@ -989,7 +1007,7 @@
           { syncUi: true }
         );
         applyPassengerValidationSoundsEnabled(
-          hasStoredPassengerValidationSounds ? storedPassengerValidationSounds : false,
+          hasStoredPassengerValidationSounds ? storedPassengerValidationSounds : true,
           { syncUi: true, syncState: false }
         );
         applyHideUiWhenManagerHidden(

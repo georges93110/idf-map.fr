@@ -711,17 +711,21 @@
     }
 
     .main-menu-tab-panel .manager-scale-slider {
+      --manager-slider-track-h: 2px;
+      --manager-slider-thumb-size: 16px;
       width: 100% !important;
-      height: 16px !important;
+      height: var(--manager-slider-thumb-size) !important;
       margin: 0 !important;
+      padding: 0 !important;
       background: transparent !important;
       -webkit-appearance: none;
+      appearance: none;
       cursor: pointer;
     }
 
     .main-menu-tab-panel .manager-scale-slider::-webkit-slider-runnable-track {
       width: 100%;
-      height: 2px !important;
+      height: var(--manager-slider-track-h) !important;
       background: linear-gradient(to right, #fbbf24 0%, #fbbf24 var(--value-percent, 0%), rgba(255, 255, 255, 0.1) var(--value-percent, 0%), rgba(255, 255, 255, 0.1) 100%) !important;
       border-radius: 2px;
       border: none;
@@ -729,7 +733,7 @@
 
     .main-menu-tab-panel .manager-scale-slider::-moz-range-track {
       width: 100%;
-      height: 2px !important;
+      height: var(--manager-slider-track-h) !important;
       background: rgba(255, 255, 255, 0.1) !important;
       border-radius: 2px;
       border: none;
@@ -737,17 +741,16 @@
 
     .main-menu-tab-panel .manager-scale-slider::-moz-range-progress {
       background: #fbbf24 !important;
-      height: 2px !important;
+      height: var(--manager-slider-track-h) !important;
       border-radius: 2px;
     }
 
     /* Thumb Overrides: Proportional & Centered */
     .main-menu-tab-panel .manager-scale-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 16px !important;
-      height: 16px !important;
-      margin-top: 14px !important;
-      /* Perfect vertical center for 2px track */
+      width: var(--manager-slider-thumb-size) !important;
+      height: var(--manager-slider-thumb-size) !important;
+      margin-top: calc((var(--manager-slider-track-h) - var(--manager-slider-thumb-size)) / 2) !important;
       background: #fbbf24 !important;
       border: 2px solid #171717 !important;
       border-radius: 50% !important;
@@ -756,8 +759,8 @@
     }
 
     .main-menu-tab-panel .manager-scale-slider::-moz-range-thumb {
-      width: 16px !important;
-      height: 16px !important;
+      width: var(--manager-slider-thumb-size) !important;
+      height: var(--manager-slider-thumb-size) !important;
       background: #fbbf24 !important;
       border: 2px solid #171717 !important;
       border-radius: 50% !important;
@@ -1182,11 +1185,14 @@
     }
 
     .manager-scale-slider {
+      --manager-slider-track-h: clamp(4px, 1.4cqw, 8px);
+      --manager-slider-thumb-size: clamp(14px, 3.9cqw, 24px);
+      --manager-slider-thumb-ring: clamp(2px, 0.35cqw, 4px);
       -webkit-appearance: none;
       appearance: none;
       display: block;
       width: 100%;
-      height: 1cqw;
+      height: var(--manager-slider-thumb-size);
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -1199,7 +1205,7 @@
     }
 
     .manager-scale-slider::-webkit-slider-runnable-track {
-      height: 1.4cqw;
+      height: var(--manager-slider-track-h);
       border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.35);
       background: rgba(31, 41, 55, 0.9);
@@ -1208,30 +1214,29 @@
 
     .manager-scale-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 3.9cqw;
-      height: 3.9cqw;
-      margin-top: 0;
-      transform: translateY(calc((1.4cqw - 3.9cqw) / 2));
+      width: var(--manager-slider-thumb-size);
+      height: var(--manager-slider-thumb-size);
+      margin-top: calc((var(--manager-slider-track-h) - var(--manager-slider-thumb-size)) / 2);
       border-radius: 50%;
       border: 1px solid rgba(203, 213, 225, 0.7);
       background: #e2e8f0;
-      box-shadow: 0 0 0 0.35cqw rgba(15, 23, 42, 0.5);
+      box-shadow: 0 0 0 var(--manager-slider-thumb-ring) rgba(15, 23, 42, 0.5);
     }
 
     .manager-scale-slider::-moz-range-track {
-      height: 1.4cqw;
+      height: var(--manager-slider-track-h);
       border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.35);
       background: rgba(31, 41, 55, 0.9);
     }
 
     .manager-scale-slider::-moz-range-thumb {
-      width: 3.9cqw;
-      height: 3.9cqw;
+      width: var(--manager-slider-thumb-size);
+      height: var(--manager-slider-thumb-size);
       border-radius: 50%;
       border: 1px solid rgba(203, 213, 225, 0.7);
       background: #e2e8f0;
-      box-shadow: 0 0 0 0.35cqw rgba(15, 23, 42, 0.5);
+      box-shadow: 0 0 0 var(--manager-slider-thumb-ring) rgba(15, 23, 42, 0.5);
     }
 
     .manager-settings-box {

@@ -385,7 +385,8 @@
       var globalAudioVolumePercent = GLOBAL_AUDIO_VOLUME_DEFAULT;
       var showExperimentalWidgets = false;
       var saeivStopAnnouncementSoundsEnabled = true;
-      var saeivPassengerValidationSoundsEnabled = false;
+      var saeivPassengerValidationSoundsEnabled = true;
+      var PASSENGER_VALIDATION_SOUNDS_SETTING_VERSION = 2;
       var notificationSoundsEnabled = true;
       var hideUiWhenManagerHidden = false;
       var SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT = 100;
@@ -440,6 +441,7 @@
       var remotePanelTelemetryQueuedPayload = null;
       var remotePanelTelemetryFlushTimer = 0;
       var remotePanelTelemetryLastSentAtMs = 0;
+      var remotePanelLocalPlayerIdentity = null;
       var OVERLAY_NOTIFICATION_MIN_DURATION_MS = 2400;
       var REMOTE_SERVER_WS_RECONNECT_INTERVAL_MS = 2000;
       var REMOTE_PANEL_TELEMETRY_SEND_INTERVAL_MS = 1000;
@@ -460,6 +462,15 @@
       var remoteServerWsManualClose = false;
       var remoteServerWsRequestInFlight = false;
       var remoteServerWsRequestController = null;
+      var pccVoiceActiveAudio = null;
+      var pccVoiceSeenMessageIds = [];
+      var pccVoiceSeenMessageSet = new Set();
+      var pccVoiceChunkBuffers = new Map();
+      var PCC_VOICE_ACTION = "pcc_voice";
+      var PCC_VOICE_SEEN_LIMIT = 80;
+      var PCC_VOICE_CHUNK_TTL_MS = 30000;
+      var PCC_VOICE_MAX_CHUNKS = 160;
+      var PCC_VOICE_MAX_DATA_URL_CHARS = 6000000;
       var TELEMETRY_PACKET_TIMEOUT_MS = 1000;
       var TELEMETRY_WATCHDOG_INTERVAL_MS = 300;
       var TELEMETRY_MIN_VALID_PACKETS_FOR_ONLINE = 3;

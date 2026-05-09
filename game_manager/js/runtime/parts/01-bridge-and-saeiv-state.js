@@ -392,6 +392,40 @@
         }
         if (type === "saeiv:action") {
           saeivLastAction = String(data.action || "").trim();
+          if (saeivLastAction === "saeiv-manual-destination-announcement") {
+            var destinationPlayed = data.localPlayback === true
+              ? true
+              : (
+                typeof triggerSaeivDestinationAnnouncementFromWidget === "function"
+                  ? triggerSaeivDestinationAnnouncementFromWidget()
+                  : false
+              );
+            postSaeivBridgeMessage({
+              type: "saeiv:action_result",
+              action: saeivLastAction,
+              ok: destinationPlayed === true
+            });
+            saeivLastStateKey = "";
+            syncSaeivExternalState(true);
+            return;
+          }
+          if (saeivLastAction === "saeiv-manual-terminus-announcement") {
+            var terminusPlayed = data.localPlayback === true
+              ? true
+              : (
+                typeof triggerSaeivTerminusAnnouncementFromWidget === "function"
+                  ? triggerSaeivTerminusAnnouncementFromWidget()
+                  : false
+              );
+            postSaeivBridgeMessage({
+              type: "saeiv:action_result",
+              action: saeivLastAction,
+              ok: terminusPlayed === true
+            });
+            saeivLastStateKey = "";
+            syncSaeivExternalState(true);
+            return;
+          }
           saeivLastStateKey = "";
           syncSaeivExternalState(true);
         }

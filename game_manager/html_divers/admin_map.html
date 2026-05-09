@@ -321,6 +321,60 @@
       background: #facc15;
     }
 
+    .pcc-voice-panel {
+      display: grid;
+      gap: 8px;
+    }
+
+    .pcc-voice-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pcc-voice-btn {
+      min-height: 30px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 6px;
+      background: rgba(47, 140, 255, 0.22);
+      color: #fff;
+      font: 800 11px/1.15 Arial, Helvetica, sans-serif;
+      cursor: pointer;
+    }
+
+    .pcc-voice-btn:hover:not(:disabled) {
+      background: rgba(47, 140, 255, 0.34);
+    }
+
+    .pcc-voice-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .pcc-voice-btn.is-recording {
+      border-color: rgba(248, 113, 113, 0.68);
+      background: rgba(220, 38, 38, 0.34);
+    }
+
+    .pcc-voice-btn.is-secondary {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .pcc-voice-status {
+      min-height: 16px;
+      color: rgba(255, 255, 255, 0.72);
+      font: 700 11px/1.3 Arial, Helvetica, sans-serif;
+    }
+
+    .pcc-voice-status.is-error {
+      color: #fecaca;
+    }
+
+    .pcc-voice-status.is-ok {
+      color: #bbf7d0;
+    }
+
   </style>
 </head>
 <body>
@@ -367,6 +421,21 @@
       const PLAYER_POSITION_INTERPOLATION_MS = 1000;
       const PLAYER_GROUP_SOLO = "solo";
       const PLAYER_GROUP_CONVOY = "convoy";
+      const PCC_VOICE_ACTION = "pcc_voice";
+      const PCC_VOICE_MAX_DURATION_MS = 12000;
+      const PCC_VOICE_MAX_BYTES = 3000000;
+      const PCC_VOICE_CHUNK_CHARS = 48000;
+      const PCC_VOICE_CHUNK_DELAY_MS = 8;
+      const PCC_VOICE_FILTERS = [
+        ["radio", "Filtre radio"],
+        ["souffle", "Souffle"],
+        ["gresillement", "Gresillement"],
+        ["perte_signal", "Perte de signal"],
+        ["signal_faible", "Signal faible"],
+        ["latence", "Latence"],
+        ["saturation", "Saturation"],
+        ["interferences", "Interferences"]
+      ];
 
       const output = document.getElementById("output");
       const mapError = document.getElementById("mapError");
@@ -390,7 +459,10 @@
       let socket = null;
       let reconnectTimer = 0;
       let playerAnimationFrame = 0;
+      let pccRecording = null;
+      let pccRecordTimeout = 0;
       const playerMarkers = new Map();
+      const pccStatusByPlayerId = new Map();
       const playerFilters = {
         [PLAYER_GROUP_SOLO]: true,
         [PLAYER_GROUP_CONVOY]: true
@@ -761,6 +833,9 @@
           entry.vehicle,
           entry.truck,
           entry.truckPosition,
+          entry.identity,
+          entry.playerIdentity,
+          entry.player_identity,
           entry.player,
           entry.client,
           entry.sender,
@@ -772,7 +847,25 @@
           entry.metadata,
           entry.meta,
           entry.playerInfo,
-          entry.player_info
+          entry.player_info,
+          entry.data && entry.data.identity,
+          entry.data && entry.data.playerIdentity,
+          entry.data && entry.data.player_identity,
+          entry.payload && entry.payload.identity,
+          entry.payload && entry.payload.playerIdentity,
+          entry.payload && entry.payload.player_identity,
+          entry.signal && entry.signal.identity,
+          entry.signal && entry.signal.playerIdentity,
+          entry.signal && entry.signal.player_identity,
+          entry.telemetry && entry.telemetry.identity,
+          entry.telemetry && entry.telemetry.playerIdentity,
+          entry.telemetry && entry.telemetry.player_identity,
+          entry.gameContext && entry.gameContext.identity,
+          entry.gameContext && entry.gameContext.playerIdentity,
+          entry.gameContext && entry.gameContext.player_identity,
+          entry.game_context && entry.game_context.identity,
+          entry.game_context && entry.game_context.playerIdentity,
+          entry.game_context && entry.game_context.player_identity
         ].filter((item) => item && typeof item === "object");
       }
 
@@ -832,6 +925,9 @@
           "account",
           "user",
           "profile",
+          "identity",
+          "playerIdentity",
+          "player_identity",
           "steam",
           "metadata",
           "meta",
@@ -843,13 +939,13 @@
           const nested = source[key];
           if (!nested || typeof nested !== "object") continue;
           const identity = readIdentity(nested, depth + 1, seen);
-          if (hasVisibleIdentity(identity)) return identity;
+          if (hasVisibleIdentity(identity) || hasIdentity(identity)) return identity;
         }
 
         for (const value of Object.values(source)) {
           if (!value || typeof value !== "object") continue;
           const identity = readIdentity(value, depth + 1, seen);
-          if (hasVisibleIdentity(identity)) return identity;
+          if (hasVisibleIdentity(identity) || hasIdentity(identity)) return identity;
         }
         return hasIdentity(result) ? result : {};
       }
@@ -1267,6 +1363,72 @@
         return `<div class="player-info-section"${hidden}><div class="player-info-section-title">${escapeHtml(title)}</div>${body}</div>`;
       }
 
+      function normalizePccSteamId(value) {
+        return String(value == null ? "" : value).trim().replace(/\s+/g, "").toLowerCase();
+      }
+
+      function isPccWebSocketReady() {
+        return !!(socket && socket.readyState === WebSocket.OPEN);
+      }
+
+      function isPccRecorderSupported() {
+        return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+      }
+
+      function getPccPlayerId(player) {
+        return String(player && player.id || "");
+      }
+
+      function getPccTargetSteamId(player) {
+        return normalizePccSteamId(player && player.steamid);
+      }
+
+      function getPccVoiceUnavailableReason(player) {
+        if (!getPccTargetSteamId(player)) return "SteamID indisponible";
+        if (!isPccRecorderSupported()) return "Micro non supporte par ce navigateur";
+        if (!isPccWebSocketReady()) return "WebSocket panel non connecte";
+        return "";
+      }
+
+      function isPccRecordingForPlayer(player) {
+        return !!(pccRecording && pccRecording.playerId === getPccPlayerId(player));
+      }
+
+      function getPccVoiceStatus(player) {
+        const reason = getPccVoiceUnavailableReason(player);
+        if (reason) return { text: reason, kind: "error" };
+        if (isPccRecordingForPlayer(player)) return { text: "Enregistrement en cours...", kind: "error" };
+        const stored = pccStatusByPlayerId.get(getPccPlayerId(player));
+        if (stored && stored.text) return stored;
+        return { text: "Pret a envoyer un message vocal PCC cible.", kind: "" };
+      }
+
+      function getSelectedPccVoiceFilters() {
+        return PCC_VOICE_FILTERS.map(function (entry) { return entry[0]; });
+      }
+
+      function buildPccVoiceSection(player) {
+        const playerId = getPccPlayerId(player);
+        const steamId = getPccTargetSteamId(player);
+        const reason = getPccVoiceUnavailableReason(player);
+        const recording = isPccRecordingForPlayer(player);
+        const disabled = reason && !recording ? " disabled" : "";
+        const recordClass = recording ? " is-recording" : "";
+        const cancelHidden = recording ? "" : " hidden";
+        const status = getPccVoiceStatus(player);
+        const statusClass = status.kind ? ` is-${escapeHtml(status.kind)}` : "";
+        const recordText = recording ? "Arreter et envoyer" : "Enregistrer";
+        return playerInfoSection("PCC vocal", [
+          `<div class="pcc-voice-panel" data-pcc-panel data-player-id="${escapeHtml(playerId)}" data-pcc-steamid="${escapeHtml(steamId)}">` +
+          `<div class="pcc-voice-actions">` +
+          `<button type="button" class="pcc-voice-btn pcc-record-btn${recordClass}" data-pcc-action="record" data-player-id="${escapeHtml(playerId)}"${disabled}>${escapeHtml(recordText)}</button>` +
+          `<button type="button" class="pcc-voice-btn is-secondary pcc-cancel-btn" data-pcc-action="cancel" data-player-id="${escapeHtml(playerId)}"${cancelHidden}>Annuler</button>` +
+          `</div>` +
+          `<div class="pcc-voice-status${statusClass}" data-pcc-status>${escapeHtml(status.text)}</div>` +
+          `</div>`
+        ]);
+      }
+
       function buildPlayerInfoPopup(record) {
         const player = record && record.player ? record.player : {};
         const state = record && record.state ? record.state : "live";
@@ -1285,6 +1447,7 @@
             playerInfoRow("Nom", player.name, "name"),
             playerInfoRow("SteamID", player.steamid, "steamid")
           ]),
+          buildPccVoiceSection(player),
           playerInfoSection("Session", [
             playerInfoRow("Connexion", playerGroupLabelForPlayer(player), "mode"),
             playerInfoRow("inServer", player.inServer === true ? "true" : (player.inServer === false ? "false" : ""), "inServer"),
@@ -1393,6 +1556,52 @@
         };
       }
 
+      function setPccVoiceStatus(playerId, text, kind = "") {
+        const safeId = String(playerId || "");
+        if (!safeId) return;
+        const status = { text: String(text || ""), kind: String(kind || "") };
+        pccStatusByPlayerId.set(safeId, status);
+        for (const record of playerMarkers.values()) {
+          if (getPccPlayerId(record.player) !== safeId) continue;
+          syncPccVoiceControls(record);
+        }
+      }
+
+      function syncPccVoiceControls(record) {
+        if (!record || !record.marker || !record.marker.getPopup) return;
+        const popup = record.marker.getPopup();
+        const element = popup && popup.getElement ? popup.getElement() : null;
+        if (!element) return;
+        const player = record.player || {};
+        const playerId = getPccPlayerId(player);
+        const reason = getPccVoiceUnavailableReason(player);
+        const recording = isPccRecordingForPlayer(player);
+        const status = getPccVoiceStatus(player);
+        const button = element.querySelector(".pcc-record-btn[data-player-id]");
+        const cancelBtn = element.querySelector(".pcc-cancel-btn[data-player-id]");
+        const statusNode = element.querySelector("[data-pcc-status]");
+        const panel = element.querySelector("[data-pcc-panel]");
+        if (panel) {
+          panel.setAttribute("data-player-id", playerId);
+          panel.setAttribute("data-pcc-steamid", getPccTargetSteamId(player));
+        }
+        if (button) {
+          button.setAttribute("data-player-id", playerId);
+          button.disabled = !!(reason && !recording);
+          button.classList.toggle("is-recording", recording);
+          button.textContent = recording ? "Arreter et envoyer" : "Enregistrer";
+        }
+        if (cancelBtn) {
+          cancelBtn.setAttribute("data-player-id", playerId);
+          cancelBtn.hidden = !recording;
+        }
+        if (statusNode) {
+          statusNode.textContent = status.text || "";
+          statusNode.classList.toggle("is-error", status.kind === "error");
+          statusNode.classList.toggle("is-ok", status.kind === "ok");
+        }
+      }
+
       function updatePlayerPopupDom(record) {
         if (!record || !record.marker || !record.marker.getPopup) return false;
         const popup = record.marker.getPopup();
@@ -1420,6 +1629,7 @@
           dot.classList.toggle("is-paused", state === "paused");
           dot.classList.toggle("is-stale", state === "stale");
         }
+        syncPccVoiceControls(record);
         return true;
       }
 
@@ -1472,6 +1682,283 @@
         if (!container) return;
         container.addEventListener("click", handlePlayerMarkerDomClick, true);
         container.addEventListener("pointerup", handlePlayerMarkerDomClick, true);
+      }
+
+      function syncAllPccVoiceControls() {
+        for (const record of playerMarkers.values()) syncPccVoiceControls(record);
+      }
+
+      function pickPccRecorderMimeType() {
+        if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== "function") return "";
+        const candidates = [
+          "audio/webm;codecs=opus",
+          "audio/webm",
+          "audio/ogg;codecs=opus",
+          "audio/mp4"
+        ];
+        for (const type of candidates) {
+          try {
+            if (MediaRecorder.isTypeSupported(type)) return type;
+          } catch (err) { }
+        }
+        return "";
+      }
+
+      function clearPccRecordTimeout() {
+        if (!pccRecordTimeout) return;
+        window.clearTimeout(pccRecordTimeout);
+        pccRecordTimeout = 0;
+      }
+
+      function stopPccMediaStream(stream) {
+        if (!stream || typeof stream.getTracks !== "function") return;
+        stream.getTracks().forEach(function (track) {
+          try { track.stop(); } catch (err) { }
+        });
+      }
+
+      function blobToDataUrl(blob) {
+        return new Promise(function (resolve, reject) {
+          const reader = new FileReader();
+          reader.onload = function () { resolve(String(reader.result || "")); };
+          reader.onerror = function () { reject(reader.error || new Error("Lecture audio impossible")); };
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      function createPccMessageId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          try { return "pcc-" + window.crypto.randomUUID(); } catch (err) { }
+        }
+        return "pcc-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
+      }
+
+      function waitPccMs(ms) {
+        return new Promise(function (resolve) {
+          window.setTimeout(resolve, Math.max(0, Number(ms) || 0));
+        });
+      }
+
+      function sendPccSocketJson(payload) {
+        if (!isPccWebSocketReady()) throw new Error("WebSocket panel non connecte");
+        socket.send(JSON.stringify(payload));
+      }
+
+      async function sendPccVoicePayload(playerId, basePayload, audioMeta, dataUrl) {
+        const text = String(dataUrl || "");
+        if (text.length <= PCC_VOICE_CHUNK_CHARS) {
+          sendPccSocketJson(Object.assign({}, basePayload, {
+            audio: Object.assign({}, audioMeta, { dataUrl })
+          }));
+          setPccVoiceStatus(playerId, "Message PCC envoye.", "ok");
+          return;
+        }
+
+        const total = Math.ceil(text.length / PCC_VOICE_CHUNK_CHARS);
+        for (let index = 0; index < total; index += 1) {
+          const start = index * PCC_VOICE_CHUNK_CHARS;
+          const chunk = text.slice(start, start + PCC_VOICE_CHUNK_CHARS);
+          sendPccSocketJson(Object.assign({}, basePayload, {
+            chunked: true,
+            chunkIndex: index,
+            chunkTotal: total,
+            audioChunk: chunk,
+            audio: Object.assign({}, audioMeta, {
+              chunked: true,
+              chunkIndex: index,
+              chunkTotal: total,
+              dataUrlChunk: chunk
+            })
+          }));
+          if (index < total - 1) await waitPccMs(PCC_VOICE_CHUNK_DELAY_MS);
+        }
+        setPccVoiceStatus(playerId, `Message PCC envoye (${total} paquets).`, "ok");
+      }
+
+      async function sendPccVoiceRecording(recording, blob) {
+        if (!recording || !blob) return;
+        const playerId = recording.playerId;
+        const durationMs = Math.max(0, Date.now() - Number(recording.startedAt || Date.now()));
+        if (blob.size <= 0) {
+          setPccVoiceStatus(playerId, "Aucun son enregistre.", "error");
+          return;
+        }
+        if (blob.size > PCC_VOICE_MAX_BYTES) {
+          setPccVoiceStatus(playerId, "Message trop lourd, non envoye.", "error");
+          return;
+        }
+        if (!isPccWebSocketReady()) {
+          setPccVoiceStatus(playerId, "WebSocket panel non connecte.", "error");
+          return;
+        }
+        let dataUrl = "";
+        try {
+          dataUrl = await blobToDataUrl(blob);
+        } catch (err) {
+          setPccVoiceStatus(playerId, "Encodage audio impossible.", "error");
+          return;
+        }
+        if (!/^data:audio\//i.test(dataUrl)) {
+          setPccVoiceStatus(playerId, "Format audio refuse.", "error");
+          return;
+        }
+        const messageId = createPccMessageId();
+        const filters = Array.isArray(recording.filters) ? recording.filters.slice() : [];
+        const payload = {
+          source: "admin_map",
+          action: PCC_VOICE_ACTION,
+          type: PCC_VOICE_ACTION,
+          id: messageId,
+          time: Date.now(),
+          targetSteamId: recording.targetSteamId,
+          target_steamid: recording.targetSteamId,
+          target: {
+            steamid: recording.targetSteamId,
+            label: recording.targetLabel || ""
+          },
+          filters
+        };
+        const audioMeta = {
+          mimeType: blob.type || recording.mimeType || "audio/webm",
+          sizeBytes: blob.size,
+          durationMs,
+          filters
+        };
+        try {
+          await sendPccVoicePayload(playerId, payload, audioMeta, dataUrl);
+        } catch (err2) {
+          setPccVoiceStatus(playerId, "Erreur envoi PCC.", "error");
+          try { socket.close(); } catch (err3) { }
+        }
+      }
+
+      function finishPccVoiceRecording(cancelled) {
+        if (!pccRecording) return;
+        const recording = pccRecording;
+        pccRecording = null;
+        clearPccRecordTimeout();
+        recording.cancelled = cancelled === true;
+        try {
+          if (recording.recorder && recording.recorder.state !== "inactive") {
+            recording.recorder.stop();
+          } else {
+            stopPccMediaStream(recording.stream);
+          }
+        } catch (err) {
+          stopPccMediaStream(recording.stream);
+        }
+        setPccVoiceStatus(recording.playerId, recording.cancelled ? "Enregistrement annule." : "Envoi PCC...", recording.cancelled ? "" : "");
+        syncAllPccVoiceControls();
+      }
+
+      async function startPccVoiceRecording(playerId) {
+        const record = playerMarkers.get(String(playerId || ""));
+        const player = record && record.player ? record.player : null;
+        if (!player) return;
+        if (pccRecording) {
+          if (pccRecording.playerId === getPccPlayerId(player)) {
+            finishPccVoiceRecording(false);
+          } else {
+            setPccVoiceStatus(getPccPlayerId(player), "Un autre message PCC est en cours.", "error");
+          }
+          return;
+        }
+        const reason = getPccVoiceUnavailableReason(player);
+        if (reason) {
+          setPccVoiceStatus(getPccPlayerId(player), reason, "error");
+          return;
+        }
+        let stream = null;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          });
+        } catch (err) {
+          setPccVoiceStatus(getPccPlayerId(player), "Acces micro refuse ou indisponible.", "error");
+          return;
+        }
+        const mimeType = pickPccRecorderMimeType();
+        let recorder = null;
+        try {
+          const recorderOptions = { audioBitsPerSecond: 24000 };
+          if (mimeType) recorderOptions.mimeType = mimeType;
+          recorder = new MediaRecorder(stream, recorderOptions);
+        } catch (err2) {
+          stopPccMediaStream(stream);
+          setPccVoiceStatus(getPccPlayerId(player), "Enregistreur audio indisponible.", "error");
+          return;
+        }
+        const chunks = [];
+        const recording = {
+          playerId: getPccPlayerId(player),
+          targetSteamId: getPccTargetSteamId(player),
+          targetLabel: playerDisplayTitle(player),
+          filters: getSelectedPccVoiceFilters(),
+          mimeType,
+          stream,
+          recorder,
+          chunks,
+          startedAt: Date.now(),
+          cancelled: false
+        };
+        recorder.ondataavailable = function (event) {
+          if (event && event.data && event.data.size > 0) chunks.push(event.data);
+        };
+        recorder.onstop = function () {
+          stopPccMediaStream(stream);
+          if (recording.cancelled) return;
+          const blob = new Blob(chunks, { type: recorder.mimeType || mimeType || "audio/webm" });
+          sendPccVoiceRecording(recording, blob);
+        };
+        recorder.onerror = function () {
+          setPccVoiceStatus(recording.playerId, "Erreur enregistrement PCC.", "error");
+          finishPccVoiceRecording(true);
+        };
+        pccRecording = recording;
+        try {
+          recorder.start(250);
+        } catch (err3) {
+          pccRecording = null;
+          stopPccMediaStream(stream);
+          setPccVoiceStatus(recording.playerId, "Demarrage micro impossible.", "error");
+          return;
+        }
+        setPccVoiceStatus(recording.playerId, "Enregistrement en cours...", "error");
+        clearPccRecordTimeout();
+        pccRecordTimeout = window.setTimeout(function () {
+          if (pccRecording && pccRecording.playerId === recording.playerId) {
+            finishPccVoiceRecording(false);
+          }
+        }, PCC_VOICE_MAX_DURATION_MS);
+        syncAllPccVoiceControls();
+      }
+
+      function handlePccVoicePopupClick(event) {
+        const target = event && event.target;
+        const button = target && target.closest ? target.closest("[data-pcc-action][data-player-id]") : null;
+        if (!button) return;
+        if (typeof event.preventDefault === "function") event.preventDefault();
+        if (typeof event.stopPropagation === "function") event.stopPropagation();
+        const playerId = button.getAttribute("data-player-id") || "";
+        const action = button.getAttribute("data-pcc-action") || "";
+        if (action === "record") {
+          startPccVoiceRecording(playerId);
+        } else if (action === "cancel") {
+          finishPccVoiceRecording(true);
+        }
+      }
+
+      function isPccVoiceMessage(message) {
+        if (!message || typeof message !== "object") return false;
+        const action = String(message.action || message.type || message.event || message.kind || "").trim().toLowerCase();
+        if (action === PCC_VOICE_ACTION) return true;
+        const data = message.data || message.payload || message.message;
+        if (data && typeof data === "object" && data !== message) return isPccVoiceMessage(data);
+        return false;
       }
 
       function updatePlayerPopup(record, options = null) {
@@ -2136,6 +2623,7 @@
           output.textContent = "";
           show("Connecte au WebSocket");
           showError("");
+          syncAllPccVoiceControls();
         };
 
         socket.onmessage = function (event) {
@@ -2146,6 +2634,8 @@
             show("Systeme : " + String(event.data || ""));
             return;
           }
+
+          if (isPccVoiceMessage(message)) return;
 
           if (message && message.type === "data") {
             handleTelemetryPayload(mergeEnvelopeIdentity(message));
@@ -2166,6 +2656,8 @@
           socket = null;
           show("Deconnecte, reconnexion...");
           showError("WebSocket panel deconnecte, reconnexion...");
+          if (pccRecording) finishPccVoiceRecording(true);
+          syncAllPccVoiceControls();
           scheduleReconnect();
         };
 
@@ -2231,6 +2723,7 @@
 
       bindPlayerFilterEvents();
       bindPlayerMarkerDomClick();
+      document.addEventListener("click", handlePccVoicePopupClick, true);
       window.setInterval(refreshPlayerMarkerStates, PLAYER_STATE_REFRESH_MS);
       boot();
     })();

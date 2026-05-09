@@ -1082,7 +1082,6 @@
       var cumulativeDamageIncrease = 0;
       var cumulativeDelayPenalty = 0;
       var lastDelayPenaltyAtMs = 0;
-      var currentDelayMultiplier = 4;
       var uiReadyToDepartStopIndex = Number.NaN;
       var uiOptionalStopBadgeIndex = Number.NaN;
       var uiOptionalStopBadgePoint = null;
@@ -1249,7 +1248,6 @@
           cumulativeDamageIncrease = 0;
           cumulativeDelayPenalty = 0;
           lastDelayPenaltyAtMs = 0;
-          currentDelayMultiplier = Math.floor(Math.random() * 2) + 1; // 1 ou 2
           lastKnownDamagePercent = -1;
           satisfactionRouteKey = routeKey;
           if (!routeStarted) return;
@@ -1273,8 +1271,8 @@
         }
         lastKnownDamagePercent = currentDamage;
 
-        // Pénalité de retard : -1% par minute passée en retard (>= 1 min)
-        // On prend le maximum entre le retard global de la ligne et le retard à l'arrêt actuel
+        // Penalite de retard progressive :
+        // 1 min de retard => -1% par minute, 2 min => -2%, 10 min => -10%, etc.
         var routeDelay = Number(data.routeLiveDelayMinutes);
         if (!Number.isFinite(routeDelay)) routeDelay = 0;
 
@@ -1288,8 +1286,9 @@
         }
 
         var delayMinutes = Math.max(routeDelay, stopDelay);
+        var delayPenaltyPerMinute = Math.max(0, Math.round(delayMinutes));
 
-        if (delayMinutes >= 1) {
+        if (delayPenaltyPerMinute >= 1) {
           var now = Number(data.clockNowMs);
           if (!Number.isFinite(now) || now <= 0) now = Date.now();
 
@@ -1299,7 +1298,7 @@
             var elapsed = now - lastDelayPenaltyAtMs;
             if (elapsed >= 60000) {
               var mins = Math.floor(elapsed / 60000);
-              cumulativeDelayPenalty += (mins * currentDelayMultiplier);
+              cumulativeDelayPenalty += (mins * delayPenaltyPerMinute);
               lastDelayPenaltyAtMs = now - (elapsed % 60000);
             }
           }

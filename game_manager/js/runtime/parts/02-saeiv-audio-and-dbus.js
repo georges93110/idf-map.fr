@@ -574,6 +574,8 @@
             try { hook(); } catch (errHook) { }
           });
           processSaeivRouteAudioQueue();
+          saeivLastStateKey = "";
+          syncSaeivExternalState(true);
         };
         audio.onended = finish;
         audio.onerror = finish;
@@ -901,6 +903,8 @@
           onEnded: onEnded
         });
         processSaeivRouteAudioQueue();
+        saeivLastStateKey = "";
+        syncSaeivExternalState(true);
         return true;
       }
       function playSaeivRouteAudioClipImmediate(clipName) {
@@ -943,11 +947,15 @@
           saeivRouteAudio.currentClipName = "";
           saeivRouteAudio.currentClipEndedHooks = [];
           processSaeivRouteAudioQueue();
+          saeivLastStateKey = "";
+          syncSaeivExternalState(true);
         };
         audio.onended = finish;
         audio.onerror = finish;
         // audio.onpause = finish; // Removed to allow resume after pause/menu
         audio.play().catch(finish);
+        saeivLastStateKey = "";
+        syncSaeivExternalState(true);
         return true;
       }
       function cancelSaeivTerminusAnnouncement() {
@@ -991,12 +999,42 @@
         var cleanName = stripProvisoire(rawName) || rawName;
         return findSaeivAudioClipName(cleanName);
       }
+      function getSaeivRouteAudioClipUrl(clipName) {
+        var safeName = findSaeivAudioClipName(clipName);
+        if (!safeName || !String(saeivRouteAudio.folderPath || "").trim()) return "";
+        return toAbsoluteRuntimeAssetUrl(linePreviewAudioClipUrl(saeivRouteAudio.folderPath, safeName));
+      }
+      function getSaeivRouteAudioClipUrls(clipNames) {
+        return (Array.isArray(clipNames) ? clipNames : [])
+          .map(function (clipName) { return getSaeivRouteAudioClipUrl(clipName); })
+          .filter(Boolean);
+      }
       function isSaeivTransdevAutoVoiceActive() {
         var folderName = String(getActiveSaeivLineAudioConfig().autoVoiceFolderName || "").trim();
         return !!folderName && normalizeAudioNameToken(folderName) === normalizeAudioNameToken(SAEIV_TRANSDEV_AUTO_VOICE_FOLDER_NAME);
       }
       function findSaeivNextStopPrefixClipName() {
         return findSaeivAudioClipName(SAEIV_NEXT_STOP_PREFIX_CLIP_NAME);
+      }
+      function isSaeivRouteAudioPlaybackBusy() {
+        return !!(
+          (saeivRouteAudio && saeivRouteAudio.playing === true) ||
+          (saeivRouteAudio && Array.isArray(saeivRouteAudio.queue) && saeivRouteAudio.queue.length > 0)
+        );
+      }
+      function isSaeivManualAnnouncementBusy() {
+        return isSaeivRouteAudioPlaybackBusy() || !!saeivServiceAcceptAudio || isSaeivServiceAcceptAudioDelayActive();
+      }
+      function getSaeivAutoVoiceFamily() {
+        var folderName = String(getActiveSaeivLineAudioConfig().autoVoiceFolderName || saeivRouteAudio.styleName || "").trim();
+        var token = normalizeAudioNameToken(folderName);
+        if (!token) return "";
+        if (token.indexOf("transdev") !== -1) return "transdev";
+        if (token.indexOf("ancienne") !== -1 || token.indexOf("ratp") !== -1) return "ratp";
+        return "";
+      }
+      function isSaeivRatpAutoVoiceActive() {
+        return getSaeivAutoVoiceFamily() === "ratp";
       }
       function isSaeivHudWidgetTypeActive(type) {
         var safeType = (typeof normalizeWidgetType === "function")
@@ -1140,7 +1178,7 @@
           });
           return true;
         }
-        if (saeivRouteAudio.playing || (Array.isArray(saeivRouteAudio.queue) && saeivRouteAudio.queue.length > 0)) {
+        if (isSaeivManualAnnouncementBusy()) {
           return false;
         }
         var lastEntry = entries[entries.length - 1] || null;
@@ -1162,6 +1200,40 @@
           action: "game-destination-announcement-shortcut",
           requireShortcutContext: true
         });
+      }
+      function triggerSaeivDestinationAnnouncementFromWidget() {
+        return playSaeivDestinationAnnouncementIfAvailable({
+          action: "game-destination-announcement-widget",
+          requireShortcutContext: false
+        });
+      }
+      function triggerSaeivTerminusAnnouncementFromWidget() {
+        if (isSaeivManualAnnouncementBusy()) return false;
+        if (!saeivRouteState || typeof saeivRouteState !== "object") return false;
+        var activeRouteKey = String(saeivRouteState.selectedKey || "").trim();
+        if (!activeRouteKey || String(saeivRouteAudio.routeKey || "").trim() !== activeRouteKey) return false;
+        var entries = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
+        if (!entries.length || !saeivRouteAudio.available) return false;
+        var lastEntry = entries[entries.length - 1] || null;
+        var terminusClip = findSaeivTerminusClipName();
+        if (!terminusClip) return false;
+        var clips = [];
+        if (isSaeivTransdevAutoVoiceActive()) {
+          var stopClip = findSaeivStopClipName(lastEntry);
+          if (!stopClip) return false;
+          clips.push(stopClip);
+        } else if (!isSaeivRatpAutoVoiceActive()) {
+          return false;
+        }
+        clips.push(terminusClip);
+        for (var i = 0; i < clips.length; i += 1) {
+          if (!enqueueSaeivRouteAudioClip(clips[i])) return false;
+        }
+        saeivLastAction = isSaeivTransdevAutoVoiceActive()
+          ? "game-terminus-announcement-transdev-widget"
+          : "game-terminus-announcement-ratp-widget";
+        syncSaeivExternalState(true);
+        return true;
       }
       function listDbusFisRouteStyleFoldersFromDossiers() {
         var rootPath = ensureTrailingSlash(DBUS_FIS_DOSSIERS_ROOT);
@@ -1783,7 +1855,11 @@
           lineAudioAutoVoiceFolder: String(activeLineAudioConfig.autoVoiceFolderName || ""),
           passengerCountVariationMin: Math.min(passengerCountVariationMin, passengerCountVariationMax),
           passengerCountVariationMax: Math.max(passengerCountVariationMin, passengerCountVariationMax),
-          audioPlaybackBusy: !!saeivRouteAudio.playing,
+          routeAudioAvailable: !!saeivRouteAudio.available,
+          routeAudioFamily: getSaeivAutoVoiceFamily(),
+          routeAudioCanManualDestination: false,
+          routeAudioCanManualTerminus: false,
+          audioPlaybackBusy: isSaeivManualAnnouncementBusy(),
           lastAction: String(saeivLastAction || "")
         };
         applySaeivGlobalAudioStateToPayload(payload);
@@ -1815,6 +1891,25 @@
         var names = entries.map(function (entry) { return String(entry && entry.name || "").trim(); }).filter(Boolean);
         if (!names.length) return payload;
         var lastIndex = Math.max(0, names.length - 1);
+        payload.terminusStopName = String(names[lastIndex] || "").trim();
+        payload.routeAudioAvailable = !!saeivRouteAudio.available;
+        payload.routeAudioFamily = getSaeivAutoVoiceFamily();
+        var manualDepartureClip = findSaeivDepartureClipName();
+        var manualTerminusStopClip = findSaeivStopClipName(entries[lastIndex] || null);
+        var manualTerminusClip = findSaeivTerminusClipName();
+        var manualDestinationClips = manualDepartureClip && manualTerminusStopClip
+          ? [manualDepartureClip, manualTerminusStopClip]
+          : [];
+        var manualTerminusClips = [];
+        if (manualTerminusClip && isSaeivRatpAutoVoiceActive()) {
+          manualTerminusClips = [manualTerminusClip];
+        } else if (manualTerminusClip && isSaeivTransdevAutoVoiceActive() && manualTerminusStopClip) {
+          manualTerminusClips = [manualTerminusStopClip, manualTerminusClip];
+        }
+        payload.routeAudioManualDestinationUrls = getSaeivRouteAudioClipUrls(manualDestinationClips);
+        payload.routeAudioManualTerminusUrls = getSaeivRouteAudioClipUrls(manualTerminusClips);
+        payload.routeAudioCanManualDestination = payload.routeAudioManualDestinationUrls.length === manualDestinationClips.length && manualDestinationClips.length > 0;
+        payload.routeAudioCanManualTerminus = payload.routeAudioManualTerminusUrls.length === manualTerminusClips.length && manualTerminusClips.length > 0;
         var reachedIndex = clampReachedStopIndex(saeivRouteState.reachedIndex, lastIndex);
         var targetIndex = clampRouteStopIndex(saeivRouteState.targetIndex, lastIndex);
         // UI rule: while driving to next target stop, display that target as current.

@@ -1148,11 +1148,13 @@
     .diffusion-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      grid-auto-rows: minmax(0, 1fr);
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: 0;
       row-gap: 4.25%;
       column-gap: 0.9%;
       height: 58%;
       min-height: 0;
+      overflow: hidden;
     }
 
     .diffusion-btn {
@@ -1169,6 +1171,11 @@
       justify-content: center;
       text-align: center;
       cursor: pointer;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+      word-break: normal;
     }
 
     .diffusion-btn:disabled {
@@ -2369,6 +2376,8 @@
       const serviceCompleteMenuBtnEl = document.querySelector('[data-menu-target="prise-service-complete"]');
       const serviceCompleteMenuLabelEl = serviceCompleteMenuBtnEl ? serviceCompleteMenuBtnEl.querySelector(".menu-tile-label") : null;
       const diffusionGridEl = document.getElementById("diffusionGrid");
+      const diffusionScrollPrevBtnEl = document.querySelector(".diffusion-scroll .alarm-scroll-btn-up");
+      const diffusionScrollNextBtnEl = document.querySelector(".diffusion-scroll .alarm-scroll-btn-down");
       const TRACK_DEFAULT_TOP = 15;
       const TRACK_DEFAULT_BOTTOM = 82.1;
       const TRACK_MIDDLE_DOT_CENTER = 47.5;
@@ -2401,6 +2410,11 @@
       let diffusionAudioEl = null;
       let diffusionAudioToken = 0;
       let diffusionAudioPlaying = false;
+      let diffusionManualActionLocked = false;
+      let diffusionManualActionLockTimer = 0;
+      let diffusionPageIndex = 0;
+      let diffusionPageSignature = "";
+      const diffusionAudioPreloadCache = new Map();
       let lineRefStopLayoutRetryTimer = null;
       let serviceLineUidSet = null;
       let serviceRouteUidMap = new Map();
@@ -3016,6 +3030,13 @@
         const type = String(data.type || "").trim();
         if (type === "saeiv:action_result") {
           handleServiceStartActionResult(data);
+          const action = String(data.action || "").trim();
+          if (
+            (action === "saeiv-manual-destination-announcement" || action === "saeiv-manual-terminus-announcement") &&
+            data.ok !== true
+          ) {
+            setDiffusionManualActionLocked(false);
+          }
           return;
         }
         if (type !== "saeiv:state") return;
@@ -3909,6 +3930,23 @@
         updateDiffusionActionButtons(latestStatePayload);
       }
 
+      function setDiffusionManualActionLocked(nextValue, autoReleaseMs = 0) {
+        diffusionManualActionLocked = !!nextValue;
+        if (diffusionManualActionLockTimer) {
+          clearTimeout(diffusionManualActionLockTimer);
+          diffusionManualActionLockTimer = 0;
+        }
+        const releaseDelay = Math.max(0, Math.round(Number(autoReleaseMs) || 0));
+        if (diffusionManualActionLocked && releaseDelay > 0) {
+          diffusionManualActionLockTimer = setTimeout(() => {
+            diffusionManualActionLockTimer = 0;
+            diffusionManualActionLocked = false;
+            updateDiffusionActionButtons(latestStatePayload);
+          }, releaseDelay);
+        }
+        updateDiffusionActionButtons(latestStatePayload);
+      }
+
       function resolveGlobalAudioVolumeMultiplier(payload) {
         const data = payload && typeof payload === "object" ? payload : {};
         const raw = Number(data.globalAudioVolumeMultiplier);
@@ -3921,7 +3959,153 @@
         diffusionAudioEl.volume = resolveGlobalAudioVolumeMultiplier(payload);
       }
 
-      function stopDiffusionAudioPlayback() {
+      function resolveDiffusionAudioUrl(url) {
+        const raw = String(url || "").trim();
+        if (!raw) return "";
+        try {
+          return new URL(raw, location.href).href;
+        } catch {
+          return raw;
+        }
+      }
+
+      function preloadDiffusionAudioUrls(urls) {
+        const list = Array.isArray(urls)
+          ? urls.map(resolveDiffusionAudioUrl).filter(Boolean)
+          : [];
+        list.slice(0, 40).forEach((url) => {
+          if (diffusionAudioPreloadCache.has(url)) return;
+          const audio = new Audio(url);
+          audio.preload = "auto";
+          try { audio.load(); } catch {}
+          diffusionAudioPreloadCache.set(url, audio);
+        });
+        while (diffusionAudioPreloadCache.size > 40) {
+          const firstKey = diffusionAudioPreloadCache.keys().next().value;
+          const audio = diffusionAudioPreloadCache.get(firstKey);
+          diffusionAudioPreloadCache.delete(firstKey);
+          if (!audio) continue;
+          try { audio.pause(); } catch {}
+          try { audio.src = ""; } catch {}
+        }
+      }
+
+      function takePreloadedDiffusionAudio(url) {
+        const playableUrl = resolveDiffusionAudioUrl(url);
+        if (!playableUrl) return null;
+        const cached = diffusionAudioPreloadCache.get(playableUrl);
+        if (cached) {
+          diffusionAudioPreloadCache.delete(playableUrl);
+          try { cached.pause(); } catch {}
+          try { cached.currentTime = 0; } catch {}
+          return cached;
+        }
+        const audio = new Audio();
+        audio.src = playableUrl;
+        return audio;
+      }
+
+      const DIFFUSION_PAGE_SIZE = 6;
+
+      function splitDiffusionParentheticalLabel(label) {
+        const text = String(label || "").trim();
+        const match = text.match(/\s*(\([^()]+\))\s*$/);
+        if (!match) return { groupLabel: "" };
+        return { groupLabel: String(match[1] || "").trim() };
+      }
+
+      function buildDiffusionPages(items) {
+        const groups = [];
+        const groupByLabel = new Map();
+        function ensureGroup(groupLabel) {
+          const key = String(groupLabel || "");
+          if (groupByLabel.has(key)) return groupByLabel.get(key);
+          const group = { label: key, items: [] };
+          groupByLabel.set(key, group);
+          groups.push(group);
+          return group;
+        }
+        ensureGroup("");
+        (Array.isArray(items) ? items : []).forEach((item) => {
+          const cleanLabel = String(item && item.label || "").trim();
+          if (!cleanLabel) return;
+          const parsed = splitDiffusionParentheticalLabel(cleanLabel);
+          const group = ensureGroup(parsed.groupLabel);
+          group.items.push(Object.assign({}, item, { label: cleanLabel }));
+        });
+        const pages = [];
+        groups.forEach((group) => {
+          for (let i = 0; i < group.items.length; i += DIFFUSION_PAGE_SIZE) {
+            pages.push({
+              label: group.label,
+              items: group.items.slice(i, i + DIFFUSION_PAGE_SIZE)
+            });
+          }
+        });
+        return pages;
+      }
+
+      function updateDiffusionScrollButtons(pageCount) {
+        const count = Math.max(0, Math.floor(Number(pageCount) || 0));
+        const current = Math.max(0, Math.floor(Number(diffusionPageIndex) || 0));
+        const canGoPrev = count > 1 && current > 0;
+        const canGoNext = count > 1 && current < count - 1;
+        if (diffusionScrollPrevBtnEl) {
+          diffusionScrollPrevBtnEl.disabled = !canGoPrev;
+          diffusionScrollPrevBtnEl.setAttribute("aria-disabled", canGoPrev ? "false" : "true");
+        }
+        if (diffusionScrollNextBtnEl) {
+          diffusionScrollNextBtnEl.disabled = !canGoNext;
+          diffusionScrollNextBtnEl.setAttribute("aria-disabled", canGoNext ? "false" : "true");
+        }
+      }
+
+      function isDiffusionAnnouncementBusy(payload) {
+        const data = payload && typeof payload === "object" ? payload : {};
+        return data.audioPlaybackBusy === true || diffusionAudioPlaying || diffusionManualActionLocked;
+      }
+
+      function normalizeDiffusionToken(value) {
+        return String(value || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function buildDiffusionManualActionItems(payload) {
+        const data = payload && typeof payload === "object" ? payload : {};
+        const family = normalizeDiffusionToken(data.routeAudioFamily || data.lineAudioAutoVoiceFolder || data.audioVoiceStyle);
+        const isSupportedVoice = family === "ratp" || family === "transdev" || family.includes("ancienne") || family.includes("transdev");
+        if (!isSupportedVoice) return [];
+        const hasDestination = data.routeAudioCanManualDestination === true;
+        const hasTerminus = data.routeAudioCanManualTerminus === true;
+        const items = [];
+        if (hasDestination) {
+          items.push({
+            label: "Annonce Destination",
+            slot: "",
+            url: "",
+            urls: Array.isArray(data.routeAudioManualDestinationUrls) ? data.routeAudioManualDestinationUrls : [],
+            action: "saeiv-manual-destination-announcement"
+          });
+        }
+        if (hasTerminus) {
+          items.push({
+            label: "Terminus",
+            slot: "",
+            url: "",
+            urls: Array.isArray(data.routeAudioManualTerminusUrls) ? data.routeAudioManualTerminusUrls : [],
+            action: "saeiv-manual-terminus-announcement"
+          });
+        }
+        return items;
+      }
+
+      function stopDiffusionAudioPlayback(options = {}) {
+        const opts = options && typeof options === "object" ? options : {};
+        const silent = opts.silent === true;
         diffusionAudioToken += 1;
         const active = diffusionAudioEl;
         if (active) {
@@ -3929,43 +4113,145 @@
           try { active.src = ""; } catch {}
         }
         diffusionAudioEl = null;
-        setDiffusionAudioPlaying(false);
+        diffusionAudioPlaying = false;
+        diffusionManualActionLocked = false;
+        if (diffusionManualActionLockTimer) {
+          clearTimeout(diffusionManualActionLockTimer);
+          diffusionManualActionLockTimer = 0;
+        }
+        if (!silent) {
+          updatePipAudioStopButton();
+          updateDiffusionActionButtons(latestStatePayload);
+        }
+      }
+
+      function playDiffusionAudioSequence(urls, options = {}) {
+        const list = Array.isArray(urls)
+          ? urls.map(resolveDiffusionAudioUrl).filter(Boolean)
+          : [];
+        if (!list.length) return false;
+        const opts = options && typeof options === "object" ? options : {};
+        const manualLock = opts.manualLock === true;
+        const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
+        const token = diffusionAudioToken + 1;
+        stopDiffusionAudioPlayback({ silent: true });
+        diffusionAudioToken = token;
+        if (manualLock) {
+          diffusionManualActionLocked = true;
+          if (diffusionManualActionLockTimer) {
+            clearTimeout(diffusionManualActionLockTimer);
+            diffusionManualActionLockTimer = 0;
+          }
+        }
+        let index = 0;
+        const finish = () => {
+          if (token !== diffusionAudioToken) return;
+          diffusionAudioEl = null;
+          setDiffusionAudioPlaying(false);
+          if (manualLock) setDiffusionManualActionLocked(false);
+        };
+        const playNext = () => {
+          if (token !== diffusionAudioToken) return;
+          const targetUrl = String(list[index] || "").trim();
+          index += 1;
+          if (!targetUrl) {
+            if (index >= list.length) finish();
+            else playNext();
+            return;
+          }
+          const playableUrl = resolveDiffusionAudioUrl(targetUrl);
+          const audio = takePreloadedDiffusionAudio(playableUrl);
+          if (!audio) {
+            finish();
+            return;
+          }
+          diffusionAudioEl = audio;
+          let playAttempts = 0;
+          let retryTimer = 0;
+          const clearRetry = () => {
+            if (retryTimer) {
+              clearTimeout(retryTimer);
+              retryTimer = 0;
+            }
+            audio.oncanplay = null;
+            audio.onloadeddata = null;
+          };
+          const retryPlay = () => {
+            if (token !== diffusionAudioToken) return;
+            clearRetry();
+            tryPlay();
+          };
+          const failOrRetry = () => {
+            if (token !== diffusionAudioToken) return;
+            if (playAttempts < 3 && !audio.error) {
+              clearRetry();
+              audio.oncanplay = retryPlay;
+              audio.onloadeddata = retryPlay;
+              retryTimer = setTimeout(retryPlay, playAttempts <= 1 ? 90 : 180);
+              try { audio.load(); } catch {}
+              return;
+            }
+            clearRetry();
+            finish();
+          };
+          const tryPlay = () => {
+            if (token !== diffusionAudioToken) return;
+            clearRetry();
+            playAttempts += 1;
+            let playPromise = null;
+            try {
+              playPromise = audio.play();
+            } catch {
+              failOrRetry();
+              return;
+            }
+            setDiffusionAudioPlaying(true);
+            if (playPromise && typeof playPromise.catch === "function") {
+              playPromise.catch(failOrRetry);
+            }
+          };
+          audio.volume = resolveGlobalAudioVolumeMultiplier(state);
+          audio.preload = "auto";
+          if (!String(audio.currentSrc || audio.src || "").trim()) {
+            audio.src = playableUrl;
+          }
+          audio.onended = () => {
+            if (token !== diffusionAudioToken) return;
+            clearRetry();
+            if (index >= list.length) finish();
+            else playNext();
+          };
+          audio.onerror = () => {
+            clearRetry();
+            finish();
+          };
+          audio.onpause = () => {
+            if (token !== diffusionAudioToken) return;
+            if (audio.currentTime <= 0 || audio.ended) return;
+            clearRetry();
+            finish();
+          };
+          tryPlay();
+          if (index < list.length) {
+            setTimeout(() => {
+              if (token === diffusionAudioToken) preloadDiffusionAudioUrls(list.slice(index));
+            }, 0);
+          }
+        };
+        playNext();
+        return true;
       }
 
       function playDiffusionAudioBySlot(slotNumber, explicitUrl) {
         const slot = Number(slotNumber);
-        if (!Number.isInteger(slot) || slot <= 0) return;
+        if (!Number.isInteger(slot) || slot <= 0) return false;
         const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
         const urls = Array.isArray(state.globalAudioUrls)
           ? state.globalAudioUrls.map((url) => String(url || "").trim())
           : [];
         const targetUrl = String(explicitUrl || urls[slot - 1] || "").trim();
-        if (!targetUrl) return;
-        const token = diffusionAudioToken + 1;
-        stopDiffusionAudioPlayback();
-        diffusionAudioToken = token;
-        let playableUrl = targetUrl;
-        try { playableUrl = new URL(targetUrl, location.href).href; } catch {}
-        const audio = new Audio(playableUrl);
-        diffusionAudioEl = audio;
-        audio.volume = resolveGlobalAudioVolumeMultiplier(state);
-        audio.preload = "auto";
-        const finish = () => {
-          if (token !== diffusionAudioToken) return;
-          diffusionAudioEl = null;
-          setDiffusionAudioPlaying(false);
-        };
-        audio.onended = finish;
-        audio.onerror = finish;
-        audio.onpause = () => {
-          if (token !== diffusionAudioToken) return;
-          if (audio.currentTime <= 0 || audio.ended) return;
-          finish();
-        };
-        setDiffusionAudioPlaying(true);
-        audio.play().catch(() => {
-          finish();
-        });
+        if (!targetUrl) return false;
+        return playDiffusionAudioSequence([targetUrl]);
       }
 
       function updateDiffusionActionButtons(payload) {
@@ -3978,24 +4264,62 @@
           ? data.globalAudioUrls.map((url) => String(url || "").trim())
           : [];
         const hasGlobalFolder = !!String(data.globalAudioFolderPath || "").trim();
-        const enabledBase = hasGlobalFolder;
+        const isAudioBusy = isDiffusionAnnouncementBusy(data);
+        const enabledBase = hasGlobalFolder && !isAudioBusy;
+        const manualActionEnabledBase = !isAudioBusy;
+        const items = globalLabels.map((label, index) => ({
+          label: String(label || "").trim(),
+          slot: index + 1,
+          url: String(globalUrls[index] || "").trim(),
+          action: ""
+        })).filter((item) => item.label);
+        buildDiffusionManualActionItems(data).forEach((item) => {
+          items.push(item);
+        });
+        preloadDiffusionAudioUrls(items.flatMap((item) => {
+          if (Array.isArray(item.urls) && item.urls.length) return item.urls;
+          return [item.url];
+        }));
         diffusionGridEl.innerHTML = "";
-        if (!globalLabels.length) {
+        if (!items.length) {
+          diffusionPageSignature = "";
+          diffusionPageIndex = 0;
+          updateDiffusionScrollButtons(0);
           const empty = document.createElement("div");
           empty.className = "diffusion-empty";
           empty.textContent = "AUCUN FICHIER AUDIO DISPONIBLE";
           diffusionGridEl.appendChild(empty);
           return;
         }
-        globalLabels.forEach((label, index) => {
+        const signature = JSON.stringify(items.map((item) => [
+          String(item.label || ""),
+          String(item.url || ""),
+          String(item.action || "")
+        ]));
+        if (signature !== diffusionPageSignature) {
+          diffusionPageSignature = signature;
+          diffusionPageIndex = 0;
+        }
+        const pages = buildDiffusionPages(items);
+        const pageCount = Math.max(1, pages.length);
+        diffusionPageIndex = Math.max(0, Math.min(pageCount - 1, Math.floor(Number(diffusionPageIndex)) || 0));
+        updateDiffusionScrollButtons(pageCount);
+        const currentPage = pages[diffusionPageIndex] || pages[0] || { items: [] };
+        currentPage.items.forEach((item) => {
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "diffusion-btn";
-          btn.textContent = label;
-          btn.dataset.diffusionSlot = String(index + 1);
-          btn.dataset.diffusionLabel = label;
-          btn.dataset.diffusionUrl = String(globalUrls[index] || "");
-          const enabled = enabledBase && !!globalUrls[index];
+          btn.textContent = item.label;
+          btn.dataset.diffusionSlot = String(item.slot);
+          btn.dataset.diffusionLabel = item.label;
+          btn.dataset.diffusionUrl = String(item.url || "");
+          btn.dataset.diffusionAction = String(item.action || "");
+          if (Array.isArray(item.urls) && item.urls.length) {
+            btn.dataset.diffusionUrls = JSON.stringify(item.urls.map((url) => String(url || "").trim()).filter(Boolean));
+          }
+          const enabled = item.action
+            ? (manualActionEnabledBase && Array.isArray(item.urls) && item.urls.some((url) => String(url || "").trim()))
+            : (enabledBase && !!item.url);
           btn.disabled = !enabled;
           btn.setAttribute("aria-disabled", enabled ? "false" : "true");
           diffusionGridEl.appendChild(btn);
@@ -4339,6 +4663,22 @@
         });
       }
 
+      if (diffusionScrollPrevBtnEl) {
+        diffusionScrollPrevBtnEl.addEventListener("click", () => {
+          if (diffusionScrollPrevBtnEl.disabled) return;
+          diffusionPageIndex = Math.max(0, diffusionPageIndex - 1);
+          updateDiffusionActionButtons(latestStatePayload);
+        });
+      }
+
+      if (diffusionScrollNextBtnEl) {
+        diffusionScrollNextBtnEl.addEventListener("click", () => {
+          if (diffusionScrollNextBtnEl.disabled) return;
+          diffusionPageIndex += 1;
+          updateDiffusionActionButtons(latestStatePayload);
+        });
+      }
+
       if (messageBackBtnEl) {
         messageBackBtnEl.addEventListener("click", () => {
           setOverlayPage("menu");
@@ -4433,12 +4773,48 @@
       }
 
       if (diffusionGridEl) {
-        diffusionGridEl.addEventListener("click", (event) => {
+        const handleDiffusionButtonActivation = (event) => {
           const target = event.target;
           const btn = target && target.closest ? target.closest("[data-diffusion-slot]") : null;
-          if (!btn || btn.disabled) return;
+          if (!btn || btn.disabled) return false;
+          const now = Date.now();
+          const lastActivationAt = Number(btn.dataset.diffusionActivatedAt || 0);
+          if (event.type === "click" && Number.isFinite(lastActivationAt) && now - lastActivationAt < 700) {
+            if (event.cancelable) event.preventDefault();
+            return true;
+          }
+          if (event.type === "pointerdown") {
+            if (event.button != null && event.button !== 0) return false;
+            if (event.cancelable) event.preventDefault();
+          }
+          btn.dataset.diffusionActivatedAt = String(now);
+          const manualAction = String(btn.getAttribute("data-diffusion-action") || "").trim();
+          if (manualAction) {
+            let actionUrls = [];
+            try {
+              const parsedUrls = JSON.parse(String(btn.getAttribute("data-diffusion-urls") || "[]"));
+              if (Array.isArray(parsedUrls)) actionUrls = parsedUrls.map((url) => String(url || "").trim()).filter(Boolean);
+            } catch {
+              actionUrls = [];
+            }
+            const playedLocally = playDiffusionAudioSequence(actionUrls, { manualLock: true });
+            if (!playedLocally) setDiffusionManualActionLocked(true, 1400);
+            const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
+            post("saeiv:action", {
+              action: manualAction,
+              localPlayback: playedLocally === true,
+              selectedLineUid: String(state.selectedLineUid || ""),
+              selectedRouteUid: String(state.selectedRouteUid || ""),
+              lineNumber: String(state.lineNumber || ""),
+              routeName: String(state.routeName || ""),
+              audioFolderPath: String(state.audioFolderPath || ""),
+              audioVoiceStyle: String(state.audioVoiceStyle || ""),
+              diffusionLabel: String(btn.getAttribute("data-diffusion-label") || "")
+            });
+            return true;
+          }
           const slot = Number(btn.getAttribute("data-diffusion-slot") || 0);
-          if (!Number.isInteger(slot) || slot <= 0) return;
+          if (!Number.isInteger(slot) || slot <= 0) return false;
           playDiffusionAudioBySlot(slot, btn.getAttribute("data-diffusion-url"));
           const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
           post("saeiv:action", {
@@ -4452,7 +4828,10 @@
             diffusionSlot: slot,
             diffusionLabel: String(btn.getAttribute("data-diffusion-label") || "")
           });
-        });
+          return true;
+        };
+        diffusionGridEl.addEventListener("pointerdown", handleDiffusionButtonActivation);
+        diffusionGridEl.addEventListener("click", handleDiffusionButtonActivation);
       }
 
       if (messageTabButtons.length) {
