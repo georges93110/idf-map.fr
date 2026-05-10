@@ -1979,6 +1979,7 @@
         payload.routeStopCount = names.length;
         payload.routeReachedIndex = reachedIndex;
         payload.routeTargetIndex = targetIndex;
+        payload.routeTargetIsTerminus = targetIndex >= lastIndex;
         payload.vehicleName = String(saeivVehicleName || "");
         var activeCapacity = getSaeivActiveCapacityState(payload.vehicleName);
         payload.busMaxCapacity = Math.max(1, Math.round(Number(activeCapacity.capacity) || SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT));
@@ -2027,8 +2028,11 @@
             payload.stopAlightingDone = externalAlightingDone;
           }
         }
-        var isActuallyAtTerminus = reachedIndex >= lastIndex || (saeivStoppedAtStopIndex >= 0 && saeivStoppedAtStopIndex >= lastIndex);
+        var isActuallyAtTerminus = reachedIndex >= lastIndex ||
+          (saeivStoppedAtStopIndex >= 0 && saeivStoppedAtStopIndex >= lastIndex) ||
+          (payload.vehicleAtStop === true && targetIndex >= lastIndex);
         if (isActuallyAtTerminus) {
+          payload.vehicleAtTerminus = true;
           payload.passengersAtStop = 0;
           payload.stopBoardingTotal = 0;
           var alightDoneNow = Math.max(0, Math.round(Number(payload.stopAlightingDone) || 0));

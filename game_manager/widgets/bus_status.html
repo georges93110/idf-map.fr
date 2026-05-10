@@ -1027,7 +1027,8 @@
       var isProcessingLeave = false;
 
       function enqueue(type, count) {
-        count = clamp(count, 0, 80);
+        var maxQueue = type === "out" ? 300 : 80;
+        count = clamp(count, 0, maxQueue);
         if (type === "in") {
           for (var i = 0; i < count; i += 1) boardQueue.push("in");
           processBoardQueue();
@@ -1051,6 +1052,36 @@
           if (pState.type === "in") n += 1;
         }
         return n;
+      }
+      function getAlightingInProgressCount() {
+        if (!Array.isArray(activeWalkingPassengers) || !activeWalkingPassengers.length) return 0;
+        var n = 0;
+        for (var i = 0; i < activeWalkingPassengers.length; i += 1) {
+          var pState = activeWalkingPassengers[i];
+          if (!pState || pState.isCancelled === true) continue;
+          if (pState.type === "out") n += 1;
+        }
+        return n;
+      }
+      function getPendingAlightingCount() {
+        return Math.max(0, Math.round(Number(leaveQueue && leaveQueue.length) || 0) + getAlightingInProgressCount());
+      }
+      function isTerminusState(state, nextStopX) {
+        if (!state || typeof state !== "object") return false;
+        var stopCount = Math.floor(Number(state.routeStopCount));
+        var lastIndex = Number.isFinite(stopCount) && stopCount > 0 ? stopCount - 1 : Number.NaN;
+        var routeCompleted = state.routeCompleted === true;
+        var noNextStop = !Number.isFinite(nextStopX) || nextStopX === 0 || isNaN(nextStopX);
+        var routeReached = Math.floor(Number(state.routeReachedIndex));
+        var vehicleIndex = Math.floor(Number(state.vehicleAtStopIndex));
+        var targetIndex = Math.floor(Number(state.routeTargetIndex));
+        var audioIndex = Math.floor(Number(state.audioCurrentIndex));
+        return routeCompleted ||
+          (Number.isFinite(lastIndex) && Number.isFinite(routeReached) && routeReached >= lastIndex) ||
+          (Number.isFinite(lastIndex) && Number.isFinite(vehicleIndex) && vehicleIndex >= lastIndex) ||
+          (Number.isFinite(lastIndex) && Number.isFinite(targetIndex) && targetIndex >= lastIndex) ||
+          (Number.isFinite(lastIndex) && Number.isFinite(audioIndex) && audioIndex >= lastIndex) ||
+          noNextStop;
       }
       function canStartBoardingNow() {
         var cap = getEffectiveBusCapacityLimit();
@@ -1467,18 +1498,44 @@
 
         // 2b. Génération des passagers uniquement à l'arrêt du véhicule et si la ligne est démarrée
         var stopId = Number.isFinite(sX) && Number.isFinite(sZ) ? (sX.toFixed(2) + "," + sZ.toFixed(2)) : null;
-        if (state.routeStarted === true && state.vehicleAtStop === true && !window.hasSpawnedForCurrentStop && stopId) {
+        var isAtTerminus = isTerminusState(state, sNextX);
+        var stateInBusCount = Math.max(0, Math.round(Number(state.passengersInBus) || 0));
+        var existingStopMemoryForState = stopId ? window.servedStopsMemory[stopId] : null;
+        var terminusNeedsAlighting = isAtTerminus && (
+          visualCount > 0 ||
+          (stateInBusCount > 0 && (!existingStopMemoryForState || existingStopMemoryForState.terminusFullAlighting !== true))
+        );
+        var shouldForceTerminusAlighting = state.routeStarted === true &&
+          state.vehicleAtStop === true &&
+          stopId &&
+          terminusNeedsAlighting &&
+          getPendingAlightingCount() <= 0;
+        if (
+          state.routeStarted === true &&
+          state.vehicleAtStop === true &&
+          stopId &&
+          (!window.hasSpawnedForCurrentStop || shouldForceTerminusAlighting)
+        ) {
           window.hasSpawnedForCurrentStop = true;
 
           var peopleToAlight = 0;
           var peopleToBoard = 0;
 
-          if (!window.servedStopsMemory[stopId]) {
-            // DÉTECTION DU TERMINUS (Priorité absolue)
-            var isAtTerminus = (!Number.isFinite(state.stopNextX) || state.stopNextX === 0 || isNaN(state.stopNextX)) ||
-              (Number.isFinite(state.routeReachedIndex) && Number.isFinite(state.routeStopCount) && state.routeReachedIndex >= (state.routeStopCount - 1)) ||
-              (Number.isFinite(state.vehicleAtStopIndex) && Number.isFinite(state.routeStopCount) && state.vehicleAtStopIndex >= (state.routeStopCount - 1));
-
+          if (terminusNeedsAlighting) {
+            var terminusAlightCount = Math.max(visualCount, stateInBusCount);
+            if (terminusAlightCount > visualCount) {
+              syncVisualCount(terminusAlightCount, true);
+            }
+            peopleToBoard = 0;
+            peopleToAlight = terminusAlightCount;
+            window.servedStopsMemory[stopId] = {
+              spawned: true,
+              remainingWaiting: 0,
+              terminusFullAlighting: true
+            };
+            if (isDevMode) console.log("[BusStatus] Terminus reached: forcing 0 board, 100% alight");
+            if (peopleToAlight > 0) enqueue("out", peopleToAlight);
+          } else if (!window.servedStopsMemory[stopId]) {
             // PRIORITÉ : Utiliser les valeurs fournies par le state (pour être synchro avec le SAEIV)
             var stateBoard = Number(state.stopBoardingTotal);
             var stateAlight = Number(state.stopAlightingTotal);
@@ -1492,12 +1549,7 @@
               state.saeivPassengerGenerationAvailable === true ||
               state.passengerTotalsAvailable === true;
 
-            if (isAtTerminus) {
-              // TOUT LE MONDE DESCEND, PERSONNE NE MONTE
-              peopleToBoard = 0;
-              peopleToAlight = visualCount;
-              if (isDevMode) console.log("[BusStatus] Terminus reached: forcing 0 board, 100% alight");
-            } else if (stateHasPassengerTotals && Number.isFinite(stateBoard) && Number.isFinite(stateAlight)) {
+            if (stateHasPassengerTotals && Number.isFinite(stateBoard) && Number.isFinite(stateAlight)) {
               // Priorité aux valeurs fournies par le state si non-terminus
               var resolvedStateBoard = Math.max(0, Math.round(stateBoard));
               var resolvedStateAlight = Math.max(0, Math.round(stateAlight));

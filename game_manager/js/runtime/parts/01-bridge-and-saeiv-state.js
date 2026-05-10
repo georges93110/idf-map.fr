@@ -1052,6 +1052,7 @@
         saeivPassengerState.coefOn = stopConfig.coefOn;
         saeivPassengerState.stopOptionalByConfig = isSaeivStopOptionalByConfig(stopConfig);
         var currentInBusForPlan = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0));
+        var isTerminusTarget = idx >= lastIndex;
         var counts = ensureSaeivPassengerWorkForConfiguredStop(
           computeSaeivPassengersAtStopValue(stopConfig, idx, lastIndex, entry),
           stopConfig,
@@ -1062,7 +1063,10 @@
           currentInBusForPlan,
           Math.max(0, Math.round(Number(counts.alight) || 0))
         );
-        if (plannedBoard <= 0 && plannedAlight <= 0 && hasPositiveSaeivPassengerStopConfig(stopConfig)) {
+        if (isTerminusTarget) {
+          plannedBoard = 0;
+          plannedAlight = currentInBusForPlan;
+        } else if (plannedBoard <= 0 && plannedAlight <= 0 && hasPositiveSaeivPassengerStopConfig(stopConfig)) {
           if (Math.max(0, Math.min(100, Number(stopConfig.coefOn) || 0)) <= 0 && currentInBusForPlan > 0) {
             plannedAlight = 1;
           } else {
@@ -1077,7 +1081,7 @@
         saeivPassengerState.stopAlightingTotal = plannedAlight;
         saeivPassengerState.plannedStopBoardingTotal = plannedBoard;
         saeivPassengerState.plannedStopAlightingTotal = plannedAlight;
-        saeivPassengerState.stopNecessary = computeSaeivStopNecessaryState(saeivPassengerState, plannedBoard, 0, saeivPassengerState.passengersInBus, false);
+        saeivPassengerState.stopNecessary = computeSaeivStopNecessaryState(saeivPassengerState, plannedBoard, 0, saeivPassengerState.passengersInBus, isTerminusTarget);
         return true;
       }
       function syncSaeivPassengerStateFromBusStatusCount() {
@@ -1086,18 +1090,43 @@
         var externalCount = getBusStatusPassengerCountNow();
         if (externalCount === null) return false;
         var inBus = Math.max(0, Math.round(Number(externalCount) || 0));
+        var isTerminusTarget = false;
+        if (saeivRouteState && typeof saeivRouteState === "object") {
+          var routeStops = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
+          var lastRouteStopIndex = routeStops.length > 0 ? routeStops.length - 1 : -1;
+          var currentTargetIndex = Math.floor(Number(saeivPassengerState.targetIndex));
+          isTerminusTarget = lastRouteStopIndex >= 0 && Number.isFinite(currentTargetIndex) && currentTargetIndex >= lastRouteStopIndex;
+        }
         var changed = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0)) !== inBus;
         saeivPassengerState.passengersInBus = inBus;
         if (inBus > saeivMaxPassengersEverInBus) saeivMaxPassengersEverInBus = inBus;
 
         var plannedDrop = Math.max(0, Math.round(Number(saeivPassengerState.plannedStopAlightingTotal) || 0));
-        if (plannedDrop > inBus) {
-          plannedDrop = inBus;
-          saeivPassengerState.plannedStopAlightingTotal = plannedDrop;
-          if (Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingTotal) || 0)) > plannedDrop) {
-            saeivPassengerState.stopAlightingTotal = plannedDrop;
+        if (isTerminusTarget) {
+          var currentAlightDone = Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingDone) || 0));
+          var terminusTotal = currentAlightDone + inBus;
+          saeivPassengerState.passengersAtStop = 0;
+          saeivPassengerState.stopBoardingTotal = 0;
+          saeivPassengerState.plannedStopBoardingTotal = 0;
+          if (Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingTotal) || 0)) < terminusTotal) {
+            saeivPassengerState.stopAlightingTotal = terminusTotal;
+            changed = true;
           }
-          changed = true;
+          if (plannedDrop < terminusTotal) {
+            plannedDrop = terminusTotal;
+            saeivPassengerState.plannedStopAlightingTotal = plannedDrop;
+            changed = true;
+          }
+        }
+        if (plannedDrop > inBus) {
+          if (!isTerminusTarget) {
+            plannedDrop = inBus;
+            saeivPassengerState.plannedStopAlightingTotal = plannedDrop;
+            if (Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingTotal) || 0)) > plannedDrop) {
+              saeivPassengerState.stopAlightingTotal = plannedDrop;
+            }
+            changed = true;
+          }
         }
 
         var requestedDrop = Math.max(0, Math.round(Number(saeivPassengerState.requestedDropCount) || 0));
@@ -1117,7 +1146,7 @@
             saeivPassengerState.passengersAtStop,
             saeivPassengerState.requestedDropCount,
             inBus,
-            false
+            isTerminusTarget
           );
           saeivLastStateKey = "";
         }
@@ -1194,9 +1223,15 @@
         if (isTerminus) {
           saeivPassengerState.passengersAtStop = 0;
           saeivPassengerState.stopBoardingTotal = 0;
-          // On s'assure que stopAlightingTotal couvre tout le bus
           var currentInBus = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0));
-          saeivPassengerState.stopAlightingTotal = currentInBus;
+          var currentAlightDone = Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingDone) || 0));
+          var currentAlightTotal = Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingTotal) || 0));
+          saeivPassengerState.stopAlightingTotal = Math.max(currentAlightTotal, currentAlightDone + currentInBus);
+          saeivPassengerState.plannedStopBoardingTotal = 0;
+          saeivPassengerState.plannedStopAlightingTotal = Math.max(
+            Math.max(0, Math.round(Number(saeivPassengerState.plannedStopAlightingTotal) || 0)),
+            saeivPassengerState.stopAlightingTotal
+          );
           saeivPassengerState.stopRequested = false;
           saeivPassengerState.requestedDropCount = 0;
           saeivPassengerState.stopNecessary = currentInBus > 0;

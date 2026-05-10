@@ -305,6 +305,8 @@
       var lastWsMessageAt = 0;
       var WS_SILENCE_HIDE_MS = 1000;
       var telemetryVisibilityTimer = 0;
+      var telemetryWidgetsHiddenState = null;
+      var telemetryWidgetsHiddenNodeCount = -1;
       function normalizeTelemetryBooleanText(value) {
         var text = String(value == null ? "" : value).trim().toLowerCase();
         if (!text) return null;
@@ -503,13 +505,21 @@
         return telemetryConnected === true && !shouldHideTelemetryWidgets();
       }
       function hardSetTelemetryPausedWidgetsHidden(hidden) {
-        document.body.classList.toggle("is-telemetry-paused-widgets", !!hidden);
-        document.body.classList.toggle("is-telemetry-widgets-hidden", !!hidden);
+        var nextHidden = !!hidden;
+        var widgets = document.querySelectorAll(".overlay-window[data-widget-type]");
+        if (
+          telemetryWidgetsHiddenState === nextHidden &&
+          telemetryWidgetsHiddenNodeCount === widgets.length
+        ) {
+          return;
+        }
+        telemetryWidgetsHiddenState = nextHidden;
+        telemetryWidgetsHiddenNodeCount = widgets.length;
+        document.body.classList.toggle("is-telemetry-paused-widgets", nextHidden);
+        document.body.classList.toggle("is-telemetry-widgets-hidden", nextHidden);
 
-        document
-          .querySelectorAll(".overlay-window[data-widget-type]")
-          .forEach(function (widget) {
-            if (hidden) {
+        widgets.forEach(function (widget) {
+            if (nextHidden) {
               widget.style.setProperty("display", "none", "important");
               widget.style.setProperty("opacity", "0", "important");
               widget.style.setProperty("visibility", "hidden", "important");
@@ -528,7 +538,7 @@
             widget
               .querySelectorAll(".overlay-window-content, .overlay-window-frame, iframe")
               .forEach(function (el) {
-                if (hidden) {
+                if (nextHidden) {
                   el.style.setProperty("display", "none", "important");
                   el.style.setProperty("opacity", "0", "important");
                   el.style.setProperty("visibility", "hidden", "important");
@@ -546,11 +556,14 @@
               });
           });
       }
-      function applyTelemetryPausedState(pausedRaw) {
+      function applyTelemetryPausedState(pausedRaw, options) {
         var nextPaused = !!pausedRaw;
+        var changed = telemetryPaused !== nextPaused;
+        var force = !!(options && options.force);
         telemetryPaused = nextPaused;
 
         document.body.classList.toggle("is-telemetry-paused", telemetryPaused);
+        if (!changed && !force) return false;
 
         // Les widgets ne sont visibles qu'avec une position recente et hors pause/menu.
         refreshTelemetryVisibility();
@@ -560,6 +573,7 @@
 
         // Sécurité après sync/rerender.
         refreshTelemetryVisibility();
+        return true;
       }
       function startTelemetryVisibilityWatch() {
         if (telemetryVisibilityTimer) return;
@@ -1631,7 +1645,7 @@
         }
         managerState.visible = telemetryUiMode === 2;
         renderManager();
-        applyTelemetryPausedState(telemetryPaused);
+        applyTelemetryPausedState(telemetryPaused, { force: true });
         syncGlobalLoadingVisibility();
         var loadingScreen = document.getElementById("globalLoadingScreen");
         var loadingInProgress = !!loadingScreen && loadingScreen.classList.contains("is-active");
@@ -2270,6 +2284,207 @@
           },
           busLine: buildRemotePanelBusLineBonusState(saeiv)
         };
+      }
+      function getDiscordPresenceIntervalMs() {
+        var value = Math.round(Number(DISCORD_PRESENCE_SEND_INTERVAL_MS));
+        return Number.isFinite(value) && value >= 15000 ? value : 15000;
+      }
+      function normalizeDiscordPresenceText(value) {
+        return String(value == null ? "" : value).replace(/\s+/g, " ").trim();
+      }
+      function limitDiscordPresenceText(value, fallback, maxLength) {
+        var text = normalizeDiscordPresenceText(value);
+        if (!text) text = normalizeDiscordPresenceText(fallback);
+        var max = Math.max(1, Math.round(Number(maxLength) || 128));
+        if (text.length <= max) return text;
+        if (max <= 3) return text.slice(0, max);
+        return text.slice(0, max - 3).replace(/\s+$/g, "") + "...";
+      }
+      function getDiscordPresenceProductName() {
+        var name = "";
+        var version = "";
+        try { name = String(systemName || "").trim(); } catch (err0) { name = ""; }
+        try { version = String(gameVersion || "").trim(); } catch (err1) { version = ""; }
+        if (name && version) return name + " - " + version;
+        return name || version || "IDF Map";
+      }
+      function getDiscordPresenceConvoyLabel() {
+        return telemetryConvoyActive === true ? "Convoi" : "Solo";
+      }
+      function formatDiscordPresenceEta(minutes) {
+        var n = Number(minutes);
+        if (!Number.isFinite(n) || n <= 0) return "";
+        var total = Math.max(1, Math.round(n));
+        var hours = Math.floor(total / 60);
+        var mins = total % 60;
+        if (hours > 0) return "ETA " + String(hours) + "h" + String(mins).padStart(2, "0");
+        return "ETA " + String(total) + " min";
+      }
+      function formatDiscordPresencePassengers(busLine) {
+        if (!busLine || typeof busLine !== "object") return "";
+        var passengers = Math.max(0, Math.round(Number(busLine.passengersInBus) || 0));
+        var capacity = Math.max(0, Math.round(Number(busLine.busMaxCapacity) || 0));
+        if (busLine.busMaxCapacityUnlimited === true || capacity <= 0) {
+          return String(passengers) + " passagers";
+        }
+        return String(passengers) + "/" + String(capacity) + " passagers";
+      }
+      function resolveDiscordPresenceRouteStartTimestamp(busLine, nowSec) {
+        if (busLine && busLine.started === true) {
+          var key = String(busLine.selectedKey || busLine.lineNumber || busLine.routeName || "bus").trim() || "bus";
+          if (discordPresenceRouteKey !== key || !discordPresenceRouteStartedAtSec) {
+            discordPresenceRouteKey = key;
+            discordPresenceRouteStartedAtSec = nowSec;
+          }
+          return discordPresenceRouteStartedAtSec;
+        }
+        if (!busLine || busLine.completed !== true) {
+          discordPresenceRouteKey = "";
+          discordPresenceRouteStartedAtSec = 0;
+        }
+        return discordPresenceSessionStartedAtSec || nowSec;
+      }
+      function buildDiscordPresenceBusDetails(busLine, gameModeState) {
+        var paused = gameModeState && gameModeState.telemetryPaused === true;
+        if (!busLine || busLine.active !== true) return paused ? "Mode bus - En pause" : "Mode bus - Hors service";
+        var line = String(busLine.lineNumber || "").trim();
+        var lineText = line ? ("ligne " + line) : "ligne bus";
+        if (busLine.completed === true) return "Mode bus - Service termine " + lineText;
+        if (paused) return "Mode bus - En pause " + lineText;
+        if (busLine.started === true) return "Mode bus - Conduit un bus " + lineText;
+        if (busLine.waitingStart === true) return "Mode bus - Pret au depart " + lineText;
+        return "Mode bus - Ligne selectionnee " + lineText;
+      }
+      function buildDiscordPresenceBusState(busLine) {
+        var parts = [];
+        var vehicle = String(
+          (busLine && busLine.vehicleName) ||
+          saeivVehicleName ||
+          (telemetryLastSignal && telemetryLastSignal.vehicleName) ||
+          ""
+        ).trim();
+        if (vehicle) parts.push(vehicle);
+        if (busLine && busLine.active === true) {
+          if (busLine.started === true || busLine.completed === true) {
+            parts.push(formatDiscordPresencePassengers(busLine));
+            var stopName = String(busLine.currentStopName || busLine.nextStopName || "").trim();
+            if (stopName) parts.push((busLine.vehicleAtStop === true ? "Arret " : "Vers ") + stopName);
+            var served = Math.max(0, Math.round(Number(busLine.servedStops) || 0));
+            var stopCount = Math.max(0, Math.round(Number(busLine.stopCount) || 0));
+            if (stopCount > 0) parts.push("arrets desservis " + String(served) + "/" + String(stopCount));
+            var eta = formatDiscordPresenceEta(busLine.etaRemainingMinutes);
+            if (eta) parts.push(eta);
+          } else {
+            var routeName = String(busLine.routeName || "").trim();
+            if (routeName) parts.push(routeName);
+          }
+        }
+        parts.push(getDiscordPresenceConvoyLabel());
+        return parts.filter(Boolean).join(" - ");
+      }
+      function buildDiscordPresencePayload() {
+        var nowSec = Math.floor(Date.now() / 1000);
+        var productName = getDiscordPresenceProductName();
+        var bonus = null;
+        try { bonus = buildRemotePanelGame2BonusState(); } catch (err0) { bonus = null; }
+        var gameModeState = bonus && bonus.gameMode ? bonus.gameMode : {};
+        var busLine = bonus && bonus.busLine ? bonus.busLine : null;
+        var modeKey = String(gameModeState.key || "").trim().toLowerCase();
+        var modeLabel = String(gameModeState.label || remotePanelGameModeLabel(modeKey, false)).trim();
+        var details = "";
+        var state = "";
+        if (gameModeState.menuOpen === true) {
+          details = "Menu - " + (modeLabel || "Interface");
+          state = productName + " - " + getDiscordPresenceConvoyLabel();
+        } else if (modeKey === "bus") {
+          details = buildDiscordPresenceBusDetails(busLine, gameModeState);
+          state = buildDiscordPresenceBusState(busLine);
+        } else if (modeKey === "free") {
+          details = gameModeState.telemetryPaused === true ? "Mode libre - En pause" : "Mode libre - En conduite";
+          state = [
+            String(saeivVehicleName || (telemetryLastSignal && telemetryLastSignal.vehicleName) || "").trim(),
+            getDiscordPresenceConvoyLabel()
+          ].filter(Boolean).join(" - ");
+        } else {
+          details = modeLabel || "Interface IDF Map";
+          state = getDiscordPresenceConvoyLabel();
+        }
+        var timestamps = {
+          start: resolveDiscordPresenceRouteStartTimestamp(busLine, nowSec)
+        };
+        var etaMinutes = busLine && busLine.started === true && busLine.completed !== true ? Number(busLine.etaRemainingMinutes) : Number.NaN;
+        if (Number.isFinite(etaMinutes) && etaMinutes > 0) {
+          timestamps.end = nowSec + Math.max(60, Math.round(etaMinutes * 60));
+        }
+        return {
+          type: "discordPresence",
+          version: 1,
+          source: "html",
+          activity: {
+            type: 0,
+            name: limitDiscordPresenceText(productName, "IDF Map", 128),
+            details: limitDiscordPresenceText(details, productName, 128),
+            state: limitDiscordPresenceText(state, getDiscordPresenceConvoyLabel(), 128),
+            timestamps: timestamps,
+            assets: {
+              large_image: "idf_map",
+              large_text: limitDiscordPresenceText(productName, "IDF Map", 128),
+              small_image: "ets2",
+              small_text: "Euro Truck Simulator 2"
+            },
+            instance: false
+          }
+        };
+      }
+      function getDiscordPresenceSocket() {
+        return telemetryWs && telemetryWs.readyState === WebSocket.OPEN ? telemetryWs : null;
+      }
+      function sendDiscordPresenceUpdate() {
+        var now = Date.now();
+        var intervalMs = getDiscordPresenceIntervalMs();
+        var lastSentAt = Number(discordPresenceLastSentAtMs) || 0;
+        if (lastSentAt > 0 && (now - lastSentAt) < intervalMs) return false;
+        var socket = getDiscordPresenceSocket();
+        if (!socket) return false;
+        var payload = buildDiscordPresencePayload();
+        var body = "";
+        try { body = JSON.stringify(payload); } catch (err0) { body = ""; }
+        if (!body) return false;
+        try {
+          socket.send(body);
+          console.log("[DiscordPresence] Envoi", payload);
+          discordPresenceLastSentAtMs = Date.now();
+          return true;
+        } catch (err1) {
+          return false;
+        }
+      }
+      function getNextDiscordPresenceDelayMs() {
+        var intervalMs = getDiscordPresenceIntervalMs();
+        var lastSentAt = Number(discordPresenceLastSentAtMs) || 0;
+        if (lastSentAt <= 0) return 1000;
+        return Math.max(1000, intervalMs - (Date.now() - lastSentAt));
+      }
+      function scheduleNextDiscordPresenceUpdate(delayMs) {
+        if (discordPresenceTimer) {
+          clearTimeout(discordPresenceTimer);
+          discordPresenceTimer = 0;
+        }
+        var waitMs = Math.max(0, Math.round(Number(delayMs) || 0));
+        discordPresenceTimer = window.setTimeout(function () {
+          discordPresenceTimer = 0;
+          sendDiscordPresenceUpdate();
+          scheduleNextDiscordPresenceUpdate(getNextDiscordPresenceDelayMs());
+        }, waitMs);
+      }
+      function startDiscordPresenceUpdates() {
+        sendDiscordPresenceUpdate();
+        scheduleNextDiscordPresenceUpdate(getNextDiscordPresenceDelayMs());
+      }
+      function stopDiscordPresenceUpdates() {
+        if (!discordPresenceTimer) return;
+        clearTimeout(discordPresenceTimer);
+        discordPresenceTimer = 0;
       }
       function pickRemotePanelTelemetryMapName(raw, signal) {
         var mapName = "";
@@ -3253,6 +3468,8 @@
               }));
             } catch (err5) { }
           }
+          sendDiscordPresenceUpdate();
+          scheduleNextDiscordPresenceUpdate(getNextDiscordPresenceDelayMs());
         };
         ws.onmessage = function (event) {
           if (FORCE_DEV_UI) {
@@ -3344,6 +3561,7 @@
         }
         stopTelemetryReconnectTimer();
         closeTelemetryWs();
+        stopDiscordPresenceUpdates();
         stopRemotePanelWsBridge();
       }
       function startTelemetryConnectionWatch() {
@@ -3351,6 +3569,7 @@
         startRemotePanelWsBridge();
         setTelemetryConnectionState(false, "Connexion ouverte, attente signal X/Y/Z/Heading...");
         connectTelemetryWs();
+        startDiscordPresenceUpdates();
         startWazeHeadingKeepalive();
         startWazeForcedRouteRefresh();
         startSaeivForcedStateRefresh();

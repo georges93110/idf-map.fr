@@ -1105,6 +1105,95 @@
       pointer-events: auto;
     }
 
+    body.home-manual-modal-open {
+      overflow: hidden;
+    }
+
+    .home-shell.is-manual-modal-mode .home-manual-column {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      width: auto;
+      max-width: none;
+      opacity: 0;
+      overflow: visible;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      box-sizing: border-box;
+      background: rgba(12, 12, 13, 0);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      cursor: pointer;
+      transition: opacity 160ms ease, background-color 160ms ease;
+    }
+
+    .home-shell.is-manual-modal-mode.is-manual-open .home-manual-column {
+      opacity: 1;
+      pointer-events: auto;
+      background: rgba(12, 12, 13, 0.84);
+    }
+
+    .home-shell.is-manual-modal-mode .home-manual-panel {
+      width: min(980px, calc(100vw - 32px));
+      max-height: min(92vh, 900px);
+      border-width: 1px;
+      padding: clamp(24px, 3vw, 34px);
+      box-sizing: border-box;
+      overflow: auto;
+      opacity: 0;
+      transform: scale(0.985);
+      pointer-events: none;
+      box-shadow: 0 22px 44px rgba(0, 0, 0, 0.42);
+      cursor: auto;
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .home-shell.is-manual-modal-mode.is-manual-open .home-manual-panel {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .home-shell.is-manual-modal-mode.is-manual-open .home-manual-title {
+      margin: 0 44px 18px 0;
+      font-size: clamp(30px, 3.3vw, 42px);
+      line-height: 1.08;
+    }
+
+    .home-shell.is-manual-modal-mode.is-manual-open .home-manual-close {
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      font-size: 24px;
+    }
+
+    .home-shell.is-manual-modal-mode.is-manual-open .home-manual-group {
+      padding-top: 16px;
+      margin-top: 16px;
+      gap: 10px;
+    }
+
+    .home-shell.is-manual-modal-mode.is-manual-open .home-manual-group h3 {
+      font-size: 13px;
+      letter-spacing: .07em;
+    }
+
+    .home-shell.is-manual-modal-mode.is-manual-open .home-manual-list {
+      font-size: 15px;
+      line-height: 1.55;
+      gap: 7px;
+      padding-left: 22px;
+    }
+
+    .home-shell.is-manual-modal-mode.is-manual-open .home-manual-video-embed {
+      width: min(100%, 620px);
+      margin: 6px auto 0;
+    }
+
     .home-manual-title {
       margin: 0 34px 10px 0;
       font-size: 18px;
@@ -1580,16 +1669,6 @@
             </section>
 
             <section class="home-manual-group">
-              <h3 data-i18n="guide_install_config_title">RÉGLAGE IMPORTANT</h3>
-              <ul class="home-manual-list">
-                <li data-i18n="guide_install_config_1">Accédez à Documents\Euro Truck Simulator 2 et ouvrez le fichier config.cfg</li>
-                <li data-i18n="guide_install_config_2">Recherchez la ligne où se trouve uset r_buffer_page_size</li>
-                <li data-i18n="guide_install_config_3">Modifiez la valeur de uset r_buffer_page_size de 10 à 30</li>
-                <li data-i18n="guide_install_config_4">Enregistrez et fermez le fichier</li>
-              </ul>
-            </section>
-
-            <section class="home-manual-group">
               <h3 data-i18n="guide_install_map_title">INSTALLATION DE LA MAP</h3>
               <ul class="home-manual-list">
                 <li>
@@ -1676,6 +1755,7 @@
       const homeManualVideoGroup = document.getElementById("homeManualVideoGroup");
       const homeManualVideoFrame = document.getElementById("homeManualVideoFrame");
       const homeManualPanel = document.getElementById("homeManualPanel");
+      const homeManualColumn = document.querySelector(".home-manual-column");
       const homeManualPanelTitle = document.getElementById("homeManualPanelTitle");
       const homeManualInstallContent = document.getElementById("homeManualInstallContent");
       const homeManualConvoyContent = document.getElementById("homeManualConvoyContent");
@@ -1766,6 +1846,14 @@
         return activeHomeCategory === "convoy";
       }
 
+      function isHomeAutoDownloadManualFallback() {
+        return !!(homeAutoDownloadBtn && homeAutoDownloadBtn.dataset.downloadFallbackManual === "1");
+      }
+
+      function isHomeManualModalMode() {
+        return !!(homeShell && homeShell.classList.contains("is-manual-modal-mode"));
+      }
+
       function applyTexts() {
         document.querySelectorAll("[data-i18n]").forEach((el) => {
           const key = String(el.getAttribute("data-i18n") || "").trim();
@@ -1839,12 +1927,18 @@
       function setManualPanelOpen(open) {
         if (!homeShell) return;
         const wasOpen = homeShell.classList.contains("is-manual-open");
+        const useModal = isHomeManualModalMode();
         homeManualVideoFrame.contentWindow?.postMessage(
           '{"event":"command","func":"stopVideo","args":""}',
           "*"
         );
         homeShell.classList.toggle("is-manual-open", !!open);
+        document.body.classList.toggle("home-manual-modal-open", !!open && useModal);
         syncManualGuideButtons(!!open);
+        if (open && useModal) {
+          homeManualCloseBtn?.focus();
+          return;
+        }
         if (open && !wasOpen && isCompactLayout()) {
           requestAnimationFrame(() => {
             scrollToManualPanel();
@@ -1955,7 +2049,7 @@
           homeInstallOverview.hidden = false;
           homeInstallOverview.setAttribute("aria-hidden", "false");
         }
-        setManualToggleVisibility(showInstallation);
+        setManualToggleVisibility(showInstallation && !isHomeAutoDownloadManualFallback());
         if (!showInstallation) {
           hideAutoDownloadAlert(true);
           closeHomeDownloadModal();
@@ -2368,6 +2462,9 @@
       }
 
       function homeAutoDownloadBaseLabel() {
+        if (isHomeAutoDownloadManualFallback()) {
+          return t("downloads_manual_download_cta", "Télécharger");
+        }
         return t("download_button", "Téléchargement automatique");
       }
 
@@ -2698,11 +2795,8 @@
       function setAutoDownloadMode(mode) {
         if (!homeAutoDownloadBtn) return;
         if (mode === "manual") {
-          if (!homeDownloadInProgress) {
-            setHomeAutoDownloadLoading(false);
-            resetHomeAutoDownloadLabel();
-          }
           homeAutoDownloadBtn.dataset.downloadMode = "manual";
+          homeAutoDownloadBtn.dataset.downloadFallbackManual = "1";
           homeAutoDownloadBtn.dataset.downloadLinkReady = "1";
           homeAutoDownloadBtn.setAttribute("href", "#");
           homeAutoDownloadBtn.classList.remove("is-disabled-link");
@@ -2710,30 +2804,49 @@
           homeAutoDownloadBtn.setAttribute("aria-disabled", "false");
           homeAutoDownloadBtn.removeAttribute("target");
           homeAutoDownloadBtn.removeAttribute("rel");
+          if (homeShell) {
+            homeShell.classList.add("is-manual-modal-mode");
+          }
+          if (!homeDownloadInProgress) {
+            setHomeAutoDownloadLoading(false);
+            resetHomeAutoDownloadLabel();
+          }
+          setManualToggleVisibility(false);
           hideAutoDownloadAlert(true);
           return;
         }
+        const offsite = window.SITE_OFFSITE_LINKS && typeof window.SITE_OFFSITE_LINKS === "object"
+          ? window.SITE_OFFSITE_LINKS
+          : {};
+        const key = String(homeAutoDownloadBtn.getAttribute("data-offsite-key") || "download_home_fr").trim();
+        const configuredHref = String(offsite[key] || "").trim();
+        const hasLink = !!configuredHref && configuredHref !== "#";
+        if (!hasLink) {
+          setAutoDownloadMode("manual");
+          return;
+        }
+        if (isHomeManualModalMode() && homeShell && homeShell.classList.contains("is-manual-open")) {
+          setManualPanelOpen(false);
+        }
+        homeAutoDownloadBtn.dataset.downloadMode = "link";
+        homeAutoDownloadBtn.dataset.downloadFallbackManual = "0";
+        homeAutoDownloadBtn.dataset.downloadLinkReady = "1";
+        if (homeShell) {
+          homeShell.classList.remove("is-manual-modal-mode");
+        }
+        document.body.classList.remove("home-manual-modal-open");
         if (!homeDownloadInProgress) {
           setHomeAutoDownloadLoading(false);
           resetHomeAutoDownloadLabel();
         }
-        homeAutoDownloadBtn.dataset.downloadMode = "link";
-        applyOffsiteHref(homeAutoDownloadBtn);
-        const href = String(homeAutoDownloadBtn.getAttribute("href") || "").trim();
-        const hasLink = !!href && href !== "#";
-        homeAutoDownloadBtn.dataset.downloadLinkReady = hasLink ? "1" : "0";
-        homeAutoDownloadBtn.classList.toggle("is-disabled-link", !hasLink);
+        homeAutoDownloadBtn.setAttribute("href", configuredHref);
+        homeAutoDownloadBtn.classList.remove("is-disabled-link");
         homeAutoDownloadBtn.classList.remove("is-disabled-shake");
-        homeAutoDownloadBtn.setAttribute("aria-disabled", hasLink ? "false" : "true");
-        if (!hasLink) {
-          homeAutoDownloadBtn.setAttribute("href", "#");
-          homeAutoDownloadBtn.removeAttribute("target");
-          homeAutoDownloadBtn.removeAttribute("rel");
-          return;
-        }
+        homeAutoDownloadBtn.setAttribute("aria-disabled", "false");
         hideAutoDownloadAlert(true);
         homeAutoDownloadBtn.setAttribute("target", "_blank");
         homeAutoDownloadBtn.setAttribute("rel", "noopener noreferrer");
+        setManualToggleVisibility(activeHomeCategory === "installation");
       }
 
       function bindEvents() {
@@ -2787,6 +2900,13 @@
         if (homeManualCloseBtn && homeManualCloseBtn.dataset.bound !== "1") {
           homeManualCloseBtn.dataset.bound = "1";
           homeManualCloseBtn.addEventListener("click", () => setManualPanelOpen(false));
+        }
+        if (homeManualColumn && homeManualColumn.dataset.boundBackdrop !== "1") {
+          homeManualColumn.dataset.boundBackdrop = "1";
+          homeManualColumn.addEventListener("click", (event) => {
+            if (!isHomeManualModalMode() || event.target !== homeManualColumn) return;
+            setManualPanelOpen(false);
+          });
         }
         if (homeDownloadModal && homeDownloadModal.dataset.bound !== "1") {
           homeDownloadModal.dataset.bound = "1";
@@ -2888,6 +3008,3 @@
   </script>
 </body>
 </html>
-
-
-

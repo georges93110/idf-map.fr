@@ -2256,4 +2256,12 @@
 		<location>-1898.17;14.8213;534.055;-1.6484;0.000985145</location>
 	</busstop>
 
+	<busstop>
+		<id>283</id>
+		<name>11 Novembre</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>3669.74;-0.0234358;-3474.74;-1.24697;0.000134945</location>
+	</busstop>
+
 </busstops>

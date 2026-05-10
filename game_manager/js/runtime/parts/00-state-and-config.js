@@ -436,6 +436,12 @@
 
       var activeOverlayDrag = null;
       var TELEMETRY_WS_URL = "ws://localhost:3001";
+      var DISCORD_PRESENCE_SEND_INTERVAL_MS = 15000;
+      var discordPresenceTimer = 0;
+      var discordPresenceLastSentAtMs = 0;
+      var discordPresenceSessionStartedAtSec = Math.floor(Date.now() / 1000);
+      var discordPresenceRouteKey = "";
+      var discordPresenceRouteStartedAtSec = 0;
       var REMOTE_SERVER_WS_DEFAULT_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       var remotePanelTelemetryInFlight = false;
       var remotePanelTelemetryQueuedPayload = null;
@@ -473,7 +479,7 @@
       var PCC_VOICE_MAX_DATA_URL_CHARS = 6000000;
       var PCC_VOICE_PRE_SOUND_URL = "./sounds/bus/pcc.mp3";
       var PCC_VOICE_VOLUME_MULTIPLIER = 3;
-      var TELEMETRY_PACKET_TIMEOUT_MS = 1000;
+      var TELEMETRY_PACKET_TIMEOUT_MS = 2500;
       var TELEMETRY_WATCHDOG_INTERVAL_MS = 300;
       var TELEMETRY_MIN_VALID_PACKETS_FOR_ONLINE = 3;
       var WAZE_HEADING_KEEPALIVE_INTERVAL_MS = 1000;

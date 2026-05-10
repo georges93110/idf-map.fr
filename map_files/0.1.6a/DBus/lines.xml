@@ -301,7 +301,8 @@
 					<busstop uid="83" passengersMin="5" passengersMax="12" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
 					<busstop uid="72" passengersMin="5" passengersMax="12" coefOn="85" nextStopTime="1" nextStopPrice="0"/>
 					<busstop uid="31" passengersMin="16" passengersMax="32" coefOn="85" nextStopTime="1" nextStopPrice="0"/>
-					<busstop uid="33" passengersMin="5" passengersMax="3" coefOn="85" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="283" passengersMin="2" passengersMax="3" coefOn="85" nextStopTime="1" nextStopPrice="0"/>
+					<busstop uid="33" passengersMin="2" passengersMax="3" coefOn="85" nextStopTime="1" nextStopPrice="0"/>
 					<busstop uid="81" passengersMin="0" passengersMax="6" coefOn="85" nextStopTime="1" nextStopPrice="0"/>
 					<busstop uid="35" passengersMin="1" passengersMax="5" coefOn="85" nextStopTime="1" nextStopPrice="0"/>
 					<busstop uid="36" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>

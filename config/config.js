@@ -16,7 +16,7 @@
     },
     guide: {
       steam_dlc: "https://store.steampowered.com/dlc/227300/Euro_Truck_Simulator_2/",
-      manual_video_embed: "https://www.youtube.com/embed/EBilEKEllIQ?enablejsapi=1"
+      manual_video_embed: "https://www.youtube.com/embed/EEOM9HpaIV4?enablejsapi=1"
     },
     legal: {
       email: "georges93110@gmail.com",
