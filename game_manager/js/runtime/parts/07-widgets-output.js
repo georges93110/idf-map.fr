@@ -342,10 +342,10 @@
           frame = pane.ownerDocument.createElement("iframe");
           frame.className = "pane-frame";
           frame.setAttribute("frameborder", "0");
-          frame.setAttribute("allow", "autoplay");
           frame.dataset.widgetType = widget.type;
           pane.appendChild(frame);
         }
+        frame.setAttribute("allow", "autoplay");
         if (frame.dataset.widgetType !== widget.type) {
           frame.src = meta.url;
           frame.dataset.widgetType = widget.type;

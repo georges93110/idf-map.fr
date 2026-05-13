@@ -1931,7 +1931,7 @@
             <img class="middle-btn-icon" src="../images/widgets/saiev/diffusion_sonore.png" alt="" aria-hidden="true" />
           </button>
 
-          <button type="button" class="call-btn call-btn-right" data-action="call-reg" aria-label="Appel reg">
+          <button type="button" class="call-btn call-btn-right" data-action="call-reg" aria-label="Appel reg" aria-disabled="true" disabled>
             <img class="call-btn-icon" src="../images/widgets/saiev/telephone.png" alt="" aria-hidden="true" />
             <span>APPEL REG</span>
           </button>
@@ -4633,6 +4633,7 @@
             setOverlayPage(currentOverlayPage === "diffusion" ? "ligne" : "diffusion");
             return;
           }
+          if (action === "call-reg") return;
           if (btn.disabled) return;
           if (!action) return;
           post("saeiv:action", { action });

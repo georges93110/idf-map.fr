@@ -201,13 +201,63 @@
     .pcc-lines-panel {
       left: 12px;
       top: 105px;
+      width: min(390px, calc(100vw - 24px));
       max-height: calc(100vh - 130px);
-      padding: 10px;
-      overflow: auto;
+      padding: 0;
+      overflow: hidden;
     }
 
     .pcc-lines-panel[hidden] {
       display: none !important;
+    }
+
+    .pcc-panel-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 10px;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .pcc-panel-kicker {
+      margin-bottom: 3px;
+      color: rgba(255, 255, 255, 0.58);
+      font: 800 10px/1.2 Arial, Helvetica, sans-serif;
+      text-transform: uppercase;
+    }
+
+    .pcc-lines-title {
+      margin-bottom: 0;
+      font-size: 13px;
+    }
+
+    .pcc-connection-badge {
+      min-width: 74px;
+      padding: 5px 7px;
+      border: 1px solid rgba(248, 113, 113, 0.36);
+      border-radius: 999px;
+      background: rgba(127, 29, 29, 0.36);
+      color: #fecaca;
+      font: 800 10px/1 Arial, Helvetica, sans-serif;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .pcc-connection-badge.is-online {
+      border-color: rgba(74, 222, 128, 0.42);
+      background: rgba(22, 101, 52, 0.35);
+      color: #bbf7d0;
+    }
+
+    .pcc-panel-body {
+      display: grid;
+      gap: 10px;
+      max-height: calc(100vh - 185px);
+      padding: 10px;
+      overflow: auto;
+      box-sizing: border-box;
     }
 
     .pcc-lines-meta,
@@ -216,10 +266,131 @@
       font: 700 11px/1.3 Arial, Helvetica, sans-serif;
     }
 
+    .pcc-lines-meta {
+      min-height: 16px;
+    }
+
+    .pcc-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .pcc-summary-item {
+      min-width: 0;
+      padding: 7px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.055);
+    }
+
+    .pcc-summary-value {
+      display: block;
+      overflow: hidden;
+      color: #fff;
+      font: 900 15px/1.1 Arial, Helvetica, sans-serif;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pcc-summary-label {
+      display: block;
+      margin-top: 3px;
+      overflow: hidden;
+      color: rgba(255, 255, 255, 0.58);
+      font: 800 9px/1.15 Arial, Helvetica, sans-serif;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pcc-section {
+      display: grid;
+      gap: 7px;
+    }
+
+    .pcc-section[hidden] {
+      display: none !important;
+    }
+
+    .pcc-section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.68);
+      font: 900 10px/1.2 Arial, Helvetica, sans-serif;
+      text-transform: uppercase;
+    }
+
+    .pcc-tool-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .pcc-line-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .pcc-line-tab-btn {
+      min-height: 30px;
+      padding: 7px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.76);
+      font: 900 10px/1.15 Arial, Helvetica, sans-serif;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .pcc-line-tab-btn.is-active {
+      border-color: rgba(47, 140, 255, 0.58);
+      background: rgba(47, 140, 255, 0.2);
+      color: #fff;
+    }
+
+    .pcc-line-tab-panel[hidden] {
+      display: none !important;
+    }
+
+    .pcc-tool-btn {
+      min-height: 28px;
+      padding: 6px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.075);
+      color: rgba(255, 255, 255, 0.9);
+      font: 800 10px/1.15 Arial, Helvetica, sans-serif;
+      cursor: pointer;
+    }
+
+    .pcc-tool-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .pcc-tool-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
     .pcc-line-list {
       display: grid;
       gap: 6px;
-      margin-top: 8px;
+      max-height: 174px;
+      overflow: auto;
+    }
+
+    .pcc-empty-state {
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.045);
+      color: rgba(255, 255, 255, 0.58);
+      font: 800 10px/1.3 Arial, Helvetica, sans-serif;
     }
 
     .pcc-line-btn {
@@ -239,7 +410,18 @@
     }
 
     .pcc-line-label {
+      display: block;
       min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pcc-line-sub {
+      display: block;
+      margin-top: 2px;
+      color: rgba(255, 255, 255, 0.5);
+      font: 700 9px/1.1 Arial, Helvetica, sans-serif;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -253,15 +435,34 @@
     .pcc-selected-player-list {
       display: grid;
       gap: 5px;
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      max-height: 220px;
+      overflow: auto;
     }
 
     .pcc-selected-player {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      gap: 2px;
+      gap: 4px;
+      align-items: center;
+      min-height: 54px;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.055);
+      cursor: pointer;
+    }
+
+    .pcc-selected-player:hover,
+    .pcc-selected-player.is-active {
+      border-color: rgba(47, 140, 255, 0.58);
+      background: rgba(47, 140, 255, 0.17);
+    }
+
+    .pcc-selected-player-head,
+    .pcc-selected-player-meta {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
       align-items: center;
     }
 
@@ -277,6 +478,238 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .pcc-bus-chip {
+      max-width: 88px;
+      padding: 3px 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.76);
+      font: 900 9px/1 Arial, Helvetica, sans-serif;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pcc-selected-player-meta {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      color: rgba(255, 255, 255, 0.55);
+      font: 800 9px/1.2 Arial, Helvetica, sans-serif;
+    }
+
+    .pcc-selected-player-meta span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pcc-dispatch-panel {
+      display: grid;
+      gap: 8px;
+      padding: 9px;
+      border: 1px solid rgba(47, 140, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(10, 17, 28, 0.78);
+    }
+
+    .pcc-dispatch-panel[hidden],
+    .pcc-bus-detail-grid[hidden] {
+      display: none !important;
+    }
+
+    .pcc-target-strip {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      padding: 6px 7px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.055);
+      color: rgba(255, 255, 255, 0.86);
+      font: 800 11px/1.2 Arial, Helvetica, sans-serif;
+    }
+
+    .pcc-target-strip span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pcc-bus-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .pcc-bus-detail-grid .pcc-empty-state {
+      grid-column: 1 / -1;
+    }
+
+    .pcc-bus-detail-item {
+      min-width: 0;
+      padding: 6px 7px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .pcc-bus-detail-label,
+    .pcc-bus-detail-value {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pcc-bus-detail-label {
+      color: rgba(255, 255, 255, 0.48);
+      font: 800 9px/1.15 Arial, Helvetica, sans-serif;
+      text-transform: uppercase;
+    }
+
+    .pcc-bus-detail-value {
+      margin-top: 3px;
+      color: rgba(255, 255, 255, 0.9);
+      font: 900 11px/1.2 Arial, Helvetica, sans-serif;
+    }
+
+    .pcc-message-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .pcc-dispatch-panel .pcc-message-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .pcc-recording-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 3200;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(4, 9, 18, 0.72);
+      backdrop-filter: blur(5px);
+    }
+
+    .pcc-recording-modal[hidden] {
+      display: none !important;
+    }
+
+    .pcc-recording-dialog {
+      width: min(420px, calc(100vw - 36px));
+      padding: 22px;
+      border: 1px solid rgba(248, 113, 113, 0.38);
+      border-radius: 8px;
+      background: rgba(10, 17, 28, 0.96);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      color: #fff;
+      text-align: center;
+    }
+
+    .pcc-recording-indicator {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 14px;
+      border: 1px solid rgba(248, 113, 113, 0.34);
+      border-radius: 50%;
+      background: rgba(248, 113, 113, 0.08);
+    }
+
+    .pcc-recording-indicator::before,
+    .pcc-recording-indicator::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .pcc-recording-indicator::before {
+      inset: 13px;
+      border: 1px solid rgba(248, 113, 113, 0.28);
+    }
+
+    .pcc-recording-indicator::after {
+      inset: 27px;
+      background: #ef4444;
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+      animation: pccRecordingPulse 1.15s ease-out infinite;
+    }
+
+    @keyframes pccRecordingPulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
+      100% { box-shadow: 0 0 0 18px rgba(239, 68, 68, 0); }
+    }
+
+    .pcc-recording-title {
+      font: 900 18px/1.2 Arial, Helvetica, sans-serif;
+    }
+
+    .pcc-recording-target {
+      margin-top: 8px;
+      color: rgba(255, 255, 255, 0.68);
+      font: 800 12px/1.35 Arial, Helvetica, sans-serif;
+    }
+
+    .pcc-recording-timer {
+      margin: 16px 0 18px;
+      font: 900 40px/1 Arial, Helvetica, sans-serif;
+      letter-spacing: 0;
+    }
+
+    .pcc-recording-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .pcc-recording-send,
+    .pcc-recording-cancel {
+      min-height: 38px;
+      padding: 9px 12px;
+      border-radius: 7px;
+      font: 900 12px/1.15 Arial, Helvetica, sans-serif;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .pcc-recording-send {
+      border: 1px solid rgba(74, 222, 128, 0.52);
+      background: rgba(22, 163, 74, 0.28);
+      color: #dcfce7;
+    }
+
+    .pcc-recording-cancel {
+      border: 1px solid rgba(248, 113, 113, 0.48);
+      background: rgba(127, 29, 29, 0.38);
+      color: #fee2e2;
+    }
+
+    @media (max-width: 760px) {
+      .pcc-lines-panel {
+        top: 96px;
+        max-height: calc(100vh - 108px);
+      }
+
+      .pcc-panel-body {
+        max-height: calc(100vh - 176px);
+      }
+
+      .pcc-summary-grid,
+      .pcc-bus-detail-grid,
+      .pcc-selected-player-meta {
+        grid-template-columns: 1fr;
+      }
     }
 
     .player-filter-panel {
@@ -539,11 +972,65 @@
       <button type="button" class="admin-map-mode-btn" data-admin-map-mode="pcc" aria-pressed="false">PCC</button>
     </div>
   </div>
-  <div id="pccLinesPanel" class="pcc-lines-panel" aria-label="Lignes PCC" hidden>
-    <div class="pcc-lines-title">Lignes</div>
-    <div id="pccLinesMeta" class="pcc-lines-meta">Aucune ligne en cours</div>
-    <div id="pccLineList" class="pcc-line-list"></div>
-    <div id="pccSelectedPlayers" class="pcc-selected-player-list"></div>
+  <div id="pccLinesPanel" class="pcc-lines-panel" aria-label="Console PCC" hidden>
+    <div class="pcc-panel-header">
+      <div>
+        <div class="pcc-panel-kicker">PCC BUS</div>
+        <div id="pccSelectedLineName" class="pcc-lines-title">PCC Bus</div>
+      </div>
+    </div>
+    <div class="pcc-panel-body">
+      <div class="pcc-section">
+        <div class="pcc-section-title">Lignes en cours</div>
+        <div id="pccActiveLinePanel" class="pcc-line-tab-panel">
+          <div id="pccLineList" class="pcc-line-list"></div>
+        </div>
+      </div>
+      <div id="pccLineManagementSection" class="pcc-section">
+        <div class="pcc-section-title">Gestion ligne</div>
+        <div class="pcc-summary-grid" aria-label="Resume exploitation PCC">
+          <div class="pcc-summary-item">
+            <span id="pccActiveBusCount" class="pcc-summary-value">0</span>
+            <span class="pcc-summary-label">Bus</span>
+          </div>
+          <div class="pcc-summary-item">
+            <span id="pccAverageDelay" class="pcc-summary-value">--</span>
+            <span class="pcc-summary-label">Retard moyen</span>
+          </div>
+        </div>
+        <div class="pcc-tool-actions">
+          <button type="button" id="pccFitLineBtn" class="pcc-tool-btn">Centrer ligne</button>
+          <button type="button" id="pccRecordLineVoice" class="pcc-voice-btn">Envoi message Vocal Général Ligne</button>
+        </div>
+      </div>
+      <div id="pccBusServiceSection" class="pcc-section">
+        <div class="pcc-section-title">Bus en service</div>
+        <div id="pccSelectedPlayers" class="pcc-selected-player-list"></div>
+      </div>
+      <div id="pccDispatchPanel" class="pcc-section pcc-dispatch-panel" aria-label="Infos bus PCC">
+        <div class="pcc-section-title">Infos bus</div>
+        <div class="pcc-target-strip">
+          <span id="pccSelectedBusName">Aucun bus selectionne</span>
+        </div>
+        <div id="pccSelectedBusDetails" class="pcc-bus-detail-grid"></div>
+        <div class="pcc-message-actions">
+          <button type="button" id="pccCenterBusBtn" class="pcc-tool-btn">Centrer bus</button>
+          <button type="button" id="pccRecordBusVoice" class="pcc-voice-btn">Envoi message Vocal Bus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="pccRecordingModal" class="pcc-recording-modal" role="dialog" aria-modal="true" aria-labelledby="pccRecordingTitle" hidden>
+    <div class="pcc-recording-dialog">
+      <div class="pcc-recording-indicator" aria-hidden="true"></div>
+      <div id="pccRecordingTitle" class="pcc-recording-title">Enregistrement vocal PCC</div>
+      <div id="pccRecordingTarget" class="pcc-recording-target">Message vocal en cours</div>
+      <div id="pccRecordingTimer" class="pcc-recording-timer">00:00</div>
+      <div class="pcc-recording-actions">
+        <button type="button" id="pccRecordingSendBtn" class="pcc-recording-send">Envoyer</button>
+        <button type="button" id="pccRecordingCancelBtn" class="pcc-recording-cancel">Annuler</button>
+      </div>
+    </div>
   </div>
   <div class="player-filter-panel" aria-label="Filtres joueurs">
     <div class="player-filter-head">
@@ -579,10 +1066,10 @@
       const MAP_FILES_ROOT = "../../map_files";
       const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
       const WS_RECONNECT_MS = 2000;
-      const PLAYER_WARNING_MS = 1000;
-      const PLAYER_STALE_MS = 10000;
+      const PLAYER_WARNING_MS = 3500;
+      const PLAYER_STALE_MS = 16000;
       const PLAYER_STATE_REFRESH_MS = 500;
-      const PLAYER_POSITION_INTERPOLATION_MS = 1000;
+      const PLAYER_POSITION_INTERPOLATION_MS = 1100;
       const PLAYER_GROUP_SOLO = "solo";
       const PLAYER_GROUP_CONVOY = "convoy";
       const ADMIN_MAP_MODE_ADMIN = "admin";
@@ -612,7 +1099,29 @@
       const pccLinesPanel = document.getElementById("pccLinesPanel");
       const pccLinesMeta = document.getElementById("pccLinesMeta");
       const pccLineList = document.getElementById("pccLineList");
+      const pccActiveLinePanel = document.getElementById("pccActiveLinePanel");
+      const pccLineManagementSection = document.getElementById("pccLineManagementSection");
+      const pccBusServiceSection = document.getElementById("pccBusServiceSection");
       const pccSelectedPlayers = document.getElementById("pccSelectedPlayers");
+      const pccConnectionBadge = document.getElementById("pccConnectionBadge");
+      const pccSelectedLineName = document.getElementById("pccSelectedLineName");
+      const pccActiveBusCount = document.getElementById("pccActiveBusCount");
+      const pccRouteCount = document.getElementById("pccRouteCount");
+      const pccAverageDelay = document.getElementById("pccAverageDelay");
+      const pccSelectedBusName = document.getElementById("pccSelectedBusName");
+      const pccSelectedBusLine = document.getElementById("pccSelectedBusLine");
+      const pccSelectedBusDetails = document.getElementById("pccSelectedBusDetails");
+      const pccDispatchPanel = document.getElementById("pccDispatchPanel");
+      const pccFitLineBtn = document.getElementById("pccFitLineBtn");
+      const pccCenterBusBtn = document.getElementById("pccCenterBusBtn");
+      const pccRecordBusVoice = document.getElementById("pccRecordBusVoice");
+      const pccRecordLineVoice = document.getElementById("pccRecordLineVoice");
+      const pccRecordingModal = document.getElementById("pccRecordingModal");
+      const pccRecordingTitle = document.getElementById("pccRecordingTitle");
+      const pccRecordingTarget = document.getElementById("pccRecordingTarget");
+      const pccRecordingTimer = document.getElementById("pccRecordingTimer");
+      const pccRecordingSendBtn = document.getElementById("pccRecordingSendBtn");
+      const pccRecordingCancelBtn = document.getElementById("pccRecordingCancelBtn");
       const filterSolo = document.getElementById("filterSolo");
       const filterConvoy = document.getElementById("filterConvoy");
       const soloCount = document.getElementById("soloCount");
@@ -633,9 +1142,10 @@
       let socket = null;
       let reconnectTimer = 0;
       let playerAnimationFrame = 0;
-      let adminMapMode = ADMIN_MAP_MODE_ADMIN;
+      let adminMapMode = readAdminMapModeFromUrl();
       let selectedPccLineKey = "";
       let selectedPccLineSetByUser = false;
+      let selectedPccPlayerId = "";
       let pccRouteRenderKey = "";
       let dbusDataLoadPromise = null;
       let dbusStopsById = new Map();
@@ -646,6 +1156,7 @@
       const pccDbusNavPathCache = new Map();
       let pccRecording = null;
       let pccRecordTimeout = 0;
+      let pccRecordUiTimer = 0;
       const playerMarkers = new Map();
       const pccStatusByPlayerId = new Map();
       const playerFilters = {
@@ -735,6 +1246,29 @@
         map.unproject(L.point(0, heightPx), maxNativeZoom),
         map.unproject(L.point(widthPx, 0), maxNativeZoom)
       );
+
+      function normalizeAdminMapMode(value) {
+        return String(value || "").trim().toLowerCase() === ADMIN_MAP_MODE_PCC
+          ? ADMIN_MAP_MODE_PCC
+          : ADMIN_MAP_MODE_ADMIN;
+      }
+
+      function readAdminMapModeFromUrl() {
+        try {
+          return normalizeAdminMapMode(new URLSearchParams(window.location.search || "").get("mode"));
+        } catch (err) {
+          return ADMIN_MAP_MODE_ADMIN;
+        }
+      }
+
+      function syncAdminMapModeUrl(mode) {
+        if (!(window.history && window.history.replaceState)) return;
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set("mode", normalizeAdminMapMode(mode));
+          window.history.replaceState(window.history.state, "", url);
+        } catch (err) { }
+      }
 
       function showError(message) {
         const text = String(message || "").trim();
@@ -1919,8 +2453,27 @@
         return "";
       }
 
+      function setPccPanelStatus() {}
+
+      function getPccRecordingTargets(recording) {
+        if (!recording || typeof recording !== "object") return [];
+        if (Array.isArray(recording.targets) && recording.targets.length) return recording.targets;
+        if (!recording.targetPlayerId && !recording.targetSteamId) return [];
+        return [{
+          localPlayerId: recording.playerId || "",
+          targetPlayerId: recording.targetPlayerId || "",
+          targetSteamId: recording.targetSteamId || "",
+          targetLabel: recording.targetLabel || ""
+        }];
+      }
+
       function isPccRecordingForPlayer(player) {
-        return !!(pccRecording && pccRecording.playerId === getPccPlayerId(player));
+        if (!pccRecording) return false;
+        const playerId = getPccPlayerId(player);
+        if (!playerId) return false;
+        return getPccRecordingTargets(pccRecording).some(function (target) {
+          return String(target && target.localPlayerId || "") === playerId;
+        });
       }
 
       function getPccVoiceStatus(player) {
@@ -1930,6 +2483,13 @@
         const stored = pccStatusByPlayerId.get(getPccPlayerId(player));
         if (stored && stored.text) return stored;
         return { text: "Pret a envoyer un message vocal PCC cible.", kind: "" };
+      }
+
+      function setPccVoiceStatusForRecording(recording, text, kind = "") {
+        getPccRecordingTargets(recording).forEach(function (target) {
+          if (target && target.localPlayerId) setPccVoiceStatus(target.localPlayerId, text, kind);
+        });
+        if (recording && recording.panel === true) setPccPanelStatus(text, kind);
       }
 
       function getSelectedPccVoiceFilters() {
@@ -2105,6 +2665,7 @@
           if (getPccPlayerId(record.player) !== safeId) continue;
           syncPccVoiceControls(record);
         }
+        syncPccDispatchControls();
       }
 
       function syncPccVoiceControls(record) {
@@ -2205,6 +2766,11 @@
 
       function openPlayerPopup(record) {
         if (!record || !record.marker) return;
+        if (adminMapMode === ADMIN_MAP_MODE_PCC) {
+          if (record.marker.closePopup) record.marker.closePopup();
+          selectPccPlayer(getPccPlayerId(record.player), { focus: false, toggle: true });
+          return;
+        }
         bindPlayerPopup(record);
         updatePlayerPopup(record, { force: true, preserveScroll: false });
         record.marker.openPopup();
@@ -2230,6 +2796,138 @@
 
       function syncAllPccVoiceControls() {
         for (const record of playerMarkers.values()) syncPccVoiceControls(record);
+        syncPccDispatchControls();
+        syncPccRecordingModal();
+      }
+
+      function getSelectedPccRecord() {
+        if (!selectedPccPlayerId) return null;
+        const record = playerMarkers.get(String(selectedPccPlayerId));
+        if (!record || !isPlayerVisibleByFilter(record.player)) return null;
+        return record;
+      }
+
+      function getPccDispatchRecordsForLine() {
+        return getPccSelectedRecords().filter(function (record) {
+          const player = record && record.player ? record.player : null;
+          return !!(getPccTargetPlayerId(player) || getPccTargetSteamId(player));
+        });
+      }
+
+      function buildPccVoiceTargetsFromRecords(records) {
+        const out = [];
+        const seen = new Set();
+        (Array.isArray(records) ? records : []).forEach(function (record) {
+          const player = record && record.player ? record.player : null;
+          if (!player) return;
+          const targetPlayerId = getPccTargetPlayerId(player);
+          const targetSteamId = getPccTargetSteamId(player);
+          if (!targetPlayerId && !targetSteamId) return;
+          const key = targetPlayerId || ("steam:" + targetSteamId);
+          if (seen.has(key)) return;
+          seen.add(key);
+          out.push({
+            localPlayerId: getPccPlayerId(player),
+            targetPlayerId,
+            targetSteamId,
+            targetLabel: playerDisplayTitle(player)
+          });
+        });
+        return out;
+      }
+
+      function getPccVoiceTargetsUnavailableReason(targets) {
+        const list = Array.isArray(targets) ? targets : [];
+        if (!list.length) return "Aucune cible PCC disponible.";
+        if (!isPccRecorderSupported()) return "Micro non supporte par ce navigateur.";
+        if (!isPccWebSocketReady()) return "WebSocket panel non connecte.";
+        return "";
+      }
+
+      function getPccVoiceTargetSetKey(targets) {
+        return (Array.isArray(targets) ? targets : [])
+          .map(function (target) {
+            return String(target && (target.targetPlayerId || target.targetSteamId) || "");
+          })
+          .filter(Boolean)
+          .sort()
+          .join("|");
+      }
+
+      function isSamePccRecordingTargetSet(targets) {
+        if (!pccRecording) return false;
+        const currentKey = getPccVoiceTargetSetKey(getPccRecordingTargets(pccRecording));
+        const nextKey = getPccVoiceTargetSetKey(targets);
+        return !!currentKey && currentKey === nextKey;
+      }
+
+      function pccBusDetailItem(label, value) {
+        const text = value == null || String(value).trim() === "" ? "--" : String(value).trim();
+        return `<div class="pcc-bus-detail-item"><span class="pcc-bus-detail-label">${escapeHtml(label)}</span><span class="pcc-bus-detail-value">${escapeHtml(text)}</span></div>`;
+      }
+
+      function renderPccSelectedBusDetails(record) {
+        if (!pccSelectedBusDetails) return;
+        if (!record || !record.player) {
+          pccSelectedBusDetails.hidden = true;
+          pccSelectedBusDetails.innerHTML = "";
+          return;
+        }
+        const player = record.player || {};
+        const busLine = getPlayerBusLine(player);
+        pccSelectedBusDetails.hidden = false;
+        pccSelectedBusDetails.innerHTML = [
+          pccBusDetailItem("Destination", busLine ? formatPccBusDestination(busLine) : PCC_OUT_OF_SERVICE_LABEL),
+          pccBusDetailItem("Prochain", formatPccNextStop(busLine)),
+          pccBusDetailItem("Retard", formatPccBusDelay(busLine)),
+          pccBusDetailItem("Vitesse", formatPccBusSpeed(player)),
+          pccBusDetailItem("Charge", busLine ? formatPccBusCapacity(busLine) : ""),
+          pccBusDetailItem("Arrets", busLine ? formatPccBusStopsProgress(busLine) : "")
+        ].join("");
+      }
+
+      function syncPccSelectedLineSections() {
+        const hasSelectedLine = !!selectedPccLineKey;
+        if (pccLineManagementSection) pccLineManagementSection.hidden = !hasSelectedLine;
+        if (pccBusServiceSection) pccBusServiceSection.hidden = !hasSelectedLine;
+      }
+
+      function syncPccDispatchControls() {
+        syncPccSelectedLineSections();
+        const selectedRecord = getSelectedPccRecord();
+        const selectedPlayer = selectedRecord && selectedRecord.player ? selectedRecord.player : null;
+        const selectedBusLine = getPlayerBusLine(selectedPlayer);
+        const selectedLineRecords = getPccSelectedRecords();
+        const hasBusInSelectedLine = selectedLineRecords.length > 0;
+        const busTargets = buildPccVoiceTargetsFromRecords(selectedRecord ? [selectedRecord] : []);
+        const lineTargets = buildPccVoiceTargetsFromRecords(selectedLineRecords);
+        const busRecording = !!(pccRecording && pccRecording.scope !== "line" && busTargets.length && isSamePccRecordingTargetSet(busTargets));
+        const lineRecording = !!(pccRecording && pccRecording.scope === "line" && lineTargets.length && isSamePccRecordingTargetSet(lineTargets));
+        const recordingInProgress = !!pccRecording;
+        const busReason = getPccVoiceTargetsUnavailableReason(busTargets);
+        const lineReason = getPccVoiceTargetsUnavailableReason(lineTargets);
+
+        if (pccDispatchPanel) pccDispatchPanel.hidden = !selectedPccLineKey || !hasBusInSelectedLine || !selectedRecord;
+        if (pccSelectedBusName) {
+          pccSelectedBusName.textContent = selectedPlayer ? playerDisplayTitle(selectedPlayer) : "Aucun bus selectionne";
+        }
+        if (pccSelectedBusLine) {
+          pccSelectedBusLine.textContent = selectedBusLine ? (getPccLineLabelForPlayer(selectedPlayer) || "Ligne") : "Cible";
+        }
+        renderPccSelectedBusDetails(selectedRecord);
+        if (pccCenterBusBtn) pccCenterBusBtn.disabled = !selectedRecord;
+        if (pccRecordBusVoice) {
+          pccRecordBusVoice.textContent = "Envoi message Vocal Bus";
+          pccRecordBusVoice.classList.toggle("is-recording", busRecording);
+          pccRecordBusVoice.disabled = !!(recordingInProgress || busReason);
+          pccRecordBusVoice.title = recordingInProgress ? "Enregistrement en cours" : (busReason || "");
+        }
+        if (pccRecordLineVoice) {
+          pccRecordLineVoice.textContent = "Envoi message Vocal Général Ligne";
+          pccRecordLineVoice.classList.toggle("is-recording", lineRecording);
+          pccRecordLineVoice.disabled = !!(recordingInProgress || lineReason);
+          pccRecordLineVoice.title = recordingInProgress ? "Enregistrement en cours" : (lineReason || "");
+        }
       }
 
       function pickPccRecorderMimeType() {
@@ -2283,6 +2981,51 @@
         });
       }
 
+      function formatPccRecordingDuration(ms) {
+        const totalSeconds = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      function getPccRecordingTargetLabel(recording) {
+        const targets = getPccRecordingTargets(recording);
+        if (recording && recording.scope === "line") {
+          const line = String(recording.lineLabel || "").trim();
+          const count = targets.length ? `${targets.length} bus` : "aucun bus";
+          return `${line ? "Ligne " + line : "Toute la ligne"} - ${count}`;
+        }
+        const first = targets[0] || {};
+        return String(first.targetLabel || recording && recording.targetLabel || "Bus selectionne").trim();
+      }
+
+      function syncPccRecordingModal() {
+        if (!pccRecordingModal) return;
+        const recording = pccRecording;
+        pccRecordingModal.hidden = !recording;
+        if (!recording) return;
+        const isLine = recording.scope === "line";
+        if (pccRecordingTitle) {
+          pccRecordingTitle.textContent = isLine
+            ? "Enregistrement vocal général ligne"
+            : "Enregistrement vocal bus";
+        }
+        if (pccRecordingTarget) pccRecordingTarget.textContent = getPccRecordingTargetLabel(recording);
+        if (pccRecordingTimer) pccRecordingTimer.textContent = formatPccRecordingDuration(Date.now() - Number(recording.startedAt || Date.now()));
+      }
+
+      function startPccRecordingUiTimer() {
+        if (pccRecordUiTimer) window.clearInterval(pccRecordUiTimer);
+        syncPccRecordingModal();
+        pccRecordUiTimer = window.setInterval(syncPccRecordingModal, 250);
+      }
+
+      function stopPccRecordingUiTimer() {
+        if (pccRecordUiTimer) window.clearInterval(pccRecordUiTimer);
+        pccRecordUiTimer = 0;
+        syncPccRecordingModal();
+      }
+
       function sendPccSocketJson(payload) {
         if (!isPccWebSocketReady()) throw new Error("WebSocket panel non connecte");
         socket.send(JSON.stringify(payload));
@@ -2319,66 +3062,93 @@
         setPccVoiceStatus(playerId, `Message PCC envoye (${total} paquets).`, "ok");
       }
 
-      async function sendPccVoiceRecording(recording, blob) {
-        if (!recording || !blob) return;
-        const playerId = recording.playerId;
-        const durationMs = Math.max(0, Date.now() - Number(recording.startedAt || Date.now()));
-        if (blob.size <= 0) {
-          setPccVoiceStatus(playerId, "Aucun son enregistre.", "error");
-          return;
-        }
-        if (blob.size > PCC_VOICE_MAX_BYTES) {
-          setPccVoiceStatus(playerId, "Message trop lourd, non envoye.", "error");
-          return;
-        }
-        if (!isPccWebSocketReady()) {
-          setPccVoiceStatus(playerId, "WebSocket panel non connecte.", "error");
-          return;
-        }
-        let dataUrl = "";
-        try {
-          dataUrl = await blobToDataUrl(blob);
-        } catch (err) {
-          setPccVoiceStatus(playerId, "Encodage audio impossible.", "error");
-          return;
-        }
-        if (!/^data:audio\//i.test(dataUrl)) {
-          setPccVoiceStatus(playerId, "Format audio refuse.", "error");
-          return;
-        }
-        const messageId = createPccMessageId();
-        const filters = Array.isArray(recording.filters) ? recording.filters.slice() : [];
+      function buildPccVoicePayloadForTarget(recording, target, messageId) {
+        const targetPlayerId = String(target && target.targetPlayerId || "");
+        const targetSteamId = String(target && target.targetSteamId || "");
+        const lineLabel = String(recording && recording.lineLabel || "");
         const payload = {
           source: "admin_map",
           action: PCC_VOICE_ACTION,
           type: PCC_VOICE_ACTION,
           id: messageId,
           time: Date.now(),
-          targetPlayerId: recording.targetPlayerId,
-          target_player_id: recording.targetPlayerId,
-          targetClientId: recording.targetPlayerId,
-          target_client_id: recording.targetPlayerId,
-          targetSteamId: recording.targetSteamId || "",
-          target_steamid: recording.targetSteamId || "",
+          targetPlayerId,
+          target_player_id: targetPlayerId,
+          targetClientId: targetPlayerId,
+          target_client_id: targetPlayerId,
+          targetSteamId,
+          target_steamid: targetSteamId,
           target: {
-            playerId: recording.targetPlayerId,
-            clientId: recording.targetPlayerId,
-            pccClientId: recording.targetPlayerId,
-            steamid: recording.targetSteamId || "",
-            label: recording.targetLabel || ""
+            playerId: targetPlayerId,
+            clientId: targetPlayerId,
+            pccClientId: targetPlayerId,
+            steamid: targetSteamId,
+            label: target && target.targetLabel || ""
           },
-          filters
+          scope: recording && recording.scope || "bus",
+          broadcast: !!(recording && recording.scope === "line"),
+          targetLineKey: recording && recording.lineKey || "",
+          targetLineLabel: lineLabel,
+          line: lineLabel,
+          filters: Array.isArray(recording && recording.filters) ? recording.filters.slice() : []
         };
+        return payload;
+      }
+
+      async function sendPccVoiceRecording(recording, blob) {
+        if (!recording || !blob) return;
+        const targets = getPccRecordingTargets(recording);
+        const durationMs = Math.max(0, Date.now() - Number(recording.startedAt || Date.now()));
+        if (!targets.length) {
+          setPccVoiceStatusForRecording(recording, "Aucune cible PCC disponible.", "error");
+          return;
+        }
+        if (blob.size <= 0) {
+          setPccVoiceStatusForRecording(recording, "Aucun son enregistre.", "error");
+          return;
+        }
+        if (blob.size > PCC_VOICE_MAX_BYTES) {
+          setPccVoiceStatusForRecording(recording, "Message trop lourd, non envoye.", "error");
+          return;
+        }
+        if (!isPccWebSocketReady()) {
+          setPccVoiceStatusForRecording(recording, "WebSocket panel non connecte.", "error");
+          return;
+        }
+        let dataUrl = "";
+        try {
+          dataUrl = await blobToDataUrl(blob);
+        } catch (err) {
+          setPccVoiceStatusForRecording(recording, "Encodage audio impossible.", "error");
+          return;
+        }
+        if (!/^data:audio\//i.test(dataUrl)) {
+          setPccVoiceStatusForRecording(recording, "Format audio refuse.", "error");
+          return;
+        }
+        const filters = Array.isArray(recording.filters) ? recording.filters.slice() : [];
         const audioMeta = {
           mimeType: blob.type || recording.mimeType || "audio/webm",
           sizeBytes: blob.size,
           durationMs,
           filters
         };
+        const messageIdBase = createPccMessageId();
+        let sent = 0;
         try {
-          await sendPccVoicePayload(playerId, payload, audioMeta, dataUrl);
+          for (let index = 0; index < targets.length; index += 1) {
+            const target = targets[index];
+            const messageId = targets.length > 1 ? `${messageIdBase}-${index + 1}` : messageIdBase;
+            const payload = buildPccVoicePayloadForTarget(recording, target, messageId);
+            await sendPccVoicePayload(target.localPlayerId || recording.playerId, payload, audioMeta, dataUrl);
+            sent += 1;
+          }
+          const okText = recording.scope === "line"
+            ? `Message PCC general envoye a ${sent} bus.`
+            : "Message PCC envoye.";
+          setPccVoiceStatusForRecording(recording, okText, "ok");
         } catch (err2) {
-          setPccVoiceStatus(playerId, "Erreur envoi PCC.", "error");
+          setPccVoiceStatusForRecording(recording, "Erreur envoi PCC.", "error");
           try { socket.close(); } catch (err3) { }
         }
       }
@@ -2388,6 +3158,7 @@
         const recording = pccRecording;
         pccRecording = null;
         clearPccRecordTimeout();
+        stopPccRecordingUiTimer();
         recording.cancelled = cancelled === true;
         try {
           if (recording.recorder && recording.recorder.state !== "inactive") {
@@ -2398,25 +3169,30 @@
         } catch (err) {
           stopPccMediaStream(recording.stream);
         }
-        setPccVoiceStatus(recording.playerId, recording.cancelled ? "Enregistrement annule." : "Envoi PCC...", recording.cancelled ? "" : "");
+        setPccVoiceStatusForRecording(recording, recording.cancelled ? "Enregistrement annule." : "Envoi PCC...", recording.cancelled ? "" : "");
         syncAllPccVoiceControls();
       }
 
-      async function startPccVoiceRecording(playerId) {
-        const record = playerMarkers.get(String(playerId || ""));
-        const player = record && record.player ? record.player : null;
-        if (!player) return;
+      async function startPccVoiceRecordingForTargets(targets, options = null) {
+        const targetList = Array.isArray(targets) ? targets.filter(Boolean) : [];
+        const opts = options && typeof options === "object" ? options : {};
         if (pccRecording) {
-          if (pccRecording.playerId === getPccPlayerId(player)) {
+          if (isSamePccRecordingTargetSet(targetList)) {
             finishPccVoiceRecording(false);
           } else {
-            setPccVoiceStatus(getPccPlayerId(player), "Un autre message PCC est en cours.", "error");
+            setPccPanelStatus("Un autre message PCC est en cours.", "error");
+            targetList.forEach(function (target) {
+              if (target && target.localPlayerId) setPccVoiceStatus(target.localPlayerId, "Un autre message PCC est en cours.", "error");
+            });
           }
           return;
         }
-        const reason = getPccVoiceUnavailableReason(player);
+        const reason = getPccVoiceTargetsUnavailableReason(targetList);
         if (reason) {
-          setPccVoiceStatus(getPccPlayerId(player), reason, "error");
+          if (opts.panel) setPccPanelStatus(reason, "error");
+          targetList.forEach(function (target) {
+            if (target && target.localPlayerId) setPccVoiceStatus(target.localPlayerId, reason, "error");
+          });
           return;
         }
         let stream = null;
@@ -2429,7 +3205,11 @@
             }
           });
         } catch (err) {
-          setPccVoiceStatus(getPccPlayerId(player), "Acces micro refuse ou indisponible.", "error");
+          const message = "Acces micro refuse ou indisponible.";
+          if (opts.panel) setPccPanelStatus(message, "error");
+          targetList.forEach(function (target) {
+            if (target && target.localPlayerId) setPccVoiceStatus(target.localPlayerId, message, "error");
+          });
           return;
         }
         const mimeType = pickPccRecorderMimeType();
@@ -2440,15 +3220,25 @@
           recorder = new MediaRecorder(stream, recorderOptions);
         } catch (err2) {
           stopPccMediaStream(stream);
-          setPccVoiceStatus(getPccPlayerId(player), "Enregistreur audio indisponible.", "error");
+          const message = "Enregistreur audio indisponible.";
+          if (opts.panel) setPccPanelStatus(message, "error");
+          targetList.forEach(function (target) {
+            if (target && target.localPlayerId) setPccVoiceStatus(target.localPlayerId, message, "error");
+          });
           return;
         }
         const chunks = [];
+        const primaryTarget = targetList[0] || {};
         const recording = {
-          playerId: getPccPlayerId(player),
-          targetPlayerId: getPccTargetPlayerId(player),
-          targetSteamId: getPccTargetSteamId(player),
-          targetLabel: playerDisplayTitle(player),
+          playerId: primaryTarget.localPlayerId || "",
+          targetPlayerId: primaryTarget.targetPlayerId || "",
+          targetSteamId: primaryTarget.targetSteamId || "",
+          targetLabel: primaryTarget.targetLabel || "",
+          targets: targetList,
+          scope: opts.scope === "line" ? "line" : "bus",
+          lineKey: opts.lineKey || "",
+          lineLabel: opts.lineLabel || "",
+          panel: opts.panel === true,
           filters: getSelectedPccVoiceFilters(),
           mimeType,
           stream,
@@ -2467,7 +3257,7 @@
           sendPccVoiceRecording(recording, blob);
         };
         recorder.onerror = function () {
-          setPccVoiceStatus(recording.playerId, "Erreur enregistrement PCC.", "error");
+          setPccVoiceStatusForRecording(recording, "Erreur enregistrement PCC.", "error");
           finishPccVoiceRecording(true);
         };
         pccRecording = recording;
@@ -2476,17 +3266,31 @@
         } catch (err3) {
           pccRecording = null;
           stopPccMediaStream(stream);
-          setPccVoiceStatus(recording.playerId, "Demarrage micro impossible.", "error");
+          setPccVoiceStatusForRecording(recording, "Demarrage micro impossible.", "error");
           return;
         }
-        setPccVoiceStatus(recording.playerId, "Enregistrement en cours...", "error");
+        startPccRecordingUiTimer();
+        setPccVoiceStatusForRecording(recording, "Enregistrement en cours...", "error");
         clearPccRecordTimeout();
         pccRecordTimeout = window.setTimeout(function () {
-          if (pccRecording && pccRecording.playerId === recording.playerId) {
+          if (pccRecording && pccRecording === recording) {
             finishPccVoiceRecording(false);
           }
         }, PCC_VOICE_MAX_DURATION_MS);
         syncAllPccVoiceControls();
+      }
+
+      async function startPccVoiceRecording(playerId) {
+        const record = playerMarkers.get(String(playerId || ""));
+        const player = record && record.player ? record.player : null;
+        if (!player) return;
+        const targets = buildPccVoiceTargetsFromRecords([record]);
+        const busLine = getPlayerBusLine(player);
+        startPccVoiceRecordingForTargets(targets, {
+          scope: "bus",
+          lineKey: getPccLineKeyForPlayer(player),
+          lineLabel: busLine ? formatBusLineName(busLine) : ""
+        });
       }
 
       function handlePccVoicePopupClick(event) {
@@ -2999,7 +3803,10 @@
         if (!selectedPccLineKey) return [];
         const out = [];
         for (const record of playerMarkers.values()) {
-          if (record && isPlayerVisibleByFilter(record.player)) out.push(record);
+          if (!record) continue;
+          const group = normalizePlayerGroupForPlayer(record.player);
+          if (playerFilters[group] === false) continue;
+          if (isPlayerVisibleInPccMode(record.player)) out.push(record);
         }
         out.sort(function (a, b) {
           return playerDisplayTitle(a && a.player).localeCompare(playerDisplayTitle(b && b.player), "fr", {
@@ -3010,33 +3817,124 @@
         return out;
       }
 
-      function renderPccLineList(lines) {
-        if (!pccLineList) return;
-        pccLineList.innerHTML = "";
+      function renderPccLineButtonList(container, lines, emptyText) {
+        if (!container) return;
+        container.innerHTML = "";
+        if (!lines.length) {
+          const empty = document.createElement("div");
+          empty.className = "pcc-empty-state";
+          empty.textContent = emptyText;
+          container.appendChild(empty);
+          return;
+        }
         lines.forEach(function (line) {
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "pcc-line-btn" + (line.key === selectedPccLineKey ? " is-active" : "");
           btn.setAttribute("data-pcc-line-key", line.key);
           btn.style.setProperty("--line-color", line.color || "#7dd3fc");
+          const routeCount = (line.routeNames && line.routeNames.size) || (line.activeRouteNames && line.activeRouteNames.size) || 0;
           btn.innerHTML =
             `<span class="pcc-line-color"></span>` +
-            `<span class="pcc-line-label">${escapeHtml(line.label)}</span>` +
+            `<span><span class="pcc-line-label">${escapeHtml(line.label)}</span><span class="pcc-line-sub">${escapeHtml(routeCount || 0)} route(s)</span></span>` +
             `<span class="pcc-line-count">${escapeHtml(line.count)}</span>`;
-          pccLineList.appendChild(btn);
+          container.appendChild(btn);
         });
+      }
+
+      function renderPccLineList(lines) {
+        const list = Array.isArray(lines) ? lines : [];
+        const activeLines = list.filter(function (line) {
+          return Number(line && line.count) > 0;
+        });
+        renderPccLineButtonList(pccLineList, activeLines, "Aucune ligne avec bus en service.");
+        if (pccActiveLinePanel) pccActiveLinePanel.hidden = false;
+      }
+
+      function formatPccBusDelay(busLine) {
+        const value = Number(busLine && busLine.liveDelayMinutes);
+        if (!Number.isFinite(value)) return "--";
+        if (Math.abs(value) < 0.05) return "A l'heure";
+        return value > 0 ? `+${Math.round(value)} min` : `${Math.round(value)} min`;
+      }
+
+      function formatPccBusSpeed(player) {
+        const value = Number(player && player.speedKmh);
+        if (!Number.isFinite(value)) return "--";
+        return `${Math.max(0, Math.round(value))} km/h`;
+      }
+
+      function formatPccNextStop(busLine) {
+        const next = String(busLine && busLine.nextStopName || "").trim();
+        const current = String(busLine && busLine.currentStopName || "").trim();
+        return next || current || "--";
+      }
+
+      function formatPccBusDestination(busLine) {
+        if (!busLine || typeof busLine !== "object") return "";
+        const direct = String(
+          busLine.destinationName ||
+          busLine.destination ||
+          busLine.routeDestination ||
+          busLine.terminusStopName ||
+          busLine.terminusName ||
+          busLine.routeTerminusName ||
+          ""
+        ).trim();
+        if (direct) return direct;
+        const routeName = String(busLine.routeName || "").trim();
+        const parsed = parsePccRouteName(routeName);
+        return String(parsed.routeTitle || routeName || "").trim();
+      }
+
+      function formatPccBusCapacity(busLine) {
+        if (!busLine || typeof busLine !== "object") return "";
+        const inBus = formatInfoInteger(busLine.passengersInBus);
+        const cap = String(busLine.busMaxCapacityDisplay || "").trim() || formatInfoInteger(busLine.busMaxCapacity);
+        if (inBus && cap) return `${inBus} / ${cap}`;
+        return inBus || cap;
+      }
+
+      function formatPccBusStopsProgress(busLine) {
+        if (!busLine || typeof busLine !== "object") return "";
+        const reached = formatInfoInteger(busLine.reachedStops);
+        const total = formatInfoInteger(busLine.stopCount);
+        if (reached && total) return `${reached} / ${total}`;
+        return reached || total;
+      }
+
+      function selectPccPlayer(playerId, options = null) {
+        const safeId = String(playerId || "");
+        const opts = options && typeof options === "object" ? options : {};
+        const nextId = opts.toggle === true && safeId && safeId === selectedPccPlayerId ? "" : safeId;
+        selectedPccPlayerId = nextId;
+        const record = nextId ? playerMarkers.get(nextId) : null;
+        if (record && opts.focus === true) {
+          const latlng = record.displayLatLng || (record.marker && record.marker.getLatLng && record.marker.getLatLng());
+          if (latlng) map.panTo(latlng, { animate: true, duration: 0.35 });
+        }
+        if (record && opts.open === true && adminMapMode !== ADMIN_MAP_MODE_PCC) openPlayerPopup(record);
+        if (record) setPccPanelStatus(`Cible bus: ${playerDisplayTitle(record.player)}.`, "");
+        else setPccPanelStatus("Selectionnez une ligne puis un bus pour cibler un message.", "");
+        renderPccSelectedPlayers();
+        syncPccDispatchControls();
       }
 
       function renderPccSelectedPlayers() {
         if (!pccSelectedPlayers) return;
         pccSelectedPlayers.innerHTML = "";
         const records = getPccSelectedRecords();
+        const selectedStillVisible = records.some(function (record) {
+          return getPccPlayerId(record && record.player) === selectedPccPlayerId;
+        });
+        if (selectedPccPlayerId && !selectedStillVisible) selectedPccPlayerId = "";
         if (!records.length) {
           const empty = document.createElement("div");
           empty.textContent = isPccOutOfServiceKey(selectedPccLineKey)
             ? "Aucun joueur hors service."
             : (selectedPccLineKey ? "Aucun bus sur cette ligne." : "Selectionnez une ligne.");
           pccSelectedPlayers.appendChild(empty);
+          syncPccDispatchControls();
           return;
         }
         records.forEach(function (record) {
@@ -3046,18 +3944,28 @@
             ? (String(busLine.routeName || "").trim() || formatBusLineStatus(busLine))
             : PCC_OUT_OF_SERVICE_LABEL;
           const row = document.createElement("div");
-          row.className = "pcc-selected-player";
+          const playerId = getPccPlayerId(player);
+          row.className = "pcc-selected-player" +
+            (playerId && playerId === selectedPccPlayerId ? " is-active" : "");
+          row.setAttribute("data-pcc-player-row", playerId);
           row.innerHTML =
+            `<div class="pcc-selected-player-head">` +
             `<span class="pcc-selected-player-name">${escapeHtml(playerDisplayTitle(player))}</span>` +
-            `<span class="pcc-selected-player-route">${escapeHtml(routeText)}</span>`;
+            `<span class="pcc-bus-chip">${escapeHtml(formatBusLineStatus(busLine) || "Bus")}</span>` +
+            `</div>` +
+            `<span class="pcc-selected-player-route">${escapeHtml(routeText)}</span>` +
+            `<div class="pcc-selected-player-meta">` +
+            `<span>${escapeHtml(formatPccNextStop(busLine))}</span>` +
+            `<span>${escapeHtml(formatPccBusDelay(busLine))}</span>` +
+            `<span>${escapeHtml(formatPccBusSpeed(player))}</span>` +
+            `</div>`;
           row.title = busLine ? formatBusLineName(busLine) : "Aucune ligne active";
           row.addEventListener("click", function () {
-            openPlayerPopup(record);
-            const latlng = record.displayLatLng || (record.marker && record.marker.getLatLng && record.marker.getLatLng());
-            if (latlng) map.panTo(latlng, { animate: true, duration: 0.35 });
+            selectPccPlayer(playerId, { focus: true, toggle: true });
           });
           pccSelectedPlayers.appendChild(row);
         });
+        syncPccDispatchControls();
       }
 
       function getPccDbusRouteEntriesForSelectedKey() {
@@ -3483,6 +4391,68 @@
         pccRouteRenderKey = "";
       }
 
+      function extendPccBoundsWithLayer(layer, extendLatLng) {
+        if (!layer) return;
+        if (layer.getBounds) {
+          const bounds = layer.getBounds();
+          if (bounds && bounds.isValid && bounds.isValid()) {
+            extendLatLng(bounds.getSouthWest());
+            extendLatLng(bounds.getNorthEast());
+            return;
+          }
+        }
+        if (layer.getLatLng) {
+          const latlng = layer.getLatLng();
+          if (latlng) extendLatLng(latlng);
+          return;
+        }
+        if (layer.eachLayer) {
+          layer.eachLayer(function (child) {
+            extendPccBoundsWithLayer(child, extendLatLng);
+          });
+        }
+      }
+
+      function fitPccSelectedLineView() {
+        if (!selectedPccLineKey) {
+          setPccPanelStatus("Selectionnez une ligne a centrer.", "error");
+          return;
+        }
+        refreshPccLineRouteLayers();
+        let bounds = null;
+        const extendLatLng = function (latlng) {
+          if (!latlng) return;
+          if (!bounds) bounds = L.latLngBounds(latlng, latlng);
+          else bounds.extend(latlng);
+        };
+        if (pccRouteOverlayLayer && pccRouteOverlayLayer.eachLayer) {
+          pccRouteOverlayLayer.eachLayer(function (layer) {
+            extendPccBoundsWithLayer(layer, extendLatLng);
+          });
+        }
+        getPccSelectedRecords().forEach(function (record) {
+          const latlng = record.displayLatLng || (record.marker && record.marker.getLatLng && record.marker.getLatLng());
+          extendLatLng(latlng);
+        });
+        if (bounds && bounds.isValid && bounds.isValid()) {
+          map.fitBounds(bounds.pad(0.18), {
+            animate: true,
+            duration: 0.35,
+            maxZoom: maxNativeZoom + 1
+          });
+          setPccPanelStatus("Vue recentree sur la ligne.", "ok");
+        } else {
+          setPccPanelStatus("Aucun trace ou bus a centrer.", "error");
+        }
+      }
+
+      function centerSelectedPccBusView() {
+        const record = getSelectedPccRecord();
+        if (!record) return;
+        const latlng = record.displayLatLng || (record.marker && record.marker.getLatLng && record.marker.getLatLng());
+        if (latlng) map.panTo(latlng, { animate: true, duration: 0.35 });
+      }
+
       function refreshPccLineRouteLayers() {
         if (adminMapMode !== ADMIN_MAP_MODE_PCC) {
           clearPccRouteOverlay();
@@ -3544,43 +4514,45 @@
             .catch(function () { });
         }
         const lines = collectPccLineSummaries();
-        const hasSelected = lines.some(function (line) { return line.key === selectedPccLineKey; });
-        const offLine = lines.find(function (line) {
-          return isPccOutOfServiceKey(line.key);
-        });
-        const shouldAutoSelect =
-          !hasSelected ||
-          (
-            !selectedPccLineSetByUser &&
-            isPccOutOfServiceKey(selectedPccLineKey) &&
-            (!offLine || Number(offLine.count) <= 0) &&
-            lines.some(function (line) { return !isPccOutOfServiceKey(line.key); })
-          );
-        if (shouldAutoSelect) {
-          const activeLine = lines.find(function (line) {
-            return !isPccOutOfServiceKey(line.key) && Number(line.count) > 0;
-          });
-          const firstLine = lines.find(function (line) {
-            return !isPccOutOfServiceKey(line.key);
-          });
-          selectedPccLineKey = (activeLine || firstLine || offLine || {}).key || "";
+        const currentSelectedLine = lines.find(function (line) { return line.key === selectedPccLineKey; });
+        const currentSelectedHasPlayers = currentSelectedLine && Number(currentSelectedLine.count) > 0;
+        if (selectedPccLineKey && !currentSelectedHasPlayers) {
+          selectedPccLineKey = "";
+          selectedPccPlayerId = "";
         }
-        if (pccLinesMeta) {
-          const selected = lines.find(function (line) { return line.key === selectedPccLineKey; });
-          const routeCount = selected
-            ? (selected.routeNames.size || selected.activeRouteNames.size || 0)
-            : 0;
-          pccLinesMeta.textContent = selected
-            ? `${selected.count} bus - ${routeCount || 0} route(s)`
-            : "Aucune ligne en cours";
+        const selected = lines.find(function (line) { return line.key === selectedPccLineKey; });
+        const routeCount = selected
+          ? (selected.routeNames.size || selected.activeRouteNames.size || 0)
+          : 0;
+        const selectedRecords = getPccSelectedRecords();
+        const delayValues = selectedRecords
+          .map(function (record) {
+            const busLine = getPlayerBusLine(record && record.player);
+            const value = Number(busLine && busLine.liveDelayMinutes);
+            return Number.isFinite(value) ? value : null;
+          })
+          .filter(function (value) { return value !== null; });
+        const averageDelay = delayValues.length
+          ? delayValues.reduce(function (sum, value) { return sum + value; }, 0) / delayValues.length
+          : null;
+        if (pccSelectedLineName) pccSelectedLineName.textContent = selected ? `Ligne ${selected.label}` : "PCC Bus";
+        if (pccActiveBusCount) pccActiveBusCount.textContent = String(selectedRecords.length);
+        if (pccRouteCount) pccRouteCount.textContent = String(routeCount || 0);
+        if (pccAverageDelay) {
+          pccAverageDelay.textContent = averageDelay === null
+            ? "--"
+            : (Math.abs(averageDelay) < 0.05 ? "0 min" : `${averageDelay > 0 ? "+" : ""}${Math.round(averageDelay)} min`);
         }
+        syncPccSelectedLineSections();
         renderPccLineList(lines);
         renderPccSelectedPlayers();
+        syncPccDispatchControls();
       }
 
       function syncAdminMapModeUi() {
         document.body.classList.toggle("is-pcc-map-mode", adminMapMode === ADMIN_MAP_MODE_PCC);
         if (pccLinesPanel) pccLinesPanel.hidden = adminMapMode !== ADMIN_MAP_MODE_PCC;
+        syncPccDispatchControls();
         document.querySelectorAll("[data-admin-map-mode]").forEach(function (button) {
           const mode = button.getAttribute("data-admin-map-mode") === ADMIN_MAP_MODE_PCC
             ? ADMIN_MAP_MODE_PCC
@@ -3592,6 +4564,13 @@
       }
 
       function rebuildOpenPlayerPopupsForCurrentMode() {
+        if (adminMapMode === ADMIN_MAP_MODE_PCC) {
+          for (const record of playerMarkers.values()) {
+            if (record && record.marker && record.marker.closePopup) record.marker.closePopup();
+            removePlayerBusRouteLayer(record);
+          }
+          return;
+        }
         for (const record of playerMarkers.values()) {
           if (!isRecordPopupOpen(record)) continue;
           updatePlayerPopup(record, {
@@ -3612,8 +4591,10 @@
         }
       }
 
-      function setAdminMapMode(mode) {
+      function setAdminMapMode(mode, options = null) {
         const nextMode = mode === ADMIN_MAP_MODE_PCC ? ADMIN_MAP_MODE_PCC : ADMIN_MAP_MODE_ADMIN;
+        const opts = options && typeof options === "object" ? options : {};
+        if (opts.updateUrl !== false) syncAdminMapModeUrl(nextMode);
         if (adminMapMode === nextMode) {
           syncAdminMapModeUi();
           refreshAllPlayerMarkerIcons();
@@ -3634,11 +4615,65 @@
         const safeKey = normalizePccLineKey(key);
         if (!safeKey) return;
         selectedPccLineSetByUser = true;
-        if (safeKey === selectedPccLineKey) return;
+        if (safeKey === selectedPccLineKey) {
+          selectedPccLineKey = "";
+          selectedPccPlayerId = "";
+          refreshPccModeUi();
+          syncAllPlayerFilterUi();
+          refreshPccLineRouteLayers();
+          return;
+        }
         selectedPccLineKey = safeKey;
+        selectedPccPlayerId = "";
+        const line = collectPccLineSummaries().find(function (item) { return item.key === selectedPccLineKey; });
+        setPccPanelStatus(line ? `Ligne ${line.label} selectionnee.` : "Ligne selectionnee.", "");
         refreshPccModeUi();
         syncAllPlayerFilterUi();
         refreshPccLineRouteLayers();
+      }
+
+      function getSelectedPccLineDispatchLabel() {
+        const line = collectPccLineSummaries().find(function (item) { return item.key === selectedPccLineKey; });
+        if (line && line.label) return String(line.label);
+        return isPccOutOfServiceKey(selectedPccLineKey) ? PCC_OUT_OF_SERVICE_LABEL : selectedPccLineKey;
+      }
+
+      function startPccPanelBusVoice() {
+        const record = getSelectedPccRecord();
+        if (!record) {
+          setPccPanelStatus("Selectionnez un bus avant d'envoyer un message cible.", "error");
+          return;
+        }
+        const player = record.player || {};
+        const targets = buildPccVoiceTargetsFromRecords([record]);
+        const reason = getPccVoiceTargetsUnavailableReason(targets);
+        if (reason) {
+          setPccPanelStatus(reason, "error");
+          return;
+        }
+        startPccVoiceRecordingForTargets(targets, {
+          panel: true,
+          scope: "bus",
+          lineKey: getPccLineKeyForPlayer(player),
+          lineLabel: formatBusLineName(getPlayerBusLine(player)) || getPccLineLabelForPlayer(player)
+        });
+      }
+
+      function startPccPanelLineVoice() {
+        const records = getPccDispatchRecordsForLine();
+        const targets = buildPccVoiceTargetsFromRecords(records);
+        const reason = getPccVoiceTargetsUnavailableReason(targets);
+        if (reason) {
+          setPccPanelStatus(reason, "error");
+          return;
+        }
+        const lineLabel = getSelectedPccLineDispatchLabel();
+        startPccVoiceRecordingForTargets(targets, {
+          panel: true,
+          scope: "line",
+          lineKey: selectedPccLineKey,
+          lineLabel
+        });
       }
 
       function syncPlayerMarkerVisibility(record) {
@@ -3942,6 +4977,7 @@
           output.textContent = "";
           show("Connecte au WebSocket");
           showError("");
+          syncPccDispatchControls();
           syncAllPccVoiceControls();
         };
 
@@ -3976,6 +5012,7 @@
           show("Deconnecte, reconnexion...");
           showError("WebSocket panel deconnecte, reconnexion...");
           if (pccRecording) finishPccVoiceRecording(true);
+          syncPccDispatchControls();
           syncAllPccVoiceControls();
           scheduleReconnect();
         };
@@ -3983,6 +5020,7 @@
         socket.onerror = function () {
           show("Erreur WebSocket");
           showError("Erreur WebSocket panel.");
+          syncPccDispatchControls();
           try { socket.close(); } catch (err) { }
         };
       }
@@ -4011,11 +5049,43 @@
             setAdminMapMode(button.getAttribute("data-admin-map-mode") || ADMIN_MAP_MODE_ADMIN);
           });
         });
-        if (pccLineList) {
-          pccLineList.addEventListener("click", function (event) {
+        const bindPccLineList = function (listNode) {
+          if (!listNode) return;
+          listNode.addEventListener("click", function (event) {
             const button = event.target && event.target.closest ? event.target.closest("[data-pcc-line-key]") : null;
             if (!button) return;
             selectPccLine(button.getAttribute("data-pcc-line-key") || "");
+          });
+        };
+        bindPccLineList(pccLineList);
+        if (pccFitLineBtn) {
+          pccFitLineBtn.addEventListener("click", function () {
+            fitPccSelectedLineView();
+          });
+        }
+        if (pccCenterBusBtn) {
+          pccCenterBusBtn.addEventListener("click", function () {
+            centerSelectedPccBusView();
+          });
+        }
+        if (pccRecordBusVoice) {
+          pccRecordBusVoice.addEventListener("click", function () {
+            startPccPanelBusVoice();
+          });
+        }
+        if (pccRecordLineVoice) {
+          pccRecordLineVoice.addEventListener("click", function () {
+            startPccPanelLineVoice();
+          });
+        }
+        if (pccRecordingSendBtn) {
+          pccRecordingSendBtn.addEventListener("click", function () {
+            finishPccVoiceRecording(false);
+          });
+        }
+        if (pccRecordingCancelBtn) {
+          pccRecordingCancelBtn.addEventListener("click", function () {
+            finishPccVoiceRecording(true);
           });
         }
         syncAdminMapModeUi();

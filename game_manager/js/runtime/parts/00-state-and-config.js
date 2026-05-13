@@ -68,6 +68,7 @@
         gps_mini: { label: "GPS Mini", url: new URL("widgets/gps_mini.html?host=game", location.href).href },
         gps_ets2_old: { label: "GPS ETS 2 Ancien", url: new URL("widgets/ets2_roadasvisor_old.html?host=game", location.href).href }
       };
+
       var TYPE_ASPECT_RATIO = {
         // largeur / hauteur
         saeiv: 679 / 383,
