@@ -472,6 +472,7 @@
       var pccVoiceSeenMessageIds = [];
       var pccVoiceSeenMessageSet = new Set();
       var pccVoiceChunkBuffers = new Map();
+      var pccLocalClientId = "";
       var PCC_VOICE_ACTION = "pcc_voice";
       var PCC_VOICE_SEEN_LIMIT = 80;
       var PCC_VOICE_CHUNK_TTL_MS = 30000;

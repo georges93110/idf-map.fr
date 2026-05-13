@@ -678,13 +678,29 @@
         "nickname",
         "nick",
         "from",
+        "pccClientId",
+        "pcc_client_id",
+        "clientId",
+        "client_id",
         "playerId",
-        "player_id"
+        "player_id",
+        "connectionId",
+        "connection_id",
+        "socketId",
+        "socket_id"
       ];
       const visibleIdentityKeys = identityKeys.filter((key) => ![
         "from",
+        "pccClientId",
+        "pcc_client_id",
+        "clientId",
+        "client_id",
         "playerId",
         "player_id",
+        "connectionId",
+        "connection_id",
+        "socketId",
+        "socket_id",
         "steamid",
         "steamId",
         "steamID",
@@ -1605,7 +1621,7 @@
           if (!steamid) steamid = readString(source, ["steamid", "steamId", "steamID", "steam_id"]);
           if (!displayname) displayname = readVisiblePlayerName(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "steamPersonaName", "steam_persona_name", "personaname", "personaName", "persona_name", "nickname", "nick"]);
           if (!name) name = readVisiblePlayerName(source, ["name", "playerName", "player_name", "playerNick", "player_nick", "username", "userName", "user_name"]);
-          if (!technicalId) technicalId = readString(source, ["playerId", "player_id", "from"]);
+          if (!technicalId) technicalId = readString(source, ["pccClientId", "pcc_client_id", "clientId", "client_id", "playerId", "player_id", "connectionId", "connection_id", "socketId", "socket_id", "from"]);
           if (!isPausedOrMenu && isPausedOrMenuSource(source)) isPausedOrMenu = true;
           if (speedKmh === null) speedKmh = readNumber(source, ["speedKmh", "speed_kmh", "speed", "truckSpeed", "truck_speed"]);
           if (!ets2version) ets2version = readString(source, ["ets2version", "ets2Version", "ets2_version", "gameVersion", "game_version"]);
@@ -1623,6 +1639,7 @@
 
         const recursiveIdentity = readIdentity(entry);
         if (!steamid) steamid = readString(recursiveIdentity, ["steamid", "steamId", "steamID", "steam_id"]);
+        if (!technicalId) technicalId = readString(recursiveIdentity, ["pccClientId", "pcc_client_id", "clientId", "client_id", "playerId", "player_id", "connectionId", "connection_id", "socketId", "socket_id", "id"]);
         if (!displayname) displayname = readVisiblePlayerName(recursiveIdentity, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "steamPersonaName", "steam_persona_name", "personaname", "personaName", "persona_name", "nickname", "nick"]);
         if (!name) name = readVisiblePlayerName(recursiveIdentity, ["name", "playerName", "player_name", "playerNick", "player_nick", "username", "userName", "user_name"]);
 
@@ -1631,10 +1648,13 @@
         name = normalizeVisiblePlayerName(name);
 
         const label = displayname || name || "";
-        const id = steamid || technicalId || displayname || name || `player-${fallbackIndex}`;
+        const id = technicalId || steamid || displayname || name || `player-${fallbackIndex}`;
         return {
           id,
           steamid,
+          technicalId,
+          clientId: technicalId,
+          pccClientId: technicalId,
           name,
           displayname,
           label,
@@ -1879,12 +1899,21 @@
         return String(player && player.id || "");
       }
 
+      function normalizePccTargetId(value) {
+        return String(value == null ? "" : value).trim().replace(/\s+/g, "").toLowerCase();
+      }
+
+      function getPccTargetPlayerId(player) {
+        if (!player || typeof player !== "object") return "";
+        return normalizePccTargetId(player.pccClientId || player.clientId || player.technicalId || player.id);
+      }
+
       function getPccTargetSteamId(player) {
         return normalizePccSteamId(player && player.steamid);
       }
 
       function getPccVoiceUnavailableReason(player) {
-        if (!getPccTargetSteamId(player)) return "SteamID indisponible";
+        if (!getPccTargetPlayerId(player) && !getPccTargetSteamId(player)) return "Identifiant joueur indisponible";
         if (!isPccRecorderSupported()) return "Micro non supporte par ce navigateur";
         if (!isPccWebSocketReady()) return "WebSocket panel non connecte";
         return "";
@@ -1909,6 +1938,7 @@
 
       function buildPccVoiceSection(player) {
         const playerId = getPccPlayerId(player);
+        const targetPlayerId = getPccTargetPlayerId(player);
         const steamId = getPccTargetSteamId(player);
         const reason = getPccVoiceUnavailableReason(player);
         const recording = isPccRecordingForPlayer(player);
@@ -1919,7 +1949,7 @@
         const statusClass = status.kind ? ` is-${escapeHtml(status.kind)}` : "";
         const recordText = recording ? "Arreter et envoyer" : "Enregistrer";
         return playerInfoSection("PCC vocal", [
-          `<div class="pcc-voice-panel" data-pcc-panel data-player-id="${escapeHtml(playerId)}" data-pcc-steamid="${escapeHtml(steamId)}">` +
+          `<div class="pcc-voice-panel" data-pcc-panel data-player-id="${escapeHtml(playerId)}" data-pcc-player-key="${escapeHtml(targetPlayerId)}" data-pcc-steamid="${escapeHtml(steamId)}">` +
           `<div class="pcc-voice-actions">` +
           `<button type="button" class="pcc-voice-btn pcc-record-btn${recordClass}" data-pcc-action="record" data-player-id="${escapeHtml(playerId)}"${disabled}>${escapeHtml(recordText)}</button>` +
           `<button type="button" class="pcc-voice-btn is-secondary pcc-cancel-btn" data-pcc-action="cancel" data-player-id="${escapeHtml(playerId)}"${cancelHidden}>Annuler</button>` +
@@ -1954,6 +1984,7 @@
           playerInfoSection("Joueur", [
             playerInfoRow("Pseudo", player.label, "pseudo"),
             playerInfoRow("Nom", player.name, "name"),
+            playerInfoRow("ID PCC", player.pccClientId || player.clientId || player.technicalId || player.id, "pccId"),
             playerInfoRow("SteamID", player.steamid, "steamid")
           ]),
           playerInfoSection("Session", [
@@ -2030,6 +2061,7 @@
           title: playerDisplayTitle(player),
           pseudo: player.label,
           name: player.name,
+          pccId: player.pccClientId || player.clientId || player.technicalId || player.id,
           steamid: player.steamid,
           mode: playerGroupLabelForPlayer(player),
           inServer: player.inServer === true ? "true" : (player.inServer === false ? "false" : ""),
@@ -2091,6 +2123,7 @@
         const panel = element.querySelector("[data-pcc-panel]");
         if (panel) {
           panel.setAttribute("data-player-id", playerId);
+          panel.setAttribute("data-pcc-player-key", getPccTargetPlayerId(player));
           panel.setAttribute("data-pcc-steamid", getPccTargetSteamId(player));
         }
         if (button) {
@@ -2321,10 +2354,17 @@
           type: PCC_VOICE_ACTION,
           id: messageId,
           time: Date.now(),
-          targetSteamId: recording.targetSteamId,
-          target_steamid: recording.targetSteamId,
+          targetPlayerId: recording.targetPlayerId,
+          target_player_id: recording.targetPlayerId,
+          targetClientId: recording.targetPlayerId,
+          target_client_id: recording.targetPlayerId,
+          targetSteamId: recording.targetSteamId || "",
+          target_steamid: recording.targetSteamId || "",
           target: {
-            steamid: recording.targetSteamId,
+            playerId: recording.targetPlayerId,
+            clientId: recording.targetPlayerId,
+            pccClientId: recording.targetPlayerId,
+            steamid: recording.targetSteamId || "",
             label: recording.targetLabel || ""
           },
           filters
@@ -2406,6 +2446,7 @@
         const chunks = [];
         const recording = {
           playerId: getPccPlayerId(player),
+          targetPlayerId: getPccTargetPlayerId(player),
           targetSteamId: getPccTargetSteamId(player),
           targetLabel: playerDisplayTitle(player),
           filters: getSelectedPccVoiceFilters(),

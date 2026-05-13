@@ -1896,18 +1896,27 @@
         var steamid = "";
         var displayname = "";
         var name = "";
+        var technicalId = "";
         for (var i = 0; i < pools.length; i += 1) {
           var source = pools[i];
           if (!source || typeof source !== "object") continue;
           if (!steamid) steamid = readRemotePanelIdentityString(source, ["steamid", "steamId", "steamID", "steam_id"], true);
+          if (!technicalId) technicalId = readRemotePanelIdentityString(source, ["pccClientId", "pcc_client_id", "clientId", "client_id", "playerId", "player_id", "connectionId", "connection_id", "socketId", "socket_id", "from"], true);
           if (!displayname) displayname = readRemotePanelIdentityString(source, ["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "steamPersonaName", "steam_persona_name", "personaname", "personaName", "persona_name", "nickname", "nick"]);
           if (!name) name = readRemotePanelIdentityString(source, ["name", "playerName", "player_name", "playerNick", "player_nick", "username", "userName", "user_name"]);
         }
+        if (!technicalId) technicalId = getLocalPccClientId();
         if (!steamid) steamid = readRemotePanelStoredIdentityString(["steamid", "steamId", "steamID", "steam_id", "idf_steamid", "idf_steam_id"], true);
         if (!displayname) displayname = readRemotePanelStoredIdentityString(["displayname", "displayName", "display_name", "steamDisplayName", "steam_display_name", "steamName", "steam_name", "steamPersonaName", "steam_persona_name", "personaname", "personaName", "persona_name", "nickname", "nick", "idf_displayname", "idf_steam_name"]);
         if (!name) name = readRemotePanelStoredIdentityString(["name", "playerName", "player_name", "playerNick", "player_nick", "username", "userName", "user_name", "idf_name", "idf_player_name"]);
-        if (!steamid && !displayname && !name) return null;
+        if (!steamid && !technicalId && !displayname && !name) return null;
         var identity = {};
+        if (technicalId) {
+          identity.id = technicalId;
+          identity.playerId = technicalId;
+          identity.clientId = technicalId;
+          identity.pccClientId = technicalId;
+        }
         if (steamid) identity.steamid = steamid;
         if (displayname) identity.displayname = displayname;
         if (name) identity.name = name;
@@ -2652,6 +2661,24 @@
       function normalizePccVoiceSteamId(value) {
         return String(value == null ? "" : value).trim().replace(/\s+/g, "").toLowerCase();
       }
+      function normalizePccVoiceTargetId(value) {
+        return String(value == null ? "" : value).trim().replace(/\s+/g, "").toLowerCase();
+      }
+      function getLocalPccClientId() {
+        var current = normalizePccVoiceTargetId(pccLocalClientId);
+        if (current) return current;
+        var stored = "";
+        try { stored = normalizePccVoiceTargetId(window.localStorage && window.localStorage.getItem("idf_pcc_client_id")); } catch (err0) { stored = ""; }
+        if (!stored) {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            try { stored = "pcc-" + window.crypto.randomUUID(); } catch (err1) { stored = ""; }
+          }
+          if (!stored) stored = "pcc-" + Date.now() + "-" + Math.random().toString(36).slice(2, 12);
+          try { if (window.localStorage) window.localStorage.setItem("idf_pcc_client_id", stored); } catch (err2) { }
+        }
+        pccLocalClientId = stored;
+        return stored;
+      }
       function readPccVoiceString(source, keys) {
         if (!source || typeof source !== "object") return "";
         var aliases = Array.isArray(keys) ? keys : [];
@@ -2691,6 +2718,14 @@
           readPccVoiceString(target, ["steamid", "steamId", "steamID", "steam_id", "targetSteamId", "target_steamid"])
         );
       }
+      function getPccVoiceTargetPlayerId(message) {
+        if (!message || typeof message !== "object") return "";
+        var target = message.target && typeof message.target === "object" ? message.target : null;
+        return normalizePccVoiceTargetId(
+          readPccVoiceString(message, ["targetPlayerId", "target_player_id", "targetClientId", "target_client_id", "targetConnectionId", "target_connection_id", "targetSocketId", "target_socket_id", "playerId", "player_id", "clientId", "client_id", "connectionId", "connection_id", "socketId", "socket_id"]) ||
+          readPccVoiceString(target, ["playerId", "player_id", "clientId", "client_id", "pccClientId", "pcc_client_id", "connectionId", "connection_id", "socketId", "socket_id", "id"])
+        );
+      }
       function getLocalPccVoiceSteamId() {
         var cached = normalizePccVoiceSteamId(remotePanelLocalPlayerIdentity && remotePanelLocalPlayerIdentity.steamid);
         if (cached) return cached;
@@ -2703,6 +2738,26 @@
           identity = null;
         }
         return normalizePccVoiceSteamId(identity && identity.steamid);
+      }
+      function getLocalPccVoicePlayerId() {
+        var cached = normalizePccVoiceTargetId(
+          (remotePanelLocalPlayerIdentity && (
+            remotePanelLocalPlayerIdentity.pccClientId ||
+            remotePanelLocalPlayerIdentity.clientId ||
+            remotePanelLocalPlayerIdentity.playerId ||
+            remotePanelLocalPlayerIdentity.id
+          )) || ""
+        );
+        if (cached) return cached;
+        var identity = null;
+        try {
+          identity = typeof buildRemotePanelPlayerIdentity === "function"
+            ? buildRemotePanelPlayerIdentity(null, telemetryLastSignal)
+            : null;
+        } catch (err0) {
+          identity = null;
+        }
+        return normalizePccVoiceTargetId(identity && (identity.pccClientId || identity.clientId || identity.playerId || identity.id)) || getLocalPccClientId();
       }
       function rememberPccVoiceMessageId(id) {
         var text = String(id || "").trim();
@@ -3239,15 +3294,16 @@
       function handlePccVoiceMessage(parsed) {
         var message = findPccVoiceMessagePayload(parsed, 0);
         if (!message) return false;
+        var targetPlayerId = getPccVoiceTargetPlayerId(message);
+        var localPlayerId = getLocalPccVoicePlayerId();
         var targetSteamId = getPccVoiceTargetSteamId(message);
         var localSteamId = getLocalPccVoiceSteamId();
-        if (!targetSteamId) {
-          return true;
+        if (targetPlayerId) {
+          if (!localPlayerId || targetPlayerId !== localPlayerId) return true;
+        } else {
+          if (!targetSteamId) return true;
+          if (!localSteamId || targetSteamId !== localSteamId) return true;
         }
-        if (!localSteamId) {
-          return true;
-        }
-        if (!targetSteamId || !localSteamId || targetSteamId !== localSteamId) return true;
         if (getPccVoiceChunkInfo(message)) return handlePccVoiceChunkMessage(message);
         var messageId = getPccVoiceMessageId(message);
         if (rememberPccVoiceMessageId(messageId)) return true;
