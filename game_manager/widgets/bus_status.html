@@ -1070,18 +1070,17 @@
         if (!state || typeof state !== "object") return false;
         var stopCount = Math.floor(Number(state.routeStopCount));
         var lastIndex = Number.isFinite(stopCount) && stopCount > 0 ? stopCount - 1 : Number.NaN;
+        var hasRouteIndex = Number.isFinite(lastIndex) && lastIndex >= 0;
         var routeCompleted = state.routeCompleted === true;
-        var noNextStop = !Number.isFinite(nextStopX) || nextStopX === 0 || isNaN(nextStopX);
+        var noNextStop = !Number.isFinite(nextStopX) || isNaN(nextStopX);
         var routeReached = Math.floor(Number(state.routeReachedIndex));
         var vehicleIndex = Math.floor(Number(state.vehicleAtStopIndex));
-        var targetIndex = Math.floor(Number(state.routeTargetIndex));
         var audioIndex = Math.floor(Number(state.audioCurrentIndex));
         return routeCompleted ||
-          (Number.isFinite(lastIndex) && Number.isFinite(routeReached) && routeReached >= lastIndex) ||
-          (Number.isFinite(lastIndex) && Number.isFinite(vehicleIndex) && vehicleIndex >= lastIndex) ||
-          (Number.isFinite(lastIndex) && Number.isFinite(targetIndex) && targetIndex >= lastIndex) ||
-          (Number.isFinite(lastIndex) && Number.isFinite(audioIndex) && audioIndex >= lastIndex) ||
-          noNextStop;
+          (hasRouteIndex && Number.isFinite(routeReached) && routeReached >= lastIndex) ||
+          (hasRouteIndex && Number.isFinite(vehicleIndex) && vehicleIndex >= lastIndex) ||
+          (hasRouteIndex && Number.isFinite(audioIndex) && audioIndex >= lastIndex) ||
+          (!hasRouteIndex && noNextStop);
       }
       function canStartBoardingNow() {
         var cap = getEffectiveBusCapacityLimit();
@@ -1630,16 +1629,7 @@
               } else {
                 // FALLBACK ULTIME (si XML non chargé ou non trouvé)
                 if (visualCount > 0) {
-                  var isTerminus = (state.routeCompleted === true) ||
-                    (Number.isFinite(state.routeReachedIndex) &&
-                      Number.isFinite(state.routeStopCount) &&
-                      state.routeStopCount > 0 &&
-                      state.routeReachedIndex >= (state.routeStopCount - 1)) ||
-                    (Number.isFinite(state.vehicleAtStopIndex) &&
-                      Number.isFinite(state.routeStopCount) &&
-                      state.routeStopCount > 0 &&
-                      state.vehicleAtStopIndex >= (state.routeStopCount - 1)) ||
-                    (!Number.isFinite(sNextX) || sNextX === 0 || isNaN(sNextX));
+                  var isTerminus = isTerminusState(state, sNextX);
 
                   peopleToAlight = isTerminus ? visualCount : Math.min(visualCount, 1 + Math.floor(Math.random() * 4));
                 }

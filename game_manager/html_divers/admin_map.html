@@ -1069,6 +1069,7 @@
       const PLAYER_WARNING_MS = 3500;
       const PLAYER_STALE_MS = 16000;
       const PLAYER_STATE_REFRESH_MS = 500;
+      const PLAYER_SIGNAL_EXPECTED_INTERVAL_MS = 1000;
       const PLAYER_POSITION_INTERPOLATION_MS = 1100;
       const PLAYER_GROUP_SOLO = "solo";
       const PLAYER_GROUP_CONVOY = "convoy";
@@ -1081,9 +1082,17 @@
       const PCC_VOICE_MAX_BYTES = 3000000;
       const PCC_VOICE_CHUNK_CHARS = 48000;
       const PCC_VOICE_CHUNK_DELAY_MS = 8;
+      const PCC_VOICE_RECEPTION_ALWAYS = "always";
+      const PCC_VOICE_RECEPTION_SOLO = "solo";
+      const PCC_VOICE_RECEPTION_CONVOY = "convoy";
+      const PCC_VOICE_RECEPTION_NEVER = "never";
       const PCC_LINE_VISIBLE_CONFIG_INDEX = 9;
+      const PCC_ACCEPT_ALL_LINES_IN_DEV = hasAdminMapDevQuery(window.location.search || "");
       const PCC_DBUS_NAV_MAX_SNAP_DISTANCE = 450;
       const PCC_DBUS_NAV_STOP_CANDIDATES = 6;
+      const PCC_ROUTE_RENDER_MAX_MS = 1000;
+      const PCC_ROUTE_RENDER_MAX_POINTS = 5000;
+      const PCC_ROUTE_RENDER_TIMEOUT_CODE = "pcc_route_render_timeout";
       const PCC_VOICE_FILTERS = [
         ["radio", "Filtre radio"],
         ["souffle", "Souffle"],
@@ -1248,9 +1257,28 @@
       );
 
       function normalizeAdminMapMode(value) {
-        return String(value || "").trim().toLowerCase() === ADMIN_MAP_MODE_PCC
+        const raw = String(value || "").trim().toLowerCase().split(/[?&#]/)[0];
+        return raw === ADMIN_MAP_MODE_PCC
           ? ADMIN_MAP_MODE_PCC
           : ADMIN_MAP_MODE_ADMIN;
+      }
+
+      function hasAdminMapDevQuery(search) {
+        const raw = String(search || "");
+        try {
+          if (new URLSearchParams(raw).has("dev")) return true;
+        } catch (err) { }
+        return /(?:^|[?&])dev(?:[=&#?]|$)/i.test(raw);
+      }
+
+      function readAdminMapDevValue(search) {
+        const raw = String(search || "");
+        try {
+          const params = new URLSearchParams(raw);
+          if (params.has("dev")) return params.get("dev") || "";
+        } catch (err) { }
+        const match = /[?&]dev(?:=([^&#?]*))?/i.exec(raw);
+        return match ? decodeURIComponent(match[1] || "") : "";
       }
 
       function readAdminMapModeFromUrl() {
@@ -1265,7 +1293,19 @@
         if (!(window.history && window.history.replaceState)) return;
         try {
           const url = new URL(window.location.href);
-          url.searchParams.set("mode", normalizeAdminMapMode(mode));
+          const currentParams = new URLSearchParams(url.search || "");
+          const queryParts = [];
+          const keepDev = PCC_ACCEPT_ALL_LINES_IN_DEV || hasAdminMapDevQuery(url.search || "");
+          if (keepDev) {
+            const devValue = readAdminMapDevValue(url.search || "");
+            queryParts.push(devValue ? `dev=${encodeURIComponent(devValue)}` : "dev");
+          }
+          currentParams.forEach(function (value, key) {
+            if (key === "dev" || key === "mode") return;
+            queryParts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+          });
+          queryParts.push(`mode=${encodeURIComponent(normalizeAdminMapMode(mode))}`);
+          url.search = queryParts.length ? `?${queryParts.join("&")}` : "";
           window.history.replaceState(window.history.state, "", url);
         } catch (err) { }
       }
@@ -1383,7 +1423,10 @@
       }
 
       function isPccLineVisibleByNumber(lineNumber) {
-        const entry = getLineStyleEntryByNumber(lineNumber);
+        const safeLineNumber = String(lineNumber || "").trim();
+        if (!safeLineNumber) return false;
+        if (PCC_ACCEPT_ALL_LINES_IN_DEV) return true;
+        const entry = getLineStyleEntryByNumber(safeLineNumber);
         return Array.isArray(entry) && entry[PCC_LINE_VISIBLE_CONFIG_INDEX] === true;
       }
 
@@ -2114,6 +2157,56 @@
         return null;
       }
 
+      function normalizePccVoiceReceptionMode(value) {
+        const raw = String(value == null ? "" : value).trim().toLowerCase();
+        if (raw === PCC_VOICE_RECEPTION_SOLO || raw === "only_solo") return PCC_VOICE_RECEPTION_SOLO;
+        if (raw === PCC_VOICE_RECEPTION_CONVOY || raw === "convoi" || raw === "only_convoy") return PCC_VOICE_RECEPTION_CONVOY;
+        if (raw === PCC_VOICE_RECEPTION_NEVER || raw === "jamais" || raw === "off" || raw === "false") return PCC_VOICE_RECEPTION_NEVER;
+        return PCC_VOICE_RECEPTION_ALWAYS;
+      }
+
+      function readPccVoiceReceptionModeFromSource(source) {
+        if (!source || typeof source !== "object") return "";
+        const direct = readString(source, [
+          "pccVoiceReceptionMode",
+          "pcc_voice_reception_mode",
+          "pccReceptionMode",
+          "pcc_reception_mode",
+          "pccVoiceMessagesReception",
+          "pcc_voice_messages_reception"
+        ]);
+        if (direct) return normalizePccVoiceReceptionMode(direct);
+        const nestedSources = [
+          source.pccVoice,
+          source.pcc_voice,
+          source.pcc,
+          source.settings,
+          source.audioSettings,
+          source.audio_settings
+        ];
+        for (const nested of nestedSources) {
+          if (!nested || typeof nested !== "object") continue;
+          const nestedValue = readString(nested, [
+            "receptionMode",
+            "reception_mode",
+            "voiceReceptionMode",
+            "voice_reception_mode",
+            "pccVoiceReceptionMode",
+            "pcc_voice_reception_mode"
+          ]);
+          if (nestedValue) return normalizePccVoiceReceptionMode(nestedValue);
+        }
+        return "";
+      }
+
+      function readPccVoiceReceptionModeFromPools(pools) {
+        for (const source of Array.isArray(pools) ? pools : []) {
+          const mode = readPccVoiceReceptionModeFromSource(source);
+          if (mode) return mode;
+        }
+        return PCC_VOICE_RECEPTION_ALWAYS;
+      }
+
       function extractPlayer(entry, fallbackIndex) {
         const pools = entryPools(entry);
         if (!pools.length) return null;
@@ -2125,6 +2218,7 @@
         const game2Bonus = readGame2BonusFromPools([entry].concat(pools));
         const game2Mode = game2Bonus && game2Bonus.gameMode && typeof game2Bonus.gameMode === "object" ? game2Bonus.gameMode : null;
         const busLine = game2Bonus && game2Bonus.busLine && typeof game2Bonus.busLine === "object" ? game2Bonus.busLine : null;
+        const pccVoiceReceptionMode = readPccVoiceReceptionModeFromPools([game2Bonus, busLine, entry].concat(pools));
 
         let x = null;
         let z = null;
@@ -2211,6 +2305,7 @@
           htmlStateTitle: game2Bonus ? readString(game2Bonus, ["title"]) : "",
           gameModeLabel: game2Mode ? readString(game2Mode, ["label"]) : "",
           gameModeKey: game2Mode ? readString(game2Mode, ["key"]) : "",
+          pccVoiceReceptionMode,
           busLine,
           websocketInfo
         };
@@ -2295,6 +2390,16 @@
         const age = Math.max(0, Number(ms) || 0);
         if (age < 1000) return `${Math.round(age)} ms`;
         return `${(age / 1000).toFixed(1)} s`;
+      }
+
+      function getPlayerSignalDelayMs(record, now = Date.now()) {
+        if (!record) return 0;
+        const age = Math.max(0, Number(now) - Number(record.lastSeen || 0));
+        return Math.max(0, age - PLAYER_SIGNAL_EXPECTED_INTERVAL_MS);
+      }
+
+      function formatPlayerLastSignal(record, now = Date.now()) {
+        return formatInfoAge(getPlayerSignalDelayMs(record, now));
       }
 
       function formatInfoInteger(value) {
@@ -2446,8 +2551,19 @@
         return normalizePccSteamId(player && player.steamid);
       }
 
+      function getPccVoiceReceptionUnavailableReason(player) {
+        const mode = normalizePccVoiceReceptionMode(player && player.pccVoiceReceptionMode);
+        const group = normalizePlayerGroupForPlayer(player);
+        if (mode === PCC_VOICE_RECEPTION_NEVER) return "Reception PCC desactivee chez ce joueur";
+        if (mode === PCC_VOICE_RECEPTION_SOLO && group !== PLAYER_GROUP_SOLO) return "Reception PCC joueur limitee au solo";
+        if (mode === PCC_VOICE_RECEPTION_CONVOY && group !== PLAYER_GROUP_CONVOY) return "Reception PCC joueur limitee au convoi";
+        return "";
+      }
+
       function getPccVoiceUnavailableReason(player) {
         if (!getPccTargetPlayerId(player) && !getPccTargetSteamId(player)) return "Identifiant joueur indisponible";
+        const receptionReason = getPccVoiceReceptionUnavailableReason(player);
+        if (receptionReason) return receptionReason;
         if (!isPccRecorderSupported()) return "Micro non supporte par ce navigateur";
         if (!isPccWebSocketReady()) return "WebSocket panel non connecte";
         return "";
@@ -2493,7 +2609,7 @@
       }
 
       function getSelectedPccVoiceFilters() {
-        return PCC_VOICE_FILTERS.map(function (entry) { return entry[0]; });
+        return ["radio"];
       }
 
       function buildPccVoiceSection(player) {
@@ -2522,7 +2638,6 @@
       function buildPlayerInfoPopup(record) {
         const player = record && record.player ? record.player : {};
         const state = record && record.state ? record.state : "live";
-        const age = record ? Date.now() - record.lastSeen : 0;
         const title = playerDisplayTitle(player);
         const stateClass = state === "paused" ? " is-paused" : (state === "stale" ? " is-stale" : "");
         const anonymousClass = isAnonymousPlayer(player) ? " is-anonymous" : "";
@@ -2574,7 +2689,7 @@
             playerInfoRow("Prochain arret", player.busLine && player.busLine.nextStopName, "busNextStop"),
             playerInfoRow("Arrets", formatBusStopsProgress(player.busLine), "busStopsProgress"),
             playerInfoRow("Distance arret", player.busLine && formatInfoMeters(player.busLine.distanceToCurrentStopM), "busStopDistance"),
-            playerInfoRow("Retard live", player.busLine && formatInfoMinutes(player.busLine.liveDelayMinutes), "busLiveDelay"),
+            playerInfoRow("Retard live", player.busLine && formatPccBusDelay(player.busLine), "busLiveDelay"),
             playerInfoRow("Temps ligne", player.busLine && formatInfoDurationMs(player.busLine.liveElapsedMs), "busLiveElapsed")
           ]),
           playerInfoSection("Passagers bus", [
@@ -2588,7 +2703,7 @@
           ]),
           playerInfoSection("Etat", [
             `<div class="player-info-row"><span class="player-info-key">Statut</span><span class="player-info-value">${statusHtml}</span></div>`,
-            playerInfoRow("Dernier signal", formatInfoAge(age), "lastSignal")
+            playerInfoRow("Dernier signal", formatPlayerLastSignal(record), "lastSignal")
           ]),
           `</div>`
         ].join("");
@@ -2616,7 +2731,6 @@
       function getPlayerInfoValues(record) {
         const player = record && record.player ? record.player : {};
         const state = record && record.state ? record.state : "live";
-        const age = record ? Date.now() - record.lastSeen : 0;
         return {
           title: playerDisplayTitle(player),
           pseudo: player.label,
@@ -2642,7 +2756,7 @@
           busNextStop: player.busLine && player.busLine.nextStopName,
           busStopsProgress: formatBusStopsProgress(player.busLine),
           busStopDistance: player.busLine && formatInfoMeters(player.busLine.distanceToCurrentStopM),
-          busLiveDelay: player.busLine && formatInfoMinutes(player.busLine.liveDelayMinutes),
+          busLiveDelay: player.busLine && formatPccBusDelay(player.busLine),
           busLiveElapsed: player.busLine && formatInfoDurationMs(player.busLine.liveElapsedMs),
           busPassengersInBus: player.busLine && formatBusCapacity(player.busLine),
           busPassengersAtStop: player.busLine && formatInfoInteger(player.busLine.passengersAtStop),
@@ -2652,7 +2766,7 @@
           busStopRequested: player.busLine && (player.busLine.stopRequested ? "Oui" : ""),
           busMissedStops: player.busLine && formatInfoInteger(player.busLine.missedStops),
           status: playerStateLabel(state),
-          lastSignal: formatInfoAge(age)
+          lastSignal: formatPlayerLastSignal(record)
         };
       }
 
@@ -2830,10 +2944,17 @@
             localPlayerId: getPccPlayerId(player),
             targetPlayerId,
             targetSteamId,
-            targetLabel: playerDisplayTitle(player)
+            targetLabel: playerDisplayTitle(player),
+            unavailableReason: getPccVoiceReceptionUnavailableReason(player)
           });
         });
         return out;
+      }
+
+      function getAvailablePccVoiceTargets(targets) {
+        return (Array.isArray(targets) ? targets : []).filter(function (target) {
+          return !(target && target.unavailableReason);
+        });
       }
 
       function getPccVoiceTargetsUnavailableReason(targets) {
@@ -2841,6 +2962,13 @@
         if (!list.length) return "Aucune cible PCC disponible.";
         if (!isPccRecorderSupported()) return "Micro non supporte par ce navigateur.";
         if (!isPccWebSocketReady()) return "WebSocket panel non connecte.";
+        const available = getAvailablePccVoiceTargets(list);
+        if (!available.length) {
+          const firstReason = list.map(function (target) {
+            return target && target.unavailableReason ? String(target.unavailableReason) : "";
+          }).find(Boolean);
+          return firstReason || "Aucune cible PCC compatible.";
+        }
         return "";
       }
 
@@ -3644,6 +3772,12 @@
           const latlngs = routePointsToLatLngs(segment && segment.points);
           if (latlngs.length >= 2) futureSegments.push(latlngs);
         });
+        if (adminMapMode === ADMIN_MAP_MODE_PCC) {
+          const pointCount = pastSegments.concat(futureSegments).reduce(function (sum, latlngs) {
+            return sum + (Array.isArray(latlngs) ? latlngs.length : 0);
+          }, 0);
+          if (pointCount > PCC_ROUTE_RENDER_MAX_POINTS) abortPccRouteRender();
+        }
         pastSegments.forEach(function (latlngs) { addBusPolylinePair(group, latlngs, true, lineColor); });
         futureSegments.forEach(function (latlngs) { addBusPolylinePair(group, latlngs, false, lineColor); });
         const servedSet = getBusServedStopSet(busLine, geometry);
@@ -3669,6 +3803,21 @@
           String(Math.round((Number(player && player.x) || 0) / 2)),
           String(Math.round((Number(player && player.z) || 0) / 2)),
           served,
+          String(Array.isArray(geometry.segments) ? geometry.segments.length : 0),
+          String(Array.isArray(geometry.stops) ? geometry.stops.length : 0)
+        ].join("|");
+      }
+
+      function getPccLineBusRouteRenderKey(player) {
+        const busLine = getPlayerBusLine(player);
+        const geometry = getBusRouteGeometry(busLine);
+        if (!busLine || !geometry) return "";
+        return [
+          String(busLine.selectedKey || ""),
+          String(busLine.lineNumber || ""),
+          String(busLine.routeName || ""),
+          String(geometry.cacheKey || ""),
+          geometry.pending === true ? "pending" : "ready",
           String(Array.isArray(geometry.segments) ? geometry.segments.length : 0),
           String(Array.isArray(geometry.stops) ? geometry.stops.length : 0)
         ].join("|");
@@ -3851,9 +4000,21 @@
         if (pccActiveLinePanel) pccActiveLinePanel.hidden = false;
       }
 
+      function getPccBusDelayMinutes(busLine) {
+        if (!busLine || typeof busLine !== "object") return null;
+        const raw = busLine.lastStopDelayMinutes;
+        if (raw === null || raw === undefined || raw === "") return null;
+        const reachedStops = Math.max(0, Math.floor(Number(busLine.reachedStops) || 0));
+        const lastStopDelayIndex = Math.floor(Number(busLine.lastStopDelayIndex));
+        const canCompute = busLine.completed === true || reachedStops >= 2 || lastStopDelayIndex >= 1;
+        if (!canCompute) return null;
+        const value = Number(raw);
+        return Number.isFinite(value) ? value : null;
+      }
+
       function formatPccBusDelay(busLine) {
-        const value = Number(busLine && busLine.liveDelayMinutes);
-        if (!Number.isFinite(value)) return "--";
+        const value = getPccBusDelayMinutes(busLine);
+        if (value === null) return "--";
         if (Math.abs(value) < 0.05) return "A l'heure";
         return value > 0 ? `+${Math.round(value)} min` : `${Math.round(value)} min`;
       }
@@ -3873,15 +4034,22 @@
       function formatPccBusDestination(busLine) {
         if (!busLine || typeof busLine !== "object") return "";
         const direct = String(
-          busLine.destinationName ||
-          busLine.destination ||
-          busLine.routeDestination ||
           busLine.terminusStopName ||
+          busLine.destinationName ||
           busLine.terminusName ||
           busLine.routeTerminusName ||
+          busLine.destination ||
+          busLine.routeDestination ||
           ""
         ).trim();
         if (direct) return direct;
+        const stops = busLine.routeGeometry && Array.isArray(busLine.routeGeometry.stops)
+          ? busLine.routeGeometry.stops
+          : [];
+        for (let i = stops.length - 1; i >= 0; i -= 1) {
+          const stopName = String(stops[i] && stops[i].name || "").trim();
+          if (stopName) return stopName;
+        }
         const routeName = String(busLine.routeName || "").trim();
         const parsed = parsePccRouteName(routeName);
         return String(parsed.routeTitle || routeName || "").trim();
@@ -3997,31 +4165,67 @@
         return pccWorldPointDistance(a, b);
       }
 
+      function getPccRouteRenderNowMs() {
+        return window.performance && typeof window.performance.now === "function"
+          ? window.performance.now()
+          : Date.now();
+      }
+
+      function createPccRouteRenderBudget() {
+        return {
+          startedAt: getPccRouteRenderNowMs(),
+          maxMs: Math.max(100, Number(PCC_ROUTE_RENDER_MAX_MS) || 1000)
+        };
+      }
+
+      function checkPccRouteRenderBudget(budget) {
+        if (!budget) return;
+        if ((getPccRouteRenderNowMs() - Number(budget.startedAt || 0)) <= Number(budget.maxMs || 0)) return;
+        const err = new Error("pcc route render timeout");
+        err.code = PCC_ROUTE_RENDER_TIMEOUT_CODE;
+        throw err;
+      }
+
+      function abortPccRouteRender() {
+        const err = new Error("pcc route render skipped");
+        err.code = PCC_ROUTE_RENDER_TIMEOUT_CODE;
+        throw err;
+      }
+
+      function isPccRouteRenderTimeout(err) {
+        return !!(err && err.code === PCC_ROUTE_RENDER_TIMEOUT_CODE);
+      }
+
       function findPccNavPathTransitions(fromId, toId, options) {
         if (fromId === toId) return [];
         const graph = pccDbusNavGraph;
         if (!graph) return null;
         const blockedEdgeIds = options && options.blockedEdgeIds instanceof Set ? options.blockedEdgeIds : null;
+        const budget = options && options.budget;
         const open = createPccMinHeap();
         const best = new Map([[fromId, 0]]);
         const prev = new Map();
         open.push({ id: fromId, g: 0, f: pccNavHeuristic(fromId, toId) });
+        let steps = 0;
         while (open.size > 0) {
+          if ((steps++ & 31) === 0) checkPccRouteRenderBudget(budget);
           const current = open.pop();
           if (!current) break;
           const known = best.get(current.id);
           if (!Number.isFinite(known) || current.g > known + 1e-9) continue;
           if (current.id === toId) break;
           const transitions = graph.adjacency.get(current.id) || [];
-          transitions.forEach(function (transition) {
-            if (blockedEdgeIds && Number.isFinite(transition.edgeId) && blockedEdgeIds.has(transition.edgeId)) return;
+          for (let i = 0; i < transitions.length; i += 1) {
+            if ((i & 31) === 0) checkPccRouteRenderBudget(budget);
+            const transition = transitions[i];
+            if (blockedEdgeIds && Number.isFinite(transition.edgeId) && blockedEdgeIds.has(transition.edgeId)) continue;
             const nextG = current.g + (Number(transition.weight) || 0);
             const knownNext = best.get(transition.to);
-            if (Number.isFinite(knownNext) && nextG >= knownNext - 1e-9) return;
+            if (Number.isFinite(knownNext) && nextG >= knownNext - 1e-9) continue;
             best.set(transition.to, nextG);
             prev.set(transition.to, { from: current.id, transition });
             open.push({ id: transition.to, g: nextG, f: nextG + pccNavHeuristic(transition.to, toId) });
-          });
+          }
         }
         if (!prev.has(toId)) return null;
         const out = [];
@@ -4054,6 +4258,8 @@
 
       function getPccNavPathBetweenNodes(fromId, toId, options) {
         const blockedEdgeIds = options && options.blockedEdgeIds instanceof Set ? options.blockedEdgeIds : null;
+        const budget = options && options.budget;
+        checkPccRouteRenderBudget(budget);
         const key = blockedEdgeIds && blockedEdgeIds.size ? "" : `${fromId}>${toId}`;
         if (key && pccDbusNavPathCache.has(key)) return pccDbusNavPathCache.get(key);
         const graph = pccDbusNavGraph;
@@ -4070,6 +4276,7 @@
         let cost = 0;
         appendUniquePccWorldPoint(points, fromNode);
         transitions.forEach(function (transition) {
+          checkPccRouteRenderBudget(budget);
           cost += Number(transition.weight) || 0;
           appendPccTransitionWorldPoints(points, transition);
         });
@@ -4090,7 +4297,7 @@
         return point;
       }
 
-      function getNearestPccNavNodesForStop(stop, limit) {
+      function getNearestPccNavNodesForStop(stop, limit, budget) {
         const graph = pccDbusNavGraph;
         if (!graph || !stop) return [];
         const stopId = Number(stop.id);
@@ -4101,11 +4308,13 @@
         const stopPoint = getPccStopWorldPoint(stop);
         if (!stopPoint) return [];
         const candidates = [];
-        graph.nodeList.forEach(function (node) {
+        for (let i = 0; i < graph.nodeList.length; i += 1) {
+          if ((i & 127) === 0) checkPccRouteRenderBudget(budget);
+          const node = graph.nodeList[i];
           const distance = pccWorldPointDistance(node, stopPoint);
-          if (distance > PCC_DBUS_NAV_MAX_SNAP_DISTANCE) return;
+          if (distance > PCC_DBUS_NAV_MAX_SNAP_DISTANCE) continue;
           candidates.push({ nodeId: node.id, distance });
-        });
+        }
         candidates.sort(function (a, b) { return a.distance - b.distance; });
         const out = candidates.slice(0, PCC_DBUS_NAV_STOP_CANDIDATES);
         if (Number.isFinite(stopId)) pccDbusNavNodesByStopId.set(stopId, out);
@@ -4113,25 +4322,30 @@
       }
 
       function pickBestPccNavSegment(fromStop, toStop, options) {
-        const fromCandidates = getNearestPccNavNodesForStop(fromStop);
-        const toCandidates = getNearestPccNavNodesForStop(toStop);
+        const budget = options && options.budget;
+        const fromCandidates = getNearestPccNavNodesForStop(fromStop, null, budget);
+        const toCandidates = getNearestPccNavNodesForStop(toStop, null, budget);
         if (!fromCandidates.length || !toCandidates.length) return null;
         let best = null;
-        fromCandidates.forEach(function (fromCandidate) {
-          toCandidates.forEach(function (toCandidate) {
+        for (let fromIndex = 0; fromIndex < fromCandidates.length; fromIndex += 1) {
+          checkPccRouteRenderBudget(budget);
+          const fromCandidate = fromCandidates[fromIndex];
+          for (let toIndex = 0; toIndex < toCandidates.length; toIndex += 1) {
+            checkPccRouteRenderBudget(budget);
+            const toCandidate = toCandidates[toIndex];
             let path = null;
             if (fromCandidate.nodeId === toCandidate.nodeId) {
               const node = pccDbusNavGraph && pccDbusNavGraph.nodesById.get(fromCandidate.nodeId);
-              if (!node) return;
+              if (!node) continue;
               path = { points: [node], cost: 0 };
             } else {
               path = getPccNavPathBetweenNodes(fromCandidate.nodeId, toCandidate.nodeId, options);
-              if (!path) return;
+              if (!path) continue;
             }
             const cost = (Number(path.cost) || 0) + fromCandidate.distance + toCandidate.distance;
             if (!best || cost < best.cost) best = { cost, path };
-          });
-        });
+          }
+        }
         return best;
       }
 
@@ -4146,7 +4360,9 @@
           appendUniquePccWorldPoint(worldPoints, getPccStopWorldPoint(stops[start]));
           return worldPoints;
         }
+        const budget = options && options.budget;
         for (let i = start; i < end; i += 1) {
+          checkPccRouteRenderBudget(budget);
           const fromStop = stops[i];
           const toStop = stops[i + 1];
           const fromPoint = getPccStopWorldPoint(fromStop);
@@ -4305,7 +4521,9 @@
         return null;
       }
 
-      function buildPccDbusRoutePolylineLatLngs(routeStops, line, route) {
+      function buildPccDbusRoutePolylineLatLngs(routeStops, line, route, renderOptions) {
+        const budget = renderOptions && renderOptions.budget;
+        checkPccRouteRenderBudget(budget);
         const direct = routeStops.map(function (stop) { return stop && stop.latlng; }).filter(Boolean);
         if (direct.length < 2 || !pccDbusNavGraph) return direct;
         const bridgeRule = getPccDbusNavBridgeRuleForRoute(line, route);
@@ -4314,7 +4532,9 @@
             .map(function (id) { return Number(id); })
             .filter(function (id) { return Number.isFinite(id); })
         );
-        const navOptions = blockedEdgeIds.size ? { blockedEdgeIds } : null;
+        const navOptions = {};
+        if (blockedEdgeIds.size) navOptions.blockedEdgeIds = blockedEdgeIds;
+        if (budget) navOptions.budget = budget;
         let worldPoints = buildPccDbusWorldPolylineFromStops(routeStops, 0, routeStops.length - 1, navOptions);
         if (!worldPoints.length) return direct;
 
@@ -4355,23 +4575,29 @@
           });
         }
         insertionOps.forEach(function (operation) {
+          checkPccRouteRenderBudget(budget);
           const injected = applyPccBridgeInsertionOperation(worldPoints, routeStops, operation);
           if (Array.isArray(injected) && injected.length >= 2) worldPoints = injected;
         });
 
+        checkPccRouteRenderBudget(budget);
         const latlngs = pccWorldPointsToLatLngs(worldPoints);
         return latlngs.length >= 2 ? latlngs : direct;
       }
 
-      function buildPccDbusRouteLayer(line, route) {
+      function buildPccDbusRouteLayer(line, route, renderOptions) {
+        const budget = renderOptions && renderOptions.budget;
+        checkPccRouteRenderBudget(budget);
         const routeStops = getPccRouteStops(route);
-        const latlngs = buildPccDbusRoutePolylineLatLngs(routeStops, line, route);
+        const latlngs = buildPccDbusRoutePolylineLatLngs(routeStops, line, route, renderOptions);
         if (latlngs.length < 2) return null;
+        if (latlngs.length > PCC_ROUTE_RENDER_MAX_POINTS) abortPccRouteRender();
         const group = L.layerGroup();
         const lineNumber = getPccLineNumberFromDbusLine(line, route);
         const lineColor = getPccLineTraceColorByNumber(lineNumber);
         addBusPolylinePair(group, latlngs, false, lineColor);
         routeStops.forEach(function (stop, index) {
+          checkPccRouteRenderBudget(budget);
           L.circleMarker(stop.latlng, {
             pane: "busStopPane",
             radius: index === 0 || index === routeStops.length - 1 ? 5 : 4,
@@ -4483,25 +4709,49 @@
           if (nextKey === pccRouteRenderKey) return;
           pccRouteOverlayLayer.clearLayers();
           pccRouteRenderKey = nextKey;
-          selectedRouteEntries.forEach(function (entry) {
-            const layer = buildPccDbusRouteLayer(entry.line, entry.route);
-            if (layer) pccRouteOverlayLayer.addLayer(layer);
-          });
+          const budget = createPccRouteRenderBudget();
+          try {
+            selectedRouteEntries.forEach(function (entry) {
+              checkPccRouteRenderBudget(budget);
+              const layer = buildPccDbusRouteLayer(entry.line, entry.route, { budget });
+              checkPccRouteRenderBudget(budget);
+              if (layer) pccRouteOverlayLayer.addLayer(layer);
+            });
+          } catch (err) {
+            pccRouteOverlayLayer.clearLayers();
+            if (isPccRouteRenderTimeout(err)) {
+              setPccPanelStatus("Trace de ligne trop lourd, affichage ignore.", "error");
+              return;
+            }
+            console.warn("[admin_map] erreur rendu trace PCC", err);
+          }
           return;
         }
         const records = getPccSelectedRecords();
         const routeKeys = records
-          .map(function (record) { return getPlayerBusRouteRenderKey(record.player); })
+          .map(function (record) { return getPccLineBusRouteRenderKey(record.player); })
           .filter(Boolean)
           .sort();
         const nextKey = selectedPccLineKey + "||" + routeKeys.join("||");
         if (nextKey === pccRouteRenderKey) return;
         pccRouteOverlayLayer.clearLayers();
         pccRouteRenderKey = nextKey;
-        records.forEach(function (record) {
-          const layer = buildPlayerBusRouteLayer(record.player);
-          if (layer) pccRouteOverlayLayer.addLayer(layer);
-        });
+        const budget = createPccRouteRenderBudget();
+        try {
+          records.forEach(function (record) {
+            checkPccRouteRenderBudget(budget);
+            const layer = buildPlayerBusRouteLayer(record.player);
+            checkPccRouteRenderBudget(budget);
+            if (layer) pccRouteOverlayLayer.addLayer(layer);
+          });
+        } catch (err) {
+          pccRouteOverlayLayer.clearLayers();
+          if (isPccRouteRenderTimeout(err)) {
+            setPccPanelStatus("Trace de ligne trop lourd, affichage ignore.", "error");
+            return;
+          }
+          console.warn("[admin_map] erreur rendu trace PCC", err);
+        }
       }
 
       function refreshPccModeUi() {
@@ -4528,8 +4778,7 @@
         const delayValues = selectedRecords
           .map(function (record) {
             const busLine = getPlayerBusLine(record && record.player);
-            const value = Number(busLine && busLine.liveDelayMinutes);
-            return Number.isFinite(value) ? value : null;
+            return getPccBusDelayMinutes(busLine);
           })
           .filter(function (value) { return value !== null; });
         const averageDelay = delayValues.length
@@ -4645,12 +4894,13 @@
           return;
         }
         const player = record.player || {};
-        const targets = buildPccVoiceTargetsFromRecords([record]);
-        const reason = getPccVoiceTargetsUnavailableReason(targets);
+        const allTargets = buildPccVoiceTargetsFromRecords([record]);
+        const reason = getPccVoiceTargetsUnavailableReason(allTargets);
         if (reason) {
           setPccPanelStatus(reason, "error");
           return;
         }
+        const targets = getAvailablePccVoiceTargets(allTargets);
         startPccVoiceRecordingForTargets(targets, {
           panel: true,
           scope: "bus",
@@ -4661,12 +4911,13 @@
 
       function startPccPanelLineVoice() {
         const records = getPccDispatchRecordsForLine();
-        const targets = buildPccVoiceTargetsFromRecords(records);
-        const reason = getPccVoiceTargetsUnavailableReason(targets);
+        const allTargets = buildPccVoiceTargetsFromRecords(records);
+        const reason = getPccVoiceTargetsUnavailableReason(allTargets);
         if (reason) {
           setPccPanelStatus(reason, "error");
           return;
         }
+        const targets = getAvailablePccVoiceTargets(allTargets);
         const lineLabel = getSelectedPccLineDispatchLabel();
         startPccVoiceRecordingForTargets(targets, {
           panel: true,
@@ -4920,10 +5171,14 @@
         if (!message || typeof message !== "object") return message;
         const payload = Object.prototype.hasOwnProperty.call(message, "data") ? message.data : message;
         const identity = readIdentity(message);
+        const bonus = readGame2Bonus(message);
+        const mergePayload = function (item) {
+          return fillGame2BonusField(fillGameContextField(fillIdentityFields(item, identity), message), bonus);
+        };
         if (Array.isArray(payload)) {
-          return payload.map((item) => fillGameContextField(fillIdentityFields(item, identity), message));
+          return payload.map(mergePayload);
         }
-        return fillGameContextField(fillIdentityFields(payload, identity), message);
+        return mergePayload(payload);
       }
 
       function unwrapTelemetryEnvelope(payload) {

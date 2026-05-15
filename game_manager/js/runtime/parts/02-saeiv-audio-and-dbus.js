@@ -1195,7 +1195,14 @@
         syncSaeivExternalState(true);
         return true;
       }
+      function isSaeivDestinationShortcutBlockedByHiddenUi() {
+        var uiMode = Number(telemetryUiMode);
+        var menuOpen = false;
+        try { menuOpen = document.body.classList.contains("is-main-menu-open"); } catch (err0) { menuOpen = false; }
+        return hideUiWhenManagerHidden === true && uiMode !== 2 && !menuOpen;
+      }
       function triggerSaeivDestinationAnnouncementFromShortcut() {
+        if (isSaeivDestinationShortcutBlockedByHiddenUi()) return false;
         return playSaeivDestinationAnnouncementIfAvailable({
           action: "game-destination-announcement-shortcut",
           requireShortcutContext: true
@@ -1504,6 +1511,13 @@
         if (!Number.isFinite(lastIndex) || lastIndex < 0) return -1;
         return Math.max(-1, Math.min(lastIndex, Math.floor(n)));
       }
+      function buildSaeivAlignedStopNames(entries) {
+        var list = Array.isArray(entries) ? entries : [];
+        return list.map(function (entry, index) {
+          var name = String(entry && entry.name || "").trim();
+          return name || ("Arret " + String(index + 1));
+        });
+      }
       function setSaeivStoppedAtStop(index, entries) {
         var lastIndex = Math.max(0, (Array.isArray(entries) ? entries.length : 0) - 1);
         var nextIndex = clampReachedStopIndex(index, lastIndex);
@@ -1779,6 +1793,9 @@
           refTime: getSaeivClockText(),
           clockNowMs: getSaeivNowTimestampMs(),
           timeSystem: normalizeSaeivTimeSystem(saeivTimeSystem),
+          pccVoiceReceptionMode: (typeof normalizePccVoiceReceptionMode === "function")
+            ? normalizePccVoiceReceptionMode(pccVoiceReceptionMode)
+            : String(pccVoiceReceptionMode || "always").trim().toLowerCase(),
           routeStopCount: 0,
           routeReachedIndex: -1,
           routeTargetIndex: 0,
@@ -1798,10 +1815,13 @@
           routeLiveElapsedMs: 0,
           routeFinalDelayMinutes: Number.NaN,
           routeLiveDelayMinutes: Number.NaN,
+          routeLastStopDelayMinutes: Number.NaN,
+          routeLastStopDelayIndex: -1,
           routeReachedStopsCount: 0,
           routeLateStopsCount: 0,
           routeMissedStopsCount: 0,
           routeTransportedPassengers: 0,
+          routeBoardedPassengers: 0,
           vehicleName: "",
           busMaxCapacity: SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT,
           busMaxCapacityUnlimited: false,
@@ -1888,7 +1908,7 @@
         if (!saeivRouteState || typeof saeivRouteState !== "object") return payload;
         var entries = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
         if (!entries.length) return payload;
-        var names = entries.map(function (entry) { return String(entry && entry.name || "").trim(); }).filter(Boolean);
+        var names = buildSaeivAlignedStopNames(entries);
         if (!names.length) return payload;
         var lastIndex = Math.max(0, names.length - 1);
         payload.terminusStopName = String(names[lastIndex] || "").trim();
@@ -2000,7 +2020,10 @@
           payload.stopOptionalByPlan = saeivPassengerState.stopOptionalByPlan === true;
           payload.stopOptionalByConfig = payload.stopOptionalByPlan === true;
           payload.routeMissedStopsCount = Math.max(0, Math.round(Number(saeivPassengerState.missedStops) || 0));
-          payload.routeTransportedPassengers = Math.max(0, Math.round(Number(saeivPassengerState.transportedPassengers) || 0));
+          payload.routeTransportedPassengers = typeof getSaeivRouteBoardedPassengersTotal === "function"
+            ? getSaeivRouteBoardedPassengersTotal()
+            : Math.max(0, Math.round(Number(saeivPassengerState.transportedPassengers) || 0));
+          payload.routeBoardedPassengers = payload.routeTransportedPassengers;
         }
         var externalInBus = getBusStatusPassengerCountNow();
         if (externalInBus !== null) {
@@ -2028,9 +2051,23 @@
             payload.stopAlightingDone = externalAlightingDone;
           }
         }
+        var passengerPlanTargetIndex = Math.floor(Number(saeivPassengerState && saeivPassengerState.targetIndex));
+        var passengerPlanIsForDisplayedStop = Number.isFinite(passengerPlanTargetIndex) && passengerPlanTargetIndex === displayIndex;
+        if (payload.vehicleAtStop === true && passengerPlanIsForDisplayedStop !== true) {
+          payload.passengersAtStop = 0;
+          payload.stopBoardingTotal = 0;
+          payload.stopBoardingDone = 0;
+          payload.stopAlightingTotal = 0;
+          payload.stopAlightingDone = 0;
+          payload.plannedStopBoardingTotal = 0;
+          payload.plannedStopAlightingTotal = 0;
+          payload.stopRequested = false;
+          payload.stopNecessary = false;
+          payload.stopOptionalByPlan = true;
+          payload.stopOptionalByConfig = true;
+        }
         var isActuallyAtTerminus = reachedIndex >= lastIndex ||
-          (saeivStoppedAtStopIndex >= 0 && saeivStoppedAtStopIndex >= lastIndex) ||
-          (payload.vehicleAtStop === true && targetIndex >= lastIndex);
+          (saeivStoppedAtStopIndex >= 0 && saeivStoppedAtStopIndex >= lastIndex);
         if (isActuallyAtTerminus) {
           payload.vehicleAtTerminus = true;
           payload.passengersAtStop = 0;
@@ -2073,7 +2110,7 @@
           payload.currentStopLabel = payload.vehicleAtStop ? "Arrêt actuel" : "Prochain arrêt";
         }
         if (!routeStarted) {
-          payload.currentStopLabel = "Station de départ";
+          payload.currentStopLabel = "Prochain arrêt";
           payload.stopName = payload.startStopName || payload.stopName;
           payload.distanceToDisplayStopM = payload.startStopDistanceM;
           payload.routeCompleted = false;
@@ -2119,6 +2156,14 @@
         }
         payload.routeElapsedMs = elapsedMs;
         payload.routeLiveElapsedMs = elapsedMs;
+        payload.routeReachedStopsCount = Math.max(0, Number(completion.reachedStops) || 0);
+        payload.routeServedStopsCount = Math.max(0, Number(completion.servedStops) || 0);
+        payload.routeLateStopsCount = Math.max(0, Number(completion.lateStops) || 0);
+        payload.routeMissedStopsCount = Math.max(0, Number(completion.missedStops) || 0);
+        payload.routeTransportedPassengers = Math.max(0, Number(completion.transportedPassengers) || 0);
+        payload.routeBoardedPassengers = payload.routeTransportedPassengers;
+        payload.routeLastStopDelayMinutes = Number(completion.lastStopDelayMinutes);
+        payload.routeLastStopDelayIndex = Math.floor(Number(completion.lastStopDelayIndex));
         var liveDelayMinutes = computeSaeivDelayMinutesByTimestamp(
           payload.routeCompleted ? payload.routeActualTerminusAtMs : elapsedNow,
           payload.routePlannedTerminusAtMs
@@ -2127,11 +2172,6 @@
         payload.routeFinalDelayMinutes = payload.routeCompleted
           ? (Number.isFinite(liveDelayMinutes) ? liveDelayMinutes : Number(completion.finalDelayMinutes))
           : Number.NaN;
-        payload.routeReachedStopsCount = Math.max(0, Number(completion.reachedStops) || 0);
-        payload.routeServedStopsCount = Math.max(0, Number(completion.servedStops) || 0);
-        payload.routeLateStopsCount = Math.max(0, Number(completion.lateStops) || 0);
-        payload.routeMissedStopsCount = Math.max(0, Number(completion.missedStops) || 0);
-        payload.routeTransportedPassengers = Math.max(0, Number(completion.transportedPassengers) || 0);
         return payload;
       }
       function syncSaeivExternalState(force) {
@@ -2415,7 +2455,8 @@
       function buildRouteRuntimeSummary() {
         if (!saeivRouteState || typeof saeivRouteState !== "object") return null;
         var entries = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
-        var names = entries.map(function (entry) { return String(entry && entry.name || "").trim(); }).filter(Boolean);
+        var names = buildSaeivAlignedStopNames(entries);
+        if (!names.length) return null;
         var lastIndex = Math.max(0, names.length - 1);
         var reachedIndex = clampReachedStopIndex(saeivRouteState.reachedIndex, lastIndex);
         var targetIndex = clampRouteStopIndex(saeivRouteState.targetIndex, lastIndex);
@@ -2454,8 +2495,9 @@
           stopRequested: !!(saeivPassengerState && saeivPassengerState.stopRequested === true),
           stopNecessary: !!(saeivPassengerState && saeivPassengerState.stopNecessary === true),
           missedStops: Math.max(0, Math.round(Number(saeivPassengerState && saeivPassengerState.missedStops) || 0)),
-          transportedPassengers: Math.max(0, Math.round(Number(saeivPassengerState && saeivPassengerState.transportedPassengers) || 0)
-          )
+          transportedPassengers: typeof getSaeivRouteBoardedPassengersTotal === "function"
+            ? getSaeivRouteBoardedPassengersTotal()
+            : Math.max(0, Math.round(Number(saeivPassengerState && saeivPassengerState.transportedPassengers) || 0))
         };
       }
       function clearSaeivRouteSelection(options) {
@@ -2476,6 +2518,8 @@
         saeivServedStopsCount = 0;
         saeivLateStopsCount = 0;
         saeivMaxPassengersEverInBus = 0;
+        saeivRouteBoardedPassengers = 0;
+        saeivReachedStopDelayLog = {};
         saeivStatsRecordedReachedIndex = -1;
         saeivStatsRecordedServedIndex = -1;
         saeivStopServedLog = {};
@@ -2551,6 +2595,10 @@
         saeivRouteSelectedAtMs = startClockNow + Math.max(0, Number(SAEIV_ROUTE_START_DELAY_MS) || 0);
         saeivTerminusReachedAtMs = 0;
         saeivRouteCompletedAtMs = 0;
+        saeivRouteBoardedPassengers = 0;
+        if (saeivPassengerState && typeof saeivPassengerState === "object") {
+          saeivPassengerState.transportedPassengers = 0;
+        }
         saeivLastAction = "game-route-started";
         saeivLastStateKey = "";
         syncSaeivExternalState(true);
@@ -2638,6 +2686,8 @@
         saeivServedStopsCount = 0;
         saeivLateStopsCount = 0;
         saeivMaxPassengersEverInBus = 0;
+        saeivRouteBoardedPassengers = 0;
+        saeivReachedStopDelayLog = {};
         saeivStatsRecordedReachedIndex = -1;
         saeivStatsRecordedServedIndex = -1;
         saeivStopServedLog = {};

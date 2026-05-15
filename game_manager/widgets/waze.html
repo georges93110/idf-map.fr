@@ -1436,6 +1436,9 @@
       let bridgeNavigationActive = false;
       let bridgeHasRouteSelection = false;
       let bridgeRouteSelectionLatched = false;
+      let bridgeGameMode = BRIDGE_REQUIRE_GAME_SOURCE ? "bus" : "";
+      let lastStableHeaderStopName = "";
+      let lastStableHeaderStopLabel = "";
       let pendingCancelKind = "";
       let bridgeFollowRaf = 0;
       const bridgeSocketClientId = `waze_${Math.random().toString(36).slice(2, 10)}`;
@@ -1458,9 +1461,8 @@
       let bridgeSpeedKmh = 0;
       let bridgeDisplaySpeedKmh = 0;
       let bridgeSpeedDecayTimer = 0;
+      let mapSpeedDisplayEmaKmh = NaN;
       let mapSpeedDisplayInt = 0;
-      let mapSpeedDisplayCandidateInt = 0;
-      let mapSpeedDisplayCandidateSinceMs = 0;
       let headingInferenceBlockedUntilTs = 0;
       let headingNeedsFreshPair = true;
       let manualZoomOffset = 0;
@@ -1531,8 +1533,9 @@
       const bridgeSpeedComputeMaxDtSec = 4;
       const bridgeSpeedMaxReasonableKmh = 220;
       const bridgeSpeedIdleCutoffMs = 900;
-      const mapSpeedDisplayHysteresisKmh = 0.7;
-      const mapSpeedDisplaySwitchDelayMs = 220;
+      const mapSpeedDisplayEmaAlpha = 0.2;
+      const mapSpeedDisplaySnapDeltaKmh = 8;
+      const mapSpeedDisplayHysteresisKmh = 0.75;
       const bridgeStopLabelDistanceThresholdM = 10;
       const destinationArrivalDistanceThresholdM = 12;
       const headingDeadzoneStopDeg = 2.2;
@@ -1608,13 +1611,25 @@
         return deg;
       }
       function resetMapSpeedDisplayStabilizer() {
+        mapSpeedDisplayEmaKmh = NaN;
         mapSpeedDisplayInt = 0;
-        mapSpeedDisplayCandidateInt = 0;
-        mapSpeedDisplayCandidateSinceMs = 0;
+      }
+      function smoothMapDisplaySpeedKmh(speedKmh) {
+        const speed = Number(speedKmh);
+        if (!Number.isFinite(speed) || speed <= (bridgeStopSpeedKmh * 0.2)) {
+          resetMapSpeedDisplayStabilizer();
+          return 0;
+        }
+        const clamped = Math.max(0, Math.min(bridgeSpeedMaxReasonableKmh, speed));
+        if (!Number.isFinite(mapSpeedDisplayEmaKmh) || Math.abs(clamped - mapSpeedDisplayEmaKmh) >= mapSpeedDisplaySnapDeltaKmh) {
+          mapSpeedDisplayEmaKmh = clamped;
+        } else {
+          mapSpeedDisplayEmaKmh = (mapSpeedDisplayEmaKmh * (1 - mapSpeedDisplayEmaAlpha)) + (clamped * mapSpeedDisplayEmaAlpha);
+        }
+        return mapSpeedDisplayEmaKmh;
       }
       function toStableMapSpeedInt(speedKmh) {
         const speed = Number(speedKmh);
-        const now = Date.now();
         if (!Number.isFinite(speed) || speed <= (bridgeStopSpeedKmh * 0.2)) {
           resetMapSpeedDisplayStabilizer();
           return 0;
@@ -1623,36 +1638,16 @@
         const rawInt = Math.round(clamped);
         if (!Number.isFinite(mapSpeedDisplayInt) || mapSpeedDisplayInt < 0) {
           mapSpeedDisplayInt = rawInt;
-          mapSpeedDisplayCandidateInt = rawInt;
-          mapSpeedDisplayCandidateSinceMs = 0;
           return rawInt;
         }
         const currentInt = mapSpeedDisplayInt;
-        if (Math.abs(rawInt - currentInt) >= 2) {
+        if (rawInt === currentInt) return currentInt;
+        if (rawInt > currentInt && clamped >= (currentInt + mapSpeedDisplayHysteresisKmh)) {
           mapSpeedDisplayInt = rawInt;
-          mapSpeedDisplayCandidateInt = rawInt;
-          mapSpeedDisplayCandidateSinceMs = 0;
-          return rawInt;
+        } else if (rawInt < currentInt && clamped <= (currentInt - mapSpeedDisplayHysteresisKmh)) {
+          mapSpeedDisplayInt = rawInt;
         }
-        let canSwitch = false;
-        if (rawInt > currentInt && clamped >= (currentInt + mapSpeedDisplayHysteresisKmh)) canSwitch = true;
-        if (rawInt < currentInt && clamped <= (currentInt - mapSpeedDisplayHysteresisKmh)) canSwitch = true;
-        if (!canSwitch) {
-          mapSpeedDisplayCandidateInt = currentInt;
-          mapSpeedDisplayCandidateSinceMs = 0;
-          return currentInt;
-        }
-        if (mapSpeedDisplayCandidateInt !== rawInt) {
-          mapSpeedDisplayCandidateInt = rawInt;
-          mapSpeedDisplayCandidateSinceMs = now;
-          return currentInt;
-        }
-        if ((now - mapSpeedDisplayCandidateSinceMs) < mapSpeedDisplaySwitchDelayMs) {
-          return currentInt;
-        }
-        mapSpeedDisplayInt = rawInt;
-        mapSpeedDisplayCandidateSinceMs = 0;
-        return rawInt;
+        return mapSpeedDisplayInt;
       }
       function formatMapSpeedValue(speedKmh) {
         const stableInt = toStableMapSpeedInt(speedKmh);
@@ -1664,20 +1659,8 @@
         if (!Number.isFinite(size) || size <= 0) return;
         phoneScreenEl.style.setProperty("--waze-speed-badge-size", `${size.toFixed(2)}px`);
       }
-      let uiCurrentSpeed = 0;
-      let uiTargetSpeed = 0;
-      let uiSpeedTweenRaf = 0;
-
-      function runSpeedTweenLoop() {
-        if (Math.abs(uiTargetSpeed - uiCurrentSpeed) < 0.05) {
-          uiCurrentSpeed = uiTargetSpeed;
-          uiSpeedTweenRaf = 0;
-        } else {
-          uiCurrentSpeed += (uiTargetSpeed - uiCurrentSpeed) * 0.12;
-          uiSpeedTweenRaf = requestAnimationFrame(runSpeedTweenLoop);
-        }
-        const roundedSpeed = !Number.isFinite(uiCurrentSpeed) ? 0 : (uiCurrentSpeed >= 0 ? Math.ceil(uiCurrentSpeed) : Math.floor(uiCurrentSpeed));
-        const absoluteSpeed = Math.abs(roundedSpeed);
+      function renderMapSpeedValue(speedKmh) {
+        const absoluteSpeed = formatMapSpeedValue(Math.abs(Number(speedKmh) || 0));
         if (mapSpeedValueEl) {
           mapSpeedValueEl.textContent = String(absoluteSpeed);
         } else if (mapSpeedBadgeEl) {
@@ -1688,10 +1671,7 @@
       function setMapSpeedKmh(speedKmh) {
         if (!mapSpeedBadgeEl) return;
         const val = Number(speedKmh);
-        uiTargetSpeed = !Number.isFinite(val) ? 0 : val;
-        if (!uiSpeedTweenRaf) {
-          uiSpeedTweenRaf = requestAnimationFrame(runSpeedTweenLoop);
-        }
+        renderMapSpeedValue(smoothMapDisplaySpeedKmh(!Number.isFinite(val) ? 0 : val));
       }
       function normalizeIncomingSpeedKmh(rawSpeed, rawUnit = "") {
         const raw = Number(rawSpeed);
@@ -2072,6 +2052,29 @@
         const label = String(value || "").trim();
         nextStopNameEl.textContent = label || "Nom arrêt";
       }
+      function isGenericStopDisplayName(value) {
+        let normalized = String(value || "")
+          .trim()
+          .toLowerCase();
+        if (typeof normalized.normalize === "function") {
+          normalized = normalized.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        } else {
+          normalized = normalized
+            .replace(/[àáâãäå]/g, "a")
+            .replace(/[ç]/g, "c")
+            .replace(/[èéêë]/g, "e")
+            .replace(/[ìíîï]/g, "i")
+            .replace(/[ñ]/g, "n")
+            .replace(/[òóôõö]/g, "o")
+            .replace(/[ùúûü]/g, "u")
+            .replace(/[ýÿ]/g, "y");
+        }
+        return normalized === "nom arret";
+      }
+      function cleanStopDisplayName(value) {
+        const label = String(value || "").trim();
+        return isGenericStopDisplayName(label) ? "" : label;
+      }
       function setHeaderStopLabel(value) {
         if (!navHeaderDistanceEl) return;
         const raw = String(value || "").trim();
@@ -2109,6 +2112,12 @@
         phoneScreenEl.setAttribute("aria-busy", loading ? "true" : "false");
       }
       function refreshDestinationLoadingState() {
+        if (BRIDGE_REQUIRE_GAME_SOURCE && bridgeGameMode === "bus") {
+          destinationLoadingCount = 0;
+          routeComputePending = false;
+          setDestinationLoadingState(false);
+          return;
+        }
         setDestinationLoadingState(destinationLoadingCount > 0 || routeComputePending === true);
       }
       function pushDestinationLoading() {
@@ -2313,15 +2322,32 @@
           hasLocalBusRouteEvidence()
         );
       }
+      function normalizeBridgeGameMode(value) {
+        const raw = String(value || "").trim().toLowerCase();
+        if (raw === "bus" || raw === "bus_mode") return "bus";
+        if (raw === "free" || raw === "normal") return "free";
+        return raw;
+      }
+      function updateBridgeGameModeFromPayload(payload) {
+        if (!payload || typeof payload !== "object") return;
+        if (!Object.prototype.hasOwnProperty.call(payload, "gameMode")) return;
+        const nextMode = normalizeBridgeGameMode(payload.gameMode);
+        if (nextMode) bridgeGameMode = nextMode;
+      }
+      function isBusModeCommandLocked() {
+        return BRIDGE_REQUIRE_GAME_SOURCE && bridgeGameMode === "bus";
+      }
       function setFooterSearchCancelMode(active) {
         if (!footerSearchBtnEl) return;
-        footerSearchBtnEl.setAttribute("aria-disabled", "false");
+        const locked = isBusModeCommandLocked();
+        footerSearchBtnEl.disabled = locked;
+        footerSearchBtnEl.setAttribute("aria-disabled", locked ? "true" : "false");
         if (active) {
-          footerSearchBtnEl.setAttribute("aria-label", "Annuler le trajet");
+          footerSearchBtnEl.setAttribute("aria-label", locked ? "Annuler le trajet indisponible en mode bus" : "Annuler le trajet");
           footerSearchBtnEl.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18"></path><path d="M18 6L6 18"></path></svg>';
           return;
         }
-        footerSearchBtnEl.setAttribute("aria-label", "Rechercher");
+        footerSearchBtnEl.setAttribute("aria-label", locked ? "Recherche indisponible en mode bus" : "Rechercher");
         footerSearchBtnEl.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16L21 21"></path></svg>';
       }
       function refreshFooterFilterVisibility() {
@@ -2334,11 +2360,15 @@
         const active = hasBusCancelEvidence();
         setFooterSearchCancelMode(active);
         refreshFooterFilterVisibility();
-        if (active && wazeSearchOverlayOpen) {
+        if (isBusModeCommandLocked()) {
+          closeCancelConfirmation();
+        }
+        if ((active || isBusModeCommandLocked()) && wazeSearchOverlayOpen) {
           closeWazeSearchOverlay({ clearQuery: false });
         }
       }
       function openCancelConfirmation() {
+        if (isBusModeCommandLocked()) return;
         if (!navCancelConfirmEl) return;
         pendingCancelKind = "bus";
         if (navCancelConfirmTextEl) navCancelConfirmTextEl.textContent = "Annuler le trajet ?";
@@ -3129,6 +3159,7 @@
         renderWazeSearchResults();
       }
       async function openWazeSearchOverlay() {
+        if (isBusModeCommandLocked()) return false;
         closeCancelConfirmation();
         wazeSearchOverlayOpen = true;
         if (wazeSearchOverlayEl) wazeSearchOverlayEl.hidden = false;
@@ -3192,6 +3223,7 @@
         return true;
       }
       async function applyWazeSearchSelection(item) {
+        if (isBusModeCommandLocked()) return;
         if (!item) return;
         const x = Number(item.x);
         const y = Number(item.y);
@@ -3411,12 +3443,12 @@
         bridgeNavigationActive = false;
         bridgeHasRouteSelection = false;
         bridgeRouteSelectionLatched = false;
+        lastStableHeaderStopName = "";
+        lastStableHeaderStopLabel = "";
         lastSearchDestinationName = "";
         forcedSearchDestinationWorldPoint = null;
         lastBridgeDestinationWorldPoint = null;
         pendingBridgePayload = null;
-        lastBridgeTimestamp = 0;
-        lastBridgeTimestampBySource = new Map();
         destinationArrivalLocked = false;
         clearDestinationArrivalLockPoint();
         lastDestinationSelectionTs = 0;
@@ -3431,6 +3463,7 @@
         setNavigationUiActive(false);
         setFooterArrivalTime(Number.NaN);
         setFooterDistance(0, NaN, {});
+        window.__lastReadyToLeaveIndex = -1;
         refreshFooterSearchCancelMode();
       }
       async function cancelActiveBusNavigation() {
@@ -4480,7 +4513,14 @@
         navRouteMarkerLatchedStopIndex = NaN;
         navRouteMarkerLatchedTs = 0;
       }
-      function stopMarkerStyleForIndex(index, reachedIndex, targetIndex) {
+      function isOptionalRouteStopMarker(stop) {
+        if (!stop || typeof stop !== "object") return false;
+        return stop.optional === true ||
+          stop.stopOptional === true ||
+          stop.facultative === true ||
+          stop.isOptional === true;
+      }
+      function stopMarkerStyleForIndex(index, reachedIndex, targetIndex, isOptional) {
         const i = Number(index);
         const reached = Number.isFinite(Number(reachedIndex)) ? Number(reachedIndex) : -1;
         const target = Number.isFinite(Number(targetIndex)) ? Number(targetIndex) : -1;
@@ -4491,6 +4531,7 @@
         let fillColor = "#ffffff";
         let opacity = 0.96;
         let fillOpacity = 0.94;
+        let weight = uiPx(3);
         if (isReached) {
           fillColor = "#c8ecff";
           opacity = 0.72;
@@ -4502,10 +4543,18 @@
           opacity = 0.99;
           fillOpacity = 0.99;
         }
+        if (isOptional === true && !isReached) {
+          radius = isTarget ? uiPx(11) : uiPx(10);
+          color = "#000000";
+          fillColor = "#e21b1b";
+          opacity = 1;
+          fillOpacity = 0.98;
+          weight = uiPx(4);
+        }
         return {
           radius: radius,
           color: color,
-          weight: uiPx(3),
+          weight: weight,
           opacity: opacity,
           fillColor: fillColor,
           fillOpacity: fillOpacity
@@ -4518,7 +4567,7 @@
           const index = Number(marker.__stopIndex);
           const reachedIndex = Number(marker.__reachedIndex);
           const targetIndex = Number(marker.__targetIndex);
-          marker.setStyle(stopMarkerStyleForIndex(index, reachedIndex, targetIndex));
+          marker.setStyle(stopMarkerStyleForIndex(index, reachedIndex, targetIndex, marker.__stopOptional === true));
         });
       }
       function setNavigationStopsFromWorldPoints(stops, reachedIndex, targetIndex) {
@@ -4531,7 +4580,7 @@
           if (!latlng) return null;
           const indexRaw = Number(stop && stop.index);
           const index = Number.isFinite(indexRaw) ? Math.floor(indexRaw) : idx;
-          return { latlng: latlng, index: index };
+          return { latlng: latlng, index: index, optional: isOptionalRouteStopMarker(stop) };
         }).filter(Boolean);
         if (!prepared.length) {
           if (
@@ -4566,10 +4615,11 @@
           const oldStopIndex = marker.__stopIndex;
           const oldReachedIndex = marker.__reachedIndex;
           const oldTargetIndex = marker.__targetIndex;
+          const oldStopOptional = marker.__stopOptional === true;
           const oldLatLng = marker.getLatLng();
 
           const latLngChanged = !oldLatLng || Math.abs(oldLatLng.lat - data.latlng.lat) > 0.0001 || Math.abs(oldLatLng.lng - data.latlng.lng) > 0.0001;
-          const styleChanged = oldStopIndex !== Number(data.index) || oldReachedIndex !== Number(reachedIndex) || oldTargetIndex !== Number(targetIndex);
+          const styleChanged = oldStopIndex !== Number(data.index) || oldReachedIndex !== Number(reachedIndex) || oldTargetIndex !== Number(targetIndex) || oldStopOptional !== (data.optional === true);
 
           if (latLngChanged) {
             marker.setLatLng(data.latlng);
@@ -4578,7 +4628,8 @@
             marker.__stopIndex = Number(data.index);
             marker.__reachedIndex = Number(reachedIndex);
             marker.__targetIndex = Number(targetIndex);
-            marker.setStyle(stopMarkerStyleForIndex(data.index, reachedIndex, targetIndex));
+            marker.__stopOptional = data.optional === true;
+            marker.setStyle(stopMarkerStyleForIndex(data.index, reachedIndex, targetIndex, data.optional === true));
           }
         }
       }
@@ -4888,6 +4939,7 @@
           setNavigationRouteColor(payload.routeColor);
         }
         if (!isAllowedBridgePayloadSource(payload)) return;
+        updateBridgeGameModeFromPayload(payload);
         const sourceKey = String(payload?.source ?? payload?.origin ?? "unknown").trim().toLowerCase() || "unknown";
         const isRealtimeSource = sourceKey === "telemetry" || sourceKey === "server";
         const ts = resolveBridgeEventTimeMs(payload.ts);
@@ -4904,6 +4956,7 @@
           payload.clearDestination === true;
         if (shouldClearNavigationFromPayload) {
           applyLocalCancelledRouteState();
+          return;
         }
         const routePoints = Array.isArray(payload.routePoints) ? payload.routePoints : [];
         const routeStops = Array.isArray(payload.routeStops) ? payload.routeStops : [];
@@ -4943,6 +4996,8 @@
         const hasDestinationPoint = !!endPoint;
         const hasRouteGeometryFromPayload = Array.isArray(routePoints) && routePoints.length >= MIN_NAV_ROUTE_POINTS;
         const hasForcedDestinationPoint = !!normalizeBridgeWorldPoint(forcedSearchDestinationWorldPoint);
+        const cachedDestinationPoint = normalizeBridgeWorldPoint(lastBridgeDestinationWorldPoint);
+        const hasCachedDestinationPoint = !!cachedDestinationPoint;
         let maxStopIndex = -1;
         effectiveRouteStopsInput.forEach((stop, idx) => {
           const stopIndexRaw = Number(stop && stop.index);
@@ -4956,6 +5011,7 @@
         const payloadDistanceToStopM = Number(payload.distanceToCurrentStopM);
         const destinationArrivalTargetPoint =
           endPoint ||
+          cachedDestinationPoint ||
           normalizeBridgeWorldPoint(forcedSearchDestinationWorldPoint);
         const destinationArrivalProbePoint =
           normalizeBridgeWorldPoint(payload.arrow) ||
@@ -4989,18 +5045,30 @@
                 (effectiveRouteStopsInput.length > 0 && maxStopIndex >= 0)
               )
           );
+        const hasGameBusRouteSelection =
+          BRIDGE_REQUIRE_GAME_SOURCE &&
+          bridgeGameMode === "bus" &&
+          (
+            hasRouteSelection ||
+            bridgeRouteSelectionLatched === true ||
+            lastBridgeRouteWaitingStart === true ||
+            effectiveRouteStopsInput.length > 0
+          );
         let routeWaitingStart = lastBridgeRouteWaitingStart === true;
         if (hasRouteWaitingStartPayloadKey) {
           routeWaitingStart = payload.routeWaitingStart === true;
         }
-        if (!hasRouteSelection) {
+        if (!hasRouteSelection && !hasGameBusRouteSelection) {
           routeWaitingStart = false;
+        } else if (!hasRouteSelection && hasGameBusRouteSelection && lastBridgeRouteWaitingStart === true) {
+          routeWaitingStart = true;
         }
         const arrivedAtTerminus = (hasRouteSelection && maxStopIndex >= 0) && routeReachedIndex >= maxStopIndex;
         const navigationActive = !arrivedAtTerminus && !destinationReachedByDistance && !destinationSuppressedByArrivalLock && (
           hasDestinationPoint ||
           hasRouteGeometryFromPayload ||
-          hasForcedDestinationPoint
+          hasForcedDestinationPoint ||
+          (hasGameBusRouteSelection && (hasCachedDestinationPoint || effectiveRouteStopsInput.length > 0))
         );
         bridgeNavigationActive = navigationActive;
         bridgeHasRouteSelection = hasRouteSelection;
@@ -5068,7 +5136,7 @@
           return { stop, index: stopIndex };
         }).filter((item) => item.stop && Number.isFinite(item.index));
         let markerStopCandidate = null;
-        if (navigationActive && hasRouteSelection && normalizedRouteStops.length > 0) {
+        if ((navigationActive || hasGameBusRouteSelection) && (hasRouteSelection || hasGameBusRouteSelection) && normalizedRouteStops.length > 0) {
           const targetIndex = Number.isFinite(effectiveTargetIndex) ? Math.floor(effectiveTargetIndex) : NaN;
           if (Number.isFinite(targetIndex) && targetIndex > reachedStopIndex) {
             markerStopCandidate = normalizedRouteStops.find((item) => item.index === targetIndex) || null;
@@ -5104,7 +5172,7 @@
           navRouteMarkerLatchedStopIndex = NaN;
           navRouteMarkerLatchedTs = 0;
         }
-        const routeStopsForMarkers = (hasRouteSelection && normalizedRouteStops.length > 0)
+        const routeStopsForMarkers = ((hasRouteSelection || hasGameBusRouteSelection) && normalizedRouteStops.length > 0)
           ? normalizedRouteStops
             .slice()
             .sort((a, b) => a.index - b.index)
@@ -5112,7 +5180,7 @@
           : [];
         let nextStopName = "";
         let headerStopLabel = String(payload.currentStopLabel || "").trim();
-        let headerStopName = String(payload.currentStopName || payload.stopName || "").trim();
+        let headerStopName = cleanStopDisplayName(payload.currentStopName) || cleanStopDisplayName(payload.stopName);
         const payloadDestinationName = String(
           payload.destinationName ||
           payload.destinationLabel ||
@@ -5135,7 +5203,7 @@
           }
         }
 
-        const targetStop = (navigationActive && markerStopCandidate && markerStopCandidate.stop)
+        const targetStop = (markerStopCandidate && markerStopCandidate.stop)
           ? markerStopCandidate.stop
           : null;
         const targetIndexForReadyToLeave = (markerStopCandidate && Number.isFinite(Number(markerStopCandidate.index)))
@@ -5146,10 +5214,9 @@
         }
         window.__lastDetectedTargetStop = targetStop;
         const targetStopPoint = window.__lastDetectedTargetStop ? normalizeBridgeWorldPoint(window.__lastDetectedTargetStop) : null;
-        const destinationMode = !routeWaitingStart && navigationActive && effectiveRouteStopsInput.length < 1;
+        const destinationMode = !hasGameBusRouteSelection && !routeWaitingStart && navigationActive && effectiveRouteStopsInput.length < 1;
         if (routeWaitingStart) {
-          const waitingLabel = String(payload.currentStopLabel || "Station de départ").trim();
-          headerStopLabel = waitingLabel || "Station de départ";
+          headerStopLabel = "Prochain arrêt";
           const waitingName = String(
             payload.startStopName ||
             payload.currentStopName ||
@@ -5157,7 +5224,8 @@
             nextStopName ||
             "Arrêt de départ"
           ).trim();
-          if (waitingName) headerStopName = waitingName;
+          const cleanedWaitingName = cleanStopDisplayName(waitingName) || nextStopName;
+          if (cleanedWaitingName) headerStopName = cleanedWaitingName;
         }
         if (destinationMode) {
           headerStopLabel = "Destination";
@@ -5168,7 +5236,22 @@
             lastSearchDestinationName ||
             "Destination";
         }
+        if (hasGameBusRouteSelection && !cleanStopDisplayName(headerStopName)) {
+          headerStopName = nextStopName || lastStableHeaderStopName;
+        }
         if (!headerStopName) headerStopName = nextStopName;
+        if (hasGameBusRouteSelection || navigationActive) {
+          const cleanHeaderName = cleanStopDisplayName(headerStopName);
+          if (cleanHeaderName) {
+            lastStableHeaderStopName = cleanHeaderName;
+            headerStopName = cleanHeaderName;
+          } else if (lastStableHeaderStopName) {
+            headerStopName = lastStableHeaderStopName;
+          }
+          const cleanHeaderLabel = String(headerStopLabel || "").trim();
+          if (cleanHeaderLabel) lastStableHeaderStopLabel = cleanHeaderLabel;
+          else if (lastStableHeaderStopLabel) headerStopLabel = lastStableHeaderStopLabel;
+        }
         setHeaderStopLabel(headerStopLabel);
         setNextStopName(headerStopName);
         if (payload.refTime) {
@@ -5190,7 +5273,7 @@
         const isBusStepMode = navigationActive && effectiveRouteStopsInput.length > 0;
         const effectiveEndPoint = (isBusStepMode && targetStopPoint)
           ? targetStopPoint
-          : (forcedDestinationPoint || endPoint || forcedSearchDestinationWorldPoint);
+          : (forcedDestinationPoint || endPoint || cachedDestinationPoint || forcedSearchDestinationWorldPoint);
 
         const effectiveEndLatLng = effectiveEndPoint ? toLatLngFromXY(effectiveEndPoint.x, effectiveEndPoint.y) : endLatLng;
         navArrivalTargetLatLng = navigationActive ? (effectiveEndLatLng || null) : null;
@@ -5325,6 +5408,7 @@
             const fallbackEndPoint =
               normalizeBridgeWorldPoint(effectiveEndPoint) ||
               normalizeBridgeWorldPoint(endPoint) ||
+              cachedDestinationPoint ||
               normalizeBridgeWorldPoint(forcedSearchDestinationWorldPoint);
             if (!destinationRouteNeedsLocalNav && !routeOffForDestination && Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS) {
               const cachedNearest = findNearestPointOnWorldRoute(fallbackStartPoint, lastBridgeRouteWorldPoints);
@@ -5382,6 +5466,7 @@
           const fallbackEndPoint =
             normalizeBridgeWorldPoint(effectiveEndPoint) ||
             normalizeBridgeWorldPoint(endPoint) ||
+            cachedDestinationPoint ||
             normalizeBridgeWorldPoint(forcedSearchDestinationWorldPoint);
           const destinationRouteNeedsLocalNav =
             destinationMode &&
@@ -5476,7 +5561,7 @@
           : ((navigationActive && Number.isFinite(etaArrivalTimestampMs) && etaArrivalTimestampMs > 0) ? etaArrivalTimestampMs : Number.NaN);
         setFooterArrivalTime(effectiveArrivalTimestampMs);
         // Show all route stops as navigation checkpoints, including already reached stops.
-        if (hasRouteSelection && routeStopsForMarkers.length > 0) {
+        if ((hasRouteSelection || hasGameBusRouteSelection) && routeStopsForMarkers.length > 0) {
           setNavigationStopsFromWorldPoints(routeStopsForMarkers, routeReachedIndex, routeTargetIndex);
         } else {
           clearNavigationStopMarkers();
@@ -5644,16 +5729,28 @@
           headingConvention: "north_ccw",
           speed: signal.speedKmh
         };
-        if (lastBridgeDestinationWorldPoint && (bridgeHasRouteSelection || bridgeRouteSelectionLatched || bridgeNavigationActive)) {
+        const hasCachedRouteGeometry = Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS;
+        const hasCachedRouteStops = Array.isArray(lastBridgeRouteStops) && lastBridgeRouteStops.length > 0;
+        const hasCachedDestinationPoint = !!normalizeBridgeWorldPoint(lastBridgeDestinationWorldPoint);
+        const hasCachedRouteState =
+          bridgeHasRouteSelection ||
+          bridgeRouteSelectionLatched ||
+          bridgeNavigationActive ||
+          lastBridgeRouteWaitingStart === true ||
+          hasCachedRouteGeometry ||
+          hasCachedRouteStops ||
+          hasCachedDestinationPoint;
+        if (lastBridgeDestinationWorldPoint && hasCachedRouteState) {
           packet.end = Object.assign({}, lastBridgeDestinationWorldPoint);
         }
-        const hasCachedRouteGeometry = Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS;
-        if ((bridgeHasRouteSelection || bridgeRouteSelectionLatched || bridgeNavigationActive) && hasCachedRouteGeometry) {
+        if (hasCachedRouteState) {
           packet.routeSelected = true;
           if (Array.isArray(lastBridgeRouteStops) && lastBridgeRouteStops.length) {
             packet.routeStops = lastBridgeRouteStops.map((stop) => (stop && typeof stop === "object" ? Object.assign({}, stop) : stop));
           }
-          packet.routePoints = lastBridgeRouteWorldPoints.map((point) => (point && typeof point === "object" ? Object.assign({}, point) : point));
+          if (hasCachedRouteGeometry) {
+            packet.routePoints = lastBridgeRouteWorldPoints.map((point) => (point && typeof point === "object" ? Object.assign({}, point) : point));
+          }
           if (Number.isFinite(Number(lastBridgeRouteReachedIndex))) {
             packet.routeReachedIndex = Math.floor(Number(lastBridgeRouteReachedIndex));
           }
@@ -5928,6 +6025,12 @@
       if (footerSearchBtnEl) {
         footerSearchBtnEl.addEventListener("click", async (event) => {
           event.preventDefault();
+          if (isBusModeCommandLocked()) {
+            closeCancelConfirmation();
+            closeWazeSearchOverlay({ clearQuery: false });
+            refreshFooterSearchCancelMode();
+            return;
+          }
           if (Date.now() < searchSelectionLockUntilTs) return;
           if (hasBusCancelEvidence()) {
             openCancelConfirmation();

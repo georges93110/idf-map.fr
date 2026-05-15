@@ -1423,8 +1423,10 @@
       let bridgeNavigationActive = false;
       let bridgeHasRouteSelection = false;
       let bridgeRouteSelectionLatched = false;
+      let bridgeGameMode = BRIDGE_REQUIRE_GAME_SOURCE ? "bus" : "";
       let pendingCancelKind = "";
       let bridgeFollowRaf = 0;
+      let bridgeFollowLastRenderAt = 0;
       const bridgeSocketClientId = `waze_${Math.random().toString(36).slice(2, 10)}`;
       let bridgeChannel = null;
       let bridgeReconnectTimer = 0;
@@ -1445,9 +1447,8 @@
       let bridgeSpeedKmh = 0;
       let bridgeDisplaySpeedKmh = 0;
       let bridgeSpeedDecayTimer = 0;
+      let mapSpeedDisplayEmaKmh = NaN;
       let mapSpeedDisplayInt = 0;
-      let mapSpeedDisplayCandidateInt = 0;
-      let mapSpeedDisplayCandidateSinceMs = 0;
       let headingInferenceBlockedUntilTs = 0;
       let headingNeedsFreshPair = true;
       let manualZoomOffset = 0;
@@ -1457,6 +1458,7 @@
       let baseTileLayer = null;
       let leafletContentRefreshRaf = 0;
       let lastLeafletBridgeRefreshAt = 0;
+      let leafletRecoveryTimers = [];
       let lastHostWidth = 0;
       let lastHostHeight = 0;
       let lastFrameWidth = 0;
@@ -1519,8 +1521,9 @@
       const bridgeSpeedComputeMaxDtSec = 4;
       const bridgeSpeedMaxReasonableKmh = 220;
       const bridgeSpeedIdleCutoffMs = 900;
-      const mapSpeedDisplayHysteresisKmh = 0.7;
-      const mapSpeedDisplaySwitchDelayMs = 220;
+      const mapSpeedDisplayEmaAlpha = 0.2;
+      const mapSpeedDisplaySnapDeltaKmh = 8;
+      const mapSpeedDisplayHysteresisKmh = 0.75;
       const bridgeStopLabelDistanceThresholdM = 10;
       const destinationArrivalDistanceThresholdM = 12;
       const headingDeadzoneStopDeg = 2.2;
@@ -1594,13 +1597,25 @@
         return deg;
       }
       function resetMapSpeedDisplayStabilizer() {
+        mapSpeedDisplayEmaKmh = NaN;
         mapSpeedDisplayInt = 0;
-        mapSpeedDisplayCandidateInt = 0;
-        mapSpeedDisplayCandidateSinceMs = 0;
+      }
+      function smoothMapDisplaySpeedKmh(speedKmh) {
+        const speed = Number(speedKmh);
+        if (!Number.isFinite(speed) || speed <= (bridgeStopSpeedKmh * 0.2)) {
+          resetMapSpeedDisplayStabilizer();
+          return 0;
+        }
+        const clamped = Math.max(0, Math.min(bridgeSpeedMaxReasonableKmh, speed));
+        if (!Number.isFinite(mapSpeedDisplayEmaKmh) || Math.abs(clamped - mapSpeedDisplayEmaKmh) >= mapSpeedDisplaySnapDeltaKmh) {
+          mapSpeedDisplayEmaKmh = clamped;
+        } else {
+          mapSpeedDisplayEmaKmh = (mapSpeedDisplayEmaKmh * (1 - mapSpeedDisplayEmaAlpha)) + (clamped * mapSpeedDisplayEmaAlpha);
+        }
+        return mapSpeedDisplayEmaKmh;
       }
       function toStableMapSpeedInt(speedKmh) {
         const speed = Number(speedKmh);
-        const now = Date.now();
         if (!Number.isFinite(speed) || speed <= (bridgeStopSpeedKmh * 0.2)) {
           resetMapSpeedDisplayStabilizer();
           return 0;
@@ -1609,36 +1624,16 @@
         const rawInt = Math.round(clamped);
         if (!Number.isFinite(mapSpeedDisplayInt) || mapSpeedDisplayInt < 0) {
           mapSpeedDisplayInt = rawInt;
-          mapSpeedDisplayCandidateInt = rawInt;
-          mapSpeedDisplayCandidateSinceMs = 0;
           return rawInt;
         }
         const currentInt = mapSpeedDisplayInt;
-        if (Math.abs(rawInt - currentInt) >= 2) {
+        if (rawInt === currentInt) return currentInt;
+        if (rawInt > currentInt && clamped >= (currentInt + mapSpeedDisplayHysteresisKmh)) {
           mapSpeedDisplayInt = rawInt;
-          mapSpeedDisplayCandidateInt = rawInt;
-          mapSpeedDisplayCandidateSinceMs = 0;
-          return rawInt;
+        } else if (rawInt < currentInt && clamped <= (currentInt - mapSpeedDisplayHysteresisKmh)) {
+          mapSpeedDisplayInt = rawInt;
         }
-        let canSwitch = false;
-        if (rawInt > currentInt && clamped >= (currentInt + mapSpeedDisplayHysteresisKmh)) canSwitch = true;
-        if (rawInt < currentInt && clamped <= (currentInt - mapSpeedDisplayHysteresisKmh)) canSwitch = true;
-        if (!canSwitch) {
-          mapSpeedDisplayCandidateInt = currentInt;
-          mapSpeedDisplayCandidateSinceMs = 0;
-          return currentInt;
-        }
-        if (mapSpeedDisplayCandidateInt !== rawInt) {
-          mapSpeedDisplayCandidateInt = rawInt;
-          mapSpeedDisplayCandidateSinceMs = now;
-          return currentInt;
-        }
-        if ((now - mapSpeedDisplayCandidateSinceMs) < mapSpeedDisplaySwitchDelayMs) {
-          return currentInt;
-        }
-        mapSpeedDisplayInt = rawInt;
-        mapSpeedDisplayCandidateSinceMs = 0;
-        return rawInt;
+        return mapSpeedDisplayInt;
       }
       function formatMapSpeedValue(speedKmh) {
         const stableInt = toStableMapSpeedInt(speedKmh);
@@ -1650,20 +1645,8 @@
         if (!Number.isFinite(size) || size <= 0) return;
         phoneScreenEl.style.setProperty("--waze-speed-badge-size", `${size.toFixed(2)}px`);
       }
-      let uiCurrentSpeed = 0;
-      let uiTargetSpeed = 0;
-      let uiSpeedTweenRaf = 0;
-
-      function runSpeedTweenLoop() {
-        if (Math.abs(uiTargetSpeed - uiCurrentSpeed) < 0.05) {
-          uiCurrentSpeed = uiTargetSpeed;
-          uiSpeedTweenRaf = 0;
-        } else {
-          uiCurrentSpeed += (uiTargetSpeed - uiCurrentSpeed) * 0.12;
-          uiSpeedTweenRaf = requestAnimationFrame(runSpeedTweenLoop);
-        }
-        const roundedSpeed = !Number.isFinite(uiCurrentSpeed) ? 0 : (uiCurrentSpeed >= 0 ? Math.ceil(uiCurrentSpeed) : Math.floor(uiCurrentSpeed));
-        const absoluteSpeed = Math.abs(roundedSpeed);
+      function renderMapSpeedValue(speedKmh) {
+        const absoluteSpeed = formatMapSpeedValue(Math.abs(Number(speedKmh) || 0));
         if (mapSpeedValueEl) {
           mapSpeedValueEl.textContent = String(absoluteSpeed);
         } else if (mapSpeedBadgeEl) {
@@ -1674,10 +1657,7 @@
       function setMapSpeedKmh(speedKmh) {
         if (!mapSpeedBadgeEl) return;
         const val = Number(speedKmh);
-        uiTargetSpeed = !Number.isFinite(val) ? 0 : val;
-        if (!uiSpeedTweenRaf) {
-          uiSpeedTweenRaf = requestAnimationFrame(runSpeedTweenLoop);
-        }
+        renderMapSpeedValue(smoothMapDisplaySpeedKmh(!Number.isFinite(val) ? 0 : val));
       }
       let gpsPassengerLastInBus = 0;
       let gpsPassengerLastBoardDone = 0;
@@ -1960,7 +1940,7 @@
         }
       }
 
-      function syncResponsiveLayout() {
+      function syncResponsiveLayout(force = false) {
         const lockedZoom = getEffectiveFollowZoom(bridgeSpeedKmh);
         const host = appBackgroundEl || document.documentElement;
         const hostW = Math.max(1, Number(host.clientWidth) || Number(window.innerWidth) || 1);
@@ -1970,14 +1950,14 @@
         const mapW = Math.max(1, Number(mapHost?.clientWidth) || 1);
         const mapH = Math.max(1, Number(mapHost?.clientHeight) || 1);
         const stablePx = 2;
-        if (
+        if (!force && (
           Math.abs(hostW - lastHostWidth) <= stablePx &&
           Math.abs(hostH - lastHostHeight) <= stablePx &&
           Math.abs(frameW - lastFrameWidth) <= stablePx &&
           Math.abs(frameH - lastFrameHeight) <= stablePx &&
           Math.abs(mapW - lastMapHostWidth) <= stablePx &&
           Math.abs(mapH - lastMapHostHeight) <= stablePx
-        ) return;
+        )) return;
         lastHostWidth = hostW;
         lastHostHeight = hostH;
         lastFrameWidth = frameW;
@@ -2025,6 +2005,29 @@
         refreshLeafletContent(true);
         [120, 350, 850, 1600].forEach((delayMs) => {
           window.setTimeout(() => refreshLeafletContent(delayMs >= 350), delayMs);
+        });
+      }
+      function clearLeafletRecoveryTimers() {
+        if (!leafletRecoveryTimers.length) return;
+        leafletRecoveryTimers.forEach((timerId) => window.clearTimeout(timerId));
+        leafletRecoveryTimers = [];
+      }
+      function recoverLeafletContent(redrawTiles = false) {
+        if (document.body.classList.contains("game-paused")) return;
+        try {
+          syncResponsiveLayout(true);
+        } catch { }
+        refreshLeafletContent(redrawTiles);
+        if (bridgeFollowTargetLatLng) runBridgeFollowLoop();
+      }
+      function scheduleLeafletRecoveryBurst() {
+        clearLeafletRecoveryTimers();
+        recoverLeafletContent(true);
+        [120, 450, 1100].forEach((delayMs) => {
+          const timerId = window.setTimeout(() => {
+            recoverLeafletContent(delayMs === 450);
+          }, delayMs);
+          leafletRecoveryTimers.push(timerId);
         });
       }
 
@@ -2456,15 +2459,32 @@
           hasLocalBusRouteEvidence()
         );
       }
+      function normalizeBridgeGameMode(value) {
+        const raw = String(value || "").trim().toLowerCase();
+        if (raw === "bus" || raw === "bus_mode") return "bus";
+        if (raw === "free" || raw === "normal") return "free";
+        return raw;
+      }
+      function updateBridgeGameModeFromPayload(payload) {
+        if (!payload || typeof payload !== "object") return;
+        if (!Object.prototype.hasOwnProperty.call(payload, "gameMode")) return;
+        const nextMode = normalizeBridgeGameMode(payload.gameMode);
+        if (nextMode) bridgeGameMode = nextMode;
+      }
+      function isBusModeCommandLocked() {
+        return BRIDGE_REQUIRE_GAME_SOURCE && bridgeGameMode === "bus";
+      }
       function setFooterSearchCancelMode(active) {
         if (!footerSearchBtnEl) return;
-        footerSearchBtnEl.setAttribute("aria-disabled", "false");
+        const locked = isBusModeCommandLocked();
+        footerSearchBtnEl.disabled = locked;
+        footerSearchBtnEl.setAttribute("aria-disabled", locked ? "true" : "false");
         if (active) {
-          footerSearchBtnEl.setAttribute("aria-label", "Annuler le trajet");
+          footerSearchBtnEl.setAttribute("aria-label", locked ? "Annuler le trajet indisponible en mode bus" : "Annuler le trajet");
           footerSearchBtnEl.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18"></path><path d="M18 6L6 18"></path></svg>';
           return;
         }
-        footerSearchBtnEl.setAttribute("aria-label", "Rechercher");
+        footerSearchBtnEl.setAttribute("aria-label", locked ? "Recherche indisponible en mode bus" : "Rechercher");
         footerSearchBtnEl.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16L21 21"></path></svg>';
       }
       function refreshFooterFilterVisibility() {
@@ -2477,11 +2497,15 @@
         const active = hasBusCancelEvidence();
         setFooterSearchCancelMode(active);
         refreshFooterFilterVisibility();
-        if (active && wazeSearchOverlayOpen) {
+        if (isBusModeCommandLocked()) {
+          closeCancelConfirmation();
+        }
+        if ((active || isBusModeCommandLocked()) && wazeSearchOverlayOpen) {
           closeWazeSearchOverlay({ clearQuery: false });
         }
       }
       function openCancelConfirmation() {
+        if (isBusModeCommandLocked()) return;
         if (!navCancelConfirmEl) return;
         pendingCancelKind = "bus";
         if (navCancelConfirmTextEl) navCancelConfirmTextEl.textContent = "Annuler le trajet ?";
@@ -3272,6 +3296,7 @@
         renderWazeSearchResults();
       }
       async function openWazeSearchOverlay() {
+        if (isBusModeCommandLocked()) return false;
         closeCancelConfirmation();
         wazeSearchOverlayOpen = true;
         if (wazeSearchOverlayEl) wazeSearchOverlayEl.hidden = false;
@@ -3335,6 +3360,7 @@
         return true;
       }
       async function applyWazeSearchSelection(item) {
+        if (isBusModeCommandLocked()) return;
         if (!item) return;
         const x = Number(item.x);
         const y = Number(item.y);
@@ -3558,8 +3584,6 @@
         forcedSearchDestinationWorldPoint = null;
         lastBridgeDestinationWorldPoint = null;
         pendingBridgePayload = null;
-        lastBridgeTimestamp = 0;
-        lastBridgeTimestampBySource = new Map();
         destinationArrivalLocked = false;
         clearDestinationArrivalLockPoint();
         lastDestinationSelectionTs = 0;
@@ -3574,6 +3598,7 @@
         setNavigationUiActive(false);
         setFooterArrivalTime(Number.NaN);
         setFooterDistance(0, NaN, {});
+        window.__lastReadyToLeaveIndex = -1;
         refreshFooterSearchCancelMode();
       }
       async function cancelActiveBusNavigation() {
@@ -4918,9 +4943,15 @@
             }
           }
           setNavigationArrow(nextArrow);
-          const zoomToUse = getEffectiveFollowZoom(bridgeSpeedKmh);
-          const desiredCenter = centerForTarget(nextArrow, zoomToUse);
-          map.setView(desiredCenter, zoomToUse, { animate: false });
+          const nowPerf = (typeof performance !== "undefined" && performance.now)
+            ? performance.now()
+            : Date.now();
+          if (!bridgeFollowLastRenderAt || (nowPerf - bridgeFollowLastRenderAt) >= 50 || distToTarget >= bridgeFollowSnapDistanceM) {
+            bridgeFollowLastRenderAt = nowPerf;
+            const zoomToUse = getEffectiveFollowZoom(bridgeSpeedKmh);
+            const desiredCenter = centerForTarget(nextArrow, zoomToUse);
+            map.setView(desiredCenter, zoomToUse, { animate: false });
+          }
           bridgeFollowRaf = requestAnimationFrame(tick);
         };
         bridgeFollowRaf = requestAnimationFrame(tick);
@@ -4935,6 +4966,7 @@
           resetMapSpeedDisplayStabilizer();
           if (bridgeFollowRaf) cancelAnimationFrame(bridgeFollowRaf);
           bridgeFollowRaf = 0;
+          bridgeFollowLastRenderAt = 0;
           bridgeSpeedKmh = 0;
           bridgeDisplaySpeedKmh = 0;
           setMapSpeedKmh(0);
@@ -4999,6 +5031,7 @@
           setNavigationRouteColor(payload.routeColor);
         }
         if (!isAllowedBridgePayloadSource(payload)) return;
+        updateBridgeGameModeFromPayload(payload);
         const sourceKey = String(payload?.source ?? payload?.origin ?? "unknown").trim().toLowerCase() || "unknown";
         const isRealtimeSource = sourceKey === "telemetry" || sourceKey === "server";
         const ts = resolveBridgeEventTimeMs(payload.ts);
@@ -5015,9 +5048,10 @@
           payload.clearDestination === true;
         if (shouldClearNavigationFromPayload) {
           applyLocalCancelledRouteState();
+          return;
         }
         const bridgeRefreshNow = Date.now();
-        if ((bridgeRefreshNow - lastLeafletBridgeRefreshAt) >= 1200) {
+        if ((bridgeRefreshNow - lastLeafletBridgeRefreshAt) >= 1800) {
           lastLeafletBridgeRefreshAt = bridgeRefreshNow;
           refreshLeafletContent(false);
         }
@@ -5105,12 +5139,23 @@
                 (effectiveRouteStopsInput.length > 0 && maxStopIndex >= 0)
               )
           );
+        const hasGameBusRouteSelection =
+          BRIDGE_REQUIRE_GAME_SOURCE &&
+          bridgeGameMode === "bus" &&
+          (
+            hasRouteSelection ||
+            bridgeRouteSelectionLatched === true ||
+            lastBridgeRouteWaitingStart === true ||
+            effectiveRouteStopsInput.length > 0
+          );
         let routeWaitingStart = lastBridgeRouteWaitingStart === true;
         if (hasRouteWaitingStartPayloadKey) {
           routeWaitingStart = payload.routeWaitingStart === true;
         }
-        if (!hasRouteSelection) {
+        if (!hasRouteSelection && !hasGameBusRouteSelection) {
           routeWaitingStart = false;
+        } else if (!hasRouteSelection && hasGameBusRouteSelection && lastBridgeRouteWaitingStart === true) {
+          routeWaitingStart = true;
         }
         const arrivedAtTerminus = (hasRouteSelection && maxStopIndex >= 0) && routeReachedIndex >= maxStopIndex;
         const navigationActive = !arrivedAtTerminus && !destinationReachedByDistance && !destinationSuppressedByArrivalLock && (
@@ -5272,10 +5317,9 @@
         }
         window.__lastDetectedTargetStop = targetStop;
         const targetStopPoint = window.__lastDetectedTargetStop ? normalizeBridgeWorldPoint(window.__lastDetectedTargetStop) : null;
-        const destinationMode = !routeWaitingStart && navigationActive && effectiveRouteStopsInput.length < 1;
+        const destinationMode = !hasGameBusRouteSelection && !routeWaitingStart && navigationActive && effectiveRouteStopsInput.length < 1;
         if (routeWaitingStart) {
-          const waitingLabel = String(payload.currentStopLabel || "Station de départ").trim();
-          headerStopLabel = waitingLabel || "Station de départ";
+          headerStopLabel = "Prochain arrêt";
           const waitingName = String(
             payload.startStopName ||
             payload.currentStopName ||
@@ -5736,16 +5780,19 @@
           headingConvention: "north_ccw",
           speed: signal.speedKmh
         };
-        if (lastBridgeDestinationWorldPoint && (bridgeHasRouteSelection || bridgeRouteSelectionLatched || bridgeNavigationActive)) {
+        const hasCachedRouteState = bridgeHasRouteSelection || bridgeRouteSelectionLatched || bridgeNavigationActive;
+        if (lastBridgeDestinationWorldPoint && hasCachedRouteState) {
           packet.end = Object.assign({}, lastBridgeDestinationWorldPoint);
         }
         const hasCachedRouteGeometry = Array.isArray(lastBridgeRouteWorldPoints) && lastBridgeRouteWorldPoints.length >= MIN_NAV_ROUTE_POINTS;
-        if ((bridgeHasRouteSelection || bridgeRouteSelectionLatched || bridgeNavigationActive) && hasCachedRouteGeometry) {
+        if (hasCachedRouteState) {
           packet.routeSelected = true;
           if (Array.isArray(lastBridgeRouteStops) && lastBridgeRouteStops.length) {
             packet.routeStops = lastBridgeRouteStops.map((stop) => (stop && typeof stop === "object" ? Object.assign({}, stop) : stop));
           }
-          packet.routePoints = lastBridgeRouteWorldPoints.map((point) => (point && typeof point === "object" ? Object.assign({}, point) : point));
+          if (hasCachedRouteGeometry) {
+            packet.routePoints = lastBridgeRouteWorldPoints.map((point) => (point && typeof point === "object" ? Object.assign({}, point) : point));
+          }
           if (Number.isFinite(Number(lastBridgeRouteReachedIndex))) {
             packet.routeReachedIndex = Math.floor(Number(lastBridgeRouteReachedIndex));
           }
@@ -5918,7 +5965,7 @@
         edgeBufferTiles: 3,        // Le plugin charge 3 rangées cachées d'avance
         keepBuffer: 12             // Garde en mémoire pour éviter de re-télécharger
       }).addTo(map);
-      scheduleLeafletContentRefreshBurst();
+      scheduleLeafletRecoveryBurst();
       restoreZoomState();
       bindBridgeChannel();
       loadInitialBridgePayload();
@@ -5939,7 +5986,7 @@
           const zoomLevel = getEffectiveFollowZoom(bridgeSpeedKmh);
           map.setView(centerForTarget(targetLatLng, zoomLevel), zoomLevel, { animate: false });
           setFollowTarget(targetLatLng, { immediate: true });
-          scheduleLeafletContentRefreshBurst();
+          scheduleLeafletRecoveryBurst();
           if (pendingBridgePayload) {
             const payload = pendingBridgePayload;
             pendingBridgePayload = null;
@@ -6022,6 +6069,12 @@
       if (footerSearchBtnEl) {
         footerSearchBtnEl.addEventListener("click", async (event) => {
           event.preventDefault();
+          if (isBusModeCommandLocked()) {
+            closeCancelConfirmation();
+            closeWazeSearchOverlay({ clearQuery: false });
+            refreshFooterSearchCancelMode();
+            return;
+          }
           if (Date.now() < searchSelectionLockUntilTs) return;
           if (hasBusCancelEvidence()) {
             openCancelConfirmation();
@@ -6147,10 +6200,10 @@
         });
       };
       window.addEventListener("resize", handleViewportResize, { passive: true });
-      window.addEventListener("pageshow", scheduleLeafletContentRefreshBurst, { passive: true });
-      window.addEventListener("focus", scheduleLeafletContentRefreshBurst, { passive: true });
+      window.addEventListener("pageshow", scheduleLeafletRecoveryBurst, { passive: true });
+      window.addEventListener("focus", scheduleLeafletRecoveryBurst, { passive: true });
       document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) scheduleLeafletContentRefreshBurst();
+        if (!document.hidden) scheduleLeafletRecoveryBurst();
       });
       if (typeof ResizeObserver === "function") {
         const ro = new ResizeObserver(handleViewportResize);
@@ -6194,6 +6247,7 @@
           clearInterval(resizePollTimer);
           resizePollTimer = 0;
         }
+        clearLeafletRecoveryTimers();
         if (bridgeSpeedDecayTimer) {
           clearInterval(bridgeSpeedDecayTimer);
           bridgeSpeedDecayTimer = 0;
@@ -6211,7 +6265,12 @@
         if (!msg || msg.scope !== "idf_game_widget_bridge_v1") return;
 
         if (msg.type === "game_pause_state") {
-          document.body.classList.toggle("game-paused", !!msg.pausedByTelemetry);
+          const isPaused = !!msg.pausedByTelemetry;
+          const wasPaused = document.body.classList.contains("game-paused");
+          document.body.classList.toggle("game-paused", isPaused);
+          if (wasPaused !== isPaused && !isPaused) {
+            scheduleLeafletRecoveryBurst();
+          }
           return;
         }
 

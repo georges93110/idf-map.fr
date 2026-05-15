@@ -64,8 +64,14 @@
     }
   ];
 
+  const game = {
+    systemName: "IDFRP"
+  };
+
   window.SITE_LINKS = links;
   window.SITE_OFFSITE_LINKS = Object.assign({}, links.offsite);
   window.SITE_NAV_TREE = navTree;
   window.SITE_HEADER_LINKS = headerLinks;
+  window.SITE_GAME_CONFIG = game;
+  window.GAME_SYSTEM_NAME = game.systemName;
 })();

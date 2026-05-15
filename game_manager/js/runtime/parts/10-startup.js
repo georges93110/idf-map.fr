@@ -47,9 +47,11 @@
       syncPassengerValidationSoundsUi();
       syncHideUiWhenManagerHiddenUi();
       syncNotificationSoundsUi();
+      syncDiscordPresenceEnabledUi();
       syncDefaultStartupModeUi();
       syncBusCapacitySettingsUi();
       syncShowExperimentalWidgetsUi();
+      syncShowUnavailablePlayModesUi();
       restoreSaeivTimeSystemFromStorage();
       restoreWidgetLayoutState();
       syncSaeivTimeSystemUi();
@@ -57,8 +59,10 @@
       syncPassengerValidationSoundsUi();
       syncHideUiWhenManagerHiddenUi();
       syncNotificationSoundsUi();
+      syncDiscordPresenceEnabledUi();
       syncBusCapacitySettingsUi();
       syncShowExperimentalWidgetsUi();
+      syncShowUnavailablePlayModesUi();
       syncSaeivExternalState(true);
       startOverlayInteractionBindings();
       syncWebsocketMode1HintVisibility();

@@ -27,7 +27,6 @@
               originWidth: managerState.width,
               originHeight: managerState.height
             };
-            setOverlayDragCursor(node);
             setOverlayDragCursor(el.overlayManager);
             try { el.overlayManagerTitlebar.setPointerCapture(event.pointerId); } catch (err) { }
             event.preventDefault();
@@ -50,10 +49,13 @@
           applySaeivTimeSystem(SAEIV_TIME_SYSTEM_DEFAULT, { syncUi: true, persist: true });
           applyStopAnnouncementSoundsEnabled(true, { syncUi: true });
           applyPassengerValidationSoundsEnabled(true, { syncUi: true, syncState: false });
+          applyPccVoiceReceptionMode(PCC_VOICE_RECEPTION_ALWAYS, { syncUi: true });
+          applyDiscordPresenceEnabled(true, { syncUi: true });
           applyHideUiWhenManagerHidden(false, { syncUi: true, render: false });
           applyUnknownBusCapacityInputValue(String(SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT), { syncUi: true, syncState: false });
           applyForceListedCapacityForAllBuses(false, { syncUi: true, syncState: false });
           applyShowExperimentalWidgets(false, { syncUi: true, apply: false });
+          applyShowUnavailablePlayModes(true, { syncUi: true });
           applyManagerScalePercent(managerScalePercent, { render: false, syncUi: true });
           applyTelemetryOverlayAlphaPercent(telemetryOverlayAlphaPercent, { syncUi: true });
           applyNotificationScalePercent(notificationScalePercent, { syncUi: true });
@@ -61,7 +63,8 @@
           syncSaeivExternalState(true);
 
           ensureWidgetTypeEnabled("saeiv_mini", true);
-          ensureWidgetTypeEnabled("waze", true);
+          ensureWidgetTypeEnabled("waze", false);
+          ensureWidgetTypeEnabled("gps_mini", true);
           ensureWidgetTypeEnabled("saeiv", false);
           ensureWidgetTypeEnabled("bus_status", true);
           apply();
@@ -115,12 +118,15 @@
             applySaeivTimeSystem(SAEIV_TIME_SYSTEM_DEFAULT, { syncUi: true, persist: true });
             applyStopAnnouncementSoundsEnabled(true, { syncUi: true });
             applyPassengerValidationSoundsEnabled(true, { syncUi: true, syncState: false });
+            applyPccVoiceReceptionMode(PCC_VOICE_RECEPTION_ALWAYS, { syncUi: true });
             applyHideUiWhenManagerHidden(false, { syncUi: true, render: false });
             applyDefaultStartupMode(DEFAULT_STARTUP_MODE_MENU, { syncUi: true });
             applyNotificationSoundsEnabled(true, { syncUi: true });
+            applyDiscordPresenceEnabled(true, { syncUi: true });
             applyUnknownBusCapacityInputValue(String(SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT), { syncUi: true, syncState: false });
             applyForceListedCapacityForAllBuses(false, { syncUi: true, syncState: false });
             applyShowExperimentalWidgets(false, { syncUi: true, apply: false });
+            applyShowUnavailablePlayModes(true, { syncUi: true });
             applyManagerScalePercent(managerScalePercent, { render: false, syncUi: true });
             applyTelemetryOverlayAlphaPercent(telemetryOverlayAlphaPercent, { syncUi: true });
             applyNotificationScalePercent(notificationScalePercent, { syncUi: true });
@@ -1443,6 +1449,12 @@
             var isHidden = el.overlayTimeSystemMenu.hidden;
             // Close other menus if open
             if (typeof closeOverlayWidgetAddMenu === "function") closeOverlayWidgetAddMenu();
+            if (el.overlayPccVoiceReceptionModeMenu) {
+              el.overlayPccVoiceReceptionModeMenu.hidden = true;
+              if (el.overlayPccVoiceReceptionModeDisplay) {
+                el.overlayPccVoiceReceptionModeDisplay.setAttribute("aria-expanded", "false");
+              }
+            }
             el.overlayTimeSystemMenu.hidden = !isHidden;
             el.overlayTimeSystemDisplay.setAttribute("aria-expanded", !isHidden);
           });
@@ -1486,6 +1498,12 @@
             saveWidgetLayoutState();
           });
         }
+        if (el.overlayShowUnavailableModes) {
+          el.overlayShowUnavailableModes.addEventListener("change", function () {
+            applyShowUnavailablePlayModes(!!el.overlayShowUnavailableModes.checked, { syncUi: true });
+            saveWidgetLayoutState();
+          });
+        }
         if (el.overlayHideUiWhenManagerHidden) {
           el.overlayHideUiWhenManagerHidden.addEventListener("change", function () {
             applyHideUiWhenManagerHidden(!!el.overlayHideUiWhenManagerHidden.checked, { syncUi: true, render: true });
@@ -1504,6 +1522,12 @@
 
             if (el.overlayTimeSystemMenu) {
               el.overlayTimeSystemMenu.hidden = true;
+            }
+            if (el.overlayPccVoiceReceptionModeMenu) {
+              el.overlayPccVoiceReceptionModeMenu.hidden = true;
+              if (el.overlayPccVoiceReceptionModeDisplay) {
+                el.overlayPccVoiceReceptionModeDisplay.setAttribute("aria-expanded", "false");
+              }
             }
 
             rebuildDefaultStartupModeOptions();
@@ -1549,6 +1573,59 @@
             applyNotificationSoundsEnabled(!!el.overlayNotificationSoundsEnabled.checked, { syncUi: true });
             saveWidgetLayoutState();
           });
+        }
+        if (el.overlayDiscordPresenceEnabled) {
+          el.overlayDiscordPresenceEnabled.addEventListener("change", function () {
+            applyDiscordPresenceEnabled(!!el.overlayDiscordPresenceEnabled.checked, { syncUi: true });
+            saveWidgetLayoutState();
+          });
+        }
+        if (el.overlayPccVoiceReceptionMode) {
+          el.overlayPccVoiceReceptionMode.addEventListener("change", function () {
+            applyPccVoiceReceptionMode(el.overlayPccVoiceReceptionMode.value, { syncUi: true });
+            saveWidgetLayoutState();
+          });
+        }
+        if (el.overlayPccVoiceReceptionModeDisplay && el.overlayPccVoiceReceptionModeMenu) {
+          el.overlayPccVoiceReceptionModeDisplay.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (typeof closeOverlayWidgetAddMenu === "function") closeOverlayWidgetAddMenu();
+            if (el.overlayTimeSystemMenu) {
+              el.overlayTimeSystemMenu.hidden = true;
+              if (el.overlayTimeSystemDisplay) el.overlayTimeSystemDisplay.setAttribute("aria-expanded", "false");
+            }
+            if (el.overlayDefaultStartupModeMenu) {
+              el.overlayDefaultStartupModeMenu.hidden = true;
+              if (el.overlayDefaultStartupModeDisplay) el.overlayDefaultStartupModeDisplay.setAttribute("aria-expanded", "false");
+            }
+
+            syncPccVoiceReceptionModeUi();
+            var willOpen = el.overlayPccVoiceReceptionModeMenu.hidden === true;
+            el.overlayPccVoiceReceptionModeMenu.hidden = !willOpen;
+            el.overlayPccVoiceReceptionModeDisplay.setAttribute("aria-expanded", String(willOpen));
+          });
+
+          el.overlayPccVoiceReceptionModeMenu.querySelectorAll(".manager-widget-menu-item[data-value]").forEach(function (item) {
+            item.addEventListener("click", function (event) {
+              event.preventDefault();
+              event.stopPropagation();
+              applyPccVoiceReceptionMode(item.dataset.value, { syncUi: true });
+              saveWidgetLayoutState();
+              el.overlayPccVoiceReceptionModeMenu.hidden = true;
+              el.overlayPccVoiceReceptionModeDisplay.setAttribute("aria-expanded", "false");
+            });
+          });
+
+          window.addEventListener("pointerdown", function (event) {
+            if (!el.overlayPccVoiceReceptionModeMenu || el.overlayPccVoiceReceptionModeMenu.hidden) return;
+            var wrap = el.overlayPccVoiceReceptionModeDisplay.parentElement;
+            if (wrap && !wrap.contains(event.target)) {
+              el.overlayPccVoiceReceptionModeMenu.hidden = true;
+              el.overlayPccVoiceReceptionModeDisplay.setAttribute("aria-expanded", "false");
+            }
+          }, true);
         }
         if (el.overlayUnknownBusCapacitySlider) {
           el.overlayUnknownBusCapacitySlider.addEventListener("input", function () {
@@ -1730,7 +1807,7 @@
           if (activeOverlayDrag.mode === "manager-move") {
             managerState.x = activeOverlayDrag.originX + dx;
             managerState.y = activeOverlayDrag.originY + dy;
-            clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
+            clampManagerRect(managerState);
             renderManager();
             event.preventDefault();
             return;
@@ -1738,6 +1815,8 @@
 
           if (activeOverlayDrag.mode === "manager-resize") {
             var dir = activeOverlayDrag.dir || "se";
+            var ratio = Number(OVERLAY_MANAGER_ASPECT_RATIO);
+            if (!Number.isFinite(ratio) || ratio <= 0) ratio = OVERLAY_MANAGER_BASE_WIDTH / Math.max(1, OVERLAY_MANAGER_BASE_HEIGHT);
 
             var anchorX = (dir.indexOf("w") !== -1) ? (activeOverlayDrag.originX + activeOverlayDrag.originWidth) : activeOverlayDrag.originX;
             var anchorY = (dir.indexOf("n") !== -1) ? (activeOverlayDrag.originY + activeOverlayDrag.originHeight) : activeOverlayDrag.originY;
@@ -1745,18 +1824,21 @@
             var reqW = (dir.indexOf("w") !== -1) ? (activeOverlayDrag.originWidth - dx) : (activeOverlayDrag.originWidth + dx);
             var reqH = (dir.indexOf("n") !== -1) ? (activeOverlayDrag.originHeight - dy) : (activeOverlayDrag.originHeight + dy);
 
-            if (dir.indexOf("w") !== -1 || dir.indexOf("e") !== -1) {
-              var nextWidth = Math.max(reqW, OVERLAY_MANAGER_MIN_WIDTH);
-              managerState.width = nextWidth;
-              managerState.x = (dir.indexOf("w") !== -1) ? (anchorX - nextWidth) : anchorX;
-            }
-            if (dir.indexOf("n") !== -1 || dir.indexOf("s") !== -1) {
-              var nextHeight = Math.max(reqH, OVERLAY_MANAGER_MIN_HEIGHT);
-              managerState.height = nextHeight;
-              managerState.y = (dir.indexOf("n") !== -1) ? (anchorY - nextHeight) : anchorY;
+            var nextWidth = (dir.indexOf("w") !== -1 || dir.indexOf("e") !== -1) ? reqW : (reqH * ratio);
+            if (!Number.isFinite(nextWidth) || nextWidth < OVERLAY_MANAGER_MIN_WIDTH) nextWidth = OVERLAY_MANAGER_MIN_WIDTH;
+            var nextHeight = nextWidth / ratio;
+            if (nextHeight < OVERLAY_MANAGER_MIN_HEIGHT) {
+              nextHeight = OVERLAY_MANAGER_MIN_HEIGHT;
+              nextWidth = nextHeight * ratio;
             }
 
-            clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
+            managerState.x = (dir.indexOf("w") !== -1) ? (anchorX - nextWidth) : anchorX;
+            managerState.y = (dir.indexOf("n") !== -1) ? (anchorY - nextHeight) : anchorY;
+            managerState.width = nextWidth;
+            managerState.height = nextHeight;
+            clampManagerRect(managerState);
+            managerScalePercent = clampManagerScalePercent(Math.round((Number(managerState.width) || OVERLAY_MANAGER_BASE_WIDTH) / Math.max(1, OVERLAY_MANAGER_BASE_WIDTH) * 100));
+            syncManagerScaleUi();
             renderManager();
             event.preventDefault();
             return;

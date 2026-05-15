@@ -2175,7 +2175,7 @@
               routeDistanceToCurrentStopM = worldPointDistance(lastBridgeArrowPoint, displayPoint);
             }
             if (!routeStarted) {
-              routeCurrentStopLabel = "Station de départ";
+              routeCurrentStopLabel = "Prochain arrêt";
             } else {
               if (Number.isFinite(routeDistanceToCurrentStopM)) {
                 routeCurrentStopLabel = routeDistanceToCurrentStopM <= SAEIV_STOP_REACH_DISTANCE

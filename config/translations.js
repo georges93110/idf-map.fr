@@ -2224,7 +2224,7 @@
       addons_coming_soon: "Cette page sera complétée prochainement.",
       template_page_title: "Template",
       home_btn_patreon: "Patreon",
-      home_category_installation: "Installation Map",
+      home_category_installation: "Téléchargement Map",
       home_category_convoy_server: "Serveur Convoi",
       home_convoy_title: "Serveur Convoi",
       home_convoy_status_text: "Cette catégorie est dédiée au mode Serveur Convoi. Les informations détaillées arrivent bientôt.",
@@ -2310,7 +2310,7 @@
       addons_coming_soon: "This page will be completed soon.",
       template_page_title: "Template",
       home_btn_patreon: "Patreon",
-      home_category_installation: "Map Installation",
+      home_category_installation: "Map Download",
       home_category_convoy_server: "Convoy Server",
       home_convoy_title: "Convoy Server",
       home_convoy_status_text: "This category is dedicated to Convoy Server mode. Detailed information will be available soon.",
@@ -2945,7 +2945,7 @@
       fr: {
         home_categories_aria_label: "Catégories d'accueil",
         home_hero_aria_label: "Contenu d'accueil",
-        home_category_installation: "Installation Map",
+        home_category_installation: "Téléchargement Map",
         home_category_convoy_server: "Serveur Convoi",
         home_convoy_guide_button: "Guide Convoi",
         home_btn_youtube: "YouTube",
@@ -2972,7 +2972,7 @@
       en: {
         home_categories_aria_label: "Home categories",
         home_hero_aria_label: "Home content",
-        home_category_installation: "Map Installation",
+        home_category_installation: "Map Download",
         home_category_convoy_server: "Convoy Server",
         home_convoy_guide_button: "Convoy Guide",
         home_btn_youtube: "YouTube",
@@ -2999,7 +2999,7 @@
       es: {
         home_categories_aria_label: "Categorías de inicio",
         home_hero_aria_label: "Contenido de inicio",
-        home_category_installation: "Instalación del mapa",
+        home_category_installation: "Descarga del mapa",
         home_category_convoy_server: "Servidor Convoy",
         home_convoy_guide_button: "Guía Convoy",
         home_btn_youtube: "YouTube",
@@ -3026,7 +3026,7 @@
       de: {
         home_categories_aria_label: "Startkategorien",
         home_hero_aria_label: "Startseiteninhalt",
-        home_category_installation: "Karteninstallation",
+        home_category_installation: "Karten-Download",
         home_category_convoy_server: "Convoy-Server",
         home_convoy_guide_button: "Convoy-Anleitung",
         home_btn_youtube: "YouTube",
@@ -3053,7 +3053,7 @@
       pl: {
         home_categories_aria_label: "Kategorie strony głównej",
         home_hero_aria_label: "Zawartość strony głównej",
-        home_category_installation: "Instalacja mapy",
+        home_category_installation: "Pobieranie mapy",
         home_category_convoy_server: "Serwer Convoy",
         home_convoy_guide_button: "Poradnik Convoy",
         home_btn_youtube: "YouTube",
@@ -3080,7 +3080,7 @@
       pt: {
         home_categories_aria_label: "Categorias da página inicial",
         home_hero_aria_label: "Conteúdo da página inicial",
-        home_category_installation: "Instalação do mapa",
+        home_category_installation: "Download do mapa",
         home_category_convoy_server: "Servidor Convoy",
         home_convoy_guide_button: "Guia do Convoy",
         home_btn_youtube: "YouTube",
@@ -3107,7 +3107,7 @@
       nl: {
         home_categories_aria_label: "Startcategorieën",
         home_hero_aria_label: "Startinhoud",
-        home_category_installation: "Kaartinstallatie",
+        home_category_installation: "Map downloaden",
         home_category_convoy_server: "Convoy-server",
         home_convoy_guide_button: "Convoy-handleiding",
         home_btn_youtube: "YouTube",
@@ -3134,7 +3134,7 @@
       it: {
         home_categories_aria_label: "Categorie della home",
         home_hero_aria_label: "Contenuto della home",
-        home_category_installation: "Installazione mappa",
+        home_category_installation: "Download mappa",
         home_category_convoy_server: "Server Convoglio",
         home_convoy_guide_button: "Guida Convoglio",
         home_btn_youtube: "YouTube",
@@ -3161,7 +3161,7 @@
       ru: {
         home_categories_aria_label: "Категории главной страницы",
         home_hero_aria_label: "Содержимое главной страницы",
-        home_category_installation: "Установка карты",
+        home_category_installation: "Скачивание карты",
         home_category_convoy_server: "Сервер Convoy",
         home_convoy_guide_button: "Руководство по Convoy",
         home_btn_youtube: "YouTube",
@@ -3188,7 +3188,7 @@
       zh: {
         home_categories_aria_label: "首页分类",
         home_hero_aria_label: "首页内容",
-        home_category_installation: "地图安装",
+        home_category_installation: "地图下载",
         home_category_convoy_server: "Convoy 服务器",
         home_convoy_guide_button: "Convoy 指南",
         home_btn_youtube: "YouTube",
@@ -3215,7 +3215,7 @@
       ko: {
         home_categories_aria_label: "홈 카테고리",
         home_hero_aria_label: "홈 콘텐츠",
-        home_category_installation: "맵 설치",
+        home_category_installation: "맵 다운로드",
         home_category_convoy_server: "컨보이 서버",
         home_convoy_guide_button: "컨보이 가이드",
         home_btn_youtube: "YouTube",
@@ -3242,7 +3242,7 @@
       ja: {
         home_categories_aria_label: "ホームカテゴリ",
         home_hero_aria_label: "ホームコンテンツ",
-        home_category_installation: "マップのインストール",
+        home_category_installation: "マップダウンロード",
         home_category_convoy_server: "コンボイサーバー",
         home_convoy_guide_button: "コンボイガイド",
         home_btn_youtube: "YouTube",

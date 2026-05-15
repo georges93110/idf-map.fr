@@ -10,7 +10,7 @@
       }
       function isExperimentalWidgetType(type) {
         var safeType = normalizeWidgetType(type);
-        return safeType === "saeiv";
+        return safeType === "saeiv" || safeType === "waze";
       }
       function applyWidgetTitleWithExperimentalBadge(targetEl, labelText, type) {
         if (!targetEl) return;
@@ -33,6 +33,12 @@
         if (value === false) return false;
         var raw = String(value || "").trim().toLowerCase();
         return raw === "1" || raw === "true" || raw === "yes" || raw === "on";
+      }
+      function normalizeShowUnavailablePlayModes(value) {
+        if (value === true) return true;
+        if (value === false) return false;
+        var raw = String(value || "").trim().toLowerCase();
+        return !(raw === "0" || raw === "false" || raw === "no" || raw === "off");
       }
       function normalizeStopAnnouncementSoundsEnabled(value) {
         if (value === true) return true;
@@ -196,6 +202,28 @@
           el.overlayExperimentalWidgetsLabel.textContent = "Widgets expérimentaux";
         }
       }
+      function refreshUnavailablePlayModesVisibility() {
+        var showUnavailable = showUnavailablePlayModes === true;
+        document.querySelectorAll("#playModesContainer .play-mode-card.is-disabled").forEach(function (card) {
+          if (!card) return;
+          card.hidden = !showUnavailable;
+          card.style.display = showUnavailable ? "" : "none";
+          card.classList.toggle("is-hidden-by-unavailable-mode-filter", !showUnavailable);
+        });
+        var scrollContainer = document.getElementById("playModesContainer");
+        if (scrollContainer && !showUnavailable) {
+          scrollContainer.scrollLeft = Math.min(scrollContainer.scrollLeft, Math.max(0, scrollContainer.scrollWidth - scrollContainer.clientWidth));
+        }
+        try {
+          window.dispatchEvent(new Event("resize"));
+        } catch (err) { }
+      }
+      function syncShowUnavailablePlayModesUi() {
+        if (el.overlayShowUnavailableModes) {
+          el.overlayShowUnavailableModes.checked = showUnavailablePlayModes === true;
+        }
+        refreshUnavailablePlayModesVisibility();
+      }
       function syncStopAnnouncementSoundsUi() {
         if (el.overlayStopAnnouncementSounds) {
           el.overlayStopAnnouncementSounds.checked = saeivStopAnnouncementSoundsEnabled === true;
@@ -313,13 +341,87 @@
           el.overlayNotificationSoundsEnabled.checked = notificationSoundsEnabled === true;
         }
       }
+      function syncDiscordPresenceEnabledUi() {
+        if (el.overlayDiscordPresenceEnabled) {
+          el.overlayDiscordPresenceEnabled.checked = discordPresenceEnabled === true;
+        }
+      }
       function normalizeNotificationSoundsEnabled(value) {
         return value === true || value === "true" || value === 1 || value === "1";
+      }
+      function normalizeDiscordPresenceEnabled(value) {
+        if (value === true) return true;
+        if (value === false) return false;
+        var raw = String(value || "").trim().toLowerCase();
+        return !(raw === "0" || raw === "false" || raw === "no" || raw === "off");
       }
       function applyNotificationSoundsEnabled(value, options) {
         var opts = options && typeof options === "object" ? options : {};
         notificationSoundsEnabled = normalizeNotificationSoundsEnabled(value);
         if (opts.syncUi !== false) syncNotificationSoundsUi();
+      }
+      function applyDiscordPresenceEnabled(value, options) {
+        var opts = options && typeof options === "object" ? options : {};
+        var next = normalizeDiscordPresenceEnabled(value);
+        var changed = discordPresenceEnabled !== next;
+        discordPresenceEnabled = next;
+        if (opts.syncUi !== false) syncDiscordPresenceEnabledUi();
+        if (!changed || opts.syncState === false) return;
+        if (discordPresenceEnabled) {
+          if (typeof startDiscordPresenceUpdates === "function") startDiscordPresenceUpdates();
+        } else {
+          if (typeof stopDiscordPresenceUpdates === "function") stopDiscordPresenceUpdates();
+          discordPresenceLastSentAtMs = 0;
+          discordPresenceRouteKey = "";
+          discordPresenceRouteStartedAtSec = 0;
+        }
+      }
+      function normalizePccVoiceReceptionMode(value) {
+        var raw = String(value || "").trim().toLowerCase();
+        if (raw === PCC_VOICE_RECEPTION_SOLO || raw === "only_solo") return PCC_VOICE_RECEPTION_SOLO;
+        if (raw === PCC_VOICE_RECEPTION_CONVOY || raw === "convoi" || raw === "only_convoy") return PCC_VOICE_RECEPTION_CONVOY;
+        if (raw === PCC_VOICE_RECEPTION_NEVER || raw === "jamais" || raw === "off" || raw === "false") return PCC_VOICE_RECEPTION_NEVER;
+        return PCC_VOICE_RECEPTION_ALWAYS;
+      }
+      function getPccVoiceReceptionModeLabel(value) {
+        var mode = normalizePccVoiceReceptionMode(value);
+        if (mode === PCC_VOICE_RECEPTION_SOLO) return "Uniquement en solo";
+        if (mode === PCC_VOICE_RECEPTION_CONVOY) return "Uniquement en convoi";
+        if (mode === PCC_VOICE_RECEPTION_NEVER) return "Jamais";
+        return "Toujours";
+      }
+      function syncPccVoiceReceptionModeUi() {
+        var mode = normalizePccVoiceReceptionMode(pccVoiceReceptionMode);
+        if (el.overlayPccVoiceReceptionMode) {
+          el.overlayPccVoiceReceptionMode.value = mode;
+        }
+        if (el.overlayPccVoiceReceptionModeLabel) {
+          el.overlayPccVoiceReceptionModeLabel.textContent = getPccVoiceReceptionModeLabel(mode);
+        }
+        if (el.overlayPccVoiceReceptionModeMenu) {
+          el.overlayPccVoiceReceptionModeMenu.querySelectorAll(".manager-widget-menu-item[data-value]").forEach(function (item) {
+            var isActive = normalizePccVoiceReceptionMode(item.dataset.value) === mode;
+            item.classList.toggle("is-active", isActive);
+            item.style.justifyContent = "flex-start";
+            item.style.textAlign = "left";
+            item.style.paddingRight = "15px";
+            var span = item.querySelector("span");
+            if (span) {
+              span.style.color = isActive ? "#fbbf24" : "#f1f5f9";
+              span.style.fontWeight = isActive ? "700" : "600";
+              span.style.textAlign = "left";
+            }
+          });
+        }
+      }
+      function applyPccVoiceReceptionMode(value, options) {
+        var opts = options && typeof options === "object" ? options : {};
+        pccVoiceReceptionMode = normalizePccVoiceReceptionMode(value);
+        if (opts.syncUi !== false) syncPccVoiceReceptionModeUi();
+        if (opts.syncState !== false && typeof syncSaeivExternalState === "function") {
+          saeivLastStateKey = "";
+          syncSaeivExternalState(true);
+        }
       }
       function applyShowExperimentalWidgets(value, options) {
         var opts = options && typeof options === "object" ? options : {};
@@ -334,6 +436,12 @@
         }
         if (opts.syncUi !== false) syncShowExperimentalWidgetsUi();
         if (removedExperimentalWidgets && opts.apply !== false) apply();
+      }
+      function applyShowUnavailablePlayModes(value, options) {
+        var opts = options && typeof options === "object" ? options : {};
+        showUnavailablePlayModes = normalizeShowUnavailablePlayModes(value);
+        if (opts.syncUi !== false) syncShowUnavailablePlayModesUi();
+        else if (opts.render !== false) refreshUnavailablePlayModesVisibility();
       }
       function applyStopAnnouncementSoundsEnabled(value, options) {
         var opts = options && typeof options === "object" ? options : {};
@@ -666,6 +774,7 @@
             }
           }
         });
+        refreshUnavailablePlayModesVisibility();
         syncDefaultStartupModeUi();
       }
       function setWidgetSelectOptions(selectEl, allowedTypes) {
@@ -679,9 +788,11 @@
         (Array.isArray(allowedTypes) ? allowedTypes : []).forEach(function (rawType) {
           var type = normalizeWidgetType(rawType);
           if (!isType(type)) return;
+          if (!showExperimentalWidgets && isExperimentalWidgetType(type)) return;
           var option = document.createElement("option");
           option.value = type;
-          option.textContent = String(TYPES[type] && TYPES[type].label || type);
+          option.textContent = String(TYPES[type] && TYPES[type].label || type) +
+            (isExperimentalWidgetType(type) ? " EXPERIMENTAL" : "");
           selectEl.appendChild(option);
         });
         var hasCurrent = false;

@@ -86,6 +86,38 @@
         if (state.x < 0) state.x = 0;
         if (state.y < 0) state.y = 0;
       }
+      function clampManagerRect(state) {
+        if (!state || typeof state !== "object") return;
+        var ratio = Number(OVERLAY_MANAGER_ASPECT_RATIO);
+        if (!Number.isFinite(ratio) || ratio <= 0) {
+          ratio = OVERLAY_MANAGER_BASE_WIDTH / Math.max(1, OVERLAY_MANAGER_BASE_HEIGHT);
+        }
+        var viewportWidth = Math.max(240, Number(window.innerWidth) || 0);
+        var viewportHeight = Math.max(180, Number(window.innerHeight) || 0);
+        var minWidth = Math.max(120, Number(OVERLAY_MANAGER_MIN_WIDTH) || 120);
+        var minHeight = Math.max(80, Number(OVERLAY_MANAGER_MIN_HEIGHT) || 80);
+        var effectiveMinWidth = Math.max(minWidth, minHeight * ratio);
+        var maxWidth = Math.min(viewportWidth, viewportHeight * ratio);
+        if (!Number.isFinite(maxWidth) || maxWidth <= 0) maxWidth = effectiveMinWidth;
+        if (maxWidth < effectiveMinWidth) effectiveMinWidth = maxWidth;
+
+        var width = Number(state.width);
+        var height = Number(state.height);
+        if (!Number.isFinite(width) || width <= 0) {
+          if (Number.isFinite(height) && height > 0) width = height * ratio;
+        }
+        if (!Number.isFinite(width) || width <= 0) width = OVERLAY_MANAGER_BASE_WIDTH;
+        width = Math.max(effectiveMinWidth, Math.min(width, maxWidth));
+        state.width = width;
+        state.height = width / ratio;
+
+        state.x = Number(state.x) || 0;
+        state.y = Number(state.y) || 0;
+        if (state.x + state.width > viewportWidth) state.x = Math.max(0, viewportWidth - state.width);
+        if (state.y + state.height > viewportHeight) state.y = Math.max(0, viewportHeight - state.height);
+        if (state.x < 0) state.x = 0;
+        if (state.y < 0) state.y = 0;
+      }
       function clampManagerScalePercent(value) {
         var n = Math.round(Number(value));
         if (!Number.isFinite(n)) n = OVERLAY_MANAGER_SCALE_DEFAULT;
@@ -175,7 +207,7 @@
         var factor = managerScalePercent / 100;
         managerState.width = Math.round(OVERLAY_MANAGER_BASE_WIDTH * factor);
         managerState.height = Math.round(OVERLAY_MANAGER_BASE_HEIGHT * factor);
-        clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
+        clampManagerRect(managerState);
         if (opts.syncUi !== false) syncManagerScaleUi();
         if (opts.render !== false) renderManager();
       }
@@ -211,6 +243,9 @@
         globalAudioVolumePercent = clampGlobalAudioVolumePercent(value);
         if (typeof syncSaeivRuntimeAudioVolumes === "function") {
           syncSaeivRuntimeAudioVolumes();
+        }
+        if (typeof syncPccVoiceActiveAudioVolume === "function") {
+          syncPccVoiceActiveAudioVolume();
         }
         if (opts.syncUi !== false) syncGlobalAudioVolumeUi();
         if (opts.syncState !== false && typeof syncSaeivExternalState === "function") {
@@ -701,9 +736,12 @@
             globalAudioVolume: clampGlobalAudioVolumePercent(globalAudioVolumePercent),
             timeSystem: normalizeSaeivTimeSystem(saeivTimeSystem),
             showExperimentalWidgets: showExperimentalWidgets === true,
+            showUnavailablePlayModes: showUnavailablePlayModes === true,
             stopAnnouncementSoundsEnabled: saeivStopAnnouncementSoundsEnabled === true,
             passengerValidationSoundsEnabled: saeivPassengerValidationSoundsEnabled === true,
             passengerValidationSoundsVersion: PASSENGER_VALIDATION_SOUNDS_SETTING_VERSION,
+            discordPresenceEnabled: discordPresenceEnabled === true,
+            pccVoiceReceptionMode: normalizePccVoiceReceptionMode(pccVoiceReceptionMode),
             hideUiWhenManagerHidden: hideUiWhenManagerHidden === true,
             unknownBusCapacityValue: Math.max(1, Math.round(Number(saeivUnknownBusCapacityInputValue) || SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT)),
             unknownBusCapacityUnlimited: saeivUnknownBusCapacityUnlimited === true,
@@ -741,10 +779,13 @@
             globalAudioVolume: clampGlobalAudioVolumePercent(globalAudioVolumePercent),
             timeSystem: normalizeSaeivTimeSystem(saeivTimeSystem),
             showExperimentalWidgets: showExperimentalWidgets === true,
+            showUnavailablePlayModes: showUnavailablePlayModes === true,
             stopAnnouncementSoundsEnabled: saeivStopAnnouncementSoundsEnabled === true,
             passengerValidationSoundsEnabled: saeivPassengerValidationSoundsEnabled === true,
             passengerValidationSoundsVersion: PASSENGER_VALIDATION_SOUNDS_SETTING_VERSION,
             notificationSoundsEnabled: notificationSoundsEnabled === true,
+            discordPresenceEnabled: discordPresenceEnabled === true,
+            pccVoiceReceptionMode: normalizePccVoiceReceptionMode(pccVoiceReceptionMode),
             hideUiWhenManagerHidden: hideUiWhenManagerHidden === true,
             defaultStartupMode: normalizeDefaultStartupMode(defaultStartupMode),
             unknownBusCapacityValue: Math.max(1, Math.round(Number(saeivUnknownBusCapacityInputValue) || SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT)),
@@ -830,6 +871,8 @@
 
         var hasStoredShowExperimentalWidgets = false;
         var storedShowExperimentalWidgets = false;
+        var hasStoredShowUnavailablePlayModes = false;
+        var storedShowUnavailablePlayModes = true;
         var hasStoredStopAnnouncementSounds = false;
         var hasStoredHideUiWhenManagerHidden = false;
         var storedHideUiWhenManagerHidden = false;
@@ -838,6 +881,10 @@
         var storedPassengerValidationSounds = true;
         var hasStoredDefaultStartupMode = false;
         var storedDefaultStartupMode = DEFAULT_STARTUP_MODE_MENU;
+        var hasStoredPccVoiceReceptionMode = false;
+        var storedPccVoiceReceptionMode = PCC_VOICE_RECEPTION_ALWAYS;
+        var hasStoredDiscordPresenceEnabled = false;
+        var storedDiscordPresenceEnabled = true;
         var hasStoredUnknownBusCapacityValue = false;
         var storedUnknownBusCapacityValue = SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT;
         var hasStoredUnknownBusCapacityUnlimited = false;
@@ -874,6 +921,10 @@
             hasStoredShowExperimentalWidgets = true;
             storedShowExperimentalWidgets = normalizeShowExperimentalWidgets(parsed.manager.showExperimentalWidgets);
           }
+          if (Object.prototype.hasOwnProperty.call(parsed.manager, "showUnavailablePlayModes")) {
+            hasStoredShowUnavailablePlayModes = true;
+            storedShowUnavailablePlayModes = normalizeShowUnavailablePlayModes(parsed.manager.showUnavailablePlayModes);
+          }
           if (Object.prototype.hasOwnProperty.call(parsed.manager, "stopAnnouncementSoundsEnabled")) {
             hasStoredStopAnnouncementSounds = true;
             storedStopAnnouncementSounds = normalizeStopAnnouncementSoundsEnabled(parsed.manager.stopAnnouncementSoundsEnabled);
@@ -889,6 +940,14 @@
               hasStoredPassengerValidationSounds = true;
               storedPassengerValidationSounds = parsedPassengerValidationSounds;
             }
+          }
+          if (Object.prototype.hasOwnProperty.call(parsed.manager, "pccVoiceReceptionMode")) {
+            hasStoredPccVoiceReceptionMode = true;
+            storedPccVoiceReceptionMode = normalizePccVoiceReceptionMode(parsed.manager.pccVoiceReceptionMode);
+          }
+          if (Object.prototype.hasOwnProperty.call(parsed.manager, "discordPresenceEnabled")) {
+            hasStoredDiscordPresenceEnabled = true;
+            storedDiscordPresenceEnabled = normalizeDiscordPresenceEnabled(parsed.manager.discordPresenceEnabled);
           }
           if (Object.prototype.hasOwnProperty.call(parsed.manager, "hideUiWhenManagerHidden")) {
             hasStoredHideUiWhenManagerHidden = true;
@@ -951,6 +1010,10 @@
                 hasStoredShowExperimentalWidgets = true;
                 storedShowExperimentalWidgets = normalizeShowExperimentalWidgets(managerParsed.showExperimentalWidgets);
               }
+              if (Object.prototype.hasOwnProperty.call(managerParsed, "showUnavailablePlayModes")) {
+                hasStoredShowUnavailablePlayModes = true;
+                storedShowUnavailablePlayModes = normalizeShowUnavailablePlayModes(managerParsed.showUnavailablePlayModes);
+              }
               if (Object.prototype.hasOwnProperty.call(managerParsed, "stopAnnouncementSoundsEnabled")) {
                 hasStoredStopAnnouncementSounds = true;
                 storedStopAnnouncementSounds = normalizeStopAnnouncementSoundsEnabled(managerParsed.stopAnnouncementSoundsEnabled);
@@ -969,6 +1032,14 @@
               }
               if (Object.prototype.hasOwnProperty.call(managerParsed, "notificationSoundsEnabled")) {
                 notificationSoundsEnabled = normalizeNotificationSoundsEnabled(managerParsed.notificationSoundsEnabled);
+              }
+              if (Object.prototype.hasOwnProperty.call(managerParsed, "pccVoiceReceptionMode")) {
+                hasStoredPccVoiceReceptionMode = true;
+                storedPccVoiceReceptionMode = normalizePccVoiceReceptionMode(managerParsed.pccVoiceReceptionMode);
+              }
+              if (Object.prototype.hasOwnProperty.call(managerParsed, "discordPresenceEnabled")) {
+                hasStoredDiscordPresenceEnabled = true;
+                storedDiscordPresenceEnabled = normalizeDiscordPresenceEnabled(managerParsed.discordPresenceEnabled);
               }
               if (Object.prototype.hasOwnProperty.call(managerParsed, "hideUiWhenManagerHidden")) {
                 hasStoredHideUiWhenManagerHidden = true;
@@ -1040,8 +1111,28 @@
                 ? DEFAULT_STARTUP_MODE_MENU
                 : GAME_MODES.BUS;
             }
+            if (Object.prototype.hasOwnProperty.call(globalManagerParsed, "pccVoiceReceptionMode")) {
+              hasStoredPccVoiceReceptionMode = true;
+              storedPccVoiceReceptionMode = normalizePccVoiceReceptionMode(globalManagerParsed.pccVoiceReceptionMode);
+            }
+            if (Object.prototype.hasOwnProperty.call(globalManagerParsed, "discordPresenceEnabled")) {
+              hasStoredDiscordPresenceEnabled = true;
+              storedDiscordPresenceEnabled = normalizeDiscordPresenceEnabled(globalManagerParsed.discordPresenceEnabled);
+            }
+            if (Object.prototype.hasOwnProperty.call(globalManagerParsed, "showUnavailablePlayModes")) {
+              hasStoredShowUnavailablePlayModes = true;
+              storedShowUnavailablePlayModes = normalizeShowUnavailablePlayModes(globalManagerParsed.showUnavailablePlayModes);
+            }
           }
         }
+        applyDiscordPresenceEnabled(
+          hasStoredDiscordPresenceEnabled ? storedDiscordPresenceEnabled : true,
+          { syncUi: true, syncState: false }
+        );
+        applyPccVoiceReceptionMode(
+          hasStoredPccVoiceReceptionMode ? storedPccVoiceReceptionMode : PCC_VOICE_RECEPTION_ALWAYS,
+          { syncUi: true }
+        );
         applyDefaultStartupMode(
           hasStoredDefaultStartupMode ? storedDefaultStartupMode : DEFAULT_STARTUP_MODE_MENU,
           { syncUi: true }
@@ -1065,8 +1156,9 @@
           { syncUi: true, syncState: false }
         );
         applyShowExperimentalWidgets(hasStoredShowExperimentalWidgets ? storedShowExperimentalWidgets : false, { syncUi: true, apply: false });
+        applyShowUnavailablePlayModes(hasStoredShowUnavailablePlayModes ? storedShowUnavailablePlayModes : true, { syncUi: true });
 
-        clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
+        clampManagerRect(managerState);
         if (!Number.isFinite(Number(managerScalePercent))) {
           managerScalePercent = Math.round((Number(managerState.width) || OVERLAY_MANAGER_BASE_WIDTH) / Math.max(1, OVERLAY_MANAGER_BASE_WIDTH) * 100);
         }
@@ -1081,16 +1173,19 @@
         globalAudioVolumePercent = clampGlobalAudioVolumePercent(
           hasStoredGlobalAudioVolume ? storedGlobalAudioVolume : globalAudioVolumePercent
         );
-        applyManagerScalePercent(managerScalePercent, { render: false, syncUi: true });
+        managerScalePercent = clampManagerScalePercent(Math.round((Number(managerState.width) || OVERLAY_MANAGER_BASE_WIDTH) / Math.max(1, OVERLAY_MANAGER_BASE_WIDTH) * 100));
+        syncManagerScaleUi();
         applyTelemetryOverlayAlphaPercent(telemetryOverlayAlphaPercent, { syncUi: true });
         applyNotificationScalePercent(notificationScalePercent, { syncUi: true });
         applyGlobalAudioVolumePercent(globalAudioVolumePercent, { syncUi: true, syncState: false });
         syncSaeivTimeSystemUi();
         syncStopAnnouncementSoundsUi();
         syncPassengerValidationSoundsUi();
+        syncPccVoiceReceptionModeUi();
         syncHideUiWhenManagerHiddenUi();
         syncBusCapacitySettingsUi();
         syncShowExperimentalWidgetsUi();
+        syncShowUnavailablePlayModesUi();
         if (!Number.isFinite(Number(managerState.z))) managerState.z = 1200;
         sanitize();
         return true;
@@ -1340,24 +1435,15 @@
         if (el.overlayRoot) el.overlayRoot.style.display = hideAllUiNow ? "none" : "";
         if (el.overlayNotificationPreview) el.overlayNotificationPreview.style.display = hideAllUiNow ? "none" : "";
         updateSaeivSimulationPauseState();
-        clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
-        el.overlayManager.style.removeProperty("aspect-ratio");
+        clampManagerRect(managerState);
+        el.overlayManager.style.aspectRatio = String(OVERLAY_MANAGER_ASPECT_RATIO);
         el.overlayManager.style.left = Math.round(managerState.x) + "px";
         el.overlayManager.style.top = Math.round(managerState.y) + "px";
         el.overlayManager.style.width = Math.round(managerState.width) + "px";
-        el.overlayManager.style.height = "auto";
+        el.overlayManager.style.height = Math.round(managerState.height) + "px";
         el.overlayManager.style.zIndex = String(Math.max(1, Number(managerState.z) || 1));
         // On ne met PLUS display = "none" pour permettre le tween CSS
         // el.overlayManager.style.display = managerHidden ? "none" : "";
-        if (!managerHidden) {
-          var measuredHeight = Number(el.overlayManager.offsetHeight) || Number(managerState.height) || OVERLAY_MANAGER_MIN_HEIGHT;
-          managerState.height = Math.max(OVERLAY_MANAGER_MIN_HEIGHT, measuredHeight);
-          var viewportHeight = Math.max(180, Number(window.innerHeight) || 0);
-          if (managerState.y + managerState.height > viewportHeight) {
-            managerState.y = Math.max(0, viewportHeight - managerState.height);
-            el.overlayManager.style.top = Math.round(managerState.y) + "px";
-          }
-        }
 
         if (isMenuOpen) {
           syncSaeivTimeSystemUi();
@@ -1468,7 +1554,7 @@
           if (!state) return;
           clampWidgetRect(state, safeType);
         });
-        clampOverlayRect(managerState, OVERLAY_MANAGER_MIN_WIDTH, OVERLAY_MANAGER_MIN_HEIGHT);
+        clampManagerRect(managerState);
       }
 
       function renderStage() {
@@ -1557,9 +1643,6 @@
 
       function setupAllSidesResize(element, type) {
         var dirs = ["n", "s", "e", "w", "nw", "ne", "sw", "se"];
-        if (type === "__manager__") {
-          dirs = [];
-        }
         dirs.forEach(function (dir) {
           var handle = document.createElement("div");
           handle.className = "resize-handle " + dir;
@@ -1573,6 +1656,7 @@
             if (type !== "__manager__") {
               bringWidgetTypeToFront(type);
             } else {
+              if (overlayEditMode !== true) return;
               bringManagerToFront();
             }
 

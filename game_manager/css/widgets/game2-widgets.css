@@ -259,12 +259,14 @@
       animation: none !important;
     }
 
-    #overlayDefaultStartupModeDisplay {
+    #overlayDefaultStartupModeDisplay,
+    #overlayPccVoiceReceptionModeDisplay {
       pointer-events: auto !important;
       cursor: pointer !important;
     }
 
-    #overlayDefaultStartupModeMenu {
+    #overlayDefaultStartupModeMenu,
+    #overlayPccVoiceReceptionModeMenu {
       pointer-events: auto !important;
       z-index: 9999 !important;
     }
@@ -319,7 +321,8 @@
       pointer-events: auto !important;
     }
 
-    #overlayDefaultStartupModeLabel {
+    #overlayDefaultStartupModeLabel,
+    #overlayPccVoiceReceptionModeLabel {
       display: block;
       width: 100%;
       text-align: left !important;
@@ -329,7 +332,8 @@
       pointer-events: none;
     }
 
-    #overlayDefaultStartupModeMenu {
+    #overlayDefaultStartupModeMenu,
+    #overlayPccVoiceReceptionModeMenu {
       width: 100% !important;
       left: 0 !important;
       right: auto !important;

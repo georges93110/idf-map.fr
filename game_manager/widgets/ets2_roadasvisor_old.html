@@ -1087,6 +1087,43 @@
       const maxNativeZoom = 8;
       const widthPx = tileSize * Math.pow(2, maxNativeZoom);
       const heightPx = tileSize * Math.pow(2, maxNativeZoom);
+      let speedDisplayEmaKmh = NaN;
+      let speedDisplayInt = 0;
+      const speedDisplayEmaAlpha = 0.2;
+      const speedDisplaySnapDeltaKmh = 8;
+      const speedDisplayHysteresisKmh = 0.75;
+      const speedDisplayStopKmh = 0.25;
+      const speedDisplayMaxKmh = 220;
+
+      function resetSpeedDisplayStabilizer() {
+        speedDisplayEmaKmh = NaN;
+        speedDisplayInt = 0;
+      }
+
+      function stableDisplaySpeedKmh(rawSpeed) {
+        const speed = Number(rawSpeed);
+        if (!Number.isFinite(speed) || speed <= speedDisplayStopKmh) {
+          resetSpeedDisplayStabilizer();
+          return 0;
+        }
+
+        const clamped = Math.max(0, Math.min(speedDisplayMaxKmh, speed));
+        if (!Number.isFinite(speedDisplayEmaKmh) || Math.abs(clamped - speedDisplayEmaKmh) >= speedDisplaySnapDeltaKmh) {
+          speedDisplayEmaKmh = clamped;
+        } else {
+          speedDisplayEmaKmh = (speedDisplayEmaKmh * (1 - speedDisplayEmaAlpha)) + (clamped * speedDisplayEmaAlpha);
+        }
+
+        const nextInt = Math.round(speedDisplayEmaKmh);
+        const currentInt = speedDisplayInt;
+        if (nextInt === currentInt) return currentInt;
+        if (nextInt > currentInt && speedDisplayEmaKmh >= (currentInt + speedDisplayHysteresisKmh)) {
+          speedDisplayInt = nextInt;
+        } else if (nextInt < currentInt && speedDisplayEmaKmh <= (currentInt - speedDisplayHysteresisKmh)) {
+          speedDisplayInt = nextInt;
+        }
+        return speedDisplayInt;
+      }
 
       function initMap() {
         if (typeof L === 'undefined') {
@@ -1228,7 +1265,7 @@
           // Vitesse
           const speedEl = document.querySelector('.speed');
           if (speedEl) {
-            const speedKmh = Math.round(Number(p.speed || p.kmh || 0));
+            const speedKmh = stableDisplaySpeedKmh(Number(p.speed || p.kmh || 0));
             speedEl.textContent = speedKmh + ' km/h';
           }
 

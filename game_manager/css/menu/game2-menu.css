@@ -182,6 +182,33 @@
       position: relative;
       display: flex;
       flex-direction: column;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.48) rgba(255, 255, 255, 0.045);
+    }
+
+    .main-menu-body::-webkit-scrollbar,
+    .main-menu-info-content::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .main-menu-body::-webkit-scrollbar-track,
+    .main-menu-info-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .main-menu-body::-webkit-scrollbar-thumb,
+    .main-menu-info-content::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(148, 163, 184, 0.58) 0%, rgba(71, 85, 105, 0.66) 100%);
+      border-radius: 999px;
+      border: 2px solid #181a1a;
+    }
+
+    .main-menu-body::-webkit-scrollbar-thumb:hover,
+    .main-menu-info-content::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(203, 213, 225, 0.72) 0%, rgba(100, 116, 139, 0.82) 100%);
     }
 
     /* Play Mode Cards */
@@ -339,6 +366,10 @@
       cursor: grab;
       filter: grayscale(1) brightness(0.2);
       opacity: 0.8;
+    }
+
+    .play-mode-card.is-hidden-by-unavailable-mode-filter {
+      display: none !important;
     }
 
     .play-mode-card.is-disabled:hover {
@@ -551,6 +582,8 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.48) rgba(255, 255, 255, 0.045);
     }
 
     .main-menu-info-page {
@@ -665,6 +698,10 @@
       display: grid;
     }
 
+    #mainMenuTab_settings.is-active {
+      display: block;
+    }
+
     /* Centrage vertical spÃ©cifique pour l'onglet Jouer */
     #mainMenuTab_play.is-active {
       display: flex;
@@ -686,6 +723,16 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     }
 
+    .main-menu-tab-panel .manager-scale-row:has(.gm-settings-select-wrap) {
+      grid-template-columns: minmax(0, 1fr) minmax(210px, 35%) !important;
+    }
+
+    .main-menu-tab-panel .manager-scale-row:has(.gm-settings-select-wrap) .gm-settings-select-wrap {
+      grid-column: 2 !important;
+      width: 100% !important;
+      margin-left: 0 !important;
+    }
+
     .main-menu-tab-panel .manager-section-title {
       font-size: 11px !important;
       font-weight: 800 !important;
@@ -698,7 +745,7 @@
       white-space: normal !important;
       overflow: visible !important;
       text-overflow: clip !important;
-      max-width: 160px !important;
+      max-width: 100% !important;
       line-height: 1.25 !important;
     }
 
@@ -1441,24 +1488,9 @@
       display: none;
     }
 
-    body.is-edit-mode .resize-handle,
-    #overlayManager .resize-handle {
+    body.is-edit-mode .resize-handle {
       display: block;
       pointer-events: auto;
-    }
-
-    #overlayManager .resize-handle:not(.se) {
-      display: none !important;
-    }
-
-    #overlayManager .resize-handle.se {
-      right: 0;
-      bottom: 0;
-      width: 14px;
-      height: 14px;
-      border-radius: 2px 0 0 0;
-      background: transparent;
-      cursor: nwse-resize;
     }
 
     body.is-edit-mode .overlay-window[data-widget-type] .overlay-window-content {

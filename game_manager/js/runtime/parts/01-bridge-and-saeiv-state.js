@@ -666,6 +666,7 @@
           var items = el.overlayTimeSystemMenu.querySelectorAll(".manager-widget-menu-item");
           items.forEach(function (item) {
             var val = item.dataset.value;
+            item.classList.toggle("is-active", normalizeSaeivTimeSystem(val) === currentVal);
             var clockSpan = item.querySelector(".menu-item-clock");
             if (clockSpan) clockSpan.textContent = (val === "irl" ? irlStr : gameStr);
           });
@@ -737,9 +738,11 @@
         var lastIndex = list.length - 1;
         var clamped = Math.max(0, Math.min(lastIndex, Math.floor(idx)));
         if (clamped <= saeivStatsRecordedReachedIndex) return false;
+        if (!saeivReachedStopDelayLog || typeof saeivReachedStopDelayLog !== "object") saeivReachedStopDelayLog = {};
         for (var i = saeivStatsRecordedReachedIndex + 1; i <= clamped; i += 1) {
           var plannedTs = computeSaeivPlannedArrivalTimestampMs(list, i);
           var deltaMin = computeSaeivDelayMinutesByTimestamp(nowTs, plannedTs);
+          saeivReachedStopDelayLog[i] = Number.isFinite(deltaMin) ? deltaMin : null;
           saeivReachedStopsCount += 1;
           if (Number.isFinite(deltaMin) && deltaMin > 0.5) saeivLateStopsCount += 1;
 
@@ -1013,6 +1016,9 @@
             stopAlightingDone: 0
           }, initialPlannedBoard, 0, 0, false),
           transportedPassengers: 0,
+          externalBoardingCountedTargetIndex: idx,
+          externalBoardingCountedTargetUid: uid,
+          externalBoardingCountedDone: 0,
           missedStops: 0,
           targetIndex: idx,
           targetUid: uid,
@@ -1046,6 +1052,9 @@
         saeivPassengerState.stopServiceProgressInitialized = false;
         saeivPassengerState.stopRequested = false;
         saeivPassengerState.requestedDropCount = 0;
+        saeivPassengerState.externalBoardingCountedTargetIndex = idx;
+        saeivPassengerState.externalBoardingCountedTargetUid = uid;
+        saeivPassengerState.externalBoardingCountedDone = 0;
         var stopConfig = resolveSaeivPassengerConfigForStop(saeivPassengerState, entry);
         saeivPassengerState.passengersMin = stopConfig.passengersMin;
         saeivPassengerState.passengersMax = stopConfig.passengersMax;
@@ -1247,6 +1256,20 @@
         );
         return true;
       }
+      function getSaeivRouteBoardedPassengersTotal() {
+        var routeTotal = Math.max(0, Math.round(Number(saeivRouteBoardedPassengers) || 0));
+        var stateTotal = Math.max(0, Math.round(Number(saeivPassengerState && saeivPassengerState.transportedPassengers) || 0));
+        return Math.max(routeTotal, stateTotal);
+      }
+      function addSaeivRouteBoardedPassengers(count) {
+        var delta = Math.max(0, Math.round(Number(count) || 0));
+        if (delta <= 0) return 0;
+        saeivRouteBoardedPassengers = getSaeivRouteBoardedPassengersTotal() + delta;
+        if (saeivPassengerState && typeof saeivPassengerState === "object") {
+          saeivPassengerState.transportedPassengers = saeivRouteBoardedPassengers;
+        }
+        return delta;
+      }
       function processSaeivPassengerServiceTick(stopIndex, options) {
         if (SAEIV_PASSENGERS_ENABLED !== true) {
           return { completed: true, changed: false };
@@ -1268,13 +1291,59 @@
         var busCapacityUnlimited = activeCapacity.unlimited === true;
         var externalPassengerCount = getBusStatusPassengerCountNow();
         var useExternalPassengerCount = externalPassengerCount !== null;
+        var externalPassengerServiceState = useExternalPassengerCount ? getBusStatusPassengerServiceStateNow() : null;
+        var externalBoardingProgressAvailable = !!(
+          externalPassengerServiceState &&
+          inReach &&
+          isStopped &&
+          (
+            Math.max(0, Math.round(Number(externalPassengerServiceState.boardingTotal) || 0)) > 0 ||
+            Math.max(0, Math.round(Number(externalPassengerServiceState.boardingDone) || 0)) > 0
+          )
+        );
         if (useExternalPassengerCount) {
           inBus = Math.max(0, Math.round(Number(externalPassengerCount) || 0));
           var delta = inBus - prevInBus;
-          if (delta > 0) {
+          if (externalBoardingProgressAvailable) {
+            var externalTargetIndex = Math.floor(Number(saeivPassengerState.targetIndex));
+            var externalTargetUid = String(saeivPassengerState.targetUid || "");
+            if (
+              Math.floor(Number(saeivPassengerState.externalBoardingCountedTargetIndex)) !== externalTargetIndex ||
+              String(saeivPassengerState.externalBoardingCountedTargetUid || "") !== externalTargetUid
+            ) {
+              saeivPassengerState.externalBoardingCountedTargetIndex = externalTargetIndex;
+              saeivPassengerState.externalBoardingCountedTargetUid = externalTargetUid;
+              saeivPassengerState.externalBoardingCountedDone = 0;
+            }
+            var externalBoardingDone = Math.max(0, Math.round(Number(externalPassengerServiceState.boardingDone) || 0));
+            var externalBoardingCounted = Math.max(0, Math.round(Number(saeivPassengerState.externalBoardingCountedDone) || 0));
+            var externalBoardingDelta = Math.max(0, externalBoardingDone - externalBoardingCounted);
+            if (externalBoardingDelta > 0) {
+              saeivPassengerState.passengersAtStop = Math.max(0, Math.round(Number(saeivPassengerState.passengersAtStop) || 0) - externalBoardingDelta);
+              addSaeivRouteBoardedPassengers(externalBoardingDelta);
+              changed = true;
+            }
+            saeivPassengerState.externalBoardingCountedDone = Math.max(externalBoardingCounted, externalBoardingDone);
+          } else if (delta > 0) {
             // External boarding: decrement passengers at stop AND increment transported sum
             saeivPassengerState.passengersAtStop = Math.max(0, Math.round(Number(saeivPassengerState.passengersAtStop) || 0) - delta);
-            saeivPassengerState.transportedPassengers = Math.max(0, Math.round(Number(saeivPassengerState.transportedPassengers) || 0)) + delta;
+            addSaeivRouteBoardedPassengers(delta);
+            if (inReach && isStopped) {
+              var fallbackExternalTargetIndex = Math.floor(Number(saeivPassengerState.targetIndex));
+              var fallbackExternalTargetUid = String(saeivPassengerState.targetUid || "");
+              if (
+                Math.floor(Number(saeivPassengerState.externalBoardingCountedTargetIndex)) !== fallbackExternalTargetIndex ||
+                String(saeivPassengerState.externalBoardingCountedTargetUid || "") !== fallbackExternalTargetUid
+              ) {
+                saeivPassengerState.externalBoardingCountedTargetIndex = fallbackExternalTargetIndex;
+                saeivPassengerState.externalBoardingCountedTargetUid = fallbackExternalTargetUid;
+                saeivPassengerState.externalBoardingCountedDone = 0;
+              }
+              saeivPassengerState.externalBoardingCountedDone = Math.max(
+                0,
+                Math.round(Number(saeivPassengerState.externalBoardingCountedDone) || 0) + delta
+              );
+            }
           } else if (delta < 0) {
             // External alighting
             var alighted = Math.abs(delta);
@@ -1423,7 +1492,7 @@
               // Internal simulation: decrement stop queue and count boarding
               atStop -= boarded;
               inBus += boarded;
-              saeivPassengerState.transportedPassengers = Math.max(0, Math.round(Number(saeivPassengerState.transportedPassengers) || 0)) + boarded;
+              addSaeivRouteBoardedPassengers(boarded);
             }
             saeivPassengerState.lastBoardStepAtMs = now;
             changed = true;
@@ -1450,15 +1519,23 @@
           servedStops: Math.max(0, Number(saeivServedStopsCount) || 0),
           lateStops: Math.max(0, Number(saeivLateStopsCount) || 0),
           missedStops: Math.max(0, Number(saeivPassengerState && saeivPassengerState.missedStops) || 0),
-          transportedPassengers: Math.max(0, Number(saeivPassengerState && saeivPassengerState.transportedPassengers) || 0),
+          transportedPassengers: getSaeivRouteBoardedPassengersTotal(),
           selectedAtMs: Number(saeivRouteSelectedAtMs) || 0,
           startedAtMs: Number(saeivRouteStartedAtMs) || 0,
           terminusReachedAtMs: Number(saeivTerminusReachedAtMs) || 0,
-          plannedTerminusAtMs: Number.NaN
+          plannedTerminusAtMs: Number.NaN,
+          lastStopDelayMinutes: Number.NaN,
+          lastStopDelayIndex: -1
         };
         if (!list.length) return out;
         var lastIndex = list.length - 1;
-        var clampedReached = Math.max(-1, Math.min(lastIndex, Math.floor(Number(reachedIndex) || -1)));
+        var reachedNumber = Number(reachedIndex);
+        var clampedReached = Math.max(-1, Math.min(lastIndex, Number.isFinite(reachedNumber) ? Math.floor(reachedNumber) : -1));
+        out.lastStopDelayIndex = clampedReached;
+        if (clampedReached >= 0 && saeivReachedStopDelayLog && typeof saeivReachedStopDelayLog === "object") {
+          var stopDelay = Number(saeivReachedStopDelayLog[clampedReached]);
+          if (Number.isFinite(stopDelay)) out.lastStopDelayMinutes = stopDelay;
+        }
         out.completed = clampedReached >= lastIndex;
         out.plannedTerminusAtMs = computeSaeivPlannedArrivalTimestampMs(list, lastIndex);
         if (!out.completed) return out;

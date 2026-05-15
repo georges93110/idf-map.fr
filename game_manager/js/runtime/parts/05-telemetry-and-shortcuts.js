@@ -603,8 +603,8 @@
         display: "Tab"
       };
       var OVERLAY_TOGGLE_DEFAULT_SHORTCUT = {
-        keys: ["Delete"],
-        display: "Suppr"
+        keys: ["Home"],
+        display: "Home"
       };
       var overlayShortcutBtn = null;
       var overlayDestinationShortcutBtn = null;
@@ -613,6 +613,7 @@
       var overlayPlayerListShortcutBtn = null;
       var playerListShortcutHoldActive = false;
       var playerListShortcutUnavailableNotifiedAt = 0;
+      var rawShortcutModifierState = { ctrl: false, shift: false, alt: false, win: false };
       var isRecordingShortcut = false;
       var recordingShortcutScope = OVERLAY_SHORTCUT_SCOPE_OVERLAY;
       var overlayShortcutStateByScope = {
@@ -707,15 +708,21 @@
         var raw = String(token || "").trim();
         if (!raw) return "";
         var lower = raw.toLowerCase();
-        if (lower === "control" || lower === "ctrl") return "ctrl";
-        if (lower === "shift") return "shift";
-        if (lower === "alt") return "alt";
-        if (lower === "meta" || lower === "win" || lower === "os") return "win";
+        if (lower === "control" || lower === "ctrl" || lower === "ctrl gauche" || lower === "ctrl droit") return "ctrl";
+        if (lower === "shift" || lower === "shift gauche" || lower === "shift droit" || lower === "maj") return "shift";
+        if (lower === "alt" || lower === "alt gauche" || lower === "alt droit") return "alt";
+        if (lower === "meta" || lower === "win" || lower === "os" || lower === "win gauche" || lower === "win droit") return "win";
         if (lower === "delete" || lower === "del" || lower === "suppr") return "suppr";
         if (lower === "escape" || lower === "esc" || lower === "echap") return "echap";
-        if (lower === "enter" || lower === "return" || lower === "entree" || lower === "entrée") return "entree";
+        if (lower === "enter" || lower === "return" || lower === "entree" || lower.indexOf("entr") === 0) return "entree";
         if (lower === " " || lower === "space" || lower === "espace") return "espace";
         if (lower === "tab") return "tab";
+        if (lower === "backspace" || lower === "retour") return "backspace";
+        if (lower === "insert" || lower === "inser") return "insert";
+        if (lower === "home" || lower === "origine") return "home";
+        if (lower === "end" || lower === "fin") return "end";
+        if (lower === "pageup" || lower === "page up" || lower === "page prec." || lower === "page prec" || lower.indexOf("page pr") === 0) return "pageup";
+        if (lower === "pagedown" || lower === "page down" || lower === "page suiv." || lower === "page suiv") return "pagedown";
         if (lower === "arrowup" || lower === "up" || lower === "haut") return "up";
         if (lower === "arrowdown" || lower === "down" || lower === "bas") return "down";
         if (lower === "arrowleft" || lower === "left" || lower === "gauche") return "left";
@@ -954,12 +961,17 @@
           }
         } else if (typeof modifiers === "string") {
           if (new RegExp("(^|[,+\\s])" + safeName + "($|[,+\\s])", "i").test(modifiers)) return true;
+          var modifierParts = String(modifiers || "").split(/[,+\s]+/);
+          for (var k = 0; k < modifierParts.length; k += 1) {
+            if (normalizeShortcutKeyToken(modifierParts[k]).toLowerCase() === safeName) return true;
+          }
         } else if (modifiers && typeof modifiers === "object") {
-          if (safeName === "ctrl" && (modifiers.ctrl === true || modifiers.control === true)) return true;
-          if (safeName === "shift" && modifiers.shift === true) return true;
-          if (safeName === "alt" && modifiers.alt === true) return true;
-          if (safeName === "win" && (modifiers.win === true || modifiers.meta === true)) return true;
+          if (safeName === "ctrl" && (modifiers.ctrl === true || modifiers.control === true || modifiers.ctrlKey === true || modifiers.controlKey === true)) return true;
+          if (safeName === "shift" && (modifiers.shift === true || modifiers.shiftKey === true)) return true;
+          if (safeName === "alt" && (modifiers.alt === true || modifiers.altKey === true)) return true;
+          if (safeName === "win" && (modifiers.win === true || modifiers.meta === true || modifiers.winKey === true || modifiers.metaKey === true)) return true;
         }
+        if (rawShortcutModifierState && rawShortcutModifierState[safeName] === true) return true;
         return false;
       }
       function normalizeBrowserShortcutMainKey(key) {
@@ -969,18 +981,18 @@
         if (mainKey === " ") return "Espace";
         if (lower === "delete" || lower === "del") return "Suppr";
         if (lower === "escape" || lower === "esc") return "Echap";
-        if (lower === "enter" || lower === "return") return "Entree";
-        if (lower === "arrowup") return "Up";
-        if (lower === "arrowdown") return "Down";
-        if (lower === "arrowleft") return "Left";
-        if (lower === "arrowright") return "Right";
-        if (lower === "backspace") return "Backspace";
+        if (lower === "enter" || lower === "return" || lower === "entree" || lower.indexOf("entr") === 0) return "Entree";
+        if (lower === "arrowup" || lower === "haut") return "Up";
+        if (lower === "arrowdown" || lower === "bas") return "Down";
+        if (lower === "arrowleft" || lower === "gauche") return "Left";
+        if (lower === "arrowright" || lower === "droite") return "Right";
+        if (lower === "backspace" || lower === "retour") return "Backspace";
         if (lower === "tab") return "Tab";
-        if (lower === "insert") return "Insert";
-        if (lower === "home") return "Home";
-        if (lower === "end") return "End";
-        if (lower === "pageup") return "PageUp";
-        if (lower === "pagedown") return "PageDown";
+        if (lower === "insert" || lower === "inser") return "Insert";
+        if (lower === "home" || lower === "origine") return "Home";
+        if (lower === "end" || lower === "fin") return "End";
+        if (lower === "pageup" || lower === "page up" || lower === "page prec." || lower === "page prec" || lower.indexOf("page pr") === 0) return "PageUp";
+        if (lower === "pagedown" || lower === "page down" || lower === "page suiv." || lower === "page suiv") return "PageDown";
         return mainKey.length === 1 ? mainKey.toUpperCase() : mainKey;
       }
       function shortcutMatchesKeySet(scope, keys) {
@@ -1287,6 +1299,25 @@
         if (raw && (raw.up === true || raw.isUp === true || raw.released === true)) return true;
         return false;
       }
+      function getRawShortcutModifierNameFromKey(keyName) {
+        var token = normalizeShortcutKeyToken(keyName).toLowerCase();
+        if (token === "ctrl" || token === "shift" || token === "alt" || token === "win") return token;
+        return "";
+      }
+      function updateRawShortcutModifierState(keyName, raw, phase) {
+        var modifierName = getRawShortcutModifierNameFromKey(keyName);
+        if (!modifierName || !rawShortcutModifierState) return;
+        if (isRawKeyDownPhase(raw, phase)) {
+          rawShortcutModifierState[modifierName] = true;
+          return;
+        }
+        if (isRawKeyUpPhase(raw, phase)) {
+          rawShortcutModifierState[modifierName] = false;
+        }
+      }
+      function resetRawShortcutModifierState() {
+        rawShortcutModifierState = { ctrl: false, shift: false, alt: false, win: false };
+      }
 
       /**
        * Gestionnaire des evenements clavier natifs envoyes par le serveur telemetry
@@ -1297,6 +1328,7 @@
         var rawPhase = String(raw.phase || "").trim().toLowerCase();
         var rawVk = Number(raw.vk);
         var rawKeyName = VK_MAP[rawVk] || "0x" + rawVk.toString(16).toUpperCase();
+        updateRawShortcutModifierState(rawKeyName, raw, rawPhase);
 
         if (!PLAYER_LIST_SHORTCUT_TEMPORARILY_DISABLED && shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_PLAYER_LIST, rawKeyName, raw)) {
           if (isRawKeyDownPhase(raw, rawPhase) && !raw.repeat) {
@@ -1316,23 +1348,19 @@
 
           // --- Support des raccourcis via le flux VK ---
           // On vérifie si la touche pressée correspond à l'un de nos raccourcis enregistrés
-          var zoomGpsShortcut = getEffectiveShortcutForScope(OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS);
-          if (zoomGpsShortcut && zoomGpsShortcut.keys && zoomGpsShortcut.keys.indexOf(keyName) >= 0) {
+          if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS, keyName, raw)) {
             triggerGpsZoomFromShortcut(isShiftModifierActive(raw) ? "in" : "out");
           }
 
-          var hideUiShortcut = getEffectiveShortcutForScope(OVERLAY_SHORTCUT_SCOPE_HIDE_UI);
-          if (hideUiShortcut && hideUiShortcut.keys && hideUiShortcut.keys.indexOf(keyName) >= 0) {
+          if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_HIDE_UI, keyName, raw)) {
             triggerHideUiToggleFromShortcut();
           }
 
-          var announceShortcut = getEffectiveShortcutForScope(OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE);
-          if (announceShortcut && announceShortcut.keys && announceShortcut.keys.indexOf(keyName) >= 0) {
+          if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE, keyName, raw)) {
             triggerSaeivDestinationAnnouncementFromShortcut();
           }
 
-          var menuShortcut = getEffectiveShortcutForScope(OVERLAY_SHORTCUT_SCOPE_OVERLAY);
-          if (menuShortcut && menuShortcut.keys && menuShortcut.keys.indexOf(keyName) >= 0) {
+          if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_OVERLAY, keyName, raw)) {
             var nextMode = telemetryUiMode === 2 ? "Fermé" : "Ouvert";
             applyTelemetryUiMode(telemetryUiMode === 2 ? 1 : 2);
           }
@@ -2221,6 +2249,8 @@
           active: true,
           lineNumber: String(saeiv.lineNumber || ""),
           routeName: String(saeiv.routeName || ""),
+          destinationName: String(saeiv.terminusStopName || ""),
+          terminusStopName: String(saeiv.terminusStopName || ""),
           selectedKey: String(saeiv.selectedKey || ""),
           started: saeiv.routeStarted === true,
           waitingStart: saeiv.routeWaitingStart === true,
@@ -2254,6 +2284,8 @@
           distanceToCurrentStopM: remotePanelRoundNumber(saeiv.distanceToDisplayStopM ?? saeiv.distanceToDisplayStopGpsM, 1),
           etaRemainingMinutes: remotePanelRoundNumber(saeiv.etaRemainingMinutes, 1),
           liveDelayMinutes: remotePanelRoundNumber(saeiv.routeLiveDelayMinutes, 1),
+          lastStopDelayMinutes: remotePanelRoundNumber(saeiv.routeLastStopDelayMinutes, 1),
+          lastStopDelayIndex: Number.isFinite(Number(saeiv.routeLastStopDelayIndex)) ? Math.floor(Number(saeiv.routeLastStopDelayIndex)) : -1,
           liveElapsedMs: remotePanelPositiveInt(saeiv.routeLiveElapsedMs),
           vehicleAtStop: saeiv.vehicleAtStop === true,
           vehicleName: String(saeiv.vehicleName || ""),
@@ -2278,6 +2310,16 @@
         } catch (err3) {
           saeiv = null;
         }
+        var pccReceptionMode = "always";
+        try {
+          pccReceptionMode = typeof normalizePccVoiceReceptionMode === "function"
+            ? normalizePccVoiceReceptionMode(pccVoiceReceptionMode)
+            : String(pccVoiceReceptionMode || "always").trim().toLowerCase();
+        } catch (err4) {
+          pccReceptionMode = "always";
+        }
+        var pccCanReceive = true;
+        try { pccCanReceive = shouldReceivePccVoiceForCurrentContext() === true; } catch (err5) { pccCanReceive = true; }
         return {
           title: "Etat interface IDF Map",
           kind: "game2_html_state",
@@ -2290,6 +2332,11 @@
             gameUnlocked: (typeof isGameUnlocked !== "undefined") ? isGameUnlocked === true : null,
             telemetryPaused: (typeof telemetryPaused !== "undefined") ? telemetryPaused === true : null,
             telemetryUiMode: (typeof telemetryUiMode !== "undefined") ? Number(telemetryUiMode) : null
+          },
+          pccVoiceReceptionMode: pccReceptionMode,
+          pccVoice: {
+            receptionMode: pccReceptionMode,
+            canReceive: pccCanReceive
           },
           busLine: buildRemotePanelBusLineBonusState(saeiv)
         };
@@ -2448,7 +2495,11 @@
       function getDiscordPresenceSocket() {
         return telemetryWs && telemetryWs.readyState === WebSocket.OPEN ? telemetryWs : null;
       }
+      function isDiscordPresenceEnabled() {
+        return discordPresenceEnabled !== false;
+      }
       function sendDiscordPresenceUpdate() {
+        if (!isDiscordPresenceEnabled()) return false;
         var now = Date.now();
         var intervalMs = getDiscordPresenceIntervalMs();
         var lastSentAt = Number(discordPresenceLastSentAtMs) || 0;
@@ -2475,6 +2526,10 @@
         return Math.max(1000, intervalMs - (Date.now() - lastSentAt));
       }
       function scheduleNextDiscordPresenceUpdate(delayMs) {
+        if (!isDiscordPresenceEnabled()) {
+          stopDiscordPresenceUpdates();
+          return;
+        }
         if (discordPresenceTimer) {
           clearTimeout(discordPresenceTimer);
           discordPresenceTimer = 0;
@@ -2487,6 +2542,10 @@
         }, waitMs);
       }
       function startDiscordPresenceUpdates() {
+        if (!isDiscordPresenceEnabled()) {
+          stopDiscordPresenceUpdates();
+          return;
+        }
         sendDiscordPresenceUpdate();
         scheduleNextDiscordPresenceUpdate(getNextDiscordPresenceDelayMs());
       }
@@ -2822,7 +2881,14 @@
         collectPccVoiceFilterValues(audio && audio.filters, out, seen);
         collectPccVoiceFilterValues(audio && audio.effects, out, seen);
         collectPccVoiceFilterValues(audio && audio.filter, out, seen);
-        return out;
+        return out.filter(function (key) {
+          return key !== "souffle" &&
+            key !== "gresillement" &&
+            key !== "coupures" &&
+            key !== "perte_signal" &&
+            key !== "signal_faible" &&
+            key !== "interferences";
+        });
       }
       function hasPccVoiceFilter(filters, key) {
         return Array.isArray(filters) && filters.indexOf(key) >= 0;
@@ -2832,6 +2898,19 @@
       }
       function getPccVoiceAudioObject(message) {
         return message && message.audio && typeof message.audio === "object" ? message.audio : message;
+      }
+      function shouldReceivePccVoiceForCurrentContext() {
+        var mode = typeof normalizePccVoiceReceptionMode === "function"
+          ? normalizePccVoiceReceptionMode(pccVoiceReceptionMode)
+          : String(pccVoiceReceptionMode || "always").trim().toLowerCase();
+        if (mode === "never") return false;
+        if (mode === "always") return true;
+        var inConvoy = typeof isLocalPlayerInConvoy === "function"
+          ? isLocalPlayerInConvoy()
+          : telemetryConvoyActive === true;
+        if (mode === "solo") return inConvoy !== true;
+        if (mode === "convoy") return inConvoy === true;
+        return true;
       }
       function getPccVoiceChunkInfo(message) {
         if (!message || typeof message !== "object") return null;
@@ -2944,24 +3023,8 @@
       }
       function schedulePccVoiceDropouts(gain, ctx, startAt, duration, baseGain, filters) {
         if (!gain || !gain.gain) return;
-        var endAt = startAt + Math.max(0.1, Number(duration) || 0.1);
         gain.gain.cancelScheduledValues(startAt);
         gain.gain.setValueAtTime(baseGain, startAt);
-        var hasCuts = hasPccVoiceFilter(filters, "coupures");
-        var hasLoss = hasPccVoiceFilter(filters, "perte_signal");
-        if (!hasCuts && !hasLoss) return;
-        var t = startAt + 0.22;
-        while (t < endAt - 0.12) {
-          var gap = hasLoss ? (0.55 + Math.random() * 0.85) : (0.28 + Math.random() * 0.42);
-          var cutDuration = hasLoss ? (0.18 + Math.random() * 0.38) : (0.045 + Math.random() * 0.11);
-          t += gap;
-          if (t >= endAt - 0.08) break;
-          var low = baseGain * (hasLoss ? 0.02 : 0.08);
-          gain.gain.setValueAtTime(baseGain, t);
-          gain.gain.linearRampToValueAtTime(low, t + 0.012);
-          gain.gain.setValueAtTime(low, Math.min(endAt, t + cutDuration));
-          gain.gain.linearRampToValueAtTime(baseGain, Math.min(endAt, t + cutDuration + 0.04));
-        }
       }
       function decodePccVoiceDataUrl(ctx, src) {
         return fetch(src)
@@ -2978,6 +3041,7 @@
           ctx: ctx,
           source: null,
           nodes: [],
+          gainControls: [],
           stopped: false,
           stop: function () {
             active.stopped = true;
@@ -2992,16 +3056,60 @@
         };
         return active;
       }
+      function normalizePccVoiceMessageVolumeFactor(volume) {
+        var n = Number(volume);
+        if (!Number.isFinite(n)) return 1;
+        if (n > 1) n = n / 100;
+        if (n < 0) n = 0;
+        if (n > 1) n = 1;
+        return n;
+      }
       function getPccVoiceVolumeFactor(volume) {
-        var baseVolume = typeof getGlobalAudioVolumeFactor === "function"
+        var globalVolume = typeof getGlobalAudioVolumeFactor === "function"
           ? getGlobalAudioVolumeFactor()
-          : Math.max(0, Math.min(1, Number(volume) || 1));
+          : 1;
+        var messageVolume = normalizePccVoiceMessageVolumeFactor(volume);
         var multiplier = Number(PCC_VOICE_VOLUME_MULTIPLIER);
         if (!Number.isFinite(multiplier) || multiplier <= 0) multiplier = 1;
-        return Math.max(0, baseVolume * multiplier);
+        return Math.max(0, globalVolume * messageVolume * multiplier);
+      }
+      function getPccVoiceGainVolume(volume, filters) {
+        return getPccVoiceVolumeFactor(volume);
       }
       function getPccVoiceHtmlAudioVolume(volume) {
         return Math.max(0, Math.min(1, getPccVoiceVolumeFactor(volume)));
+      }
+      function registerPccVoiceGainControl(active, gain, volume, filters) {
+        if (!active || !gain || !gain.gain) return;
+        if (!Array.isArray(active.gainControls)) active.gainControls = [];
+        active.gainControls.push({
+          gain: gain,
+          volume: volume,
+          filters: Array.isArray(filters) ? filters.slice() : []
+        });
+      }
+      function syncPccVoiceActiveAudioVolume() {
+        var active = pccVoiceActiveAudio;
+        if (!active) return;
+        if (typeof active.volume === "number" || typeof active.play === "function") {
+          try {
+            active.volume = getPccVoiceHtmlAudioVolume(active.__pccVoiceVolume);
+          } catch (err0) { }
+          return;
+        }
+        if (!Array.isArray(active.gainControls)) return;
+        active.gainControls.forEach(function (control) {
+          if (!control || !control.gain || !control.gain.gain) return;
+          try {
+            var value = getPccVoiceGainVolume(control.volume, control.filters);
+            var ctx = active.ctx;
+            if (ctx && Number.isFinite(Number(ctx.currentTime))) {
+              control.gain.gain.setValueAtTime(value, ctx.currentTime);
+            } else {
+              control.gain.gain.value = value;
+            }
+          } catch (err1) { }
+        });
       }
       function startPccVoiceFilteredBuffer(active, buffer, volume, filters, scheduledStartAt, onEnded) {
         if (!active || active.stopped || !buffer) return false;
@@ -3025,9 +3133,9 @@
           current = lp;
         }
         var finalGain = ctx.createGain();
-        var baseVolume = getPccVoiceVolumeFactor(volume);
-        if (hasPccVoiceFilter(filters, "signal_faible")) baseVolume *= 0.45;
+        var baseVolume = getPccVoiceGainVolume(volume, filters);
         finalGain.gain.value = baseVolume;
+        registerPccVoiceGainControl(active, finalGain, volume, filters);
         current.connect(finalGain);
 
         var duration = Math.max(0.1, Number(buffer.duration) || 0.1);
@@ -3126,6 +3234,7 @@
         var baseVolume = getPccVoiceVolumeFactor(volume);
         source.buffer = buffer;
         gain.gain.value = baseVolume;
+        registerPccVoiceGainControl(active, gain, volume, []);
         source.connect(gain);
         gain.connect(ctx.destination);
         active.nodes.push(source);
@@ -3210,6 +3319,7 @@
           }
           try {
             audio.preload = "auto";
+            audio.__pccVoiceVolume = volume;
             audio.volume = getPccVoiceHtmlAudioVolume(volume);
           } catch (err1) { }
           var done = false;
@@ -3271,6 +3381,7 @@
         try { audio = new Audio(src); } catch (err0) { audio = null; }
         if (!audio) return false;
         try {
+          audio.__pccVoiceVolume = volume;
           audio.volume = getPccVoiceHtmlAudioVolume(volume);
         } catch (err1) { }
         pccVoiceActiveAudio = audio;
@@ -3304,6 +3415,7 @@
           if (!targetSteamId) return true;
           if (!localSteamId || targetSteamId !== localSteamId) return true;
         }
+        if (!shouldReceivePccVoiceForCurrentContext()) return true;
         if (getPccVoiceChunkInfo(message)) return handlePccVoiceChunkMessage(message);
         var messageId = getPccVoiceMessageId(message);
         if (rememberPccVoiceMessageId(messageId)) return true;
@@ -3739,10 +3851,14 @@
         }
       }, true);
       window.addEventListener("blur", function () {
+        resetRawShortcutModifierState();
         hidePlayerListHoldPopup();
       });
       document.addEventListener("visibilitychange", function () {
-        if (document.hidden) hidePlayerListHoldPopup();
+        if (document.hidden) {
+          resetRawShortcutModifierState();
+          hidePlayerListHoldPopup();
+        }
       });
       window.addEventListener("keydown", function (event) {
         if (!telemetryConnected && event.key === "Enter") {

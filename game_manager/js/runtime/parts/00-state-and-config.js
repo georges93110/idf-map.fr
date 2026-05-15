@@ -60,11 +60,12 @@
         BUS: "bus",
         FREE: "free"
       };
+      var WAZE_WIDGET_CACHE_BUSTER = "20260515-waze-route-fix";
       var TYPES = {
         saeiv: { label: "SAEIV", url: new URL("widgets/saeiv.html?dev=1&host=game&source=game", location.href).href },
         saeiv_mini: { label: "HUD Ligne Simple", url: new URL("widgets/saeiv_mini.html?host=game&source=game", location.href).href },
         bus_status: { label: "Statut Embarquement", url: new URL("widgets/bus_status.html?host=game&source=game", location.href).href },
-        waze: { label: "GPS Waze", url: new URL("widgets/waze.html?host=game", location.href).href },
+        waze: { label: "GPS Waze", url: new URL("widgets/waze.html?host=game&asset=" + WAZE_WIDGET_CACHE_BUSTER, location.href).href },
         gps_mini: { label: "GPS Mini", url: new URL("widgets/gps_mini.html?host=game", location.href).href },
         gps_ets2_old: { label: "GPS ETS 2 Ancien", url: new URL("widgets/ets2_roadasvisor_old.html?host=game", location.href).href }
       };
@@ -92,7 +93,7 @@
         defaultGpsType: "",
         forceDefaultGps: false
       };
-      var GPS_WIDGET_TYPES = ["waze"];
+      var GPS_WIDGET_TYPES = ["gps_mini"];
       var HUD_WIDGET_TYPES = ["saeiv", "saeiv_mini"];
       var currentGameMode = GAME_MODES.BUS;
 
@@ -167,12 +168,18 @@
         overlayTimeSystemMenu: document.getElementById("overlayTimeSystemMenu"),
         overlayTimeSystemWrapper: document.getElementById("overlayTimeSystemWrapper"),
         overlayShowExperimentalWidgets: document.getElementById("overlayShowExperimentalWidgets"),
+        overlayShowUnavailableModes: document.getElementById("overlayShowUnavailableModes"),
         overlayExperimentalWidgetsLabel: document.getElementById("overlayExperimentalWidgetsLabel"),
         overlayStopAnnouncementSounds: document.getElementById("overlayStopAnnouncementSounds"),
         overlayStopAnnouncementSoundsLabel: document.getElementById("overlayStopAnnouncementSoundsLabel"),
         overlayPassengerValidationSounds: document.getElementById("overlayPassengerValidationSounds"),
         overlayPassengerValidationSoundsLabel: document.getElementById("overlayPassengerValidationSoundsLabel"),
         overlayNotificationSoundsEnabled: document.getElementById("overlayNotificationSoundsEnabled"),
+        overlayDiscordPresenceEnabled: document.getElementById("overlayDiscordPresenceEnabled"),
+        overlayPccVoiceReceptionMode: document.getElementById("overlayPccVoiceReceptionMode"),
+        overlayPccVoiceReceptionModeDisplay: document.getElementById("overlayPccVoiceReceptionModeDisplay"),
+        overlayPccVoiceReceptionModeLabel: document.getElementById("overlayPccVoiceReceptionModeLabel"),
+        overlayPccVoiceReceptionModeMenu: document.getElementById("overlayPccVoiceReceptionModeMenu"),
         overlayHideUiWhenManagerHidden: document.getElementById("overlayHideUiWhenManagerHidden"),
         overlayHideUiWhenManagerHiddenLabel: document.getElementById("overlayHideUiWhenManagerHiddenLabel"),
         overlayDestinationShortcutBtn: document.getElementById("overlayDestinationShortcutBtn"),
@@ -253,10 +260,11 @@
         return Math.max(1, Math.round(n * OVERLAY_WIDGET_SIZE_SCALE));
       }
       var OVERLAY_WIDGET_TITLEBAR_HEIGHT = scaleUiSize(32);
-      var OVERLAY_MANAGER_MIN_WIDTH = scaleUiSize(120);
-      var OVERLAY_MANAGER_MIN_HEIGHT = scaleUiSize(110);
-      var OVERLAY_MANAGER_BASE_WIDTH = scaleUiSize(320);
-      var OVERLAY_MANAGER_BASE_HEIGHT = scaleUiSize(330);
+      var OVERLAY_MANAGER_MIN_WIDTH = scaleUiSize(320);
+      var OVERLAY_MANAGER_MIN_HEIGHT = scaleUiSize(190);
+      var OVERLAY_MANAGER_BASE_WIDTH = scaleUiSize(320*1.5);
+      var OVERLAY_MANAGER_BASE_HEIGHT = scaleUiSize(190*1.5);
+      var OVERLAY_MANAGER_ASPECT_RATIO = OVERLAY_MANAGER_BASE_WIDTH / Math.max(1, OVERLAY_MANAGER_BASE_HEIGHT);
       var OVERLAY_MANAGER_SCALE_MIN = 100;
       var OVERLAY_MANAGER_SCALE_MAX = 250;
       var OVERLAY_MANAGER_SCALE_DEFAULT = 175;
@@ -385,10 +393,17 @@
       var notificationScalePercent = NOTIFICATION_SCALE_DEFAULT;
       var globalAudioVolumePercent = GLOBAL_AUDIO_VOLUME_DEFAULT;
       var showExperimentalWidgets = false;
+      var showUnavailablePlayModes = true;
       var saeivStopAnnouncementSoundsEnabled = true;
       var saeivPassengerValidationSoundsEnabled = true;
       var PASSENGER_VALIDATION_SOUNDS_SETTING_VERSION = 2;
       var notificationSoundsEnabled = true;
+      var discordPresenceEnabled = true;
+      var PCC_VOICE_RECEPTION_ALWAYS = "always";
+      var PCC_VOICE_RECEPTION_SOLO = "solo";
+      var PCC_VOICE_RECEPTION_CONVOY = "convoy";
+      var PCC_VOICE_RECEPTION_NEVER = "never";
+      var pccVoiceReceptionMode = PCC_VOICE_RECEPTION_ALWAYS;
       var hideUiWhenManagerHidden = false;
       var SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT = 100;
       var SAEIV_BUS_UNLIMITED_THRESHOLD = 300;
@@ -432,7 +447,21 @@
         visible: false
       };
       
-      var systemName = "IDFRP";
+      function resolveGameSystemName() {
+        var configured = "";
+        try {
+          if (window.SITE_GAME_CONFIG && typeof window.SITE_GAME_CONFIG === "object") {
+            configured = String(window.SITE_GAME_CONFIG.systemName || window.SITE_GAME_CONFIG.systemname || "").trim();
+          }
+        } catch (err0) { configured = ""; }
+        if (!configured) {
+          try { configured = String(window.GAME_SYSTEM_NAME || "").trim(); } catch (err1) { configured = ""; }
+        }
+        return configured || "IDFRP";
+      }
+
+      var systemName = resolveGameSystemName();
+      try { window.systemName = systemName; } catch (errSystemName) { }
       var gameVersion = "Beta 0.1a";
 
       var activeOverlayDrag = null;
@@ -480,7 +509,7 @@
       var PCC_VOICE_MAX_CHUNKS = 160;
       var PCC_VOICE_MAX_DATA_URL_CHARS = 6000000;
       var PCC_VOICE_PRE_SOUND_URL = "./sounds/bus/pcc.mp3";
-      var PCC_VOICE_VOLUME_MULTIPLIER = 3;
+      var PCC_VOICE_VOLUME_MULTIPLIER = 1;
       var TELEMETRY_PACKET_TIMEOUT_MS = 2500;
       var TELEMETRY_WATCHDOG_INTERVAL_MS = 300;
       var TELEMETRY_MIN_VALID_PACKETS_FOR_ONLINE = 3;
@@ -626,6 +655,8 @@
       var saeivLateStopsCount = 0;
       var saeivServedStopsCount = 0;
       var saeivMaxPassengersEverInBus = 0;
+      var saeivRouteBoardedPassengers = 0;
+      var saeivReachedStopDelayLog = {};
       var saeivStopServedLog = {}; // {stopIndex: true} map of confirmed-served stops
       var saeivStatsRecordedReachedIndex = -1;
       var saeivStatsRecordedServedIndex = -1;

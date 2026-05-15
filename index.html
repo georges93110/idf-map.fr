@@ -177,7 +177,12 @@
       cursor: pointer;
     }
 
-    .home-category-pill:not(.is-active):hover {
+    button.home-category-pill:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .home-category-pill:not(.is-active):not(:disabled):hover {
       transform: translateY(-1px);
       border-color: #66666b;
       border-bottom-color: #303036;
@@ -1508,7 +1513,7 @@
             aria-pressed="true"
             data-i18n="home_category_installation"
           >
-            Installation Map
+            Téléchargement Map
           </button>
           <button
             type="button"
@@ -1520,6 +1525,18 @@
             data-i18n="home_category_convoy_server"
           >
             Serveur Convoi
+          </button>
+          <button
+            type="button"
+            id="homeCategoryGameBtn"
+            class="home-category-pill"
+            data-home-category="game"
+            aria-current="false"
+            aria-pressed="false"
+            disabled
+            aria-disabled="true"
+          >
+            <span data-home-system-name>IDFRP</span>
           </button>
         </nav>
         <section class="home-hero" aria-label="Contenu d'accueil">
@@ -1773,6 +1790,7 @@
       const homeCategoryPanels = Array.from(document.querySelectorAll("[data-home-category-panel]"));
       const homeCategoriesNav = document.querySelector(".home-categories");
       const homeHeroSection = document.querySelector(".home-hero");
+      const homeSystemNameNodes = Array.from(document.querySelectorAll("[data-home-system-name]"));
       const homeManualCloseBtn = document.getElementById("homeManualCloseBtn");
       const homeDownloadModal = document.getElementById("homeDownloadModal");
       const homeDownloadModalCloseBtn = document.getElementById("homeDownloadModalCloseBtn");
@@ -1859,6 +1877,21 @@
           const key = String(el.getAttribute("data-i18n") || "").trim();
           if (!key) return;
           el.textContent = t(key, el.textContent);
+        });
+      }
+
+      function getConfiguredGameSystemName() {
+        const game = window.SITE_GAME_CONFIG && typeof window.SITE_GAME_CONFIG === "object"
+          ? window.SITE_GAME_CONFIG
+          : {};
+        const configured = String(game.systemName || game.systemname || window.GAME_SYSTEM_NAME || "").trim();
+        return configured || "IDFRP";
+      }
+
+      function applyGameSystemName() {
+        const name = getConfiguredGameSystemName();
+        homeSystemNameNodes.forEach((node) => {
+          node.textContent = name;
         });
       }
 
@@ -2018,12 +2051,12 @@
         const previousCategory = activeHomeCategory;
         const categoryChanged = previousCategory !== normalized;
         const manualPanelVisible = !!(homeManualPanel && homeManualPanel.getBoundingClientRect().height > 0.5);
-        const targetManualMode = normalized === "installation" ? "installation" : "convoy";
+        const targetManualMode = normalized === "convoy" ? "convoy" : "installation";
         activeHomeCategory = normalized;
         if (homeShell) {
           const isConvoy = normalized === "convoy";
           homeShell.classList.toggle("is-category-convoy", isConvoy);
-          homeShell.classList.toggle("is-category-installation", !isConvoy);
+          homeShell.classList.toggle("is-category-installation", normalized === "installation");
         }
         if (categoryChanged && manualPanelVisible) {
           setManualPanelOpen(false);
@@ -2978,6 +3011,7 @@
           homeManualVideoFrame.setAttribute("title", t("downloads_manual_tutorial_title", "Tutoriel d'installation manuelle"));
         }
         applyTexts();
+        applyGameSystemName();
         if (homeDownloadInProgress) {
           renderHomeDownloadProgressLabel();
         } else {

@@ -173,7 +173,7 @@
 		<name>Le Raincy - Villemomble - Montfermeil RER</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
-		<location>5112.58;1.84837;-3820.91;-0.00398472;-0.0875897</location>
+		<location>5106.93;0.070514;-3819.91;-0.112682;0.00135469</location>
 	</busstop>
 
 	<busstop>
@@ -1861,7 +1861,7 @@
 		<name>Rue des Hersiers</name>
 		<zone></zone>
 		<requestStop>true</requestStop>
-		<location>5589.21;11.5954;-1549.89;0.3885;-0.124146</location>
+		<location>5592.52;9.47731;-1550.17;1.53847;0.00139284</location>
 	</busstop>
 
 	<busstop>

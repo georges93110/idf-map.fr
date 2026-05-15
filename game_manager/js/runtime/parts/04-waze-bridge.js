@@ -6,6 +6,10 @@
       function postWazeBridgePayload(payload) {
         if (!payload || typeof payload !== "object") return;
         var now = Date.now();
+        var previousPacketTs = Number(lastWazeBridgePacket && lastWazeBridgePacket.ts);
+        if (Number.isFinite(previousPacketTs) && now <= previousPacketTs) {
+          now = previousPacketTs + 1;
+        }
         var saeivMiniVisible = typeof findWidgetIdByType === "function" ? !!findWidgetIdByType("saeiv_mini") : false;
         var busStatusVisible = typeof findWidgetIdByType === "function" ? !!findWidgetIdByType("bus_status") : false;
         var saeivStateForWaze = null;
@@ -36,6 +40,29 @@
         };
         if (saeivStateForWaze && typeof saeivStateForWaze === "object") {
           [
+            "selected",
+            "lineSelected",
+            "routeSelected",
+            "selectedKey",
+            "selectedLineUid",
+            "selectedRouteUid",
+            "lineNumber",
+            "routeName",
+            "routeWaitingStart",
+            "routeStarted",
+            "routeCompleted",
+            "routeReachedIndex",
+            "routeTargetIndex",
+            "routeStopCount",
+            "currentStopName",
+            "currentStopLabel",
+            "startStopName",
+            "stopName",
+            "nextStopName",
+            "distanceToDisplayStopM",
+            "startStopDistanceM",
+            "vehicleAtStop",
+            "vehicleAtStopIndex",
             "passengersInBus",
             "passengersAtStop",
             "busMaxCapacity",
@@ -55,6 +82,32 @@
             }
           });
         }
+        if (
+          !Object.prototype.hasOwnProperty.call(payload, "routeStops") &&
+          saeivRouteState &&
+          typeof saeivRouteState === "object" &&
+          Array.isArray(saeivRouteState.stops) &&
+          saeivRouteState.stops.length
+        ) {
+          var bridgeRouteLastIndex = saeivRouteState.stops.length - 1;
+          packet.routeStops = saeivRouteState.stops.map(function (entry, index) {
+            var isOptionalStop = typeof isSaeivRouteStopOptionalForMarker === "function"
+              ? isSaeivRouteStopOptionalForMarker(entry, index, bridgeRouteLastIndex)
+              : false;
+            return {
+              index: index,
+              uid: Number(entry && entry.uid),
+              name: String(entry && entry.name || ""),
+              x: Number(entry && entry.X),
+              y: Number(entry && entry.Y),
+              z: Number(entry && entry.Z),
+              optional: isOptionalStop === true,
+              stopOptional: isOptionalStop === true
+            };
+          }).filter(function (stop) {
+            return Number.isFinite(stop.x) && Number.isFinite(stop.y) && Number.isFinite(stop.z);
+          });
+        }
         Object.keys(payload).forEach(function (key) {
           packet[key] = payload[key];
         });
@@ -68,6 +121,33 @@
           sendWidgetBridgeMessage(WIDGET_BRIDGE_CHANNEL_WAZE, packet);
           lastWazeBridgeWsSendAt = now;
         }
+        return packet;
+      }
+      function postWazeBridgePayloadToVisibleWidgets(packet) {
+        if (!packet || typeof packet !== "object") return false;
+        var sent = false;
+        document
+          .querySelectorAll('iframe[data-widget-type="gps_mini"], iframe[data-widget-type="waze"]')
+          .forEach(function (frame) {
+            try {
+              var win = frame && frame.contentWindow;
+              if (!win) return;
+              if (
+                (packet.clearNavigation === true || packet.clearDestination === true) &&
+                typeof win.wazeClearNavigationDestination === "function"
+              ) {
+                win.wazeClearNavigationDestination();
+              }
+              win.postMessage({
+                scope: WIDGET_BRIDGE_SCOPE,
+                channel: WIDGET_BRIDGE_CHANNEL_WAZE,
+                payload: packet,
+                ts: Number(packet.ts) || Date.now()
+              }, "*");
+              sent = true;
+            } catch (err) { }
+          });
+        return sent;
       }
       function updateWazeBridgePoseFromTelemetry(signal) {
         if (!signal || typeof signal !== "object") return;
@@ -132,7 +212,10 @@
               var routeStarted = saeivRouteState.started === true;
               var routeTargetIndex = clampRouteStopIndex(saeivRouteState.targetIndex, lastIndex);
               if (!routeStarted) {
-                var firstTarget = parseWorldPoint3D(entries[0] && entries[0].point);
+                var firstTarget =
+                  (typeof getSaeivStopExactWorldPoint === "function" ? getSaeivStopExactWorldPoint(entries[0]) : null) ||
+                  (typeof getSaeivStopNavWorldPoint === "function" ? getSaeivStopNavWorldPoint(entries[0]) : null) ||
+                  parseWorldPoint3D(entries[0] && entries[0].point);
                 var hasStartCache =
                   firstTarget &&
                   Array.isArray(activeBridgeRoutePoints) &&
@@ -258,7 +341,7 @@
         activeBridgeDestinationPoint = null;
         clearActiveRouteCache();
         var start = lastBridgeArrowPoint || null;
-        postWazeBridgePayload({
+        var packet = postWazeBridgePayload({
           step: start ? "A" : "ready",
           clearNavigation: true,
           clearDestination: true,
@@ -279,6 +362,7 @@
           headingUnit: "deg",
           headingConvention: "north_ccw"
         });
+        postWazeBridgePayloadToVisibleWidgets(packet);
         return true;
       }
       function computeForceNavRoutePreviewXYZ(fromX, fromY, fromZ, toX, toY, toZ) {

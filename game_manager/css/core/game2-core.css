@@ -622,7 +622,7 @@
     .manager-widgets-grid {
       display: flex;
       align-items: stretch;
-      gap: 6px;
+      gap: 1.875%;
       width: 100%;
       box-sizing: border-box;
       overflow: visible;
@@ -643,7 +643,7 @@
     }
 
     .manager-widget-select-wrap.has-exp-badge #overlayWidgetAddDisplay {
-      padding-right: 70px;
+      padding-right: 21.875%;
     }
 
     #overlayWidgetAddSelect.manager-widget-select,
@@ -692,13 +692,13 @@
       width: 100%;
       height: 12cqw;
       border-radius: 2.1cqw;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 0.3125cqw solid rgba(255, 255, 255, 0.15);
       background-color: #171717;
       color: #f1f5f9;
       font-size: 3.75cqw;
       font-weight: 700;
       line-height: normal;
-      padding: 0 24px 0 10px;
+      padding: 0 7.5% 0 3.125%;
       box-sizing: border-box;
       outline: none;
       box-shadow: none;
@@ -709,9 +709,9 @@
         linear-gradient(45deg, transparent 50%, #cbd5e1 50%),
         linear-gradient(135deg, #cbd5e1 50%, transparent 50%);
       background-position:
-        calc(100% - 11px) 52%,
-        calc(100% - 8px) 52%;
-      background-size: 3px 3px, 3px 3px;
+        96.5625% 52%,
+        97.5% 52%;
+      background-size: 0.9375cqw 0.9375cqw, 0.9375cqw 0.9375cqw;
       background-repeat: no-repeat;
       cursor: pointer;
       overflow: visible;
@@ -1318,7 +1318,7 @@
       min-width: 0;
       min-height: 0;
       background: #111;
-      border: 1px solid #333;
+      border: thin solid #333;
       container-type: inline-size;
       overflow: visible;
       transition: opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1328,7 +1328,7 @@
 
     #overlayManager .overlay-window-titlebar {
       background: #222;
-      border-bottom: 1px solid #333;
+      border-bottom: 0.3125cqw solid #333;
       color: #eee;
       height: 10cqw;
       padding: 0;
@@ -1369,9 +1369,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 2.5%;
       border-radius: 2.1cqw;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 0.3125cqw solid rgba(255, 255, 255, 0.15);
       background: rgba(23, 23, 23, 0.95);
       color: #f1f5f9;
       font-size: 3.55cqw;
@@ -1396,8 +1396,8 @@
 
     #overlayManager .manager-toggle input[type="checkbox"] {
       position: absolute;
-      width: 1px;
-      height: 1px;
+      width: 0.3125cqw;
+      height: 0.3125cqw;
       opacity: 0;
       pointer-events: none;
     }
@@ -1405,16 +1405,16 @@
     #overlayManager .manager-toggle .manager-toggle-check {
       width: 4.4cqw;
       height: 4.4cqw;
-      min-width: 18px;
-      min-height: 18px;
+      min-width: 4.4cqw;
+      min-height: 4.4cqw;
       border-radius: 1cqw;
-      border: 1px solid rgba(203, 213, 225, 0.45);
+      border: 0.3125cqw solid rgba(203, 213, 225, 0.45);
       background: rgba(15, 23, 42, 0.55);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       flex: 0 0 auto;
-      margin-left: 8px;
+      margin-left: 2.5%;
       transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     }
 
@@ -1422,8 +1422,8 @@
       content: "";
       width: 34%;
       height: 58%;
-      border-right: 2px solid #2b1a06;
-      border-bottom: 2px solid #2b1a06;
+      border-right: 0.625cqw solid #2b1a06;
+      border-bottom: 0.625cqw solid #2b1a06;
       transform: translateY(-16%) rotate(45deg) scale(0.65);
       transform-origin: center;
       opacity: 0;
@@ -1433,7 +1433,7 @@
     #overlayManager .manager-toggle input[type="checkbox"]:checked+.manager-toggle-check {
       background: var(--selection-text);
       border-color: var(--selection-border);
-      box-shadow: inset 0 0 0 1px rgba(43, 26, 6, 0.22);
+      box-shadow: inset 0 0 0 0.3125cqw rgba(43, 26, 6, 0.22);
       animation: toggle-check-pop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
@@ -1443,12 +1443,12 @@
     }
 
     #overlayManager .manager-toggle input[type="checkbox"]:focus-visible+.manager-toggle-check {
-      box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.38);
+      box-shadow: 0 0 0 0.625cqw rgba(251, 191, 36, 0.38);
     }
 
     #overlayManager .manager-action-btn {
       background: #222;
-      border: 1px solid #444;
+      border: 0.3125cqw solid #444;
       color: #eee;
     }
 
@@ -1461,7 +1461,7 @@
     }
 
     .manager-content {
-      padding: 10px;
+      padding: 3.125%;
       color: #e5e7eb;
       font-size: 4cqw;
       line-height: 1.35;
@@ -1469,9 +1469,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      gap: 8px;
+      gap: 2.5%;
       background: rgba(11, 15, 23, 0.95);
-      height: auto;
+      height: calc(100% - 10cqw);
       box-sizing: border-box;
     }
 
@@ -1490,8 +1490,8 @@
       width: 100%;
       box-sizing: border-box;
       display: flex;
-      gap: 6px;
-      margin-bottom: 2px;
+      gap: 1.875%;
+      margin-bottom: 0.625%;
       position: relative;
       overflow: hidden;
       padding-right: 18%;
@@ -1502,7 +1502,7 @@
       min-width: 28%;
       height: 9.3cqw;
       border-radius: 2.1cqw;
-      border: 1px solid rgba(148, 163, 184, 0.34);
+      border: 0.3125cqw solid rgba(148, 163, 184, 0.34);
       background: rgba(30, 38, 53, 0.82);
       color: #dbe3ef;
       font-size: 3.75cqw;
@@ -1514,7 +1514,7 @@
     }
 
     .manager-mode-btn.is-current {
-      border: 1px solid var(--selection-border);
+      border: 0.3125cqw solid var(--selection-border);
       background: var(--selection-bg);
       color: var(--selection-text);
       cursor: not-allowed;

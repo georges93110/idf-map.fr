@@ -337,7 +337,7 @@
                   <h2 class="main-menu-section-title gm-section-title-accent">
                     Guide</h2>
                   <div class="gm-copy">
-                    En cours de rédaction... Utilisez le guide vidéo pour le moment...
+                    En cours de rédaction... 
                   </div>
 
                   <h2 class="main-menu-section-title gm-section-title-accent-spaced">
@@ -352,6 +352,9 @@
                     - <a class="gm-credit-link" href="https://idf-map.fr/credits?profil=800473866404364298" target="_blank">Gravity</a> (Aide lignes de bus)
                     <br>
                     - <a class="gm-credit-link" href="https://idf-map.fr/credits?profil=688850527068618789" target="_blank">French Aero</a> (Aide lignes de bus)
+                  </div>
+                  <div class="gm-copy">
+                    En cours de rédaction...
                   </div>
                 </div>
 
@@ -371,7 +374,7 @@
           <div class="main-menu-tab-panel" id="mainMenuTab_status">
             <div class="main-menu-section gm-status-section">
               <div class="gm-status-header">
-                <h2 class="main-menu-section-title gm-status-title-main">Status Serveur
+                <h2 class="main-menu-section-title gm-status-title-main">Statut Serveur
                   Convoi</h2>
                 <h2 class="main-menu-section-title gm-status-title-side">Informations Serveur
                   Convoi</h2>
@@ -422,12 +425,11 @@
 
           <!-- Panel: Settings -->
           <div class="main-menu-tab-panel" id="mainMenuTab_settings">
-            <div class="main-menu-section gm-section-block">
-              <div class="gm-settings-grid">
+            <div class="gm-settings-grid">
                 <!-- Colonne 1: Interface & Affichage -->
-                <div class="gm-stack">
+                <div class="main-menu-section gm-section-block gm-settings-panel">
                   <h3 class="main-menu-section-title gm-settings-title">
-                    Système</h3>
+                    Sons</h3>
 
                   <div class="manager-scale-row">
                     <p class="manager-section-title">Volume des sons</p>
@@ -436,12 +438,14 @@
                     <span id="overlayGlobalAudioVolumeValue" class="manager-scale-value">50%</span>
                   </div>
 
-                  <div class="manager-scale-row">
-                    <p class="manager-section-title">Taille Widget Manager</p>
-                    <input id="overlayManagerScale" type="range" min="100" max="250" step="1" value="175"
-                      class="manager-scale-slider">
-                    <span id="overlayManagerScaleValue" class="manager-scale-value">150%</span>
-                  </div>
+                  <label class="manager-toggle" for="overlayNotificationSoundsEnabled">
+                    <span class="manager-toggle-label">Sons des notifications</span>
+                    <input id="overlayNotificationSoundsEnabled" type="checkbox" checked />
+                    <span class="manager-toggle-check" aria-hidden="true"></span>
+                  </label>
+
+                  <h3 class="main-menu-section-title gm-settings-title gm-settings-subtitle">
+                    Interface</h3>
 
                   <div class="manager-scale-row">
                     <p class="manager-section-title">Opacité du fond</p>
@@ -487,15 +491,11 @@
                     <span class="manager-toggle-check" aria-hidden="true"></span>
                   </label>
 
-                  <label class="manager-toggle" for="overlayNotificationSoundsEnabled">
-                    <span class="manager-toggle-label">Sons des notifications</span>
-                    <input id="overlayNotificationSoundsEnabled" type="checkbox" checked />
-                    <span class="manager-toggle-check" aria-hidden="true"></span>
-                  </label>
+                  <h3 class="main-menu-section-title gm-settings-title gm-settings-subtitle">
+                    Mode de jeux</h3>
 
                   <div class="manager-scale-row">
-                    <p class="manager-section-title manager-section-title-wrap">Mode ouvert par défaut au démarrage
-                    </p>
+                    <p class="manager-section-title manager-section-title-wrap">Mode ouvert par d&eacute;faut au d&eacute;marrage</p>
 
                     <div id="overlayDefaultStartupModeWrapper" class="manager-widget-select-wrap gm-settings-select-wrap">
                       <button id="overlayDefaultStartupModeDisplay" type="button" class="manager-widget-select gm-startup-display">
@@ -509,10 +509,42 @@
                       </select>
                     </div>
                   </div>
+
+                  <label class="manager-toggle" for="overlayShowUnavailableModes">
+                    <span class="manager-toggle-label">Afficher les modes de jeu indisponibles</span>
+                    <input id="overlayShowUnavailableModes" type="checkbox" checked />
+                    <span class="manager-toggle-check" aria-hidden="true"></span>
+                  </label>
+
+                  <h3 class="main-menu-section-title gm-settings-title gm-settings-subtitle">
+                    Système</h3>
+
+                  <label class="manager-toggle" for="overlayDiscordPresenceEnabled">
+                    <span class="manager-toggle-label">Rich Presence Discord</span>
+                    <input id="overlayDiscordPresenceEnabled" type="checkbox" checked />
+                    <span class="manager-toggle-check" aria-hidden="true"></span>
+                  </label>
+
+                  <label class="manager-toggle" for="overlayHideUiWhenManagerHidden">
+                    <span class="manager-toggle-label">Cacher l'UI en jeu</span>
+                    <input id="overlayHideUiWhenManagerHidden" type="checkbox" />
+                    <span class="manager-toggle-check" aria-hidden="true"></span>
+                  </label>
+
+                  <div class="gm-actions-stack">
+                    <button id="overlayReloadPageBtn" class="main-menu-settings-btn" type="button">
+                      Recharger la page
+                    </button>
+
+                    <button id="overlayResetLayoutBtn" class="main-menu-settings-btn is-danger" type="button">
+                      R&eacute;initialiser les donn&eacute;es
+                    </button>
+                  </div>
                 </div>
 
-                <!-- Colonne 2 -->
-                <div class="gm-stack">
+                <!-- Colonne 2: Raccourcis & Mode Bus -->
+                <div class="gm-settings-right-column">
+                  <div class="main-menu-section gm-section-block gm-settings-panel">
                   <h3 class="main-menu-section-title gm-settings-title">
                     Raccourcis Claviers</h3>
                   <div class="manager-scale-row gm-shortcut-row">
@@ -539,7 +571,7 @@
                           <line x1="18" y1="12" x2="18" y2="12"></line>
                           <line x1="7" y1="16" x2="17" y2="16"></line>
                         </svg>
-                        <span class="shortcut-text">Suppr</span>
+                        <span class="shortcut-text">Home</span>
                       </button>
                     </div>
                   </div>
@@ -673,67 +705,62 @@
                       </button>
                     </div>
                   </div>
-                </div>
 
-              </div>
+                  </div>
 
-              <br><br>
-
-              <div class="gm-settings-grid">
-
-                <!-- Section 1 : Mode Bus -->
-                <div class="gm-stack">
+                  <div class="main-menu-section gm-section-block gm-settings-panel">
                   <h3 class="main-menu-section-title gm-settings-title">
                     Mode Bus
                   </h3>
 
                   <label class="manager-toggle" for="overlayStopAnnouncementSounds">
-                    <span class="manager-toggle-label">Annonces vocales arrêts</span>
+                    <span class="manager-toggle-label">Annonces vocales arr&ecirc;ts</span>
                     <input id="overlayStopAnnouncementSounds" type="checkbox" checked />
                     <span class="manager-toggle-check" aria-hidden="true"></span>
                   </label>
 
                   <label class="manager-toggle" for="overlayPassengerValidationSounds">
-                    <span class="manager-toggle-label">Sons validation passagers et demande d'arrêt</span>
+                    <span class="manager-toggle-label">Sons validation passagers et demande d'arr&ecirc;t</span>
                     <input id="overlayPassengerValidationSounds" type="checkbox" checked />
                     <span class="manager-toggle-check" aria-hidden="true"></span>
                   </label>
 
                   <div class="manager-scale-row">
-                    <p class="manager-section-title">Capacité bus</p>
+                    <p class="manager-section-title manager-section-title-wrap">R&eacute;ception messages vocaux PCC</p>
+
+                    <div id="overlayPccVoiceReceptionModeWrapper" class="manager-widget-select-wrap gm-settings-select-wrap">
+                      <button id="overlayPccVoiceReceptionModeDisplay" type="button" class="manager-widget-select gm-startup-display" aria-expanded="false">
+                        <span class="gm-select-label-accent" id="overlayPccVoiceReceptionModeLabel">Toujours</span>
+                      </button>
+
+                      <div id="overlayPccVoiceReceptionModeMenu" class="manager-dropdown-menu" hidden>
+                        <button type="button" class="manager-widget-menu-item" data-value="always"><span>Toujours</span></button>
+                        <button type="button" class="manager-widget-menu-item" data-value="solo"><span>Uniquement en solo</span></button>
+                        <button type="button" class="manager-widget-menu-item" data-value="convoy"><span>Uniquement en convoi</span></button>
+                        <button type="button" class="manager-widget-menu-item" data-value="never"><span>Jamais</span></button>
+                      </div>
+
+                      <select id="overlayPccVoiceReceptionMode" class="add-select manager-widget-select gm-hidden">
+                        <option value="always" selected>Toujours</option>
+                        <option value="solo">Uniquement en solo</option>
+                        <option value="convoy">Uniquement en convoi</option>
+                        <option value="never">Jamais</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="manager-scale-row">
+                    <p class="manager-section-title">Capacit&eacute; bus</p>
                     <input id="overlayUnknownBusCapacitySlider" type="range" min="60" max="200" step="1" value="100"
                       class="manager-scale-slider">
                     <span id="overlayUnknownBusCapacityValue" class="manager-scale-value">100</span>
                   </div>
 
                   <label class="manager-toggle" for="overlayForceListedBusCapacity">
-                    <span class="manager-toggle-label">Forcer capacité sur tous les véhicules</span>
+                    <span class="manager-toggle-label">Forcer capacit&eacute; sur tous les v&eacute;hicules</span>
                     <input id="overlayForceListedBusCapacity" type="checkbox" checked />
                     <span class="manager-toggle-check" aria-hidden="true"></span>
                   </label>
-                </div>
-
-                <!-- Section 2 : Autres -->
-                <div class="gm-stack">
-                  <h3 class="main-menu-section-title gm-settings-title">
-                    Autres
-                  </h3>
-
-                  <label class="manager-toggle" for="overlayHideUiWhenManagerHidden">
-                    <span class="manager-toggle-label">Cacher l'UI en jeu</span>
-                    <input id="overlayHideUiWhenManagerHidden" type="checkbox" />
-                    <span class="manager-toggle-check" aria-hidden="true"></span>
-                  </label>
-
-                  <div class="gm-actions-stack">
-                    <button id="overlayReloadPageBtn" class="main-menu-settings-btn" type="button">
-                      Recharger la page
-                    </button>
-
-                    <button id="overlayResetLayoutBtn" class="main-menu-settings-btn is-danger" type="button">
-                      Réinitialiser les données
-                    </button>
-                  </div>
                 </div>
 
               </div>
@@ -786,6 +813,7 @@
   <script src="js/core/game2-meta.js"></script>
   <script src="js/core/game2-hooks.js"></script>
   <script src="js/i18n/game2-i18n.js"></script>
+  <script src="../config/config.js"></script>
   <script src="config/line-config.js"></script>
   <script src="js/runtime/game2-main.js"></script>
 <!-- Global Loading Screen -->

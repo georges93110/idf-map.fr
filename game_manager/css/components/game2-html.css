@@ -1,21 +1,21 @@
 .gm-widget-card-shell {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  padding: 10px;
+  border: 0.3125cqw solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.25%;
+  padding: 3.125%;
   width: 100%;
   background: rgba(20, 20, 20, 0.5);
   box-sizing: border-box;
 }
 
 .gm-hidden-manager-title {
-  margin: 0 0 4px 0;
+  margin: 0 0 1.25% 0;
   display: none;
 }
 
 .gm-hidden-preset-buttons {
   display: none;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 1.875%;
+  margin-bottom: 2.5%;
 }
 
 .gm-flex-1 {
@@ -23,7 +23,7 @@
 }
 
 .gm-widget-title-row {
-  margin: 4px 0 4px 0;
+  margin: 1.25% 0;
 }
 
 .gm-main-menu-layer {
@@ -83,8 +83,18 @@
 .gm-settings-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 28px;
   align-items: start;
+}
+
+.gm-settings-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gm-settings-panel {
+  padding: 14px 16px;
 }
 
 .gm-stack {
@@ -127,8 +137,12 @@
   text-align: left;
   color: #fbbf24;
   border-bottom: 1px solid rgba(251, 191, 36, 0.2);
-  padding-bottom: 8px;
-  margin-bottom: 15px;
+  padding-bottom: 6px;
+  margin-bottom: 9px;
+}
+
+.gm-settings-subtitle {
+  margin-top: 34px;
 }
 
 .gm-video-frame {
@@ -159,6 +173,7 @@
 }
 
 .gm-credit-copy {
+  display: none;
   color: #94a3b8;
   font-size: 13px;
   line-height: 1.5;
@@ -527,8 +542,20 @@
 }
 
 .gm-select-label-accent-interactive {
-  color: #fbbf24;
+  color: #f1f5f9;
   font-weight: 600;
+}
+
+.manager-widget-menu-item.is-active .gm-select-label-accent-interactive {
+  color: #fbbf24;
+}
+
+.manager-widget-menu-item .menu-item-clock {
+  color: #cbd5e1;
+}
+
+.manager-widget-menu-item.is-active .menu-item-clock {
+  color: #fbbf24;
 }
 
 .gm-select-clock-main {
@@ -584,6 +611,13 @@
   align-items: center;
 }
 
+.gm-shortcut-button.is-recording {
+  border-color: #fbbf24 !important;
+  box-shadow:
+    0 0 0 2px rgba(251, 191, 36, 0.32),
+    inset 0 0 0 1px rgba(251, 191, 36, 0.18) !important;
+}
+
 .gm-muted-icon {
   opacity: 0.7;
 }
@@ -591,6 +625,221 @@
 .gm-actions-stack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gm-settings-panel .manager-scale-row,
+.gm-settings-panel .manager-toggle {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  margin-bottom: 4px !important;
+}
+
+.gm-settings-panel .gm-shortcut-row {
+  margin-bottom: 4px !important;
+}
+
+#overlayManager {
+  border-width: thin;
+}
+
+#overlayManager * {
+  box-sizing: border-box;
+}
+
+#overlayManager .overlay-window-titlebar {
+  border-bottom-width: 0.3125cqw;
+  gap: 2.5%;
+}
+
+#overlayManager .overlay-logo {
+  left: 3.125%;
+  filter: drop-shadow(0 0 0.3125cqw rgba(0, 0, 0, 0.5));
+}
+
+#overlayManager .manager-content {
+  width: 100%;
+  height: calc(100% - 10cqw);
+  padding: 3.125%;
+  gap: 2.5%;
+}
+
+#overlayManager .gm-widget-card-shell {
+  border-width: 0.3125cqw;
+  border-radius: 1.25%;
+  padding: 3.125%;
+}
+
+#overlayManager .gm-hidden-manager-title {
+  margin: 0 0 1.25% 0;
+}
+
+#overlayManager .gm-hidden-preset-buttons {
+  gap: 1.875%;
+  margin-bottom: 2.5%;
+}
+
+#overlayManager .gm-widget-title-row,
+#overlayManager .manager-section-title {
+  margin: 1.25% 0;
+}
+
+#overlayManager .manager-section-title:not(:first-child) {
+  margin-top: 3.125%;
+}
+
+#overlayManager .manager-widgets-grid {
+  gap: 1.875%;
+}
+
+#overlayManager .manager-widget-select-wrap.has-exp-badge #overlayWidgetAddDisplay {
+  padding-right: 21.875%;
+}
+
+#overlayManager #overlayWidgetAddSelect.manager-widget-select,
+#overlayManager #overlayWidgetAddDisplay {
+  border-width: 0.3125cqw;
+  padding: 0 7.5% 0 3.125%;
+  background-position:
+    96.5625% 52%,
+    97.5% 52%;
+  background-size: 0.9375cqw 0.9375cqw, 0.9375cqw 0.9375cqw;
+}
+
+#overlayManager #overlayWidgetAddMenu {
+  top: 112.5%;
+  border-width: 0.3125cqw;
+  border-radius: 2.5%;
+  padding: 1.25%;
+  gap: 1.25%;
+  max-height: 575%;
+  box-shadow: 0 3.125cqw 7.5cqw rgba(0, 0, 0, 0.42);
+}
+
+#overlayManager .manager-widget-menu-item {
+  min-height: 9.375cqw;
+  border-width: 0.3125cqw;
+  border-radius: 1.875%;
+  font-size: 3.75cqw;
+  padding: 1.875% 2.5%;
+  gap: 2.5%;
+}
+
+#overlayManager .manager-exp-badge {
+  font-size: 2.1875cqw;
+  padding: 0 1.25%;
+  min-height: 3.75cqw;
+  border-width: 0.3125cqw;
+  right: 6.25%;
+}
+
+#overlayManager .manager-widget-menu-item .manager-exp-badge {
+  margin-left: 1.875%;
+}
+
+#overlayManager #overlayWidgetAddBtn.manager-widget-add-btn {
+  padding: 0 3.125%;
+}
+
+#overlayManager .manager-actions {
+  gap: 2.5%;
+  padding-top: 2%;
+}
+
+#overlayManager .manager-action-btn,
+#overlayManager .manager-mode-btn,
+#overlayManager .manager-toggle,
+#overlayManager .manager-text-input {
+  border-width: 0.3125cqw;
+}
+
+#overlayManager .manager-toggle {
+  gap: 2.5%;
+}
+
+#overlayManager .manager-toggle input[type="checkbox"] {
+  width: 0.3125cqw;
+  height: 0.3125cqw;
+}
+
+#overlayManager .manager-toggle .manager-toggle-check {
+  min-width: 4.4cqw;
+  min-height: 4.4cqw;
+  border-width: 0.3125cqw;
+  margin-left: 2.5%;
+}
+
+#overlayManager .manager-toggle .manager-toggle-check::after {
+  border-right-width: 0.625cqw;
+  border-bottom-width: 0.625cqw;
+}
+
+#overlayManager .manager-toggle input[type="checkbox"]:checked+.manager-toggle-check {
+  box-shadow: inset 0 0 0 0.3125cqw rgba(43, 26, 6, 0.22);
+}
+
+#overlayManager .manager-toggle input[type="checkbox"]:focus-visible+.manager-toggle-check,
+#overlayManager .manager-text-input:focus-visible {
+  box-shadow: 0 0 0 0.625cqw rgba(251, 191, 36, 0.38);
+}
+
+#overlayManager .manager-mode-buttons {
+  gap: 1.875%;
+  margin-bottom: 0.625%;
+}
+
+#overlayManager .manager-scale-value {
+  margin-top: 0.3125%;
+  margin-bottom: 0.3125%;
+}
+
+#overlayManager .manager-scale-slider {
+  --manager-slider-track-h: 1.4cqw;
+  --manager-slider-thumb-size: 3.9cqw;
+  --manager-slider-thumb-ring: 0.35cqw;
+}
+
+#overlayManager .manager-scale-slider::-webkit-slider-runnable-track,
+#overlayManager .manager-scale-slider::-moz-range-track {
+  border-width: 0.3125cqw;
+}
+
+#overlayManager .manager-scale-slider::-webkit-slider-thumb,
+#overlayManager .manager-scale-slider::-moz-range-thumb {
+  border-width: 0.625cqw;
+}
+
+#overlayManager .manager-text-input {
+  padding: 0 3.125%;
+}
+
+#overlayManager .manager-helper-text {
+  margin: 1.25% 0.625% 0 0.625%;
+}
+
+#overlayManager .manager-tooltip-trigger {
+  min-width: 3.5cqw;
+  min-height: 3.5cqw;
+  border-width: 0.3125cqw;
+}
+
+#overlayManager .manager-tooltip-content {
+  bottom: 125%;
+  transform: translateX(-50%) translateY(1.25cqw);
+  border-width: 0.3125cqw;
+  border-radius: 1.875%;
+  padding: 2.5% 3.125%;
+  font-size: 3.4375cqw;
+  width: 56.25%;
+  box-shadow: 0 1.25cqw 3.75cqw rgba(0, 0, 0, 0.5);
+}
+
+#overlayManager .manager-tooltip-content::after {
+  border-width: 1.875cqw;
+}
+
+#overlayManager .manager-tooltip-content::before {
+  top: calc(100% - 0.3125cqw);
+  border-width: 1.5625cqw;
 }

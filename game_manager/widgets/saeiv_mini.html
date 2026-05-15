@@ -2960,7 +2960,11 @@
         var late = Math.max(0, Number(data.routeLateStopsCount) || 0);
         var total = Math.max(0, Number(data.routeStopCount) || 0);
 
-        if (el.donePassengers) el.donePassengers.textContent = String(data.routeTransportedPassengers || 0);
+        if (el.donePassengers) {
+          var boardedPassengers = Number(data.routeBoardedPassengers);
+          if (!Number.isFinite(boardedPassengers)) boardedPassengers = Number(data.routeTransportedPassengers);
+          el.donePassengers.textContent = String(Math.max(0, Math.round(Number(boardedPassengers) || 0)));
+        }
 
         if (el.doneTravelTime) {
           el.doneTravelTime.textContent = formatDurationMs(computeFinishedElapsedMs(data));
