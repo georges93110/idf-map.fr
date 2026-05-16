@@ -222,6 +222,7 @@
       var params = new URLSearchParams(location.search || "");
       var hostParam = String(params.get("host") || "").trim().toLowerCase();
       var isHostedByGame = hostParam === "game" || hostParam === "1" || hostParam === "true";
+      var isDevMapMode = params.has("devmap") || params.has("dev_map") || params.has("nextversion");
 
       // --- CONFIGURATION VITESSE / TEMPS ATTENTE PASSAGERS ---
       var PASSENGER_GAP_MIN_MS = 500;         // Temps min d'écart entre deux montées/descentes (en ms)
@@ -301,10 +302,20 @@
         if (isFetchingLines || linesData) return;
         isFetchingLines = true;
         var v = version || "0.1.6a";
-        var url = "../../map_files/" + v + "/DBus/lines.xml";
+        var urls = isDevMapMode
+          ? ["../../map_files/Dev/DBus/lines.xml", "../../map_files/" + v + "/DBus/lines.xml"]
+          : ["../../map_files/" + v + "/DBus/lines.xml"];
+        var urlIndex = 0;
 
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", url, true);
+        function openNext() {
+          if (urlIndex >= urls.length) {
+            isFetchingLines = false;
+            return;
+          }
+          xhr.open("GET", urls[urlIndex++], true);
+          xhr.send();
+        }
         xhr.onreadystatechange = function () {
           if (xhr.readyState === 4) {
             if (xhr.status === 200) {
@@ -315,11 +326,15 @@
               } catch (e) {
                 console.error("Failed to parse lines.xml", e);
               }
+              isFetchingLines = false;
+            } else if (urlIndex < urls.length) {
+              openNext();
+            } else {
+              isFetchingLines = false;
             }
-            isFetchingLines = false;
           }
         };
-        xhr.send();
+        openNext();
       }
 
       // Utils Mathématiques

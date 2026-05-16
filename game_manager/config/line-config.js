@@ -60,6 +60,18 @@
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
+    "120": [
+      "#bea5c8",
+      "#221f20",
+      "https://www.bonjour-ratp.fr/lignes-bus/ligne-120/",
+      "1",
+      true,                         // SON VALIDATION
+      "arret_demande_ratp",         // SONS ARRET DEMANDE
+      "RATP",                       // DOSSIER ANNONCES SONORES
+      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
+      true,                         // VISIBLE PCC
+    ],
     "121": [
       "#d63e34",
       "#FFFFFF",
@@ -213,6 +225,18 @@
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
       "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
+      true                           // VISIBLE PCC
+    ],
+    "Navette de Nogent": [
+      "#ffffff",
+      "#221f20",
+      "",
+      "1",
+      false,                         // SON VALIDATION
+      "",                           // SONS ARRET DEMANDE
+      "",                           // DOSSIER ANNONCES SONORES
+      "",                             // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true                           // VISIBLE PCC
     ],

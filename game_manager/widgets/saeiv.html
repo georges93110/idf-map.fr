@@ -2274,6 +2274,7 @@
       const isDevMode = params.has("dev");
       const hostParam = String(params.get("host") || "").trim().toLowerCase();
       const isHostedByGame = hostParam === "game" || hostParam === "1" || hostParam === "true";
+      const isDevMapMode = params.has("devmap") || params.has("dev_map") || params.has("nextversion");
       const SAEIV_HOST_POLL_INTERVAL_MS = 140;
       const SAEIV_STATE_REQUEST_INTERVAL_MS = 1000;
       const DEFAULT_DBUS_VERSION = "0.1.6a";
@@ -3122,6 +3123,10 @@
           return sanitizeLineCode(numberToken ? `Titus ${numberToken}` : "Titus");
         }
 
+        if (/navette\s+de\s+nogent/i.test(merged)) {
+          return "Navette de Nogent";
+        }
+
         const expressMatch = merged.match(/\bexpress\s*([0-9a-z]+)/i);
         if (expressMatch && expressMatch[1]) {
           return sanitizeLineCode(`Express ${String(expressMatch[1]).trim()}`);
@@ -3279,6 +3284,7 @@
       }
 
       function getLatestDbusVersionFromManifest() {
+        if (isDevMapMode) return Promise.resolve(DEFAULT_DBUS_VERSION);
         return fetch("../../map_files/versions.json", { cache: "no-store" })
           .then((res) => {
             if (!res || !res.ok) return DEFAULT_DBUS_VERSION;
@@ -3297,6 +3303,25 @@
             return rawList[rawList.length - 1] || DEFAULT_DBUS_VERSION;
           })
           .catch(() => DEFAULT_DBUS_VERSION);
+      }
+
+      function fetchDbusLinesXmlForVersion(version) {
+        const safeVersion = String(version || DEFAULT_DBUS_VERSION).trim() || DEFAULT_DBUS_VERSION;
+        const paths = isDevMapMode
+          ? ["../../map_files/Dev/DBus/lines.xml", `../../map_files/${encodeURIComponent(safeVersion)}/DBus/lines.xml`]
+          : [`../../map_files/${encodeURIComponent(safeVersion)}/DBus/lines.xml`];
+        let index = 0;
+        const tryNext = () => {
+          if (index >= paths.length) return Promise.reject(new Error("lines_xml_unavailable"));
+          const path = paths[index++];
+          return fetch(path, { cache: "no-store" })
+            .then((res) => {
+              if (res && res.ok) return res;
+              return tryNext();
+            })
+            .catch(() => tryNext());
+        };
+        return tryNext();
       }
 
       function sanitizeServiceDigits(raw, maxLength) {
@@ -3635,8 +3660,7 @@
         if (serviceLineUidLoadPromise) return serviceLineUidLoadPromise;
         serviceLineUidLoadPromise = getLatestDbusVersionFromManifest()
           .then((version) => {
-            const safeVersion = String(version || DEFAULT_DBUS_VERSION).trim() || DEFAULT_DBUS_VERSION;
-            return fetch(`../../map_files/${encodeURIComponent(safeVersion)}/DBus/lines.xml`, { cache: "no-store" });
+            return fetchDbusLinesXmlForVersion(version);
           })
           .then((res) => {
             if (!res || !res.ok) throw new Error("lines_xml_unavailable");

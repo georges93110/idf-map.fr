@@ -1190,6 +1190,9 @@
         if (stage) stage.classList.toggle("no-tilt", !useTilt3D);
       })();
       const MAP_FILES_ROOT = "../../map_files";
+      const DEV_MAP_MODE = QS.has("devmap") || QS.has("dev_map") || QS.has("nextversion");
+      const DEV_MAP_BASE_VERSION = "0.1.6a";
+      const DEV_MAP_LAYER_VERSION = "Dev";
       const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
 
       function parseVersion(value) {
@@ -1256,11 +1259,36 @@
       const dirVersions = loadVersionsFromDirectorySync(MAP_FILES_ROOT);
       const AVAILABLE_MAP_VERSIONS = getSortedAvailableVersions([...manifestVersions, ...dirVersions]);
       const latestVersion = selectLatestVersion(AVAILABLE_MAP_VERSIONS);
-      const SELECTED_VERSION = parsedForcedVersion ? parsedForcedVersion.raw : latestVersion;
-      const EFFECTIVE_VERSION = SELECTED_VERSION || "0.1.6a";
+      const SELECTED_VERSION = DEV_MAP_MODE ? DEV_MAP_BASE_VERSION : (parsedForcedVersion ? parsedForcedVersion.raw : latestVersion);
+      const EFFECTIVE_VERSION = SELECTED_VERSION || DEV_MAP_BASE_VERSION;
       const DATA_BASE = `${MAP_FILES_ROOT}/${EFFECTIVE_VERSION}`;
+      const DEV_DATA_BASE = `${MAP_FILES_ROOT}/${DEV_MAP_LAYER_VERSION}`;
       const TILE_BASE = `${DATA_BASE}/Tiles`;
+      const DEV_TILE_BASE = `${DEV_DATA_BASE}/Tiles`;
+      const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
       const dataPath = (file) => `${DATA_BASE}/${file}`;
+      function mapFileCandidatePaths(file) {
+        const clean = String(file || "").replace(/^\/+/, "");
+        const paths = [];
+        if (DEV_MAP_MODE) paths.push(`${DEV_DATA_BASE}/${clean}`);
+        paths.push(`${DATA_BASE}/${clean}`);
+        return paths;
+      }
+      async function fetchMapFile(file, options) {
+        let lastResponse = null;
+        let lastError = null;
+        for (const path of mapFileCandidatePaths(file)) {
+          try {
+            const response = await fetch(path, options);
+            if (response && response.ok) return response;
+            lastResponse = response;
+          } catch (err) {
+            lastError = err;
+          }
+        }
+        if (lastResponse) return lastResponse;
+        throw lastError || new Error(`Map file load failed: ${String(file || "")}`);
+      }
       const TARGET_CENTER_WORLD = {
         x: 3039.16,
         y: 11.731,
@@ -2953,7 +2981,7 @@
             return String(fallback || "").trim();
           };
           try {
-            const cityRes = await fetch(dataPath("Cities.json"), { cache: "no-store" });
+            const cityRes = await fetchMapFile("Cities.json", { cache: "no-store" });
             if (cityRes.ok) {
               const cityList = await cityRes.json();
               if (Array.isArray(cityList)) {
@@ -2973,7 +3001,7 @@
             }
           } catch { }
           try {
-            const stopsRes = await fetch(dataPath("DBus/stops.xml"), { cache: "no-store" });
+            const stopsRes = await fetchMapFile("DBus/stops.xml", { cache: "no-store" });
             if (stopsRes.ok) {
               const xmlRaw = await stopsRes.text();
               const xml = new DOMParser().parseFromString(xmlRaw, "text/xml");
@@ -2999,7 +3027,7 @@
             }
           } catch { }
           try {
-            const monumentRes = await fetch(dataPath("Monuments.json"), { cache: "no-store" });
+            const monumentRes = await fetchMapFile("Monuments.json", { cache: "no-store" });
             if (monumentRes.ok) {
               const monumentList = await monumentRes.json();
               if (Array.isArray(monumentList)) {
@@ -3018,7 +3046,7 @@
             }
           } catch { }
           try {
-            const mallsRes = await fetch(dataPath("CentreCommerciaux.json"), { cache: "no-store" });
+            const mallsRes = await fetchMapFile("CentreCommerciaux.json", { cache: "no-store" });
             if (mallsRes.ok) {
               const mallList = await mallsRes.json();
               if (Array.isArray(mallList)) {
@@ -3037,7 +3065,7 @@
             }
           } catch { }
           try {
-            const restaurantsRes = await fetch(dataPath(UBER_RESTAURANTS_FILE), { cache: "no-store" });
+            const restaurantsRes = await fetchMapFile(UBER_RESTAURANTS_FILE, { cache: "no-store" });
             if (restaurantsRes.ok) {
               const raw = await restaurantsRes.json();
               const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.restaurants) ? raw.restaurants : []);
@@ -3062,7 +3090,7 @@
             }
           } catch { }
           try {
-            const overlaysRes = await fetch(dataPath("Overlays.json"), { cache: "no-store" });
+            const overlaysRes = await fetchMapFile("Overlays.json", { cache: "no-store" });
             if (overlaysRes.ok) {
               const overlays = await overlaysRes.json();
               if (Array.isArray(overlays)) {
@@ -3782,7 +3810,7 @@
       function ensureLocalNavGraphLoaded() {
         if (localNavGraph) return Promise.resolve(localNavGraph);
         if (localNavGraphLoadPromise) return localNavGraphLoadPromise;
-        localNavGraphLoadPromise = fetch(dataPath("nav_graph.json"), { cache: "no-store" })
+        localNavGraphLoadPromise = fetchMapFile("nav_graph.json", { cache: "no-store" })
           .then((res) => {
             if (!res || !res.ok) throw new Error("nav_graph");
             return res.json();
@@ -4406,7 +4434,7 @@
         if (trafficAreasLoadingPromise) return trafficAreasLoadingPromise;
         trafficAreasLoadingPromise = (async () => {
           try {
-            const response = await fetch(dataPath("traffic_areas.json"), { cache: "no-store" });
+            const response = await fetchMapFile("traffic_areas.json", { cache: "no-store" });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const raw = await response.json();
             const areas = Array.isArray(raw) ? raw : (Array.isArray(raw?.areas) ? raw.areas : []);
@@ -5948,7 +5976,7 @@
         map.unproject(L.point(0, heightPx), maxNativeZoom),
         map.unproject(L.point(widthPx, 0), maxNativeZoom)
       );
-      baseTileLayer = L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, {
+      const baseTileLayerOptions = {
         tileSize: tileSize,
         className: "waze-tiles-bright",
         minNativeZoom: minNativeZoom,
@@ -5964,7 +5992,14 @@
         updateWhenZooming: false,  // Force le chargement pendant le zoom
         edgeBufferTiles: 3,        // Le plugin charge 3 rangées cachées d'avance
         keepBuffer: 12             // Garde en mémoire pour éviter de re-télécharger
-      }).addTo(map);
+      };
+      baseTileLayer = L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, baseTileLayerOptions).addTo(map);
+      if (DEV_MAP_MODE) {
+        L.tileLayer(`${DEV_TILE_BASE}/{z}/{x}/{y}.png`, {
+          ...baseTileLayerOptions,
+          errorTileUrl: TRANSPARENT_TILE_URL
+        }).addTo(map);
+      }
       scheduleLeafletRecoveryBurst();
       restoreZoomState();
       bindBridgeChannel();
@@ -5973,7 +6008,7 @@
       void ensureTrafficAreasLoaded();
       void ensureLocalNavGraphLoaded();
 
-      fetch(dataPath("TileMapInfo.json"))
+      fetchMapFile("TileMapInfo.json")
         .then((r) => {
           if (!r.ok) throw new Error("TileMapInfo");
           return r.json();

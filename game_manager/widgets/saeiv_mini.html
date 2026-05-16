@@ -1051,6 +1051,7 @@
       var params = new URLSearchParams(window.location.search || "");
       var hostParam = String(params.get("host") || "").trim().toLowerCase();
       var isHostedByGame = hostParam === "game" || hostParam === "1" || hostParam === "true";
+      var isDevMapMode = params.has("devmap") || params.has("dev_map") || params.has("nextversion");
       var sourceId = String(params.get("source") || "game").trim() || "game";
       var SAEIV_HOST_POLL_INTERVAL_MS = 140;
       var SAEIV_STATE_REQUEST_INTERVAL_MS = 1000;
@@ -1590,6 +1591,7 @@
         return 0;
       }
       function getLatestDbusVersionFromManifest() {
+        if (isDevMapMode) return Promise.resolve(DEFAULT_DBUS_VERSION);
         return fetch("../../map_files/versions.json", { cache: "no-store" })
           .then(function (res) {
             if (!res || !res.ok) return null;
@@ -1609,6 +1611,22 @@
             return parsed[parsed.length - 1].raw;
           })
           .catch(function () { return null; });
+      }
+      function fetchDbusLinesXmlForVersion(version) {
+        var safeVersion = String(version || DEFAULT_DBUS_VERSION).trim() || DEFAULT_DBUS_VERSION;
+        var paths = isDevMapMode
+          ? ["../../map_files/Dev/DBus/lines.xml", "../../map_files/" + safeVersion + "/DBus/lines.xml"]
+          : ["../../map_files/" + safeVersion + "/DBus/lines.xml"];
+        function tryPath(index) {
+          if (index >= paths.length) throw new Error("lines_xml_unavailable");
+          return fetch(paths[index], { cache: "no-store" }).then(function (res) {
+            if (res && res.ok) return res;
+            return tryPath(index + 1);
+          }).catch(function () {
+            return tryPath(index + 1);
+          });
+        }
+        return tryPath(0);
       }
       function buildRouteStopConfigIndexFromXml(xml) {
         var index = new Map();
@@ -1648,8 +1666,7 @@
         if (routeStopConfigLoadPromise) return routeStopConfigLoadPromise;
         routeStopConfigLoadPromise = getLatestDbusVersionFromManifest()
           .then(function (version) {
-            var safeVersion = String(version || DEFAULT_DBUS_VERSION).trim() || DEFAULT_DBUS_VERSION;
-            return fetch("../../map_files/" + safeVersion + "/DBus/lines.xml", { cache: "no-store" });
+            return fetchDbusLinesXmlForVersion(version);
           })
           .then(function (res) {
             if (!res || !res.ok) throw new Error("lines_xml_unavailable");
@@ -1878,7 +1895,10 @@
       }
       function isNonMandatoryStop(data, isAtStop, displayIndex) {
         void isAtStop;
-        if (hasStopOptionalPlan(data)) return data.stopOptionalByPlan === true;
+        if (hasStopOptionalPlan(data)) {
+          if (data.stopOptionalByPlan !== true) return false;
+          return !hasStopPassengerWork(data);
+        }
         if (hasStopPassengerWork(data)) return false;
         var lastIndex = Math.max(0, Math.floor(Number(data && data.routeStopCount) || 0) - 1);
         var idx = Number(displayIndex);
@@ -2270,6 +2290,16 @@
         var num = String(line && line.number || "").trim().toLowerCase();
         return /titus/i.test(num);
       }
+      function isNavetteNogentNumber(value) {
+        return /navette\s+de\s+nogent/i.test(String(value || "").trim());
+      }
+      function isNavetteNogentFromStateLine(line) {
+        if (isNavetteNogentNumber(line && line.number)) return true;
+        var routes = Array.isArray(line && line.routes) ? line.routes : [];
+        return routes.some(function (route) {
+          return isNavetteNogentNumber(route && route.name);
+        });
+      }
       function buildLineCategoryFromState(data) {
         var line = buildPseudoLineFromState(data);
         var number = String(line.number || "").trim();
@@ -2317,6 +2347,17 @@
             ]
           });
           container.appendChild(titusBadge.wrap);
+          host.appendChild(container);
+          return;
+        }
+        if (isNavetteNogentNumber(number) || isNavetteNogentFromStateLine(pseudoLine)) {
+          var navetteWrap = document.createElement("div");
+          navetteWrap.className = "network-badge network-badge-logo-only";
+          var navetteImg = document.createElement("img");
+          navetteImg.src = overlayPathForState(data, "navette_nogent.png");
+          navetteImg.alt = "Navette de Nogent";
+          navetteWrap.appendChild(navetteImg);
+          container.appendChild(navetteWrap);
           host.appendChild(container);
           return;
         }

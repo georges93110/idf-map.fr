@@ -134,6 +134,7 @@
         if (/^autocar\b/i.test(combined)) addLineStyleCandidate(candidates, seen, "Autocar");
         if (/^scolaire\b/i.test(combined)) addLineStyleCandidate(candidates, seen, "Scolaire");
         if (/^fictives?\b/i.test(combined)) addLineStyleCandidate(candidates, seen, "Fictives");
+        if (/navette\s+de\s+nogent/i.test(combined)) addLineStyleCandidate(candidates, seen, "Navette de Nogent");
         return candidates;
       }
       function normalizeLineStyleBoolean(raw, defaultValue) {
@@ -221,6 +222,10 @@
         var rawLineLabel = String(getDbusFisLineFolderName(line, route) || "").replace(/\s+/g, " ").trim();
         var lineCode = String(getDbusFisLineCode(line, route) || "").trim();
         var candidates = [];
+        if (/navette\s+de\s+nogent/i.test(rawLineLabel) || /navette\s+de\s+nogent/i.test(String(route && route.name || ""))) {
+          candidates.push("DÃ©part_NavetteDeNogent");
+          candidates.push("Depart_NavetteDeNogent");
+        }
         if (rawLineLabel) {
           candidates.push("Départ_" + rawLineLabel);
           candidates.push("Depart_" + rawLineLabel);
@@ -1325,8 +1330,11 @@
             return false;
           });
       }
-      function fetchXmlDoc(path) {
-        return fetch(path, { cache: "no-store" })
+      function fetchXmlDoc(path, version) {
+        var loader = version
+          ? fetchGameMapFile(path, version, { cache: "no-store" })
+          : fetch(path, { cache: "no-store" });
+        return loader
           .then(function (res) {
             if (!res || !res.ok) throw new Error("XML load failed: " + path);
             return res.text();
@@ -1416,10 +1424,9 @@
       function loadDbusDataForVersion(version) {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
-        var basePath = "../map_files/" + safeVersion + "/DBus";
         return Promise.all([
-          fetchXmlDoc(basePath + "/stops.xml"),
-          fetchXmlDoc(basePath + "/lines.xml")
+          fetchXmlDoc("DBus/stops.xml", safeVersion),
+          fetchXmlDoc("DBus/lines.xml", safeVersion)
         ]).then(function (list) {
           return {
             version: safeVersion,
@@ -1771,6 +1778,7 @@
           lineSelected: false,
           routeSelected: false,
           dbusVersion: String(dbusDataVersion || ""),
+          devMapMode: isGameDevMapModeEnabled(),
           steamid: readSaeivTelemetrySteamId(telemetryLastSignal),
           selectedKey: "",
           selectedLineUid: "",
@@ -2063,8 +2071,8 @@
           payload.plannedStopAlightingTotal = 0;
           payload.stopRequested = false;
           payload.stopNecessary = false;
-          payload.stopOptionalByPlan = true;
-          payload.stopOptionalByConfig = true;
+          payload.stopOptionalByPlan = false;
+          payload.stopOptionalByConfig = false;
         }
         var isActuallyAtTerminus = reachedIndex >= lastIndex ||
           (saeivStoppedAtStopIndex >= 0 && saeivStoppedAtStopIndex >= lastIndex);

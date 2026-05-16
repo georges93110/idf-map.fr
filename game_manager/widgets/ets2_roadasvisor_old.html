@@ -1087,6 +1087,16 @@
       const maxNativeZoom = 8;
       const widthPx = tileSize * Math.pow(2, maxNativeZoom);
       const heightPx = tileSize * Math.pow(2, maxNativeZoom);
+      const QS = new URLSearchParams(location.search || "");
+      const DEV_MAP_MODE = QS.has("devmap") || QS.has("dev_map") || QS.has("nextversion");
+      const MAP_FILES_ROOT = "../../map_files";
+      const DEV_MAP_BASE_VERSION = "0.1.6a";
+      const DEV_MAP_LAYER_VERSION = "Dev";
+      const DATA_BASE = `${MAP_FILES_ROOT}/${DEV_MAP_BASE_VERSION}`;
+      const DEV_DATA_BASE = `${MAP_FILES_ROOT}/${DEV_MAP_LAYER_VERSION}`;
+      const TILE_BASE = `${DATA_BASE}/Tiles`;
+      const DEV_TILE_BASE = `${DEV_DATA_BASE}/Tiles`;
+      const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
       let speedDisplayEmaKmh = NaN;
       let speedDisplayInt = 0;
       const speedDisplayEmaAlpha = 0.2;
@@ -1125,6 +1135,30 @@
         return speedDisplayInt;
       }
 
+      function mapFileCandidatePaths(file) {
+        const clean = String(file || "").replace(/^\/+/, "");
+        const paths = [];
+        if (DEV_MAP_MODE) paths.push(`${DEV_DATA_BASE}/${clean}`);
+        paths.push(`${DATA_BASE}/${clean}`);
+        return paths;
+      }
+
+      async function fetchMapFile(file, options) {
+        let lastResponse = null;
+        let lastError = null;
+        for (const path of mapFileCandidatePaths(file)) {
+          try {
+            const response = await fetch(path, options);
+            if (response && response.ok) return response;
+            lastResponse = response;
+          } catch (err) {
+            lastError = err;
+          }
+        }
+        if (lastResponse) return lastResponse;
+        throw lastError || new Error(`Map file load failed: ${String(file || "")}`);
+      }
+
       function initMap() {
         if (typeof L === 'undefined') {
           const mapEl = document.getElementById("wazeLeafletMap");
@@ -1148,16 +1182,23 @@
         });
 
         // Tiles
-        L.tileLayer('../../map_files/0.1.6a/Tiles/{z}/{x}/{y}.png', {
+        const baseTileLayerOptions = {
           tileSize: tileSize,
           minNativeZoom: 0,
           maxNativeZoom: 8,
           noWrap: true,
           crossOrigin: true
-        }).addTo(map);
+        };
+        L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, baseTileLayerOptions).addTo(map);
+        if (DEV_MAP_MODE) {
+          L.tileLayer(`${DEV_TILE_BASE}/{z}/{x}/{y}.png`, {
+            ...baseTileLayerOptions,
+            errorTileUrl: TRANSPARENT_TILE_URL
+          }).addTo(map);
+        }
 
         // Fetch Coord Info
-        fetch('../../map_files/0.1.6a/TileMapInfo.json')
+        fetchMapFile("TileMapInfo.json")
           .then(r => r.json())
           .then(info => {
             tileMapInfo = info;

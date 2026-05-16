@@ -3860,6 +3860,63 @@
           hidePlayerListHoldPopup();
         }
       });
+      (function installGameDevMapCheatShortcut() {
+        if (window.__idfGameDevMapCheatShortcutBound) return;
+        window.__idfGameDevMapCheatShortcutBound = true;
+        var pressed = Object.create(null);
+        var triggered = false;
+        function normalizeCheatKey(event) {
+          var code = String(event && event.code || "").toLowerCase();
+          if (code === "keya") return "a";
+          if (code === "keyn") return "n";
+          if (code === "keyy") return "y";
+          var key = String(event && event.key || "").toLowerCase();
+          if (key === "a" || key === "n" || key === "y") return key;
+          return "";
+        }
+        function resetCheatState() {
+          pressed = Object.create(null);
+          triggered = false;
+        }
+        function toggleDevMapFromCheat(event) {
+          if (triggered) return;
+          triggered = true;
+          if (event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+          var next = !isGameDevMapModeEnabled();
+          try {
+            if (typeof showOverlayNotification === "function") {
+              showOverlayNotification(
+                next ? "Mode dev activé" : "Mode dev désactivé",
+                next ? "Carte 0.1.6a + couche Dev. Rechargement..." : "Retour au mode carte standard. Rechargement...",
+                1800
+              );
+            }
+          } catch (errNotify) { }
+          setGameDevMapModeEnabled(next, { reload: true, delayMs: 300 });
+        }
+        window.addEventListener("keydown", function (event) {
+          var key = normalizeCheatKey(event);
+          if (!key) return;
+          pressed[key] = true;
+          if (!(event.ctrlKey || event.metaKey)) return;
+          event.preventDefault();
+          event.stopPropagation();
+          if (pressed.a && pressed.n && pressed.y) {
+            toggleDevMapFromCheat(event);
+          }
+        }, true);
+        window.addEventListener("keyup", function (event) {
+          var key = normalizeCheatKey(event);
+          if (key) delete pressed[key];
+          var rawKey = String(event && event.key || "").toLowerCase();
+          if (rawKey === "control" || rawKey === "meta") resetCheatState();
+          else if (!pressed.a && !pressed.n && !pressed.y) triggered = false;
+        }, true);
+        window.addEventListener("blur", resetCheatState);
+      })();
       window.addEventListener("keydown", function (event) {
         if (!telemetryConnected && event.key === "Enter") {
           event.preventDefault();

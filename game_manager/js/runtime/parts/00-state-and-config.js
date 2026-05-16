@@ -56,18 +56,107 @@
       // Uber Eats retire pour game2.
       var ENABLE_UBER_EATS_MODE = false;
       var GAME_MODE_STORAGE_KEY = "idf_game2_mode_v1";
+      var GAME_DEV_MAP_STORAGE_KEY = "idf_game2_dev_map_mode_v1";
+      var GAME_DEV_MAP_BASE_VERSION = "0.1.6a";
+      var GAME_DEV_MAP_LAYER_VERSION = "Dev";
       var GAME_MODES = {
         BUS: "bus",
         FREE: "free"
       };
       var WAZE_WIDGET_CACHE_BUSTER = "20260515-waze-route-fix";
+      function readGameDevMapModeFromQuery() {
+        try {
+          var params = new URLSearchParams(window.location.search || "");
+          if (params.has("devmap") || params.has("dev_map") || params.has("nextversion")) return true;
+          if (params.has("prodmap") || params.has("release_map")) return false;
+        } catch (err) { }
+        return null;
+      }
+      function readStoredGameDevMapMode() {
+        try {
+          var raw = String(localStorage.getItem(GAME_DEV_MAP_STORAGE_KEY) || "").trim().toLowerCase();
+          if (raw === "1" || raw === "true" || raw === "on") return true;
+          if (raw === "0" || raw === "false" || raw === "off") return false;
+        } catch (err) { }
+        return false;
+      }
+      var queryGameDevMapMode = readGameDevMapModeFromQuery();
+      var gameDevMapMode = queryGameDevMapMode === null ? readStoredGameDevMapMode() : queryGameDevMapMode;
+      try { window.GAME2_DEV_MAP_MODE = gameDevMapMode === true; } catch (errDevMapGlobal) { }
+      function isGameDevMapModeEnabled() {
+        return gameDevMapMode === true;
+      }
+      function setGameDevMapModeEnabled(enabled, options) {
+        var opts = options && typeof options === "object" ? options : {};
+        gameDevMapMode = enabled === true;
+        try { localStorage.setItem(GAME_DEV_MAP_STORAGE_KEY, gameDevMapMode ? "1" : "0"); } catch (err) { }
+        try { window.GAME2_DEV_MAP_MODE = gameDevMapMode; } catch (errGlobal) { }
+        if (document && document.body) {
+          document.body.classList.toggle("is-dev-map-mode", gameDevMapMode);
+        }
+        if (opts.reload === true) {
+          window.setTimeout(function () {
+            try { window.location.reload(); } catch (errReload) { }
+          }, Math.max(0, Number(opts.delayMs) || 250));
+        }
+        return gameDevMapMode;
+      }
+      function buildWidgetUrl(path) {
+        var url = new URL(path, location.href);
+        if (isGameDevMapModeEnabled()) url.searchParams.set("devmap", "1");
+        return url.href;
+      }
+      function normalizeGameMapFilePath(file) {
+        return String(file || "").replace(/^\/+/, "");
+      }
+      function gameMapFilePathForVersion(version, file) {
+        var clean = normalizeGameMapFilePath(file);
+        var safeVersion = String(version || "").trim();
+        if (!safeVersion) safeVersion = GAME_DEV_MAP_BASE_VERSION;
+        if (safeVersion === GAME_DEV_MAP_LAYER_VERSION) return "../map_files/" + GAME_DEV_MAP_LAYER_VERSION + "/" + clean;
+        return "../map_files/" + safeVersion + "/" + clean;
+      }
+      function gameMapCandidateVersions(primaryVersion) {
+        if (isGameDevMapModeEnabled()) {
+          return [GAME_DEV_MAP_LAYER_VERSION, GAME_DEV_MAP_BASE_VERSION];
+        }
+        var out = [];
+        var primary = String(primaryVersion || "").trim();
+        if (primary) out.push(primary);
+        if (out.indexOf(GAME_DEV_MAP_BASE_VERSION) === -1) out.push(GAME_DEV_MAP_BASE_VERSION);
+        return out;
+      }
+      function fetchGameMapFile(file, primaryVersion, options) {
+        var candidates = gameMapCandidateVersions(primaryVersion);
+        var opts = options && typeof options === "object" ? options : { cache: "no-store" };
+        var lastResponse = null;
+        var lastError = null;
+        function tryCandidate(index) {
+          if (index >= candidates.length) {
+            if (lastResponse) return Promise.resolve(lastResponse);
+            return Promise.reject(lastError || new Error("Map file load failed: " + normalizeGameMapFilePath(file)));
+          }
+          var url = gameMapFilePathForVersion(candidates[index], file);
+          return fetch(url, opts)
+            .then(function (res) {
+              if (res && res.ok) return res;
+              lastResponse = res;
+              return tryCandidate(index + 1);
+            })
+            .catch(function (err) {
+              lastError = err;
+              return tryCandidate(index + 1);
+            });
+        }
+        return tryCandidate(0);
+      }
       var TYPES = {
-        saeiv: { label: "SAEIV", url: new URL("widgets/saeiv.html?dev=1&host=game&source=game", location.href).href },
-        saeiv_mini: { label: "HUD Ligne Simple", url: new URL("widgets/saeiv_mini.html?host=game&source=game", location.href).href },
-        bus_status: { label: "Statut Embarquement", url: new URL("widgets/bus_status.html?host=game&source=game", location.href).href },
-        waze: { label: "GPS Waze", url: new URL("widgets/waze.html?host=game&asset=" + WAZE_WIDGET_CACHE_BUSTER, location.href).href },
-        gps_mini: { label: "GPS Mini", url: new URL("widgets/gps_mini.html?host=game", location.href).href },
-        gps_ets2_old: { label: "GPS ETS 2 Ancien", url: new URL("widgets/ets2_roadasvisor_old.html?host=game", location.href).href }
+        saeiv: { label: "SAEIV", url: buildWidgetUrl("widgets/saeiv.html?dev=1&host=game&source=game") },
+        saeiv_mini: { label: "HUD Ligne Simple", url: buildWidgetUrl("widgets/saeiv_mini.html?host=game&source=game") },
+        bus_status: { label: "Statut Embarquement", url: buildWidgetUrl("widgets/bus_status.html?host=game&source=game") },
+        waze: { label: "GPS Waze", url: buildWidgetUrl("widgets/waze.html?host=game&asset=" + WAZE_WIDGET_CACHE_BUSTER) },
+        gps_mini: { label: "GPS Mini", url: buildWidgetUrl("widgets/gps_mini.html?host=game") },
+        gps_ets2_old: { label: "GPS ETS 2 Ancien", url: buildWidgetUrl("widgets/ets2_roadasvisor_old.html?host=game") }
       };
 
       var TYPE_ASPECT_RATIO = {
@@ -523,7 +612,7 @@
       var WAZE_BRIDGE_WS_MIN_SEND_INTERVAL_MS = 120;
       var SAEIV_SOURCE_ID = "game";
       var SAEIV_STATE_SYNC_MIN_INTERVAL_MS = 220;
-      var DBUS_GAME_FALLBACK_VERSION = "0.1.6a";
+      var DBUS_GAME_FALLBACK_VERSION = GAME_DEV_MAP_BASE_VERSION;
       var SAEIV_STOP_REACH_DISTANCE = 10;
       var SAEIV_STOP_DWELL_REACH_DISTANCE = 22;
       var SAEIV_STOP_ANNOUNCE_DISTANCE = 75;

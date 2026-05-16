@@ -139,6 +139,7 @@
         return 0;
       }
       function loadBestNavGraphVersion() {
+        if (isGameDevMapModeEnabled()) return Promise.resolve(GAME_DEV_MAP_BASE_VERSION);
         return fetch("../map_files/versions.json", { cache: "no-store" })
           .then(function (res) {
             if (!res || !res.ok) return null;
@@ -162,7 +163,7 @@
       function loadNavBridgesForVersion(version) {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
-        return fetch("../map_files/" + safeVersion + "/nav_bridges.json", { cache: "no-store" })
+        return fetchGameMapFile("nav_bridges.json", safeVersion, { cache: "no-store" })
           .then(function (res) {
             if (!res || !res.ok) throw new Error("nav_bridges");
             return res.json();
@@ -262,7 +263,7 @@
       function loadNavStopLinksForVersion(version) {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
-        return fetch("../map_files/" + safeVersion + "/nav_stop_links.json", { cache: "no-store" })
+        return fetchGameMapFile("nav_stop_links.json", safeVersion, { cache: "no-store" })
           .then(function (res) {
             if (!res || !res.ok) throw new Error("nav_stop_links");
             return res.json();
@@ -1474,11 +1475,11 @@
             var candidates = [];
             var primary = String(version || "").trim();
             if (primary) candidates.push(primary);
-            if (candidates.indexOf("0.1.6a") === -1) candidates.push("0.1.6a");
+            if (candidates.indexOf(GAME_DEV_MAP_BASE_VERSION) === -1) candidates.push(GAME_DEV_MAP_BASE_VERSION);
             function tryFetch(index) {
               if (index >= candidates.length) throw new Error("nav_graph");
               var safeVersion = candidates[index];
-              return fetch("../map_files/" + safeVersion + "/nav_graph.json", { cache: "no-store" })
+              return fetchGameMapFile("nav_graph.json", safeVersion, { cache: "no-store" })
                 .then(function (res) {
                   if (!res || !res.ok) throw new Error("nav_graph");
                   return res.json();

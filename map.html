@@ -1221,6 +1221,12 @@
       justify-content: start;
       align-items: start;
     }
+    .dbus-grid--other-networks{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:8px;
+    }
     .dbus-double {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -1237,12 +1243,15 @@
       word-break: break-word;
     }
     .line-block{display:flex;flex-direction:column;align-items:flex-start}
-    .line-block--titus{width:70px}
+    .line-block--titus,
+    .line-block--network-logo{width:70px}
     .line-block--scolaire{width:70px}
     .dbus-logo{width:88px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid #2c2c2c;background:#303030;color:#fff;font-weight:800;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04)}
-    .dbus-logo--titus{border:none;background:transparent;box-shadow:none}
+    .dbus-logo--titus,
+    .dbus-logo--network-logo{border:none;background:transparent;box-shadow:none}
     .dbus-logo--scolaire{border:none;background:transparent;box-shadow:none}
-    .line-block--titus .dbus-logo--titus{width:70px;height:36px}
+    .line-block--titus .dbus-logo--titus,
+    .line-block--network-logo .dbus-logo--network-logo{width:70px;height:36px}
     .line-block--scolaire .dbus-logo--scolaire{width:36px;height:36px}
     .dbus-rer-lines-row{
       display:flex;
@@ -1339,6 +1348,7 @@
     .dbus-item.dbus-item-rer .dbus-route-logo + .dbus-route-logo{margin-left:0}
     .dbus-item.dbus-item-rer .dbus-route-logo + .badge{margin-left:0}
     .dbus-route-logo{width:46px;height:26px;object-fit:contain;flex:0 0 auto}
+    .dbus-route-logo-network{width:70px}
     .dbus-route-logo.dbus-route-logo-rer{width:26px;height:26px}
     .dbus-item.dbus-item-rer .dbus-route-logo-bus{display:none}
     .dbus-route-logo + .dbus-route-logo{margin-left:6px}
@@ -4115,6 +4125,7 @@
     if (key === "noctilien") return translatedNightBusLabel();
     if (key === "replacement_bus") return t("dbus_sub_replacement_bus");
     if (key === "other_networks") return t("dbus_sub_other_networks");
+    if (key === "OtherNetwork") return t("dbus_sub_other_networks");
     if (key === "others") return localizedLabel(AUTOCAR_BADGE_LABELS, "Autocar");
     if (key === "Scolaire") return translateBadgeToken("Scolaire");
     if (key === "Speciaux") return t("dbus_special_toggle");
@@ -4946,6 +4957,8 @@
     const DEV_LOCAL_ONLY = DEV_MODE && isStrictLocalRuntime();
     const DEV_LINES_EDITOR_ENABLED = false;
     const DEV_GRAPH = QS.has("dev_graph");
+    const NEXT_VERSION_MODE = QS.has("nextversion");
+    const NEXT_VERSION_BASE_VERSION = "0.1.6a";
     const DEV_NAV_POINTS_DEBUG = DEV_MODE || DEV_GRAPH;
     const DEV_NAV_BRIDGES_DEBUG = DEV_GRAPH || QS.has("dev_bridges");
     const MAP_FILES_ROOT = "./map_files";
@@ -5012,7 +5025,7 @@
     const dirVersions = [];
     const AVAILABLE_MAP_VERSIONS = getSortedAvailableVersions([...manifestVersions, ...dirVersions]);
     const latestVersion = selectLatestVersion(AVAILABLE_MAP_VERSIONS);
-    const SELECTED_VERSION = parsedForcedVersion ? parsedForcedVersion.raw : latestVersion;
+    const SELECTED_VERSION = NEXT_VERSION_MODE ? NEXT_VERSION_BASE_VERSION : (parsedForcedVersion ? parsedForcedVersion.raw : latestVersion);
     if (QS.has("version") || QS.has("v")) {
       try {
         const cleanUrl = new URL(location.href);
@@ -5022,11 +5035,37 @@
       } catch {}
     }
     const DATA_BASE = SELECTED_VERSION ? `${MAP_FILES_ROOT}/${SELECTED_VERSION}` : MAP_FILES_ROOT;
+    const DEV_DATA_BASE = `${MAP_FILES_ROOT}/Dev`;
     const OVERLAY_BASE = `${DATA_BASE}/Overlays`;
     const TILE_BASE = `${DATA_BASE}/Tiles`;
+    const DEV_TILE_BASE = `${DEV_DATA_BASE}/Tiles`;
+    const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
     const DBUS_BASE = `${DATA_BASE}/DBus`;
     const dataPath = (file) => `${DATA_BASE}/${file}`;
     const overlayPath = (file) => `${OVERLAY_BASE}/${file}`;
+    function mapFileCandidatePaths(file){
+      const clean = String(file || "").replace(/^\/+/, "");
+      const paths = [];
+      if (NEXT_VERSION_MODE) paths.push(`${DEV_DATA_BASE}/${clean}`);
+      paths.push(`${DATA_BASE}/${clean}`);
+      return paths;
+    }
+    async function fetchMapFile(file, options){
+      let lastResponse = null;
+      let lastError = null;
+      const candidates = mapFileCandidatePaths(file);
+      for (const path of candidates) {
+        try {
+          const response = await fetch(path, options);
+          if (response && response.ok) return response;
+          lastResponse = response;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      if (lastResponse) return lastResponse;
+      throw lastError || new Error(`Map file load failed: ${String(file || "")}`);
+    }
     function updateMapVersionSettingsUI(){
       const section = document.getElementById("settingsMapVersionSection");
       const title = document.getElementById("settingsMapVersionTitle");
@@ -5235,16 +5274,23 @@
     updateCustomScale();
 
 
-    L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`,{
+    const baseTileLayerOptions = {
       tileSize,minNativeZoom,maxNativeZoom,maxZoom:maxNativeZoom+2,
       noWrap:true,bounds:fullBounds,crossOrigin:true,referrerPolicy:"no-referrer",
       updateWhenIdle:false,updateWhenZooming:true,keepBuffer:3
-    }).addTo(map);
+    };
+    L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, baseTileLayerOptions).addTo(map);
+    if (NEXT_VERSION_MODE) {
+      L.tileLayer(`${DEV_TILE_BASE}/{z}/{x}/{y}.png`, {
+        ...baseTileLayerOptions,
+        errorTileUrl: TRANSPARENT_TILE_URL
+      }).addTo(map);
+    }
     function applyBounds(){const ib=innerBounds(MARGIN);map.setMaxBounds(ib);map.panInsideBounds(ib,{animate:false});}
     map.fitBounds(innerBounds(MARGIN),{animate:false});applyBounds();map.on('zoomend resize',applyBounds);
 
     let TileMapInfo;
-    const tileInfoReady = fetch(dataPath("TileMapInfo.json")).then(r=>{ if(!r.ok) throw new Error('TileMapInfo'); return r.json(); }).then(info => (TileMapInfo = info));
+    const tileInfoReady = fetchMapFile("TileMapInfo.json").then(r=>{ if(!r.ok) throw new Error('TileMapInfo'); return r.json(); }).then(info => (TileMapInfo = info));
     const OX = parseFloat(QS.get('ox') ?? '0');
     const OY = parseFloat(QS.get('oy') ?? '0');
     const SX = parseFloat(QS.get('sx') ?? '1');
@@ -5883,7 +5929,7 @@
       } catch {}
     }
 
-    tileInfoReady.then(()=> fetch(dataPath("Cities.json"))).then(r=>r.json()).then(cities=>{
+    tileInfoReady.then(()=> fetchMapFile("Cities.json")).then(r=>r.json()).then(cities=>{
       cities.forEach(city=>{
         const icon=L.divIcon({className:"",html:`<span class="city-label">${city.Name}</span>`,iconSize:[0,0]});
         const m=L.marker(toLatLng(city.X,city.Y),{icon,interactive:true,bubblingMouseEvents:true}).addTo(cityLayer);
@@ -5951,7 +5997,7 @@
     }
 
     tileInfoReady
-      .then(() => fetch(dataPath("CentreCommerciaux.json")))
+      .then(() => fetchMapFile("CentreCommerciaux.json"))
       .then(r => r.ok ? r.json() : Promise.reject("CentreCommerciaux.json"))
       .then(malls => {
         malls.forEach(ov => {
@@ -6064,7 +6110,7 @@
       })
       .catch(err => console.error("CentreCommerciaux.json error:", err));
 
-    tileInfoReady.then(()=> fetch(dataPath("Overlays.json"))).then(r=>r.json()).then(overlays=>{
+    tileInfoReady.then(()=> fetchMapFile("Overlays.json")).then(r=>r.json()).then(overlays=>{
       overlays.forEach(ov=>{
         const width = MAP_ICON_UNIFORM_SIZE;
         const height = MAP_ICON_UNIFORM_SIZE;
@@ -6228,7 +6274,7 @@
 
 
   tileInfoReady
-  .then(() => fetch(dataPath("Monuments.json")))
+  .then(() => fetchMapFile("Monuments.json"))
   .then(r => r.ok ? r.json() : Promise.reject("Monuments.json"))
   .then(monuments => {
     monuments.forEach(ov => {
@@ -6396,7 +6442,8 @@
       nodeLayer: null,
       nodePoints: [],
       incomingByNode: new Map(),
-      clickBound: false
+      clickBound: false,
+      lastToggleAt: 0
     };
     const DEV_TRAFFIC_AREAS_STATE = {
       enabled: false,
@@ -6499,6 +6546,13 @@
     async function fetchXml(path){
       const res = await fetch(path);
       if(!res.ok) throw new Error("XML load failed: "+path);
+      const txt = await res.text();
+      const parser = new DOMParser();
+      return parser.parseFromString(txt, "text/xml");
+    }
+    async function fetchMapXml(file){
+      const res = await fetchMapFile(file, { cache: "no-store" });
+      if(!res.ok) throw new Error("XML load failed: "+file);
       const txt = await res.text();
       const parser = new DOMParser();
       return parser.parseFromString(txt, "text/xml");
@@ -7038,10 +7092,10 @@
     }
     async function loadCurrentLinesXmlIntoEditor(){
       if (!DEV_LOCAL_ONLY) return;
-      const targetUrl = `${dbusRoot}/lines.xml`;
+      const targetUrl = "DBus/lines.xml";
       try {
         setDevLinesEditorStatus(`Chargement ${targetUrl}...`);
-        const response = await fetch(targetUrl, { cache: "no-store" });
+        const response = await fetchMapFile(targetUrl, { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const xmlText = await response.text();
         setDevLinesEditorDocFromText(xmlText, { sourceLabel: targetUrl });
@@ -7405,6 +7459,10 @@
         String(line?.number || "").match(/^titus\s*([0-9a-z]+)/i);
       if (titusMatch?.[1]) {
         pushSpecial(String(titusMatch[1] || "").trim(), "Titus");
+      }
+      if (isNavetteNogentToken(lineToken) || isNavetteNogentToken(fallbackLineNumber) || isNavetteNogentToken(routeName) || isNavetteNogentLine(line)) {
+        candidates.push("Départ_NavetteDeNogent");
+        candidates.push("Depart_NavetteDeNogent");
       }
       if (rawLineLabel) {
         candidates.push(`Départ_${rawLineLabel}`);
@@ -9274,7 +9332,7 @@
     function isDbusLineVisibleForStopMarkers(line){
       const cat = getCategory(line);
       if (!showSchoolLines && cat === "Scolaire") return false;
-      if (!showFictiveLines && cat === "Autres") return false;
+      if (!showFictiveLines && cat === "Autres" && !isOtherNetworkLine(line)) return false;
       if (!showSpecialLines && cat === "Speciaux") return false;
       return true;
     }
@@ -9325,6 +9383,11 @@
       const lineNum = String(getLineNumber(entry.line, entry.route) || "").trim();
       return isTitusLine(entry.line) || /^titus\s*\d+/i.test(lineNum);
     }
+    function getStopEntryNetworkLogo(entry){
+      if (!entry?.line) return null;
+      const lineNum = String(getLineNumber(entry.line, entry.route) || "").trim();
+      return getOtherNetworkLogoMeta(entry.line, lineNum);
+    }
     function getStopBadgeSize(label){
       const raw = String(label || "").trim();
       if (/^express\b/i.test(raw)) return "128x26";
@@ -9372,7 +9435,8 @@
       return "Fictive";
     }
     function getStopEntryVisual(entry){
-      if (isTitusEntry(entry)) return { kind: "none" };
+      const networkLogo = getStopEntryNetworkLogo(entry);
+      if (networkLogo) return { kind: "logo", ...networkLogo };
       const cat = getCategory(entry?.line);
       if (cat === "Scolaire") return { kind: "school" };
 
@@ -9496,18 +9560,18 @@
           badges.appendChild(schoolLogo);
           return;
         }
-        if (visual.kind === "none") {
-          const titusLogo = document.createElement("img");
-          titusLogo.className = "dbus-stop-lines-logo";
-          titusLogo.src = overlayPath("reseau_titus.png");
-          titusLogo.alt = "Reseau Titus";
-          titusLogo.style.cursor = "pointer";
-          titusLogo.addEventListener("click", (event) => {
+        if (visual.kind === "logo") {
+          const networkLogo = document.createElement("img");
+          networkLogo.className = "dbus-stop-lines-logo";
+          networkLogo.src = visual.src;
+          networkLogo.alt = visual.alt;
+          networkLogo.style.cursor = "pointer";
+          networkLogo.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
             activate();
           });
-          badges.appendChild(titusLogo);
+          badges.appendChild(networkLogo);
           return;
         }
         if (visual.kind !== "badge") return;
@@ -9583,7 +9647,7 @@
     map.on("zoomend", refreshDbusStopMarkerScale);
     async function loadStops(){
       await tileInfoReady;
-      const xml = await fetchXml(`${dbusRoot}/stops.xml`);
+      const xml = await fetchMapXml("DBus/stops.xml");
       const nodes = [...xml.querySelectorAll("busstops > busstop")];
       DBUS_STOPS = new Map(nodes.map(node=>{
         const id = parseInt(node.querySelector("id")?.textContent.trim()||"0",10);
@@ -9604,7 +9668,7 @@
 
     let DBUS_LINES = [];
     async function loadLines(){
-      const xml = await fetchXml(`${dbusRoot}/lines.xml`);
+      const xml = await fetchMapXml("DBus/lines.xml");
       const seenLineUids = new Map();
       DBUS_LINES = [...xml.querySelectorAll("lines > line")].map((line, lineIndex) => {
         const rawUid = String(line.getAttribute("uid") || "").trim();
@@ -9813,7 +9877,7 @@
       resetDbusNavGraphState();
       let res;
       try {
-        res = await fetch(dataPath("nav_graph.json"), { cache: "no-store" });
+        res = await fetchMapFile("nav_graph.json", { cache: "no-store" });
       } catch {
         return;
       }
@@ -9841,7 +9905,7 @@
       resetDbusNavBridgeState();
       let res;
       try {
-        res = await fetch(dataPath("nav_bridges.json"), { cache: "no-store" });
+        res = await fetchMapFile("nav_bridges.json", { cache: "no-store" });
       } catch {
         return;
       }
@@ -10764,7 +10828,7 @@
       DEV_TRAFFIC_AREAS_STATE.loading = true;
       updateDevNavDebugUIState();
       try {
-        const res = await fetch(dataPath("traffic_areas.json"), { cache: "no-store" });
+        const res = await fetchMapFile("traffic_areas.json", { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const raw = await res.json();
         DEV_TRAFFIC_AREAS_STATE.areas = Array.isArray(raw)
@@ -11027,7 +11091,7 @@
       updateDevNavDebugUIState();
       DEV_UBER_RESTAURANTS_STATE.loadPromise = (async () => {
         try {
-          const res = await fetch(dataPath("uber_eats_restaurants.json"), { cache: "no-store" });
+          const res = await fetchMapFile("uber_eats_restaurants.json", { cache: "no-store" });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const payloadText = await res.text();
           const raw = parseDevUberRestaurantsPayload(payloadText);
@@ -11137,8 +11201,20 @@
           closeDevLinesEditor();
         }
       });
-      $btnDevNavPointsToggle.addEventListener("click", () => {
-        if (DEV_GRAPH_STATE.enabled || DEV_GRAPH_STATE.pendingEnable) {
+      $btnDevNavPointsToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const now = Date.now();
+        if (now - Number(DEV_GRAPH_STATE.lastToggleAt || 0) < 300) {
+          updateDevNavDebugUIState();
+          return;
+        }
+        DEV_GRAPH_STATE.lastToggleAt = now;
+        if (DEV_GRAPH_STATE.pendingEnable && !DEV_GRAPH_STATE.enabled) {
+          updateDevNavDebugUIState();
+          return;
+        }
+        if (DEV_GRAPH_STATE.enabled) {
           disableDevGraphOverlay();
           return;
         }
@@ -13388,7 +13464,29 @@
         previewBadgeChip = badge;
       }
 
-      if (mTitusLP) {
+      function applyLogoOnlyNetworkToPreview(meta){
+        badge.innerHTML = "";
+        badge.className = "lp-badge-wrapper";
+        badge.style.background = "transparent";
+        badge.style.color = "#fff";
+        badge.dataset.networkBadge = "true";
+        delete badge.dataset.badgeRaw;
+        const wrap = document.createElement("div");
+        wrap.className = "network-badge network-badge-logo-only";
+        const img = document.createElement("img");
+        img.src = meta.src;
+        img.alt = meta.alt;
+        wrap.appendChild(img);
+        badge.appendChild(wrap);
+        previewBadgeChip = badge;
+      }
+
+      const navettePreviewLogo = (isNavetteNogentToken(lineNumber) || isNavetteNogentLine(line))
+        ? getOtherNetworkLogoMeta(line, lineNumber)
+        : null;
+      if (navettePreviewLogo) {
+        applyLogoOnlyNetworkToPreview(navettePreviewLogo);
+      } else if (mTitusLP) {
         applyNetworkBadgeToPreview({
           label: mTitusLP[1],
           imgSrc: overlayPath("reseau_titus.png"),
@@ -13938,7 +14036,7 @@
           const line = DBUS_LINES.find(l => String(l.uid) === String(selectedLineUid));
           const cat = line ? getCategory(line) : "";
           if (!showSchoolLines && cat === "Scolaire") clearDbusSelection();
-          if (!showFictiveLines && cat === "Autres") clearDbusSelection();
+          if (!showFictiveLines && cat === "Autres" && !isOtherNetworkLine(line)) clearDbusSelection();
           if (!showSpecialLines && cat === "Speciaux") clearDbusSelection();
         } catch {}
       }
@@ -14493,6 +14591,39 @@
       const num = String(line.number||"").trim().toLowerCase();
       return /titus/i.test(num);
     }
+    function isNavetteNogentToken(value){
+      return /navette\s+de\s+nogent/i.test(String(value || "").trim());
+    }
+    function isNavetteNogentLine(line){
+      if (!line) return false;
+      if (isNavetteNogentToken(line.number)) return true;
+      return (line.routes || []).some(route => isNavetteNogentToken(route?.name));
+    }
+    function getOtherNetworkLogoMeta(line, rawLineNumber = ""){
+      const raw = String(rawLineNumber || "").trim();
+      if (isNavetteNogentToken(raw) || isNavetteNogentLine(line)) {
+        return {
+          key: "navette_nogent",
+          src: overlayPath("navette_nogent.png"),
+          alt: "Navette de Nogent",
+          className: "dbus-logo--network-logo dbus-logo--navette-nogent",
+          logoOnly: true
+        };
+      }
+      if (/^titus\s*\d+/i.test(raw) || isTitusLine(line)) {
+        return {
+          key: "titus",
+          src: overlayPath("reseau_titus.png"),
+          alt: "Reseau Titus",
+          className: "dbus-logo--network-logo dbus-logo--titus",
+          logoOnly: false
+        };
+      }
+      return null;
+    }
+    function isOtherNetworkLine(line){
+      return !!getOtherNetworkLogoMeta(line);
+    }
     function getCategory(line){
       if (isNoctilien(line))          return "Noctilien";
       if (isReplacementBus(line))     return "Speciaux";
@@ -14533,7 +14664,7 @@
       return total + scolaireLines.size;
     }
 
-    const DEPART_CATEGORY_ORDER = ["Urbain", "Noctilien", "Speciaux", "FlixBus", "Scolaire", "Autres"];
+    const DEPART_CATEGORY_ORDER = ["Urbain", "Noctilien", "Speciaux", "FlixBus", "OtherNetwork", "Scolaire", "Autres"];
     function dbusSectionHeadHTML(key, count){
       const safeCount = Number.isFinite(Number(count)) ? Number(count) : 0;
       if (key === "Scolaire") {
@@ -14555,11 +14686,12 @@
         "Noctilien": [],
         "Speciaux": [],
         "FlixBus": [],
+        "OtherNetwork": [],
         "Scolaire": [],
         "Autres": []
       };
       entries.forEach(entry => {
-        const cat = getCategory(entry.line);
+        const cat = isOtherNetworkLine(entry.line) ? "OtherNetwork" : getCategory(entry.line);
         if (buckets[cat]) buckets[cat].push(entry);
       });
       return buckets;
@@ -14615,13 +14747,13 @@
       if (!showLogo) return;
       const rawLineNumber = String(lineNumber || line.number || "").trim();
       const isNoct = isNoctilien2(rawLineNumber);
-      const isTitusLogo = /^titus\s*(\d+)/i.test(rawLineNumber) || isTitusLine(line);
+      const networkLogo = getOtherNetworkLogoMeta(line, rawLineNumber);
       const cat = getCategory(line);
       const isRerCategory = cat === "Speciaux";
       const specialMeta = getSpecialBadgeMeta(rawLineNumber);
       const logos = [];
-      if (isTitusLogo) {
-        logos.push({ src: overlayPath("reseau_titus.png"), alt: "Reseau Titus" });
+      if (networkLogo) {
+        logos.push({ src: networkLogo.src, alt: networkLogo.alt, networkKey: networkLogo.key });
       } else if (isNoct) {
         logos.push({ src: overlayPath("noctilien_logo_idfm.png"), alt: "Noctilien" });
       } else if (cat === "Scolaire") {
@@ -14634,12 +14766,13 @@
         logos.push({ src: overlayPath("bus_logo_idfm.png"), alt: "IDFM" });
       }
       if (!logos.length) return;
-      logos.forEach(({ src, alt }) => {
+      logos.forEach(({ src, alt, networkKey }) => {
         const logo = document.createElement("img");
         logo.className = "dbus-route-logo";
         if (isRerCategory) logo.classList.add("dbus-route-logo-rer");
         if (isRerCategory && specialMeta.kind === "metro") logo.classList.add("dbus-route-logo-metro");
         if (src.includes("bus_logo_idfm.png")) logo.classList.add("dbus-route-logo-bus");
+        if (networkKey) logo.classList.add("dbus-route-logo-network");
         logo.src = src;
         logo.alt = alt;
         item.appendChild(logo);
@@ -14654,6 +14787,7 @@
       const { titleEnd } = getRouteEndpoints(route);
       const mTitus = /^titus\s*(\d+)/i.exec(String(lineNumber||""));
       const lineCategory = getCategory(line);
+      const isNavetteNogentItem = isNavetteNogentToken(lineNumber) || isNavetteNogentLine(line);
       const isRerLine = lineCategory === "Speciaux";
       const specialKind = isRerLine
         ? (getSpecialBadgeKind(lineNumber) || getSpecialBadgeKind(getLineNumber(line, route)) || getSpecialBadgeKind(String(line?.number || "")) || "rer")
@@ -14663,7 +14797,7 @@
       if (lineCategory === "Speciaux") displayNumber = getSpecialBadgeLabel(displayNumber);
       const isScolaire = lineCategory === "Scolaire";
       const badgeSize = lineCategory === "Speciaux" ? getRerRouteBadgeSize() : routeBadgeSizeFor(displayNumber);
-      const badge = isScolaire ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
+      const badge = (isScolaire || isNavetteNogentItem) ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
       if (badge && isRerLine) {
         badge.classList.add("badge-rer");
         if (specialKind === "metro") badge.classList.add("badge-metro");
@@ -14914,7 +15048,7 @@
       DBUS_LINES.forEach((line, lineIdx) => {
         const cat = getCategory(line);
         if (!showSchoolLines && cat === "Scolaire") return;
-        if (!showFictiveLines && cat === "Autres") return;
+        if (!showFictiveLines && cat === "Autres" && !isOtherNetworkLine(line)) return;
         if (!showSpecialLines && cat === "Speciaux") return;
         line.routes.forEach(route => {
           const firstStopId = route.stops[0]?.uid;
@@ -15083,7 +15217,7 @@
         DBUS_LINES.forEach(line => {
           const cat = getCategory(line);
           if (!showSchoolLines && cat === "Scolaire") return;
-          if (!showFictiveLines && cat === "Autres") return;
+          if (!showFictiveLines && cat === "Autres" && !isOtherNetworkLine(line)) return;
           if (!showSpecialLines && cat === "Speciaux") return;
           buckets[cat].push(line);
         });
@@ -15104,7 +15238,7 @@
         DBUS_LINES.forEach(line => {
           const cat = getCategory(line);
           if (!showSchoolLines && cat === "Scolaire") return;
-          if (!showFictiveLines && cat === "Autres") return;
+          if (!showFictiveLines && cat === "Autres" && !isOtherNetworkLine(line)) return;
           if (!showSpecialLines && cat === "Speciaux") return;
           line.routes.forEach(route => buckets[cat].push({ line, route }));
         });
@@ -15359,7 +15493,7 @@
 
         function selectionColorForLine(line) {
           const rawNum = String(line.number || "").trim();
-          if (isTitusLine(line)) return "#ffffff";
+          if (isOtherNetworkLine(line)) return "#ffffff";
           if (/^N\d+$/i.test(rawNum)) return noctilienStripeColor(rawNum);
           if (line && line.__isExpressGroup) {
             const [bg] = getLineColorsSync(line.__expressColorKey || `Express ${rawNum}`);
@@ -15411,17 +15545,18 @@
             return wrap;
           }
 
-          if (isTitusLine(line)) {
-            wrap.classList.add("dbus-logo--titus");
+          const networkLogo = getOtherNetworkLogoMeta(line, raw);
+          if (networkLogo) {
+            networkLogo.className.split(/\s+/).filter(Boolean).forEach(cls => wrap.classList.add(cls));
             wrap.style.background = "transparent";
             const img = document.createElement("img");
-            img.alt = "Reseau Titus";
-            img.src = overlayPath("reseau_titus.png");
+            img.alt = networkLogo.alt;
+            img.src = networkLogo.src;
             img.style.width = "100%";
             img.style.height = "100%";
             img.style.objectFit = "contain";
             img.onerror = () => {
-              wrap.textContent = "Reseau Titus";
+              wrap.textContent = networkLogo.alt;
               wrap.style.color = "#522a8a";
               wrap.style.background = "transparent";
             };
@@ -15524,6 +15659,9 @@
           if (!items.length) return;
           const grid = document.createElement("div");
           grid.className = "dbus-grid";
+          if (sectionId === "other_networks") {
+            grid.classList.add("dbus-grid--other-networks");
+          }
           host.appendChild(grid);
           items.forEach(line => {
             const block = document.createElement("div");
@@ -15531,6 +15669,9 @@
             const logo = createLogoForLine(line);
             if (logo.classList.contains("dbus-logo--titus")) {
               block.classList.add("line-block--titus");
+            }
+            if (logo.classList.contains("dbus-logo--network-logo")) {
+              block.classList.add("line-block--network-logo");
             }
             if (logo.classList.contains("dbus-logo--scolaire")) {
               block.classList.add("line-block--scolaire");
@@ -15631,6 +15772,7 @@
       const badgeRawNumber = needsFallback ? fallbackNumber : parsedNumber;
       const mTitus = /^titus\s*(\d+)/i.exec(String(badgeRawNumber || ""));
       const category = getCategory(line);
+      const isNavetteNogentItem = isNavetteNogentToken(badgeRawNumber) || isNavetteNogentLine(line);
       const isRerLine = category === "Speciaux";
       const specialKind = isRerLine
         ? (getSpecialBadgeKind(badgeRawNumber) || getSpecialBadgeKind(String(line?.number || "")) || "rer")
@@ -15647,7 +15789,7 @@
         /^autocar\b/i.test(parsedLineRaw) ||
         /^fict/i.test(parsedLineRaw);
       const isExpressItem = routeIsExpressLike;
-      const isAutresLike = routeIsAutocarLike || (!isExpressItem && category === "Autres");
+      const isAutresLike = routeIsAutocarLike || (!isExpressItem && category === "Autres" && !isNavetteNogentItem);
       const expressMeta = isExpressItem ? getExpressGroupMeta(line, route) : null;
       let displayNumber = mTitus ? mTitus[1] : badgeRawNumber;
       if (isAutresLike) {
@@ -15662,13 +15804,13 @@
         else displayNumber = /^express\b/i.test(expressNum) ? expressNum : `Express ${expressNum}`;
       }
       const isScolaire = getCategory(line) === "Scolaire";
-      const effectiveShowLogo = (lengthMode && isExpressItem) ? false : showLogo;
+      const effectiveShowLogo = isNavetteNogentItem ? true : ((lengthMode && isExpressItem) ? false : showLogo);
       const forceExpressLengthSize = lengthMode && (isExpressItem || isAutresLike || category === "FlixBus");
       const compactLengthBadge = ((lengthMode && !isExpressItem && !isExpressNumber(badgeRawNumber) && !forceExpressLengthSize) || compactBadges);
       const badgeSize = category === "Speciaux"
         ? getRerRouteBadgeSize()
         : (forceExpressLengthSize ? routeBadgeSizeFor("Express") : (compactLengthBadge ? "72x28" : routeBadgeSizeFor(displayNumber)));
-      const badge = isScolaire ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
+      const badge = (isScolaire || isNavetteNogentItem) ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
       if (badge && isRerLine) {
         badge.classList.add("badge-rer");
         if (specialKind === "metro") badge.classList.add("badge-metro");
@@ -15867,15 +16009,18 @@
         const specialGroups = buildGroupedSpecialLines(lineBuckets["Speciaux"]);
         const autocarGroupLine = buildGroupedLineFromRoutes("autocar", "Autocar", extraSourceLines, isAutocarRoute);
 
-        const urbanLines = lineBuckets["Urbain"].filter(line => !isTitusLine(line) && !isExpress(line));
-        const titusLines = lineBuckets["Urbain"].filter(line => isTitusLine(line));
+        const urbanLines = lineBuckets["Urbain"].filter(line => !isOtherNetworkLine(line) && !isExpress(line));
+        const otherNetworkLines = [
+          ...lineBuckets["Urbain"],
+          ...lineBuckets["Autres"]
+        ].filter(line => isOtherNetworkLine(line));
 
         const others = [
           ...lineBuckets["FlixBus"],
           ...lineBuckets["Scolaire"],
           ...lineBuckets["Autres"].filter(line => {
             const n = String(line.number || "").trim().toLowerCase();
-            return !/^fict/i.test(n) && !/^autocar\b/i.test(n);
+            return !isOtherNetworkLine(line) && !/^fict/i.test(n) && !/^autocar\b/i.test(n);
           })
         ];
         if (autocarGroupLine) others.push(autocarGroupLine);
@@ -15885,7 +16030,7 @@
         renderSectionGrid("Express", expressGroups);
         renderSectionGrid("noctilien",  lineBuckets["Noctilien"]);
         renderSectionGrid("replacement_bus", specialGroups.length ? specialGroups : lineBuckets["Speciaux"]);
-        renderSectionGrid("other_networks", titusLines);
+        renderSectionGrid("other_networks", otherNetworkLines);
         renderSectionGrid("others", others);
       }
 
@@ -16093,7 +16238,21 @@
 
           const category = getCategory({ number: lineNumber });
 
-          if (category !== "Autres") {
+          const navetteSearchLogo = isNavetteNogentToken(lineNumber)
+            ? getOtherNetworkLogoMeta({ number: lineNumber }, lineNumber)
+            : null;
+          if (navetteSearchLogo) {
+            const wrap = document.createElement('div');
+            wrap.style.display = 'inline-flex';
+            wrap.style.alignItems = 'center';
+            const img = document.createElement('img');
+            img.src = navetteSearchLogo.src;
+            img.alt = navetteSearchLogo.alt;
+            img.style.height = '22px';
+            img.style.width = 'auto';
+            wrap.appendChild(img);
+            div.appendChild(wrap);
+          } else if (category !== "Autres") {
             const tnum = item.titusNum || (/^titus\s*(\d+)/i.exec(String(lineNumber||""))?.[1] ?? null);
             if (tnum) {
               const wrap = document.createElement('div');
@@ -16126,7 +16285,9 @@
 
           const span = document.createElement("div");
           span.className = "result-text";
-          const cleanTitle = routeName.replace(/^\s*Titus\s*\d+\s*[:-]?\s*/i, '');
+          const cleanTitle = routeName
+            .replace(/^\s*Titus\s*\d+\s*[:-]?\s*/i, '')
+            .replace(/^\s*Navette de Nogent\s*[:-]?\s*/i, '');
           span.dataset.routeTitle = cleanTitle;
           span.textContent = translateRouteTitle(cleanTitle);
           div.appendChild(span);
@@ -16429,30 +16590,4 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

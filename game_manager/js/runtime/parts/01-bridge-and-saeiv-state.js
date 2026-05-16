@@ -255,7 +255,7 @@
         frame.style.border = "0";
         frame.style.zIndex = "-1";
         frame.setAttribute("allow", "autoplay");
-        frame.src = new URL("widgets/bus_status.html?host=game&source=game&background=1", location.href).href;
+        frame.src = buildWidgetUrl("widgets/bus_status.html?host=game&source=game&background=1");
         document.body.appendChild(frame);
         return true;
       }
