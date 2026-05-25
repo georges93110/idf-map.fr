@@ -10,7 +10,7 @@
       }
       function isExperimentalWidgetType(type) {
         var safeType = normalizeWidgetType(type);
-        return safeType === "saeiv" || safeType === "waze";
+        return safeType === "saeiv" || safeType === "waze" || safeType === "iphone_simulator";
       }
       function applyWidgetTitleWithExperimentalBadge(targetEl, labelText, type) {
         if (!targetEl) return;
@@ -431,6 +431,7 @@
           Object.keys(TYPES).forEach(function (typeRaw) {
             var type = normalizeWidgetType(typeRaw);
             if (!isType(type) || !isExperimentalWidgetType(type)) return;
+            if (typeof shouldShowExperimentalWidgetInManager === "function" && shouldShowExperimentalWidgetInManager(type)) return;
             if (ensureWidgetTypeEnabled(type, false)) removedExperimentalWidgets = true;
           });
         }
@@ -715,17 +716,34 @@
         if (!raw) return "";
         if (raw === "free" || raw === "normal") return GAME_MODES.FREE;
         if (raw === "bus" || raw === "bus_mode") return GAME_MODES.BUS;
+        if (raw === "uber_eats" || raw === "ubereats" || raw === "uber-eats") return GAME_MODES.UBER_EATS;
         return GAME_MODES.BUS;
       }
       function getModeConfig(mode) {
         var normalized = normalizeGameMode(mode);
         return MODE_CONFIGS[normalized] || MODE_CONFIGS[GAME_MODES.BUS];
       }
-      function isTypeAllowedForMode(type, mode) {
+      function getModeAllowedWidgetTypes(mode) {
         var cfg = getModeConfig(mode);
-        if (!cfg) return true;
-        var allowed = (cfg.gpsTypes || []).concat(cfg.hudTypes || []);
+        if (!cfg) return [];
+        return []
+          .concat(cfg.gpsTypes || [])
+          .concat(cfg.hudTypes || [])
+          .concat(cfg.widgetTypes || [])
+          .map(normalizeWidgetType)
+          .filter(function (type, index, list) {
+            return isType(type) && list.indexOf(type) === index;
+          });
+      }
+      function isTypeAllowedForMode(type, mode) {
+        var allowed = getModeAllowedWidgetTypes(mode);
         return allowed.indexOf(type) >= 0;
+      }
+      function shouldShowExperimentalWidgetInManager(type) {
+        var safeType = normalizeWidgetType(type);
+        if (!isExperimentalWidgetType(safeType)) return true;
+        if (showExperimentalWidgets) return true;
+        return currentGameMode === GAME_MODES.UBER_EATS && safeType === "iphone_simulator";
       }
 
       function applyModeWidgetTypeLists(mode) {
@@ -814,11 +832,7 @@
       }
       function enforceWidgetsAllowedForCurrentMode() {
         var allowed = Object.create(null);
-        (GPS_WIDGET_TYPES || []).forEach(function (type) {
-          var safe = normalizeWidgetType(type);
-          if (isType(safe)) allowed[safe] = true;
-        });
-        (HUD_WIDGET_TYPES || []).forEach(function (type) {
+        getModeAllowedWidgetTypes(currentGameMode).forEach(function (type) {
           var safe = normalizeWidgetType(type);
           if (isType(safe)) allowed[safe] = true;
         });

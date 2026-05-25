@@ -9,6 +9,20 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-edgebuffer@1.0.6/src/leaflet.edgebuffer.js"></script>
+  <script>
+    (function setupPhoneWazeMode() {
+      var enabled = false;
+      try {
+        var params = new URLSearchParams(window.location.search || "");
+        enabled = params.has("waze_app") || params.has("phone_waze");
+      } catch (err) {
+        enabled = /(?:^|[?&])(?:waze_app|phone_waze)(?:[=&]|$)/.test(String(window.location.search || ""));
+      }
+      if (!enabled) return;
+      document.documentElement.classList.add("waze-app-mode");
+      window.IDF_WAZE_APP_MODE = true;
+    })();
+  </script>
   <style>
     :root {
       --bg-app: transparent;
@@ -168,6 +182,13 @@
       width: 250% !important;
       height: 250% !important;
       overflow: hidden !important;
+    }
+
+    html.waze-app-mode #wazeLeafletMap {
+      top: -125% !important;
+      left: -125% !important;
+      width: 350% !important;
+      height: 350% !important;
     }
 
     .middle-leaflet-map::before {
@@ -508,6 +529,12 @@
       align-items: center;
       justify-content: center;
       letter-spacing: 0.02em;
+    }
+
+    html.waze-app-mode .middle-zoom-controls,
+    html.waze-app-mode #wazeMapClock,
+    html.waze-app-mode #wazeMapSpeedBadge {
+      display: none !important;
     }
 
     .middle-overlay-alert svg {
@@ -1181,6 +1208,7 @@
       }
 
       const QS = new URLSearchParams(location.search);
+      const WAZE_APP_MODE = window.IDF_WAZE_APP_MODE === true || QS.has("waze_app") || QS.has("phone_waze");
       const BRIDGE_HOST_MODE = String(QS.get("host") || "").trim().toLowerCase();
       const BRIDGE_REQUIRE_GAME_SOURCE = BRIDGE_HOST_MODE === "game";
       /* Tilt 3D : ?tilt=0 dÃ©sactive le tilt (pour tests) */
@@ -1470,6 +1498,7 @@
       let trafficAreasAutoroutePolygons = [];
       let lastBridgeTimestamp = 0;
       let lastBridgeTimestampBySource = new Map();
+      let lastBridgeClockNowMs = 0;
       let lastBridgeSampleTimestampMs = 0;
       let lastBridgeSampleWorldPoint = null;
       let bridgeSpeedKmh = 0;
@@ -1858,6 +1887,15 @@
         }
         return Date.now();
       }
+      function resolveBridgeClockNowMs(payload = null) {
+        const raw = Number(payload && payload.clockNowMs);
+        if (Number.isFinite(raw) && raw > 0) {
+          lastBridgeClockNowMs = raw;
+          return raw;
+        }
+        if (Number.isFinite(lastBridgeClockNowMs) && lastBridgeClockNowMs > 0) return lastBridgeClockNowMs;
+        return Date.now();
+      }
       function computeInstantBridgeSpeedKmh(currentPoint, previousPoint, timestampMs, previousTimestampMs) {
         if (!currentPoint || !previousPoint) return NaN;
         const ts = Number(timestampMs);
@@ -2067,7 +2105,7 @@
           return;
         }
         const h = Math.max(1, Number(mapStageEl?.clientHeight) || 0);
-        const decalageVersLeBas = 0.30;
+        const decalageVersLeBas = WAZE_APP_MODE ? 0.18 : 0.30;
         viewOffsetYPx = h * decalageVersLeBas;
       }
 
@@ -4099,7 +4137,7 @@
         setFooterDistance(remainingDistanceMeters, etaMinutes, { atStop: false });
         setFooterArrivalTime(
           Number.isFinite(etaMinutes) && etaMinutes >= 0
-            ? (Date.now() + Math.round(etaMinutes * 60000))
+            ? (resolveBridgeClockNowMs() + Math.round(etaMinutes * 60000))
             : Number.NaN
         );
         return true;
@@ -5071,6 +5109,7 @@
           pendingBridgePayload = payload;
           return;
         }
+        resolveBridgeClockNowMs(payload);
         const shouldClearNavigationFromPayload =
           payload.clearNavigation === true ||
           payload.clearDestination === true;
@@ -5629,8 +5668,7 @@
           : Number.NaN;
         const etaArrivalTimestampMs = Number(payload.etaArrivalTimestampMs);
         const etaRemainingMinutes = Number(payload.etaRemainingMinutes);
-        const bridgeNowRaw = Number(payload.clockNowMs);
-        const bridgeNowMs = (Number.isFinite(bridgeNowRaw) && bridgeNowRaw > 0) ? bridgeNowRaw : Date.now();
+        const bridgeNowMs = resolveBridgeClockNowMs(payload);
         const hasEtaMinutes = navigationActive && Number.isFinite(etaRemainingMinutes) && etaRemainingMinutes >= 0;
         const effectiveEtaMinutes = Number.isFinite(etaBySpeedMinutes) && etaBySpeedMinutes >= 0
           ? etaBySpeedMinutes
@@ -5990,8 +6028,8 @@
         /* PARAMÈTRES ANTI-TROUS GRIS */
         updateWhenIdle: false,     // Force le chargement pendant qu'on bouge
         updateWhenZooming: false,  // Force le chargement pendant le zoom
-        edgeBufferTiles: 3,        // Le plugin charge 3 rangées cachées d'avance
-        keepBuffer: 12             // Garde en mémoire pour éviter de re-télécharger
+        edgeBufferTiles: WAZE_APP_MODE ? 5 : 3,
+        keepBuffer: WAZE_APP_MODE ? 16 : 12
       };
       baseTileLayer = L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, baseTileLayerOptions).addTo(map);
       if (DEV_MAP_MODE) {

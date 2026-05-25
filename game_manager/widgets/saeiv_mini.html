@@ -664,6 +664,274 @@
       color: #ffffff;
     }
 
+    .choice-select-hidden {
+      display: none !important;
+    }
+
+    .saeiv-line-dbus-content {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      border: 1px solid #242424;
+      background: #151515;
+      scrollbar-width: thin;
+      scrollbar-color: #454545 #151515;
+    }
+
+    .saeiv-line-dbus-content::-webkit-scrollbar {
+      width: 0.42em;
+    }
+
+    .saeiv-line-dbus-content::-webkit-scrollbar-track {
+      background: #151515;
+    }
+
+    .saeiv-line-dbus-content::-webkit-scrollbar-thumb {
+      background: #454545;
+      border-radius: 999px;
+    }
+
+    .saeiv-line-dbus-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4em;
+      padding: 0.45em;
+      min-height: 100%;
+      box-sizing: border-box;
+    }
+
+    .dbus-sec {
+      min-width: 0;
+    }
+
+    .dbus-sec h4 {
+      margin: 0 0 0.45em;
+      color: #b1b1b1;
+      font-size: 58%;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    .dbus-secbody {
+      min-width: 0;
+    }
+
+    .dbus-logo {
+      width: 72px;
+      height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #2c2c2c;
+      background: #303030;
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      user-select: none;
+    }
+
+    .dbus-logo:hover {
+      filter: brightness(1.08);
+    }
+
+    .dbus-logo.dim {
+      opacity: 0.34;
+      filter: grayscale(100%);
+    }
+
+    .dbus-logo.sel {
+      outline: 2px solid rgba(255, 255, 255, 0.62);
+      outline-offset: 1px;
+      opacity: 1;
+      filter: none;
+      position: relative;
+    }
+
+    .dbus-logo .noctilien-stripe {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 3px;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+      pointer-events: none;
+    }
+
+    .dbus-logo.has-noctilien-stripe .badge-label {
+      transform: translateY(-1px);
+    }
+
+    .dbus-logo .badge-label {
+      display: inline-block;
+      white-space: nowrap;
+      line-height: 1;
+      font-weight: 650 !important;
+      position: relative;
+      z-index: 1;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: sans-serif !important;
+    }
+
+    .dbus-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 74px);
+      gap: 4px;
+      padding: 4px;
+      justify-content: start;
+      align-items: start;
+    }
+
+    .dbus-grid--other-networks {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .line-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .line-block--titus,
+    .line-block--network-logo,
+    .line-block--scolaire {
+      width: 58px;
+    }
+
+    .dbus-logo--titus,
+    .dbus-logo--network-logo,
+    .dbus-logo--scolaire {
+      border: none;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .line-block--titus .dbus-logo--titus,
+    .line-block--network-logo .dbus-logo--network-logo {
+      width: 58px;
+      height: 30px;
+    }
+
+    .line-block--scolaire .dbus-logo--scolaire {
+      width: 30px;
+      height: 30px;
+    }
+
+    .dbus-logo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 10px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .dbus-rer-lines-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px;
+      width: fit-content;
+    }
+
+    .dbus-rer-lines-row+.dbus-rer-lines-row {
+      margin-top: 4px;
+    }
+
+    .dbus-rer-master-logo {
+      width: 30px;
+      min-width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .dbus-rer-master-logo.dim {
+      opacity: .25;
+      filter: grayscale(100%);
+    }
+
+    .dbus-rer-master-logo img {
+      width: auto;
+      height: 30px;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .dbus-rer-lines-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .dbus-logo.dbus-logo-rer-square {
+      width: 30px;
+      min-width: 30px;
+      height: 30px;
+      border-radius: 15px;
+      padding: 0 4px;
+      box-sizing: border-box;
+    }
+
+    .dbus-logo.dbus-logo-rer-square.badge-metro {
+      border-radius: 999px !important;
+    }
+
+    .dbus-logo .dbus-rer-logo-combo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .dbus-logo .dbus-rer-logo-combo img {
+      width: auto;
+      height: 22px;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .dbus-logo .dbus-rer-letter-badge {
+      width: 22px !important;
+      min-width: 22px !important;
+      height: 22px !important;
+      border-radius: 5px !important;
+      padding: 0 3px !important;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .dbus-logo .dbus-rer-letter-badge.badge-metro {
+      border-radius: 999px !important;
+    }
+
+    .saeiv-dbus-empty {
+      color: var(--muted);
+      font-size: 76%;
+      padding: 0.8em;
+      border: 1px dashed #303030;
+      background: #171717;
+    }
+
     .choice-btn:disabled,
     .finish-btn:disabled,
     .cancel-btn:disabled {
@@ -686,6 +954,7 @@
 
     .choice-view.is-pending-start .choice-input,
     .choice-view.is-pending-start .choice-label,
+    .choice-view.is-pending-start #lineDbusContent,
     .choice-view.is-pending-start #lineSelect,
     .choice-view.is-pending-start #routeSelect {
       display: none !important;
@@ -937,7 +1206,10 @@
             </section>
           </div>
           <p id="lineLabel" class="choice-label">Lignes</p>
-          <select id="lineSelect" class="choice-select" size="5" aria-label="Choix ligne"></select>
+          <div id="lineDbusContent" class="dbus-content saeiv-line-dbus-content" role="group" aria-label="Choix ligne">
+            <div id="lineDbusList" class="dbus-list saeiv-line-dbus-list" role="listbox" aria-label="Choix ligne"></div>
+          </div>
+          <select id="lineSelect" class="choice-select choice-select-hidden" size="5" aria-label="Choix ligne" hidden></select>
           <p id="routeLabel" class="choice-label" hidden>Routes</p>
           <select id="routeSelect" class="choice-select" size="5" aria-label="Choix route" hidden></select>
           <div class="choice-buttons">
@@ -1068,6 +1340,7 @@
       var latestState = {};
       var routeCatalog = [];
       var lineCatalog = [];
+      var lineCatalogSections = [];
       var routeByKey = Object.create(null);
       var selectedLineUid = "";
       var selectedRouteKey = "";
@@ -1097,6 +1370,8 @@
         chooserTitle: document.getElementById("chooserTitle"),
         choiceHint: document.getElementById("choiceHint"),
         lineLabel: document.getElementById("lineLabel"),
+        lineDbusContent: document.getElementById("lineDbusContent"),
+        lineDbusList: document.getElementById("lineDbusList"),
         lineSelect: document.getElementById("lineSelect"),
         routeLabel: document.getElementById("routeLabel"),
         routeSelect: document.getElementById("routeSelect"),
@@ -1521,7 +1796,8 @@
         var showRoutes = chooserStep === "route" && !!chooserConfirmedLineUid;
         if (el.choiceView) el.choiceView.classList.remove("is-pending-start");
         if (el.lineLabel) el.lineLabel.hidden = showRoutes;
-        if (el.lineSelect) el.lineSelect.hidden = showRoutes;
+        if (el.lineDbusContent) el.lineDbusContent.hidden = showRoutes;
+        if (el.lineSelect) el.lineSelect.hidden = !!el.lineDbusContent || showRoutes;
         if (el.routeLabel) el.routeLabel.hidden = !showRoutes;
         if (el.routeSelect) el.routeSelect.hidden = !showRoutes;
         if (el.lineSelect) el.lineSelect.disabled = showRoutes;
@@ -1529,7 +1805,7 @@
           el.backToLinesBtn.disabled = !showRoutes;
           el.backToLinesBtn.textContent = "Retour";
           el.backToLinesBtn.classList.remove("is-icon");
-          el.backToLinesBtn.title = "";
+          el.backToLinesBtn.removeAttribute("title");
         }
         if (el.startRouteBtn) {
           el.startRouteBtn.textContent = showRoutes ? "Confirmer" : "Confirmer";
@@ -2088,6 +2364,8 @@
         return /^express\b/i.test(String(value || "").trim());
       }
       function isMetroReplacementToken(value) {
+        var normalized = String(value || "").trim();
+        if (/^Métro\b/i.test(normalized)) return true;
         return /^M(?:[ée]|Ã©)tro\b/i.test(String(value || "").trim());
       }
       function getSpecialBadgeMeta(value) {
@@ -2099,6 +2377,11 @@
           return { kind: "rer", label: rerLabel || raw };
         }
         if (/^RER\b/i.test(raw)) return { kind: "rer", label: raw };
+        var actualMetroMatch = raw.match(/^Métro(?:\s*[-\u2013\u2014]\s*|\s+)(.+)$/i);
+        if (actualMetroMatch && actualMetroMatch[1]) {
+          var actualMetroLabel = String(actualMetroMatch[1] || "").trim();
+          return { kind: "metro", label: actualMetroLabel || raw };
+        }
         var metroMatch = raw.match(/^M(?:[ée]|Ã©)tro(?:\s*[-–—]\s*|\s+)(.+)$/i);
         if (metroMatch && metroMatch[1]) {
           var metroLabel = String(metroMatch[1] || "").trim();
@@ -2166,6 +2449,7 @@
       function ensureStripe(badgeEl, color) {
         if (!badgeEl) return;
         badgeEl.style.position = "relative";
+        badgeEl.classList.add("has-noctilien-stripe");
         var old = badgeEl.querySelector(".noctilien-stripe");
         if (old) old.remove();
         var stripe = document.createElement("div");
@@ -2553,30 +2837,641 @@
           if (!rec) {
             rec = {
               lineUid: uid,
+              uid: uid,
               lineNumber: String(entry && entry.lineNumber || "").trim() || "?",
-              routeCount: 0
+              number: String(entry && entry.lineNumber || "").trim() || "?",
+              routeCount: 0,
+              routes: []
             };
             byUid[uid] = rec;
             out.push(rec);
           }
+          if ((!rec.lineNumber || rec.lineNumber === "?") && entry && entry.lineNumber) {
+            rec.lineNumber = String(entry.lineNumber || "").trim() || "?";
+            rec.number = rec.lineNumber;
+          }
           rec.routeCount += 1;
+          rec.routes.push({
+            lineUid: uid,
+            sourceLineUid: uid,
+            lineNumber: String(entry && entry.lineNumber || rec.lineNumber || "").trim() || "?",
+            routeUid: String(entry && entry.routeUid || "").trim(),
+            uid: String(entry && entry.routeUid || "").trim(),
+            routeName: String(entry && entry.routeName || "").trim(),
+            name: String(entry && entry.routeName || "").trim(),
+            stopCount: Math.max(0, Number(entry && entry.stopCount) || 0)
+          });
+        });
+        lineCatalogSections = buildLineCatalogDisplaySections(out);
+        return flattenCatalogDisplaySections(lineCatalogSections);
+      }
+
+      function catalogLineNumber(line) {
+        return String(line && (line.lineNumber || line.number) || "").trim();
+      }
+
+      function catalogLineRoutes(line) {
+        return Array.isArray(line && line.routes) ? line.routes : [];
+      }
+
+      function catalogLineAsStateLine(line) {
+        var number = catalogLineNumber(line);
+        return {
+          uid: String(line && (line.lineUid || line.uid) || "").trim(),
+          number: number,
+          routes: catalogLineRoutes(line)
+        };
+      }
+
+      function catalogLineIsOtherNetwork(line) {
+        var pseudo = catalogLineAsStateLine(line);
+        return isTitusFromStateLine(pseudo) || isNavetteNogentFromStateLine(pseudo);
+      }
+
+      function catalogLineIsExpress(line) {
+        return !!(line && line.__isExpressGroup) || isExpressFromStateLine(catalogLineAsStateLine(line));
+      }
+
+      function catalogLineCategory(line) {
+        if (line && line.__isSpecialGroup) return "Speciaux";
+        if (line && line.__isExpressGroup) return "Urbain";
+        var pseudo = catalogLineAsStateLine(line);
+        var number = catalogLineNumber(line);
+        if (isNoctilienFromStateLine(pseudo)) return "Noctilien";
+        if (isReplacementBusFromStateLine(pseudo)) return "Speciaux";
+        if (isFlixFromStateLine(pseudo)) return "FlixBus";
+        if (isAutocarFromStateLine(pseudo) || isFictiveFromStateLine(pseudo)) return "Autres";
+        if (isExpressFromStateLine(pseudo)) return "Urbain";
+        if (isNumericOnly(number)) return "Urbain";
+        if (isTitusFromStateLine(pseudo)) return "Urbain";
+        if (isNavetteNogentFromStateLine(pseudo)) return "Urbain";
+        if (/^scolaire/i.test(number)) return "Scolaire";
+        return "Autres";
+      }
+
+      function compareCatalogLineAlpha(a, b) {
+        var la = catalogLineNumber(a);
+        var lb = catalogLineNumber(b);
+        var byNumber = la.localeCompare(lb, "fr", {
+          sensitivity: "base",
+          ignorePunctuation: true,
+          numeric: true
+        });
+        if (byNumber !== 0) return byNumber;
+        return String(a && (a.lineUid || a.uid) || "").localeCompare(String(b && (b.lineUid || b.uid) || ""), "fr", {
+          sensitivity: "base",
+          ignorePunctuation: true,
+          numeric: true
+        });
+      }
+
+      function compareUrbainCatalogLines(a, b) {
+        var la = catalogLineNumber(a);
+        var lb = catalogLineNumber(b);
+        var aNum = isNumericOnly(la);
+        var bNum = isNumericOnly(lb);
+        if (aNum && !bNum) return -1;
+        if (!aNum && bNum) return 1;
+        if (aNum && bNum) return (parseInt(la, 10) || 0) - (parseInt(lb, 10) || 0);
+        return compareCatalogLineAlpha(a, b);
+      }
+
+      function buildLineCatalogBuckets(lines) {
+        var buckets = {
+          Urbain: [],
+          FlixBus: [],
+          Noctilien: [],
+          Speciaux: [],
+          Autres: [],
+          Scolaire: []
+        };
+        (Array.isArray(lines) ? lines : []).forEach(function (line) {
+          var cat = catalogLineCategory(line);
+          if (!buckets[cat]) cat = "Autres";
+          buckets[cat].push(line);
+        });
+        buckets.Urbain.sort(compareUrbainCatalogLines);
+        buckets.Noctilien.sort(compareCatalogLineAlpha);
+        buckets.FlixBus.sort(compareCatalogLineAlpha);
+        buckets.Speciaux.sort(compareCatalogLineAlpha);
+        buckets.Autres.sort(compareCatalogLineAlpha);
+        buckets.Scolaire.sort(compareCatalogLineAlpha);
+        return buckets;
+      }
+
+      function catalogGroupToken(value) {
+        return normalizeSearchText(value).replace(/[^a-z0-9]+/g, "") || "group";
+      }
+
+      function catalogRouteEntry(line, route) {
+        var sourceLineUid = String(route && (route.lineUid || route.sourceLineUid) || line && (line.lineUid || line.uid) || "").trim();
+        var routeUid = String(route && (route.routeUid || route.uid) || "").trim();
+        return {
+          lineUid: sourceLineUid,
+          routeUid: routeUid,
+          lineNumber: String(route && route.lineNumber || line && (line.lineNumber || line.number) || "").trim() || "?",
+          routeName: String(route && (route.routeName || route.name) || "").trim() || "Route",
+          stopCount: Math.max(0, Number(route && route.stopCount) || 0)
+        };
+      }
+
+      function catalogRouteEntryKey(entry) {
+        return routeKey(entry && entry.lineUid, entry && entry.routeUid);
+      }
+
+      function catalogRouteIsExpress(line, route) {
+        if (catalogLineIsExpress(line)) return true;
+        var entry = catalogRouteEntry(line, route);
+        var rawRouteName = String(entry.routeName || "").trim();
+        var parsed = String(parseRouteName(rawRouteName).lineNumber || "").trim();
+        return /^express\b/i.test(parsed) || /^express\b/i.test(rawRouteName);
+      }
+
+      function extractCatalogExpressNumber(line, route) {
+        var entry = catalogRouteEntry(line, route);
+        var routeName = String(entry.routeName || "").trim();
+        var parsedLineNumber = String(parseRouteName(routeName).lineNumber || "").trim();
+        var lineNumber = String(entry.lineNumber || catalogLineNumber(line) || "").trim();
+        var candidates = [parsedLineNumber, routeName, lineNumber];
+        for (var i = 0; i < candidates.length; i += 1) {
+          var raw = String(candidates[i] || "").trim();
+          if (!raw) continue;
+          var fromPrefix = /^express\b\s*([0-9a-z]+)\b/i.exec(raw);
+          if (fromPrefix && fromPrefix[1]) return String(fromPrefix[1]).trim();
+          var fromInside = /\bexpress\b\s*([0-9a-z]+)\b/i.exec(raw);
+          if (fromInside && fromInside[1]) return String(fromInside[1]).trim();
+          if (/^[0-9]+[a-z]?$/i.test(raw)) return raw;
+        }
+        return "";
+      }
+
+      function catalogExpressGroupMeta(line, route) {
+        var displayNumber = extractCatalogExpressNumber(line, route);
+        if (!displayNumber) return null;
+        var colorKey = /^express\b/i.test(displayNumber) ? displayNumber : "Express " + displayNumber;
+        return {
+          uid: "group:express:" + catalogGroupToken(displayNumber),
+          number: displayNumber,
+          colorKey: colorKey
+        };
+      }
+
+      function buildCatalogExpressGroups(urbanLines, extraSourceLines) {
+        var groups = Object.create(null);
+        var out = [];
+        var seen = Object.create(null);
+        function addRoute(line, route) {
+          if (!catalogRouteIsExpress(line, route)) return;
+          var entry = catalogRouteEntry(line, route);
+          var routeEntryKey = catalogRouteEntryKey(entry);
+          if (!entry.lineUid || !entry.routeUid || seen[routeEntryKey]) return;
+          seen[routeEntryKey] = true;
+          var meta = catalogExpressGroupMeta(line, route);
+          if (!meta) return;
+          var group = groups[meta.uid];
+          if (!group) {
+            group = {
+              lineUid: meta.uid,
+              uid: meta.uid,
+              lineNumber: meta.number,
+              number: meta.number,
+              routeCount: 0,
+              routes: [],
+              __isGroup: true,
+              __isExpressGroup: true,
+              __expressColorKey: meta.colorKey
+            };
+            groups[meta.uid] = group;
+            out.push(group);
+          }
+          group.routes.push(entry);
+          group.routeCount = group.routes.length;
+        }
+        (Array.isArray(urbanLines) ? urbanLines : []).forEach(function (line) {
+          catalogLineRoutes(line).forEach(function (route) {
+            if (catalogLineIsExpress(line) || catalogRouteIsExpress(line, route)) addRoute(line, route);
+          });
+        });
+        (Array.isArray(extraSourceLines) ? extraSourceLines : []).forEach(function (line) {
+          catalogLineRoutes(line).forEach(function (route) {
+            if (catalogRouteIsExpress(line, route)) addRoute(line, route);
+          });
         });
         out.sort(function (a, b) {
-          var la = String(a.lineNumber || "");
-          var lb = String(b.lineNumber || "");
-          var byNumber = la.localeCompare(lb, "fr", {
-            sensitivity: "base",
-            ignorePunctuation: true,
-            numeric: true
+          var aNum = parseInt(String(a.number || "").replace(/\D+/g, ""), 10);
+          var bNum = parseInt(String(b.number || "").replace(/\D+/g, ""), 10);
+          var aHas = Number.isFinite(aNum);
+          var bHas = Number.isFinite(bNum);
+          if (aHas && bHas) return aNum - bNum;
+          if (aHas !== bHas) return aHas ? -1 : 1;
+          return compareCatalogLineAlpha(a, b);
+        });
+        return out;
+      }
+
+      function catalogSpecialGroupNumber(line, route) {
+        var entry = catalogRouteEntry(line, route);
+        var routeName = String(entry.routeName || "").trim();
+        var parsed = String(parseRouteName(routeName).lineNumber || "").trim();
+        if (/^RER\b/i.test(parsed) || isMetroReplacementToken(parsed)) return parsed;
+        if (/^RER\b/i.test(routeName) || isMetroReplacementToken(routeName)) return routeName;
+        var rerMatch = routeName.match(/\bRER(?:\s*[-\u2013\u2014]\s*|\s+)([A-Z0-9]+)/i);
+        if (rerMatch && rerMatch[1]) return "RER " + String(rerMatch[1]).trim().toUpperCase();
+        var metroMatch = routeName.match(/\bM(?:[ée]|Ã©)tro(?:\s*[-\u2013\u2014]\s*|\s+)([A-Z0-9]+)/i);
+        if (metroMatch && metroMatch[1]) return "Métro " + String(metroMatch[1]).trim().toUpperCase();
+        var lineNumber = catalogLineNumber(line);
+        if (/^RER\b/i.test(lineNumber) || isMetroReplacementToken(lineNumber)) return lineNumber;
+        return "";
+      }
+
+      function buildCatalogSpecialGroups(sourceLines) {
+        var groups = Object.create(null);
+        var out = [];
+        var seen = Object.create(null);
+        (Array.isArray(sourceLines) ? sourceLines : []).forEach(function (line) {
+          catalogLineRoutes(line).forEach(function (route) {
+            var entry = catalogRouteEntry(line, route);
+            var routeEntryKey = catalogRouteEntryKey(entry);
+            if (!entry.lineUid || !entry.routeUid || seen[routeEntryKey]) return;
+            var displayNumber = catalogSpecialGroupNumber(line, route);
+            if (!displayNumber) return;
+            seen[routeEntryKey] = true;
+            var specialMeta = getSpecialBadgeMeta(displayNumber);
+            var groupKey = catalogGroupToken(displayNumber);
+            var uid = "group:special:" + groupKey;
+            var group = groups[uid];
+            if (!group) {
+              group = {
+                lineUid: uid,
+                uid: uid,
+                lineNumber: displayNumber,
+                number: displayNumber,
+                routeCount: 0,
+                routes: [],
+                __isGroup: true,
+                __isSpecialGroup: true,
+                __specialKind: specialMeta.kind || "rer"
+              };
+              groups[uid] = group;
+              out.push(group);
+            }
+            group.routes.push(entry);
+            group.routeCount = group.routes.length;
           });
-          if (byNumber !== 0) return byNumber;
-          return String(a.lineUid || "").localeCompare(String(b.lineUid || ""), "fr", {
-            sensitivity: "base",
-            ignorePunctuation: true,
-            numeric: true
+        });
+        out.sort(compareCatalogLineAlpha);
+        return out;
+      }
+
+      function buildLineCatalogDisplaySections(lines) {
+        var buckets = buildLineCatalogBuckets(lines);
+        var urban = [];
+        var express = buildCatalogExpressGroups(buckets.Urbain, buckets.Autres);
+        var specialGroups = buildCatalogSpecialGroups(buckets.Speciaux);
+        var otherNetworks = [];
+        var others = [];
+
+        buckets.Urbain.forEach(function (line) {
+          if (catalogLineIsOtherNetwork(line)) {
+            otherNetworks.push(line);
+          } else if (catalogLineIsExpress(line)) {
+            return;
+          } else {
+            urban.push(line);
+          }
+        });
+        buckets.Autres.forEach(function (line) {
+          if (catalogLineIsOtherNetwork(line)) otherNetworks.push(line);
+          else others.push(line);
+        });
+        others = buckets.FlixBus.concat(buckets.Scolaire, others);
+        others.sort(compareCatalogLineAlpha);
+
+        return [
+          { key: "urban", title: "IDFM", lines: urban },
+          { key: "Express", title: "Express", lines: express },
+          { key: "noctilien", title: "Noctilien", lines: buckets.Noctilien },
+          { key: "replacement_bus", title: "Bus de remplacement", lines: specialGroups.length ? specialGroups : buckets.Speciaux },
+          { key: "other_networks", title: "Autres reseaux", lines: otherNetworks.sort(compareCatalogLineAlpha) },
+          { key: "others", title: "Autres", lines: others }
+        ];
+      }
+
+      function flattenCatalogDisplaySections(sections) {
+        var out = [];
+        (Array.isArray(sections) ? sections : []).forEach(function (section) {
+          (Array.isArray(section && section.lines) ? section.lines : []).forEach(function (line) {
+            out.push(line);
           });
         });
         return out;
+      }
+
+      function overlayPathForCatalog(file) {
+        var state = latestState && typeof latestState === "object" ? latestState : null;
+        var version = String(state && (state.dbusVersion || state.version) || DEFAULT_DBUS_VERSION || "").trim();
+        var safeFile = String(file || "").trim();
+        if (!safeFile) return "";
+        if (!version) version = "0.1.6a";
+        return "../../map_files/" + version + "/Overlays/" + safeFile;
+      }
+
+      function computeCatalogBadgeFontSize(labelText, widthPx, heightPx) {
+        var txt = String(labelText || "").trim();
+        var chars = Math.max(txt.length, 1);
+        var safeW = Math.max(Number(widthPx) || 0, 24);
+        var safeH = Math.max(Number(heightPx) || 0, 16);
+        var byHeight = Math.floor(safeH * 0.62);
+        var byWidth = Math.floor((safeW - 10) / (chars * 0.62));
+        return Math.max(8, Math.min(byHeight, byWidth));
+      }
+
+      function makeCatalogLineBadge(number, bg, text, size) {
+        var parts = String(size || "72x32").split("x");
+        var w = parseInt(parts[0], 10) || 72;
+        var h = parseInt(parts[1], 10) || 32;
+        var badge = document.createElement("div");
+        badge.className = "badge";
+        badge.style.width = w + "px";
+        badge.style.height = h + "px";
+        badge.style.boxSizing = "border-box";
+        badge.style.borderRadius = "8px";
+        badge.style.display = "flex";
+        badge.style.alignItems = "center";
+        badge.style.justifyContent = "center";
+        badge.style.flex = "0 0 auto";
+        badge.style.overflow = "hidden";
+        badge.style.fontWeight = "800";
+        badge.style.fontVariantNumeric = "tabular-nums";
+        badge.style.background = bg || "#444";
+        badge.style.color = text || "#fff";
+        badge.style.textShadow = "0 1px 2px rgba(0,0,0,.35)";
+        badge.style.position = "relative";
+        var rawLabel = String(number || "").trim();
+        badge.dataset.badgeRaw = rawLabel;
+        var labelSpan = ensureBadgeLabel(badge, rawLabel);
+        labelSpan.style.fontWeight = "800";
+        labelSpan.style.fontSize = computeCatalogBadgeFontSize(rawLabel, w, h) + "px";
+        return badge;
+      }
+
+      function catalogSpecialDisplayNumber(line) {
+        var current = catalogLineNumber(line);
+        if (/^RER\b/i.test(current) || isMetroReplacementToken(current)) return current;
+        var routes = catalogLineRoutes(line);
+        for (var i = 0; i < routes.length; i += 1) {
+          var rawRouteName = String(routes[i] && routes[i].name || "").trim();
+          var parsed = String(parseRouteName(rawRouteName).lineNumber || "").trim();
+          if (/^RER\b/i.test(parsed) || isMetroReplacementToken(parsed)) return parsed;
+          var rerMatch = rawRouteName.match(/\bRER(?:\s*[-\u2013\u2014]\s*|\s+)([A-Z0-9]+)/i);
+          if (rerMatch && rerMatch[1]) return "RER " + String(rerMatch[1]).trim().toUpperCase();
+          var metroMatch = rawRouteName.match(/\bM(?:[ée]|Ã©)tro(?:\s*[-\u2013\u2014]\s*|\s+)([A-Z0-9]+)/i);
+          if (metroMatch && metroMatch[1]) return "Métro " + String(metroMatch[1]).trim().toUpperCase();
+        }
+        return current;
+      }
+
+      function catalogLogoNumber(line) {
+        var pseudo = catalogLineAsStateLine(line);
+        if (isReplacementBusFromStateLine(pseudo)) return catalogSpecialDisplayNumber(line);
+        return catalogLineNumber(line);
+      }
+
+      function catalogOtherNetworkLogoMeta(line, rawLineNumber) {
+        var raw = String(rawLineNumber || "").trim();
+        var pseudo = catalogLineAsStateLine(line);
+        if (isNavetteNogentNumber(raw) || isNavetteNogentFromStateLine(pseudo)) {
+          return {
+            src: overlayPathForCatalog("navette_nogent.png"),
+            alt: "Navette de Nogent",
+            className: "dbus-logo--network-logo dbus-logo--navette-nogent"
+          };
+        }
+        if (isTitusNumber(raw) || isTitusFromStateLine(pseudo)) {
+          return {
+            src: overlayPathForCatalog("reseau_titus.png"),
+            alt: "Reseau Titus",
+            className: "dbus-logo--network-logo dbus-logo--titus"
+          };
+        }
+        return null;
+      }
+
+      function catalogLineColorKey(line) {
+        if (line && line.__isExpressGroup && line.__expressColorKey) return String(line.__expressColorKey || "").trim();
+        var number = catalogLogoNumber(line);
+        var pseudo = catalogLineAsStateLine(line);
+        if (isAutocarFromStateLine(pseudo) || isFictiveFromStateLine(pseudo)) return "Autocar";
+        if (catalogLineIsExpress(line)) {
+          var routes = catalogLineRoutes(line);
+          for (var i = 0; i < routes.length; i += 1) {
+            var rawRouteName = String(routes[i] && routes[i].name || "").trim();
+            var parsed = String(parseRouteName(rawRouteName).lineNumber || "").trim();
+            if (/^express\b/i.test(parsed)) return parsed;
+            var match = rawRouteName.match(/\bexpress\b\s*([0-9a-z]+)/i);
+            if (match && match[1]) return "Express " + String(match[1]).trim();
+          }
+          return /^express\b/i.test(number) ? number : "Express";
+        }
+        return number;
+      }
+
+      function createCatalogLineLogo(line) {
+        var raw = catalogLogoNumber(line) || "?";
+        var lineCategory = catalogLineCategory(line);
+        var wrap = document.createElement("div");
+        wrap.className = "dbus-logo";
+
+        if (/^scolaire\b/i.test(raw) || lineCategory === "Scolaire") {
+          wrap.classList.add("dbus-logo--scolaire");
+          wrap.style.background = "transparent";
+          wrap.style.border = "none";
+          wrap.style.boxShadow = "none";
+          var schoolImg = document.createElement("img");
+          schoolImg.alt = "Scolaire";
+          schoolImg.src = overlayPathForCatalog("bus_school.png");
+          schoolImg.style.width = "100%";
+          schoolImg.style.height = "100%";
+          schoolImg.style.objectFit = "contain";
+          wrap.appendChild(schoolImg);
+          return wrap;
+        }
+
+        if (lineCategory === "Speciaux" || /^RER\b/i.test(raw) || isMetroReplacementToken(raw)) {
+          var combo = document.createElement("div");
+          combo.className = "dbus-rer-logo-combo";
+          var specialMeta = getSpecialBadgeMeta(raw);
+          var specialKind = specialMeta.kind || "rer";
+          var masterImg = document.createElement("img");
+          masterImg.alt = specialKind === "metro" ? "Métro" : "RER";
+          masterImg.src = specialKind === "metro" ? overlayPathForCatalog("o_metro.png") : overlayPathForCatalog("rer_logo_idfm.png");
+          combo.appendChild(masterImg);
+          var letter = getSpecialBadgeLabel(raw);
+          var letterColors = getBadgeColorPair(raw);
+          var letterBadge = makeCatalogLineBadge(letter, letterColors.bg, letterColors.text, "22x22");
+          letterBadge.classList.add("badge-rer", "dbus-rer-letter-badge");
+          if (specialKind === "metro") letterBadge.classList.add("badge-metro");
+          letterBadge.style.borderRadius = specialKind === "metro" ? "999px" : "5px";
+          combo.appendChild(letterBadge);
+          wrap.appendChild(combo);
+          return wrap;
+        }
+
+        var networkLogo = catalogOtherNetworkLogoMeta(line, raw);
+        if (networkLogo) {
+          networkLogo.className.split(/\s+/).filter(Boolean).forEach(function (cls) {
+            wrap.classList.add(cls);
+          });
+          wrap.style.background = "transparent";
+          var networkImg = document.createElement("img");
+          networkImg.alt = networkLogo.alt;
+          networkImg.src = networkLogo.src;
+          networkImg.style.width = "100%";
+          networkImg.style.height = "100%";
+          networkImg.style.objectFit = "contain";
+          networkImg.onerror = function () {
+            wrap.textContent = networkLogo.alt;
+            wrap.style.color = "#522a8a";
+            wrap.style.background = "transparent";
+          };
+          wrap.appendChild(networkImg);
+          return wrap;
+        }
+
+        var colors = getBadgeColorPair(catalogLineColorKey(line) || raw);
+        var badge = makeCatalogLineBadge(raw, colors.bg, colors.text, "72x30");
+        badge.classList.add("dbus-logo");
+        if (isNoctilienFromStateLine(catalogLineAsStateLine(line))) {
+          ensureStripe(badge, noctilienStripeColor(raw));
+        }
+        return badge;
+      }
+
+      function bindCatalogLineLogo(logo, line, sectionId) {
+        if (!logo) return;
+        var uid = String(line && (line.lineUid || line.uid) || "").trim();
+        logo.dataset.lineUid = uid;
+        logo.classList.add("saeiv-line-logo");
+        logo.setAttribute("role", "option");
+        logo.setAttribute("tabindex", "0");
+        logo.setAttribute("aria-selected", uid && uid === selectedLineUid ? "true" : "false");
+        logo.addEventListener("click", function () {
+          selectLineFromDbusPicker(uid);
+        });
+        logo.addEventListener("dblclick", function () {
+          selectLineFromDbusPicker(uid);
+          confirmSelectedLine();
+        });
+        logo.addEventListener("keydown", function (event) {
+          var key = String(event && event.key || "");
+          if (key !== "Enter" && key !== " ") return;
+          event.preventDefault();
+          selectLineFromDbusPicker(uid);
+          if (key === "Enter") confirmSelectedLine();
+        });
+      }
+
+      function renderCatalogLogoGrid(host, items, sectionId) {
+        if (!host || !items.length) return;
+        var grid = document.createElement("div");
+        grid.className = "dbus-grid";
+        if (sectionId === "other_networks") grid.classList.add("dbus-grid--other-networks");
+        host.appendChild(grid);
+        items.forEach(function (line) {
+          var block = document.createElement("div");
+          block.className = "line-block";
+          var logo = createCatalogLineLogo(line);
+          if (logo.classList.contains("dbus-logo--titus")) block.classList.add("line-block--titus");
+          if (logo.classList.contains("dbus-logo--network-logo")) block.classList.add("line-block--network-logo");
+          if (logo.classList.contains("dbus-logo--scolaire")) block.classList.add("line-block--scolaire");
+          bindCatalogLineLogo(logo, line, sectionId);
+          block.appendChild(logo);
+          grid.appendChild(block);
+        });
+      }
+
+      function renderCatalogReplacementBusGrid(host, items, sectionId) {
+        if (!host || !items.length) return;
+        host.style.display = "flex";
+        host.style.flexDirection = "column";
+        host.style.alignItems = "flex-start";
+        var byKind = { rer: [], metro: [], other: [] };
+        items.forEach(function (line) {
+          var raw = catalogSpecialDisplayNumber(line);
+          var kind = String(getSpecialBadgeMeta(raw).kind || "").trim() || "rer";
+          if (kind === "metro") byKind.metro.push(line);
+          else if (kind === "rer") byKind.rer.push(line);
+          else byKind.other.push(line);
+        });
+        if (byKind.other.length) byKind.rer = byKind.rer.concat(byKind.other);
+
+        function renderKindRow(kind, kindItems) {
+          if (!kindItems.length) return;
+          var row = document.createElement("div");
+          row.className = "dbus-rer-lines-row";
+          host.appendChild(row);
+
+          var masterLogo = document.createElement("div");
+          masterLogo.className = "dbus-rer-master-logo";
+          masterLogo.dataset.specialKind = kind;
+          var masterImg = document.createElement("img");
+          masterImg.src = kind === "metro" ? overlayPathForCatalog("o_metro.png") : overlayPathForCatalog("rer_logo_idfm.png");
+          masterImg.alt = kind === "metro" ? "Métro" : "RER";
+          masterLogo.appendChild(masterImg);
+          row.appendChild(masterLogo);
+
+          var grid = document.createElement("div");
+          grid.className = "dbus-rer-lines-grid";
+          row.appendChild(grid);
+
+          kindItems.forEach(function (line) {
+            var raw = catalogSpecialDisplayNumber(line);
+            var letter = getSpecialBadgeLabel(raw);
+            var colors = getBadgeColorPair(raw);
+            var logo = makeCatalogLineBadge(letter, colors.bg, colors.text, "30x30");
+            logo.classList.add("dbus-logo", "dbus-logo-rer-square", "badge-rer");
+            if (kind === "metro") logo.classList.add("badge-metro");
+            logo.style.borderRadius = kind === "metro" ? "999px" : "9px";
+            bindCatalogLineLogo(logo, line, sectionId);
+            grid.appendChild(logo);
+          });
+        }
+
+        renderKindRow("rer", byKind.rer);
+        renderKindRow("metro", byKind.metro);
+      }
+
+      function renderLineDbusList(lines) {
+        if (!el.lineDbusList) return;
+        el.lineDbusList.innerHTML = "";
+        var sections = lineCatalogSections.length ? lineCatalogSections : buildLineCatalogDisplaySections(lines);
+        var hasAny = false;
+        sections.forEach(function (section) {
+          var sectionLines = Array.isArray(section && section.lines) ? section.lines : [];
+          if (!sectionLines.length) return;
+          hasAny = true;
+          var sec = document.createElement("div");
+          sec.className = "dbus-sec";
+          var title = document.createElement("h4");
+          title.textContent = String(section.title || section.key || "");
+          sec.appendChild(title);
+          var body = document.createElement("div");
+          body.className = "dbus-secbody";
+          sec.appendChild(body);
+          el.lineDbusList.appendChild(sec);
+          if (section.key === "replacement_bus") {
+            renderCatalogReplacementBusGrid(body, sectionLines, section.key);
+          } else {
+            renderCatalogLogoGrid(body, sectionLines, section.key);
+          }
+        });
+        if (!hasAny) {
+          var empty = document.createElement("div");
+          empty.className = "saeiv-dbus-empty";
+          empty.textContent = "Aucune ligne disponible";
+          el.lineDbusList.appendChild(empty);
+        }
+        refreshLineSelectionVisuals();
       }
 
       function setSelectedLineUid(lineUid) {
@@ -2585,6 +3480,32 @@
         if (!exists) wanted = "";
         selectedLineUid = wanted;
         if (el.lineSelect) el.lineSelect.value = selectedLineUid;
+        refreshLineSelectionVisuals();
+      }
+
+      function refreshLineSelectionVisuals() {
+        if (el.lineDbusList) {
+          var selected = String(selectedLineUid || "").trim();
+          var buttons = el.lineDbusList.querySelectorAll(".dbus-logo[data-line-uid]");
+          Array.prototype.forEach.call(buttons, function (button) {
+            var isSelected = selected && String(button.dataset.lineUid || "") === selected;
+            button.classList.toggle("sel", !!isSelected);
+            button.classList.remove("dim");
+            button.setAttribute("aria-selected", isSelected ? "true" : "false");
+          });
+        }
+        updateChoiceSelectHighlights();
+      }
+
+      function selectLineFromDbusPicker(lineUid) {
+        setSelectedLineUid(lineUid);
+        if (chooserStep !== "route") {
+          chooserConfirmedLineUid = "";
+          selectedRouteKey = "";
+        }
+        updateStartButtonState();
+        refreshRouteOptions();
+        setChooserStatus("", false);
       }
       function updateChoiceSelectHighlights() {
         if (el.lineSelect) {
@@ -2620,6 +3541,30 @@
         updateChoiceSelectHighlights();
       }
 
+      function findCatalogLineByUid(lineUid) {
+        var uid = String(lineUid || "").trim();
+        if (!uid) return null;
+        for (var i = 0; i < lineCatalog.length; i += 1) {
+          if (String(lineCatalog[i] && lineCatalog[i].lineUid || "") === uid) return lineCatalog[i];
+        }
+        return null;
+      }
+
+      function getRouteEntriesForConfirmedLine(lineUid) {
+        var uid = String(lineUid || "").trim();
+        var line = findCatalogLineByUid(uid);
+        if (line && line.__isGroup) {
+          return catalogLineRoutes(line).map(function (route) {
+            return catalogRouteEntry(line, route);
+          }).filter(function (entry) {
+            return !!String(entry.lineUid || "").trim() && !!String(entry.routeUid || "").trim();
+          });
+        }
+        return routeCatalog.filter(function (entry) {
+          return String(entry.lineUid || "") === uid;
+        });
+      }
+
       function refreshRouteOptions() {
         if (!el.routeSelect) return;
         el.routeSelect.innerHTML = "";
@@ -2636,9 +3581,7 @@
           return;
         }
 
-        var filtered = routeCatalog.filter(function (entry) {
-          return String(entry.lineUid || "") === chooserConfirmedLineUid;
-        });
+        var filtered = getRouteEntriesForConfirmedLine(chooserConfirmedLineUid);
 
         filtered.forEach(function (entry) {
           var key = routeKey(entry.lineUid, entry.routeUid);
@@ -2666,19 +3609,23 @@
       }
 
       function refreshLineOptions() {
-        if (!el.lineSelect) return;
+        if (!el.lineSelect && !el.lineDbusList) return;
         var filtered = lineCatalog.slice();
 
-        el.lineSelect.innerHTML = "";
-        filtered.forEach(function (line) {
-          var option = document.createElement("option");
-          option.value = String(line.lineUid || "");
-          option.textContent = String(line.lineNumber || "?");
-          el.lineSelect.appendChild(option);
-        });
+        if (el.lineSelect) {
+          el.lineSelect.innerHTML = "";
+          filtered.forEach(function (line) {
+            var option = document.createElement("option");
+            option.value = String(line.lineUid || "");
+            option.textContent = String(line.lineNumber || "?");
+            el.lineSelect.appendChild(option);
+          });
+        }
 
         if (!filtered.length) {
           selectedLineUid = "";
+          if (el.lineSelect) el.lineSelect.value = "";
+          renderLineDbusList(filtered);
           updateStartButtonState();
           refreshRouteOptions();
           return;
@@ -2690,7 +3637,8 @@
         if (!currentVisible) {
           selectedLineUid = String(filtered[0] && filtered[0].lineUid || "");
         }
-        el.lineSelect.value = selectedLineUid || "";
+        if (el.lineSelect) el.lineSelect.value = selectedLineUid || "";
+        renderLineDbusList(filtered);
         updateStartButtonState();
         refreshRouteOptions();
       }
@@ -2751,7 +3699,7 @@
       }
 
       function confirmSelectedLine() {
-        var lineUid = String(el.lineSelect && el.lineSelect.value || selectedLineUid || "").trim();
+        var lineUid = String(selectedLineUid || el.lineSelect && el.lineSelect.value || "").trim();
         if (!lineUid) {
           setChooserStatus("Selectionnez une ligne", true);
           return false;
@@ -2872,7 +3820,7 @@
           el.backToLinesBtn.textContent = "X";
           el.backToLinesBtn.disabled = selectionBusy;
           el.backToLinesBtn.classList.add("is-icon");
-          el.backToLinesBtn.title = "Annuler la ligne";
+          el.backToLinesBtn.removeAttribute("title");
         }
         if (el.routeLabel) el.routeLabel.hidden = true;
         if (el.routeSelect) el.routeSelect.hidden = true;
@@ -3081,8 +4029,9 @@
 
       if (el.lineSelect) {
         el.lineSelect.addEventListener("change", function () {
-          selectedLineUid = String(el.lineSelect.value || "").trim();
+          setSelectedLineUid(el.lineSelect.value);
           updateStartButtonState();
+          refreshRouteOptions();
         });
       }
 

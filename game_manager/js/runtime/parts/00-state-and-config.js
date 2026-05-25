@@ -53,17 +53,20 @@
       var OUTPUTS = ["inline", "tab", "pip"];
       // Basculer a true pour reactiver Nouvel onglet + PIP.
       var ENABLE_TAB_AND_PIP_OUTPUTS = false;
-      // Uber Eats retire pour game2.
-      var ENABLE_UBER_EATS_MODE = false;
+      // Mode livraisons repas.
+      var ENABLE_UBER_EATS_MODE = true;
       var GAME_MODE_STORAGE_KEY = "idf_game2_mode_v1";
       var GAME_DEV_MAP_STORAGE_KEY = "idf_game2_dev_map_mode_v1";
       var GAME_DEV_MAP_BASE_VERSION = "0.1.6a";
       var GAME_DEV_MAP_LAYER_VERSION = "Dev";
       var GAME_MODES = {
         BUS: "bus",
-        FREE: "free"
+        FREE: "free",
+        UBER_EATS: "uber_eats"
       };
-      var WAZE_WIDGET_CACHE_BUSTER = "20260515-waze-route-fix";
+      var WAZE_WIDGET_CACHE_BUSTER = "20260521-gpsmini-nav-restore";
+      var SAEIV_MINI_WIDGET_CACHE_BUSTER = "20260521-dbus-line-picker-badge-weight";
+      var IPHONE_SIMULATOR_WIDGET_CACHE_BUSTER = "20260524-iphone-uber-eats-app";
       function readGameDevMapModeFromQuery() {
         try {
           var params = new URLSearchParams(window.location.search || "");
@@ -152,11 +155,12 @@
       }
       var TYPES = {
         saeiv: { label: "SAEIV", url: buildWidgetUrl("widgets/saeiv.html?dev=1&host=game&source=game") },
-        saeiv_mini: { label: "HUD Ligne Simple", url: buildWidgetUrl("widgets/saeiv_mini.html?host=game&source=game") },
+        saeiv_mini: { label: "HUD Ligne Simple", url: buildWidgetUrl("widgets/saeiv_mini.html?host=game&source=game&asset=" + SAEIV_MINI_WIDGET_CACHE_BUSTER) },
         bus_status: { label: "Statut Embarquement", url: buildWidgetUrl("widgets/bus_status.html?host=game&source=game") },
         waze: { label: "GPS Waze", url: buildWidgetUrl("widgets/waze.html?host=game&asset=" + WAZE_WIDGET_CACHE_BUSTER) },
         gps_mini: { label: "GPS Mini", url: buildWidgetUrl("widgets/gps_mini.html?host=game") },
-        gps_ets2_old: { label: "GPS ETS 2 Ancien", url: buildWidgetUrl("widgets/ets2_roadasvisor_old.html?host=game") }
+        gps_ets2_old: { label: "GPS ETS 2 Ancien", url: buildWidgetUrl("widgets/ets2_roadasvisor_old.html?host=game") },
+        iphone_simulator: { label: "Téléphone", url: buildWidgetUrl("widgets/iphone_simulator.html?host=game&asset=" + IPHONE_SIMULATOR_WIDGET_CACHE_BUSTER) }
       };
 
       var TYPE_ASPECT_RATIO = {
@@ -167,18 +171,28 @@
         waze: 9 / 19.5,
         gps_mini: 1.2 / 1,
         gps_ets2_old: 1.25 / 1,
+        iphone_simulator: 320 / 640,
         ws_dev: 1 / 1
       };
       var MODE_CONFIGS = {};
       MODE_CONFIGS[GAME_MODES.BUS] = {
         gpsTypes: ["gps_mini", ""],
         hudTypes: ["saeiv", "saeiv_mini", "bus_status"],
+        widgetTypes: ["iphone_simulator"],
         defaultGpsType: "",
         forceDefaultGps: false
       };
       MODE_CONFIGS[GAME_MODES.FREE] = {
-        gpsTypes: ["waze", "gps_mini", ""],
+        gpsTypes: ["gps_mini", ""],
         hudTypes: [],
+        widgetTypes: ["iphone_simulator"],
+        defaultGpsType: "",
+        forceDefaultGps: false
+      };
+      MODE_CONFIGS[GAME_MODES.UBER_EATS] = {
+        gpsTypes: ["gps_mini", ""],
+        hudTypes: [],
+        widgetTypes: ["iphone_simulator"],
         defaultGpsType: "",
         forceDefaultGps: false
       };

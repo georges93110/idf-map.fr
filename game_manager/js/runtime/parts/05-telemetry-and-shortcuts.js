@@ -878,7 +878,7 @@
           var syncPayload = { kind: "waze-dev", type: "zoom_sync", source: "game", zoomState: zoomSyncState };
           sendWidgetBridgeMessage(WIDGET_BRIDGE_CHANNEL_WAZE, syncPayload);
           document
-            .querySelectorAll('iframe[data-widget-type="gps_mini"], iframe[data-widget-type="waze"]')
+            .querySelectorAll('iframe[data-widget-type="gps_mini"], iframe[data-widget-type="waze"], iframe[data-widget-type="iphone_simulator"]')
             .forEach(function (frame) {
               try {
                 if (frame.contentWindow) {
@@ -904,7 +904,7 @@
 
         // Fallback direct vers les iframes GPS visibles dans l'overlay
         document
-          .querySelectorAll('iframe[data-widget-type="gps_mini"], iframe[data-widget-type="waze"], iframe[data-widget-type="gps_ets2_old"]')
+          .querySelectorAll('iframe[data-widget-type="gps_mini"], iframe[data-widget-type="waze"], iframe[data-widget-type="iphone_simulator"], iframe[data-widget-type="gps_ets2_old"]')
           .forEach(function (frame) {
             try {
               if (frame.contentWindow) {
@@ -2304,11 +2304,14 @@
         try {
           normalizedMode = typeof normalizeGameMode === "function" ? normalizeGameMode(mode) : mode;
         } catch (err2) { }
+        var isBusMode = normalizedMode === "bus";
         var saeiv = null;
-        try {
-          if (typeof buildSaeivStatePayloadFromGame === "function") saeiv = buildSaeivStatePayloadFromGame();
-        } catch (err3) {
-          saeiv = null;
+        if (isBusMode && menuOpen !== true) {
+          try {
+            if (typeof buildSaeivStatePayloadFromGame === "function") saeiv = buildSaeivStatePayloadFromGame();
+          } catch (err3) {
+            saeiv = null;
+          }
         }
         var pccReceptionMode = "always";
         try {
@@ -2318,8 +2321,11 @@
         } catch (err4) {
           pccReceptionMode = "always";
         }
-        var pccCanReceive = true;
-        try { pccCanReceive = shouldReceivePccVoiceForCurrentContext() === true; } catch (err5) { pccCanReceive = true; }
+        if (!isBusMode || menuOpen === true) pccReceptionMode = "never";
+        var pccCanReceive = false;
+        if (isBusMode && menuOpen !== true) {
+          try { pccCanReceive = shouldReceivePccVoiceForCurrentContext() === true; } catch (err5) { pccCanReceive = false; }
+        }
         return {
           title: "Etat interface IDF Map",
           kind: "game2_html_state",
@@ -2338,7 +2344,7 @@
             receptionMode: pccReceptionMode,
             canReceive: pccCanReceive
           },
-          busLine: buildRemotePanelBusLineBonusState(saeiv)
+          busLine: (isBusMode && menuOpen !== true) ? buildRemotePanelBusLineBonusState(saeiv) : null
         };
       }
       function getDiscordPresenceIntervalMs() {
@@ -2900,6 +2906,16 @@
         return message && message.audio && typeof message.audio === "object" ? message.audio : message;
       }
       function shouldReceivePccVoiceForCurrentContext() {
+        var gameMode = "";
+        try {
+          gameMode = typeof normalizeGameMode === "function"
+            ? normalizeGameMode(currentGameMode)
+            : String(currentGameMode || "").trim().toLowerCase();
+        } catch (errGameMode) {
+          gameMode = "";
+        }
+        if (gameMode !== "bus") return false;
+
         var mode = typeof normalizePccVoiceReceptionMode === "function"
           ? normalizePccVoiceReceptionMode(pccVoiceReceptionMode)
           : String(pccVoiceReceptionMode || "always").trim().toLowerCase();

@@ -2560,4 +2560,12 @@
 		<location>1330.78;14.7612;1539.35;-1.06407;5.29289e-05</location>
 	</busstop>
 
+	<busstop>
+		<id>321</id>
+		<name>Les Chanoux - Lycée Cugnot</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>6114.93;-0.0234641;-1085.95;-1.60076;0.000114441</location>
+	</busstop>
+
 </busstops>

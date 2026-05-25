@@ -804,7 +804,7 @@
         try {
           raw = String(localStorage.getItem(modeKey) || "");
           // Fallback : si pas de sauvegarde spécifique au mode, on tente de récupérer la globale (v4)
-          if (!raw) {
+          if (!raw && currentGameMode !== GAME_MODES.UBER_EATS) {
             raw = String(localStorage.getItem(WIDGET_LAYOUT_STORAGE_KEY) || "");
           }
         } catch (err0) { raw = ""; }
@@ -1473,7 +1473,9 @@
         });
         if (!showExperimentalWidgets) {
           availableTypes = availableTypes.filter(function (type) {
-            return !isExperimentalWidgetType(type);
+            return typeof shouldShowExperimentalWidgetInManager === "function"
+              ? shouldShowExperimentalWidgetInManager(type)
+              : !isExperimentalWidgetType(type);
           });
         }
 

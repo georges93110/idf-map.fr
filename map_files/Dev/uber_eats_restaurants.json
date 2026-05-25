@@ -1,0 +1,552 @@
+[
+    {
+        "Titre": "Pizza du Plateau - Neuilly-Plaisance",
+        "x": 5273.8,
+        "y": -2423.89
+    },
+    {
+        "Titre": "Au Terminus - Neuilly-Plaisance",
+        "x": 5252.89,
+        "y": -2408.11
+    },
+    {
+        "Titre": "Woodiz Pizza - Neuilly-Plaisance",
+        "x": 5239.62,
+        "y": -2384.94
+    },
+    {
+        "Titre": "Hôtel des Carrières - Neuilly-Plaisance",
+        "x": 5431.73,
+        "y": -1546.3
+    },
+    {
+        "Titre": "Maison du pain - Neuilly-Plaisance",
+        "x": 5620.94,
+        "y": -1067.81
+    },
+    {
+        "Titre": "Franprix - Neuilly-Plaisance",
+        "x": 5612.6,
+        "y": -1069.58
+    },
+    {
+        "Titre": "Bill's Burger - Neuilly-Plaisance",
+        "x": 5217.11,
+        "y": -1037.22
+    },
+    {
+        "Titre": "La Casa Lounge - Neuilly-Plaisance",
+        "x": 5218.28,
+        "y": -1017.23
+    },
+    {
+        "Titre": "La Panichette - Neuilly-Plaisance",
+        "x": 5147.5,
+        "y": -1030.55
+    },
+    {
+        "Titre": "Le Mermoz - Neuilly-Plaisance",
+        "x": 5151.24,
+        "y": -993.104
+    },
+    {
+        "Titre": "Pizza & Chicken Express - Neuilly-Plaisance",
+        "x": 4936.86,
+        "y": -521.944
+    },
+    {
+        "Titre": "Boulangerie de Neuilly - Neuilly-Plaisance",
+        "x": 4955.18,
+        "y": -511.911
+    },
+    {
+        "Titre": "Le Grand Paris - Neuilly-Plaisance",
+        "x": 5204.94,
+        "y": 8.33441
+    },
+    {
+        "Titre": "La Petite Lulu - Neuilly-Plaisance",
+        "x": 5245.26,
+        "y": 23.7927
+    },
+    {
+        "Titre": "Votre Marché - Neuilly-Plaisance",
+        "x": 5258.59,
+        "y": 20.2456
+    },
+    {
+        "Titre": "Domino's Pizza - Neuilly-Plaisance",
+        "x": 5290.4,
+        "y": 19.638
+    },
+    {
+        "Titre": "Chicken House - Neuilly-Plaisance",
+        "x": 5293.47,
+        "y": 31.5873
+    },
+    {
+        "Titre": "Pizzeria New Chicken - Neuilly-Plaisance",
+        "x": 5342.08,
+        "y": 3.7832
+    },
+    {
+        "Titre": "Hoki Sushi - Neuilly-sur-Marne",
+        "x": 5445.26,
+        "y": -57.6804
+    },
+    {
+        "Titre": "Aux deux Saveurs - Neuilly-Plaisance",
+        "x": 5636.06,
+        "y": -75.236
+    },
+    {
+        "Titre": "Auchan - Neuilly-Sur-Marne",
+        "x": 5581.92,
+        "y": -162.195
+    },
+    {
+        "Titre": "Boulangerie ange - Neuilly-sur-Marne",
+        "x": 5474.09,
+        "y": -160.351
+    },
+    {
+        "Titre": "Good and Tasty - Noisy-le-Sec",
+        "x": 1969.97,
+        "y": -5181.67
+    },
+    {
+        "Titre": "Pizza Yes - Noisy-le-Sec",
+        "x": 1980.38,
+        "y": -5185.02
+    },
+    {
+        "Titre": "Ozo berliner & chicken - Noisy-le-Sec",
+        "x": 1990.82,
+        "y": -5187.31
+    },
+    {
+        "Titre": "Cho'pain - Noisy-le-Sec",
+        "x": 2000.39,
+        "y": -5190.15
+    },
+    {
+        "Titre": "Fournil Du Pont - Noisy-le-Sec",
+        "x": 2009.36,
+        "y": -5187.85
+    },
+    {
+        "Titre": "Plancha Grill - Bondy",
+        "x": 2329.6,
+        "y": -5290.92
+    },
+    {
+        "Titre": "Restaurant Paristanbul - Nogent-sur-Marne",
+        "x": 1298.61,
+        "y": 1491.2
+    },
+    {
+        "Titre": "Marché Leclerc - Nogent-sur-Marne",
+        "x": 1311.83,
+        "y": 1484.47
+    },
+    {
+        "Titre": "Carrefour City - Nogent-sur-Marne",
+        "x": 1329.42,
+        "y": 1544.06
+    },
+    {
+        "Titre": "Boulangerie, Pâtisserie Laure Et Yann - Nogent-sur-Marne",
+        "x": 1271.68,
+        "y": 1595.28
+    },
+    {
+        "Titre": "Giacomo-Ristorante Trattoria Caffe - Nogent-sur-Marne",
+        "x": 1236.78,
+        "y": 1647.4
+    },
+    {
+        "Titre": "Boulangerie Baltard - Nogent-sur-Marne",
+        "x": 1203.67,
+        "y": 1638.14
+    },
+    {
+        "Titre": "G20 - Nogent-sur-Marne",
+        "x": 1187.06,
+        "y": 1660.87
+    },
+    {
+        "Titre": "Au Petit Duc - Fontenay-sous-Bois",
+        "x": 2473.7,
+        "y": 96.8081
+    },
+    {
+        "Titre": "Auchan - Fontenay-sous-Bois",
+        "x": 2295.06,
+        "y": 118.662
+    },
+    {
+        "Titre": "Restaurant Maranello - Rosny-Sous-Bois",
+        "x": 2723.02,
+        "y": -2162.53
+    },
+    {
+        "Titre": "Gelateria Verdi - Rosny-Sous-Bois",
+        "x": 2724.12,
+        "y": -2159.96
+    },
+    {
+        "Titre": "L'Opera de Rosny - Rosny-Sous-Bois",
+        "x": 2721.43,
+        "y": -2125.83
+    },
+    {
+        "Titre": "La boulang' de Rosny - Rosny-Sous-Bois",
+        "x": 2718.59,
+        "y": -2141.58
+    },
+    {
+        "Titre": "La chaumière de Rosny - Rosny-Sous-Bois",
+        "x": 2740.09,
+        "y": -2031.02
+    },
+    {
+        "Titre": "Picard - Rosny-Sous-Bois",
+        "x": 2734.3,
+        "y": -2036.28
+    },
+    {
+        "Titre": "E.Leclerc - Rosny-Sous-Bois",
+        "x": 2743.95,
+        "y": -1989.13
+    },
+    {
+        "Titre": "Rotisserie de Rosny - Rosny-Sous-Bois",
+        "x": 2749.1,
+        "y": -1966.33
+    },
+    {
+        "Titre": "Le délice - Rosny-Sous-Bois",
+        "x": 2641.21,
+        "y": -1700.16
+    },
+    {
+        "Titre": "McDonald's - Rosny-Sous-Bois",
+        "x": 3532.44,
+        "y": -3498.09
+    },
+    {
+        "Titre": "Carrefour city - Rosny-Sous-Bois",
+        "x": 5063.94,
+        "y": -3756.39
+    },
+    {
+        "Titre": "Flunch - Rosny-Sous-Bois",
+        "x": 2997.91,
+        "y": -3323.93
+    },
+    {
+        "Titre": "Quick - Rosny-Sous-Bois",
+        "x": 3086.7,
+        "y": -3138.54
+    },
+    {
+        "Titre": "Carrefour - Rosny-Sous-Bois",
+        "x": 2896.84,
+        "y": -3395.54
+    },
+    {
+        "Titre": "Lidl - Rosny-Sous-Bois",
+        "x": 3274.56,
+        "y": -3688.74
+    },
+    {
+        "Titre": "Pizza Hut - Villemomble",
+        "x": 5113.9,
+        "y": -3766.17
+    },
+    {
+        "Titre": "HyperCacher - Villemomble",
+        "x": 4952.61,
+        "y": -4022.72
+    },
+    {
+        "Titre": "MacDonald's - Bussy-Saint-Georges",
+        "x": 17015.6,
+        "y": 456.01
+    },
+    {
+        "Titre": "Five Guys - Chessy",
+        "x": 22348.5,
+        "y": -1968.73
+    },
+    {
+        "Titre": "Vapiano - Chessy",
+        "x": 22336,
+        "y": -1995.67
+    },
+    {
+        "Titre": "Carrefour - Ferriere-En-Brie",
+        "x": 16388.9,
+        "y": 948.981
+    },
+    {
+        "Titre": "Brendy's Café - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Babeco - Créteil Soleil",
+        "x": -26.8851,
+        "y": 5730.23
+    },
+    {
+        "Titre": "It - Italian trattoria - Créteil Soleil",
+        "x": -26.8851,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Sushi way - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Benny's burger - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Burger king - Créteil Soleil",
+        "x": -26.8853,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Quick - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Sola ramen - Créteil Soleil",
+        "x": -26.8853,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Los pollos - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Thaï basilic - Créteil Soleil",
+        "x": -26.8853,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Black & white - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Onyxia - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Chik'chill - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Waffle factory - Créteil Soleil",
+        "x": -26.8853,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Subway - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Lolly's - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Starbucks - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Momen'tea - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Paul - Créteil Soleil",
+        "x": -26.8853,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Mangos - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Restaurant lal qila bollywood - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Crêpe touch - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Le chinois de creteil - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Le pacha kebab - Créteil Soleil",
+        "x": -26.8852,
+        "y": 5730.23
+    },
+    {
+        "Titre": "Rosa Bonheur à l'Est - Paris Bois de Vincennes",
+        "x": 282.268,
+        "y": 1200.49
+    },
+    {
+        "Titre": "Carrefour - Paris Bercy",
+        "x": -3879.78,
+        "y": 2316.19
+    },
+    {
+        "Titre": "Carrefour city - Paris Bastille",
+        "x": -5118.86,
+        "y": -238.99
+    },
+    {
+        "Titre": "Macdonald's - Paris Porte de Vincennes",
+        "x": -3156.77,
+        "y": 193.476
+    },
+    {
+        "Titre": "Auchan - Paris Porte de Vincennes",
+        "x": -3146.18,
+        "y": 80.5402
+    },
+    {
+        "Titre": "Coccinelle Express - Nogent-sur-Marne",
+        "x": 1492.42,
+        "y": 1454.88
+    },
+    {
+        "Titre": "Côté Sushi Nogent - Nogent-sur-Marne",
+        "x": 1835.93,
+        "y": 1460.65
+    },
+    {
+        "Titre": "Laka - Nogent-sur-Marne",
+        "x": 1854.02,
+        "y": 1456.26
+    },
+    {
+        "Titre": "Supermarché G20 - Nogent-sur-Marne",
+        "x": 1813.94,
+        "y": 1409.87
+    },
+    {
+        "Titre": "Karamela - Nogent-sur-Marne",
+        "x": 1890.62,
+        "y": 1444.17
+    },
+    {
+        "Titre": "Franprix - Nogent-sur-Marne",
+        "x": 1933.74,
+        "y": 1362.52
+    },
+    {
+        "Titre": "Boulibar - Nogent-sur-Marne",
+        "x": 1989.56,
+        "y": 1428.05
+    },
+    {
+        "Titre": "Jeff de Bruges - Nogent-sur-Marne",
+        "x": 2039.16,
+        "y": 1461.64
+    },
+    {
+        "Titre": "McDonald's - Nogent-sur-Marne",
+        "x": 2191.26,
+        "y": 1380.41
+    },
+    {
+        "Titre": "Chang - Nogent-sur-Marne",
+        "x": 2145.63,
+        "y": 1365.59
+    },
+    {
+        "Titre": "Bagelstein - Nogent-sur-Marne",
+        "x": 2236.72,
+        "y": 1398.88
+    },
+    {
+        "Titre": "Sushi Shop - Nogent-sur-Marne",
+        "x": 2402.99,
+        "y": 1375.58
+    },
+    {
+        "Titre": "Pizza Hut - Nogent-sur-Marne",
+        "x": 2572.48,
+        "y": 1446.63
+    },
+    {
+        "Titre": "Kokrabi - Nogent-sur-Marne",
+        "x": 2558.71,
+        "y": 1393.75
+    },
+    {
+        "Titre": "Carrefour City - Le Perreux-sur-Marne",
+        "x": 2689.58,
+        "y": 1397.89
+    },
+    {
+        "Titre": "Domino's Pizza - Le Perreux-sur-Marne",
+        "x": 2946.38,
+        "y": 1234.85
+    },
+    {
+        "Titre": "Franprix - Le Perreux-sur-Marne",
+        "x": 3250.7,
+        "y": 1057.55
+    },
+    {
+        "Titre": "Bo Sushi - Le Perreux-sur-Marne",
+        "x": 3869.75,
+        "y": 984.861
+    },
+    {
+        "Titre": "Pizzeria Vivaldi - Le Perreux-sur-Marne",
+        "x": 3924.37,
+        "y": 961.259
+    },
+    {
+        "Titre": "KFC - Rosny-sous-Bois",
+        "x": 2676.36,
+        "y": -2627.74
+    },
+    {
+        "Titre": "Obrigado Rodizio - Rosny-sous-Bois",
+        "x": 2675.56,
+        "y": -2686.56
+    },
+    {
+        "Titre": "New Shalimar - Rosny-sous-Bois",
+        "x": 2668.91,
+        "y": -2712.0
+    },
+    {
+        "Titre": "Homarus - Rosny-sous-Bois",
+        "x": 2663.2,
+        "y": -2727.4
+    }
+]

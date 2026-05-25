@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plans</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #121212;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      padding: 0;
+      color: inherit;
+      background: none;
+      cursor: pointer;
+    }
+
+    .maps-app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #121212;
+    }
+
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #121212;
+    }
+
+    .topbar {
+      position: absolute;
+      left: 11px;
+      right: 11px;
+      top: 11px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .search {
+      height: 40px;
+      border-radius: 18px;
+      display: grid;
+      grid-template-columns: 22px 1fr 24px;
+      align-items: center;
+      gap: 7px;
+      padding: 0 9px 0 12px;
+      background: rgba(24, 24, 24, 0.92);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      pointer-events: auto;
+    }
+
+    .search svg,
+    .round svg,
+    .zoom button svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .search input {
+      min-width: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      color: #f8fafc;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .search input::-webkit-search-cancel-button,
+    .search input::-webkit-search-decoration {
+      display: none;
+      -webkit-appearance: none;
+    }
+
+    .search input::placeholder {
+      color: rgba(248, 250, 252, 0.58);
+    }
+
+    .clear {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: none;
+      place-items: center;
+      color: #fff;
+      background: rgba(148, 163, 184, 0.28);
+    }
+
+    .clear.visible {
+      display: grid;
+    }
+
+    .clear svg {
+      width: 13px;
+      height: 13px;
+      stroke-width: 3;
+    }
+
+    .round {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #f8fafc;
+      background: rgba(24, 24, 24, 0.9);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      pointer-events: auto;
+    }
+
+    .round:disabled,
+    .round[aria-disabled="true"] {
+      color: #777;
+      background: rgba(34, 34, 34, 0.78);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+      cursor: default;
+      opacity: 0.72;
+    }
+
+    .zoom {
+      position: absolute;
+      right: 11px;
+      bottom: 38px;
+      z-index: 18;
+      width: 42px;
+      overflow: hidden;
+      border-radius: 14px;
+      display: grid;
+      background: rgba(24, 24, 24, 0.9);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: opacity 0.16s ease, visibility 0.16s ease;
+    }
+
+    .zoom button {
+      width: 42px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      color: #f8fafc;
+    }
+
+    .zoom button + button {
+      border-top: 1px solid rgba(248, 250, 252, 0.12);
+    }
+
+    .right-controls {
+      position: absolute;
+      right: 11px;
+      bottom: 132px;
+      z-index: 18;
+      display: grid;
+      gap: 8px;
+      pointer-events: none;
+      transition: opacity 0.16s ease, visibility 0.16s ease;
+    }
+
+    .right-controls .round {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      pointer-events: auto;
+    }
+
+    .maps-app.search-active .right-controls,
+    .maps-app.search-active .zoom {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      z-index: 9;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: #cbd5e1;
+      background: #121212;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      transition: opacity 0.18s ease;
+      pointer-events: none;
+    }
+
+    .loading.hidden {
+      opacity: 0;
+    }
+
+  </style>
+</head>
+<body>
+  <main class="maps-app">
+    <iframe id="mapFrame" title="Carte IDF" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+
+    <div class="loading" id="loading">Chargement...</div>
+
+    <div class="topbar">
+      <form class="search" id="searchForm" autocomplete="off">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m16.5 16.5 4 4"></path>
+        </svg>
+        <input id="searchInput" type="text" placeholder="Rechercher" aria-label="Rechercher">
+        <button class="clear" id="clearSearch" type="button" aria-label="Effacer la recherche">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="right-controls">
+      <button class="round" id="locateButton" type="button" aria-label="Recentrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2v4"></path>
+          <path d="M12 18v4"></path>
+          <path d="M2 12h4"></path>
+          <path d="M18 12h4"></path>
+          <circle cx="12" cy="12" r="4"></circle>
+        </svg>
+      </button>
+    </div>
+
+    <div class="zoom" aria-label="Zoom">
+      <button id="zoomInButton" type="button" aria-label="Zoom avant">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14"></path>
+        </svg>
+      </button>
+      <button id="zoomOutButton" type="button" aria-label="Zoom arrière">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14"></path>
+        </svg>
+      </button>
+    </div>
+  </main>
+
+  <script>
+    const frame = document.getElementById('mapFrame');
+    const app = document.querySelector('.maps-app');
+    const loading = document.getElementById('loading');
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const locateButton = document.getElementById('locateButton');
+    let latestPlayerPoint = null;
+    let latestPlayerPointAt = 0;
+    let latestRouteAllowed = true;
+    let hostBridgePollInFlight = false;
+    let pendingAutoCenterOnPlayer = true;
+    const ROSNY_SOUS_BOIS_WORLD_POINT = { x: 2759.439, y: -2085.39917 };
+
+    function escapeScriptString(value) {
+      return JSON.stringify(String(value == null ? '' : value));
+    }
+
+    function runMapScript(source) {
+      try {
+        if (!frame.contentWindow) return null;
+        return frame.contentWindow.eval(source);
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function getHostWindowCandidates() {
+      const candidates = [];
+      let current = window;
+      for (let i = 0; i < 8; i += 1) {
+        let parent = null;
+        try { parent = current.parent; } catch (err) { parent = null; }
+        if (!parent || parent === current) break;
+        if (!candidates.includes(parent)) candidates.push(parent);
+        current = parent;
+      }
+      try {
+        if (window.top && window.top !== window && !candidates.includes(window.top)) candidates.push(window.top);
+      } catch (err) { }
+      try {
+        if (window.opener && window.opener !== window && !candidates.includes(window.opener)) candidates.push(window.opener);
+      } catch (err) { }
+      return candidates;
+    }
+
+    function hasDevMapFlagInSearch(search) {
+      const rawSearch = String(search || '');
+      try {
+        const params = new URLSearchParams(rawSearch);
+        return params.has('devmap') || params.has('dev_map') || params.has('nextversion');
+      } catch (err) {
+        return /(?:^|[?&])(?:devmap|dev_map|nextversion)(?:[=&]|$)/i.test(rawSearch);
+      }
+    }
+
+    function isDevMapStorageEnabled(storage) {
+      try {
+        const raw = String(storage.getItem('idf_game2_dev_map_mode_v1') || '').trim().toLowerCase();
+        return raw === '1' || raw === 'true' || raw === 'on';
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function isHostDevMapMode() {
+      let ownStorageEnabled = false;
+      try { ownStorageEnabled = isDevMapStorageEnabled(window.localStorage); } catch (err) { }
+      if (hasDevMapFlagInSearch(location.search) || ownStorageEnabled) return true;
+      const candidates = getHostWindowCandidates();
+      for (let i = 0; i < candidates.length; i += 1) {
+        const win = candidates[i];
+        try {
+          if (win.GAME2_DEV_MAP_MODE === true) return true;
+        } catch (err) { }
+        try {
+          if (win.document && win.document.body && win.document.body.classList.contains('is-dev-map-mode')) return true;
+        } catch (err) { }
+        try {
+          if (hasDevMapFlagInSearch(win.location && win.location.search)) return true;
+        } catch (err) { }
+        try {
+          if (isDevMapStorageEnabled(win.localStorage)) return true;
+        } catch (err) { }
+      }
+      return false;
+    }
+
+    function buildMapUrl() {
+      const url = new URL('../../../../map.html', location.href);
+      url.searchParams.set('maps_app', '');
+      if (isHostDevMapMode()) url.searchParams.set('nextversion', '');
+      return url.href;
+    }
+
+    frame.src = buildMapUrl();
+
+    async function resolveMaybePromise(value, timeoutMs = 700) {
+      if (!value || typeof value.then !== 'function') return value;
+      return new Promise((resolve) => {
+        let settled = false;
+        const finish = (nextValue) => {
+          if (settled) return;
+          settled = true;
+          resolve(nextValue);
+        };
+        const timer = window.setTimeout(() => finish(null), Math.max(80, Number(timeoutMs) || 700));
+        Promise.resolve(value)
+          .then((resolved) => {
+            window.clearTimeout(timer);
+            finish(resolved);
+          })
+          .catch(() => {
+            window.clearTimeout(timer);
+            finish(null);
+          });
+      });
+    }
+
+    async function readHostWazeState() {
+      const candidates = getHostWindowCandidates();
+      for (let i = 0; i < candidates.length; i += 1) {
+        const win = candidates[i];
+        try {
+          if (typeof win.wazeGetBridgeState !== 'function') continue;
+          const payload = await resolveMaybePromise(win.wazeGetBridgeState());
+          if (payload && typeof payload === 'object') return payload;
+        } catch (err) { }
+      }
+      return null;
+    }
+
+    function normalizeWorldPoint(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      const x = Number(raw.x ?? raw.X);
+      const hasZ = Object.prototype.hasOwnProperty.call(raw, 'z') || Object.prototype.hasOwnProperty.call(raw, 'Z');
+      const y = Number(hasZ ? (raw.z ?? raw.Z) : (raw.y ?? raw.Y));
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      let h = Number(raw.h ?? raw.H ?? raw.height ?? raw.alt ?? raw.altitude);
+      if (!Number.isFinite(h) && hasZ) h = Number(raw.y ?? raw.Y);
+      const point = { x, y };
+      if (Number.isFinite(h)) point.h = h;
+      return point;
+    }
+
+    function extractPlayerPointFromBridge(payload) {
+      if (!payload || typeof payload !== 'object') return null;
+      return normalizeWorldPoint(
+        payload.arrow ||
+        payload.player ||
+        payload.position ||
+        payload.start ||
+        payload.current ||
+        null
+      );
+    }
+
+    function isRouteAllowedFromBridge(payload) {
+      if (!payload || typeof payload !== 'object') return true;
+      if (!Object.prototype.hasOwnProperty.call(payload, 'gameMode')) return true;
+      return String(payload.gameMode || '').trim().toLowerCase() === 'free';
+    }
+
+    function updateEmbeddedRouteAllowed(allowed) {
+      latestRouteAllowed = allowed !== false;
+      runMapScript(`
+        (() => {
+          if (typeof window.__idfMapsAppSetRouteAllowed === 'function') {
+            return window.__idfMapsAppSetRouteAllowed(${latestRouteAllowed ? 'true' : 'false'});
+          }
+          window.__idfMapsAppRouteAllowed = ${latestRouteAllowed ? 'true' : 'false'};
+          return true;
+        })()
+      `);
+      return latestRouteAllowed;
+    }
+
+    function setLocateAvailable(available) {
+      const enabled = !!available;
+      locateButton.disabled = !enabled;
+      locateButton.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+      locateButton.setAttribute('title', enabled ? 'Recentrer sur le joueur' : 'Position joueur indisponible');
+    }
+
+    function updateMapPlayerPoint(point, center = false) {
+      if (!point) {
+        runMapScript(`
+          (() => {
+            if (typeof window.__idfMapsAppClearPlayerWorldPoint === 'function') {
+              window.__idfMapsAppClearPlayerWorldPoint();
+            }
+            return true;
+          })()
+        `);
+        return false;
+      }
+      const pointJson = JSON.stringify(point);
+      return runMapScript(`
+        (() => {
+          if (typeof window.__idfMapsAppSetPlayerWorldPoint !== 'function') return { ok: false };
+          return window.__idfMapsAppSetPlayerWorldPoint(${pointJson}, { center: ${center ? 'true' : 'false'} });
+        })()
+      `);
+    }
+
+    async function refreshPlayerPosition(center = false) {
+      if (hostBridgePollInFlight) return false;
+      hostBridgePollInFlight = true;
+      try {
+        const payload = await readHostWazeState();
+        updateEmbeddedRouteAllowed(isRouteAllowedFromBridge(payload));
+        const point = extractPlayerPointFromBridge(payload);
+        if (!point) {
+          latestPlayerPoint = null;
+          latestPlayerPointAt = 0;
+          pendingAutoCenterOnPlayer = true;
+          setLocateAvailable(false);
+          updateMapPlayerPoint(null);
+          return false;
+        }
+        latestPlayerPoint = point;
+        latestPlayerPointAt = Date.now();
+        setLocateAvailable(true);
+        const shouldCenter = center === true || pendingAutoCenterOnPlayer === true;
+        const result = updateMapPlayerPoint(point, shouldCenter);
+        if (shouldCenter && result && result.ok !== false) {
+          pendingAutoCenterOnPlayer = false;
+        }
+        return true;
+      } finally {
+        hostBridgePollInFlight = false;
+      }
+    }
+
+    window.__idfMapsAppRequestAutoCenter = function () {
+      pendingAutoCenterOnPlayer = true;
+      if (latestPlayerPoint) updateMapPlayerPoint(latestPlayerPoint, true);
+      refreshPlayerPosition(true);
+      return true;
+    };
+
+    window.__idfMapsAppOpenWazeDestination = function (rawPoint) {
+      const destination = normalizeWorldPoint(rawPoint);
+      if (!destination || !latestPlayerPoint || latestRouteAllowed === false) return false;
+      const candidates = getHostWindowCandidates();
+      for (let i = 0; i < candidates.length; i += 1) {
+        const win = candidates[i];
+        try {
+          if (typeof win.__idfIphoneOpenWazeDestination === 'function') {
+            const result = win.__idfIphoneOpenWazeDestination(destination);
+            if (result !== false) return true;
+          }
+        } catch (err) { }
+      }
+      for (let i = 0; i < candidates.length; i += 1) {
+        const win = candidates[i];
+        try {
+          if (typeof win.wazeSetNavigationDestinationXYZ === 'function') {
+            return !!win.wazeSetNavigationDestinationXYZ(
+              destination.x,
+              Number.isFinite(destination.h) ? destination.h : 0,
+              destination.y
+            );
+          }
+        } catch (err) { }
+      }
+      return false;
+    };
+
+    function injectMobileMapStyle() {
+      try {
+        const doc = frame.contentDocument;
+        if (!doc || doc.getElementById('iphoneMapsStyle')) return;
+        const style = doc.createElement('style');
+        style.id = 'iphoneMapsStyle';
+        style.textContent = `
+          html, body, #map {
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
+          }
+          * {
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
+          }
+          body {
+            background: #121212 !important;
+          }
+          #topBar,
+          #sharedHeaderMount,
+          #siteTopBar,
+          .site-topbar,
+          .site-header,
+          .shared-header,
+          .analysis-hud,
+          .leaflet-control-attribution {
+            display: none !important;
+          }
+          #map {
+            position: fixed !important;
+            inset: 0 !important;
+            background: #121212 !important;
+          }
+          .leaflet-overlay-pane,
+          .leaflet-marker-pane,
+          .leaflet-tooltip-pane,
+          .leaflet-popup-pane {
+            filter: none !important;
+          }
+          .search-panel {
+            position: fixed !important;
+            left: 11px !important;
+            right: 11px !important;
+            top: 58px !important;
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            z-index: 1200 !important;
+            pointer-events: auto !important;
+          }
+          #searchPanel.search-panel-modal,
+          #searchPanel {
+            width: auto !important;
+            max-width: none !important;
+            max-height: 47vh !important;
+            border-radius: 18px !important;
+            overflow: hidden !important;
+            background: #171717 !important;
+            color: #f8fafc !important;
+            border-color: rgba(248, 250, 252, 0.12) !important;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.42) !important;
+          }
+          #searchPanel .dbus-header,
+          #searchPanel .dbus-footer {
+            display: none !important;
+          }
+          #searchPanel .dbus-content,
+          #results {
+            max-height: 47vh !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+          }
+          #searchPanel .dbus-content::-webkit-scrollbar,
+          #results::-webkit-scrollbar,
+          .results::-webkit-scrollbar {
+            width: 0 !important;
+            height: 0 !important;
+            display: none !important;
+          }
+          .result-item {
+            color: #f8fafc !important;
+            background: #171717 !important;
+            border-color: rgba(248, 250, 252, 0.08) !important;
+            gap: 6px !important;
+            padding: 3px 8px !important;
+            font-size: 10px !important;
+            line-height: 1.1 !important;
+            min-height: 24px !important;
+            height: auto !important;
+            box-sizing: border-box !important;
+          }
+          .result-item img.ico {
+            width: 38px !important;
+            height: 16px !important;
+            border-radius: 4px !important;
+          }
+          .result-item img.ico.ico-service {
+            width: 18px !important;
+            height: 18px !important;
+          }
+          .result-text {
+            font-size: 10px !important;
+            line-height: 1.1 !important;
+          }
+          .result-sechead {
+            color: #cbd5e1 !important;
+            background: #202020 !important;
+            border-color: rgba(248, 250, 252, 0.08) !important;
+            font-size: 8px !important;
+            padding: 4px 8px !important;
+            min-height: 20px !important;
+            box-sizing: border-box !important;
+          }
+          .result-empty {
+            color: #cbd5e1 !important;
+            background: #171717 !important;
+            font-size: 10px !important;
+            padding: 5px 8px !important;
+          }
+          .results-filters,
+          .search-categories {
+            gap: 3px !important;
+            padding: 3px 5px !important;
+          }
+          .dbus-mode-btn {
+            color: #e2e8f0 !important;
+            background: #252525 !important;
+            border-color: rgba(248, 250, 252, 0.12) !important;
+            min-height: 18px !important;
+            padding: 2px 6px !important;
+            border-radius: 7px !important;
+            font-size: 9px !important;
+            line-height: 1 !important;
+          }
+          .leaflet-popup-content-wrapper {
+            background: #171717 !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(248, 250, 252, 0.12) !important;
+            max-width: 250px !important;
+            border-radius: 12px !important;
+          }
+          .leaflet-popup-tip {
+            background: #171717 !important;
+          }
+          .leaflet-popup-content {
+            width: auto !important;
+            max-width: 220px !important;
+            margin: 8px 10px !important;
+            font-size: 12px !important;
+            line-height: 1.25 !important;
+          }
+          .leaflet-popup-content img {
+            max-width: 96px !important;
+            max-height: 72px !important;
+          }
+        `;
+        doc.head.appendChild(style);
+      } catch (err) { }
+    }
+
+    function syncEmbeddedMapBounds() {
+      runMapScript(`
+        (() => {
+          if (typeof map !== 'undefined' && map && typeof map.invalidateSize === 'function') {
+            map.invalidateSize(false);
+          }
+          if (typeof enforceMapDragBounds === 'function') {
+            enforceMapDragBounds();
+          } else if (typeof applyBounds === 'function') {
+            applyBounds();
+          }
+          return true;
+        })()
+      `);
+    }
+
+    function setEmbeddedSearch(value, focus) {
+      const query = String(value == null ? '' : value);
+      const script = `
+        (() => {
+          const input = document.getElementById('search');
+          if (!input) return false;
+          input.value = ${escapeScriptString(query)};
+          if (!input.value.trim()) {
+            if (typeof closeSearchUI === 'function') closeSearchUI({ reset: false });
+            return true;
+          }
+          if (${focus ? 'true' : 'false'}) {
+            input.focus();
+            input.dispatchEvent(new Event('focus', { bubbles: true }));
+          }
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          if (typeof doSearch === 'function') doSearch(input.value);
+          if (typeof openSearchUI === 'function') openSearchUI({ refresh: true });
+          return true;
+        })()
+      `;
+      return runMapScript(script);
+    }
+
+    function clearEmbeddedSearch() {
+      runMapScript(`
+        (() => {
+          const input = document.getElementById('search');
+          if (input) {
+            input.value = '';
+          }
+          if (typeof closeSearchUI === 'function') closeSearchUI({ reset: true });
+          return true;
+        })()
+      `);
+    }
+
+    function updateSearchActive() {
+      const active = Boolean(searchInput.value.trim());
+      app?.classList.toggle('search-active', active);
+      return active;
+    }
+
+    function zoomBy(delta) {
+      const amount = Number(delta) || 0;
+      runMapScript(`
+        (() => {
+          if (typeof map === 'undefined' || !map) return false;
+          if (${amount} > 0) map.zoomIn(0.5, { animate: true });
+          else map.zoomOut(0.5, { animate: true });
+          return true;
+        })()
+      `);
+    }
+
+    function centerMapOnRosny(attempt = 0) {
+      const result = runMapScript(`
+        (() => {
+          if (typeof map === 'undefined' || !map || typeof toLatLng !== 'function') return { ok: false };
+          const latlng = toLatLng(${ROSNY_SOUS_BOIS_WORLD_POINT.x}, ${ROSNY_SOUS_BOIS_WORLD_POINT.y});
+          if (!latlng) return { ok: false };
+          const targetZoom = Math.max(map.getZoom(), minNativeZoom + 4);
+          map.setView(latlng, targetZoom, { animate: false });
+          return { ok: true };
+        })()
+      `);
+      if ((!result || result.ok !== true) && attempt < 14) {
+        window.setTimeout(() => centerMapOnRosny(attempt + 1), 160);
+      }
+    }
+
+    function recenterMap() {
+      pendingAutoCenterOnPlayer = false;
+      if (!latestPlayerPoint) return;
+      updateMapPlayerPoint(latestPlayerPoint, true);
+      refreshPlayerPosition(true);
+    }
+
+    function openSearchResult(attempt = 0) {
+      const query = searchInput.value.trim();
+      if (!query) return;
+      const result = runMapScript(`
+        (() => {
+          if (typeof window.__idfMapsAppOpenSearch === 'function') {
+            return window.__idfMapsAppOpenSearch(${escapeScriptString(query)});
+          }
+          const first = document.querySelector('#results .result-item');
+          if (!first) return { ok: false, reason: 'no_result', indexed: 0 };
+          first.click();
+          return { ok: true };
+        })()
+      `);
+      if ((!result || !result.ok) && attempt < 12) {
+        window.setTimeout(() => openSearchResult(attempt + 1), 180);
+      }
+    }
+
+    searchInput.addEventListener('focus', () => {
+      if (updateSearchActive()) setEmbeddedSearch(searchInput.value, true);
+      else clearEmbeddedSearch();
+    });
+    searchInput.addEventListener('input', () => {
+      clearSearch.classList.toggle('visible', Boolean(searchInput.value));
+      if (updateSearchActive()) setEmbeddedSearch(searchInput.value, true);
+      else clearEmbeddedSearch();
+    });
+    document.getElementById('searchForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!updateSearchActive()) return;
+      setEmbeddedSearch(searchInput.value, true);
+      openSearchResult();
+      searchInput.blur();
+      app?.classList.remove('search-active');
+    });
+    clearSearch.addEventListener('click', () => {
+      searchInput.value = '';
+      clearSearch.classList.remove('visible');
+      updateSearchActive();
+      clearEmbeddedSearch();
+      searchInput.focus();
+    });
+    document.getElementById('zoomInButton').addEventListener('click', () => zoomBy(1));
+    document.getElementById('zoomOutButton').addEventListener('click', () => zoomBy(-1));
+    setLocateAvailable(false);
+    locateButton.addEventListener('click', recenterMap);
+
+    frame.addEventListener('load', () => {
+      injectMobileMapStyle();
+      syncEmbeddedMapBounds();
+      window.setTimeout(injectMobileMapStyle, 500);
+      window.setTimeout(syncEmbeddedMapBounds, 500);
+      window.setTimeout(injectMobileMapStyle, 1500);
+      window.setTimeout(syncEmbeddedMapBounds, 1500);
+      pendingAutoCenterOnPlayer = true;
+      centerMapOnRosny();
+      window.setTimeout(centerMapOnRosny, 600);
+      refreshPlayerPosition(true);
+      window.setTimeout(() => refreshPlayerPosition(true), 600);
+      loading.classList.add('hidden');
+      window.setTimeout(() => {
+        loading.style.display = 'none';
+      }, 220);
+    });
+    window.setInterval(() => {
+      refreshPlayerPosition(false);
+    }, 700);
+  </script>
+</body>
+</html>

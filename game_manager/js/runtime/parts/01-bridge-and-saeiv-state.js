@@ -226,9 +226,396 @@
           data.passengerAlightingDone
         );
       }
+      var uberEatsOfferDataPromise = null;
+      var uberEatsOfferDataCache = null;
+      var uberEatsOfferSeq = 0;
+      function parseUberEatsJsonResponse(res) {
+        return res.text().then(function (text) {
+          return JSON.parse(String(text || "").replace(/^\uFEFF/, ""));
+        });
+      }
+      function fetchUberEatsMapJsonFromVersion(version, file) {
+        return fetch(gameMapFilePathForVersion(version, file), { cache: "no-store" })
+          .then(function (res) {
+            if (!res || !res.ok) throw new Error("Map file load failed: " + file);
+            return parseUberEatsJsonResponse(res);
+          });
+      }
+      function getUberEatsMapVersions() {
+        var versions = gameMapCandidateVersions(GAME_DEV_MAP_BASE_VERSION);
+        if (versions.indexOf(GAME_DEV_MAP_LAYER_VERSION) === -1) versions.push(GAME_DEV_MAP_LAYER_VERSION);
+        return versions;
+      }
+      function normalizeUberEatsRestaurant(raw) {
+        if (!raw || typeof raw !== "object") return null;
+        var x = Number(raw.x);
+        var y = Number(raw.y !== undefined ? raw.y : raw.z);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        var name = String(raw.Titre || raw.title || raw.name || raw.restaurant || "Restaurant").trim();
+        return { name: name || "Restaurant", x: x, y: y };
+      }
+      function normalizeUberEatsNavNode(raw) {
+        if (!raw || typeof raw !== "object") return null;
+        var x = Number(raw.x);
+        var y = Number(raw.y !== undefined ? raw.y : raw.z);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        return { id: raw.id, x: x, y: y, name: "Client" };
+      }
+      function normalizeUberEatsTrafficPolygon(area) {
+        if (!area || typeof area !== "object" || !Array.isArray(area.points)) return null;
+        var tags = Array.isArray(area.tags) ? area.tags.map(function (tag) { return String(tag || "").trim().toLowerCase(); }) : [];
+        if (tags.indexOf("rp_log") === -1) return null;
+        var points = area.points.map(function (pt) {
+          var x = Number(pt && pt.x);
+          var y = Number(pt && (pt.z !== undefined ? pt.z : pt.y));
+          if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+          return { x: x, y: y };
+        }).filter(Boolean);
+        return points.length >= 3 ? points : null;
+      }
+      function isPointInsideUberEatsPolygon(point, polygon) {
+        var inside = false;
+        for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+          var xi = polygon[i].x, yi = polygon[i].y;
+          var xj = polygon[j].x, yj = polygon[j].y;
+          var intersects = ((yi > point.y) !== (yj > point.y)) &&
+            (point.x < ((xj - xi) * (point.y - yi)) / ((yj - yi) || 1e-9) + xi);
+          if (intersects) inside = !inside;
+        }
+        return inside;
+      }
+      function loadUberEatsOfferData() {
+        if (uberEatsOfferDataCache) return Promise.resolve(uberEatsOfferDataCache);
+        if (uberEatsOfferDataPromise) return uberEatsOfferDataPromise;
+        var versions = getUberEatsMapVersions();
+        uberEatsOfferDataPromise = Promise.all([
+          fetchGameMapFile("uber_eats_restaurants.json", GAME_DEV_MAP_BASE_VERSION, { cache: "no-store" }).then(parseUberEatsJsonResponse),
+          Promise.all(versions.map(function (version) {
+            return Promise.all([
+              fetchUberEatsMapJsonFromVersion(version, "traffic_areas.json").catch(function () { return []; }),
+              fetchUberEatsMapJsonFromVersion(version, "nav_graph.json").catch(function () { return { nodes: [] }; })
+            ]).then(function (pair) {
+              var areas = Array.isArray(pair[0]) ? pair[0] : [];
+              var navGraph = pair[1] && typeof pair[1] === "object" ? pair[1] : {};
+              return {
+                areas: areas,
+                nodes: Array.isArray(navGraph.nodes) ? navGraph.nodes : [],
+                edges: Array.isArray(navGraph.edges) ? navGraph.edges : []
+              };
+            });
+          }))
+        ]).then(function (parts) {
+          var restaurants = (Array.isArray(parts[0]) ? parts[0] : []).map(normalizeUberEatsRestaurant).filter(Boolean);
+          var selectedMap = parts[1].map(function (entry) {
+            var polygons = entry.areas.map(normalizeUberEatsTrafficPolygon).filter(Boolean);
+            if (!polygons.length) return null;
+            var allNodes = entry.nodes.map(normalizeUberEatsNavNode).filter(Boolean);
+            var nodes = allNodes.filter(function (node) {
+              return polygons.some(function (polygon) { return isPointInsideUberEatsPolygon(node, polygon); });
+            });
+            return nodes.length ? { polygons: polygons, nodes: nodes, allNodes: allNodes, edges: entry.edges } : null;
+          }).filter(Boolean)[0];
+          uberEatsOfferDataCache = {
+            restaurants: restaurants,
+            dropoffNodes: selectedMap ? selectedMap.nodes : [],
+            routeNodes: selectedMap ? selectedMap.allNodes : [],
+            routeGraph: selectedMap ? buildUberEatsRouteGraph(selectedMap.allNodes, selectedMap.edges) : null
+          };
+          return uberEatsOfferDataCache;
+        }).catch(function (err) {
+          uberEatsOfferDataPromise = null;
+          throw err;
+        });
+        return uberEatsOfferDataPromise;
+      }
+      function getUberEatsPlayerPoint() {
+        var sig = telemetryLastSignal && typeof telemetryLastSignal === "object" ? telemetryLastSignal : null;
+        var x = Number(sig && sig.x);
+        var y = Number(sig && (sig.z !== undefined ? sig.z : sig.y));
+        if (Number.isFinite(x) && Number.isFinite(y)) return { x: x, y: y };
+        var arrow = lastBridgeArrowPoint && typeof lastBridgeArrowPoint === "object" ? lastBridgeArrowPoint : null;
+        x = Number(arrow && arrow.x);
+        y = Number(arrow && (arrow.z !== undefined ? arrow.z : arrow.y));
+        if (Number.isFinite(x) && Number.isFinite(y)) return { x: x, y: y };
+        return { x: 5273.8, y: -2423.89 };
+      }
+      function uberEatsDistanceMeters(a, b) {
+        return Math.hypot(Number(a.x) - Number(b.x), Number(a.y) - Number(b.y));
+      }
+      function buildUberEatsRouteGraph(nodes, edges) {
+        var normalizedNodes = Array.isArray(nodes) ? nodes.filter(Boolean) : [];
+        var byId = new Map();
+        var adjacency = new Map();
+        normalizedNodes.forEach(function (node) {
+          var key = String(node.id);
+          byId.set(key, node);
+          adjacency.set(key, []);
+        });
+        function edgeLength(edge, fromNode, toNode) {
+          var explicit = Number(edge && edge.length);
+          if (Number.isFinite(explicit) && explicit >= 0) return explicit;
+          var points = Array.isArray(edge && edge.polyline) ? edge.polyline : [];
+          var total = 0;
+          var previous = fromNode;
+          for (var i = 0; i < points.length; i += 1) {
+            var point = normalizeUberEatsNavNode(points[i]);
+            if (!point) continue;
+            total += uberEatsDistanceMeters(previous, point);
+            previous = point;
+          }
+          total += uberEatsDistanceMeters(previous, toNode);
+          return total;
+        }
+        (Array.isArray(edges) ? edges : []).forEach(function (edge) {
+          var fromKey = String(edge && edge.from);
+          var toKey = String(edge && edge.to);
+          var fromNode = byId.get(fromKey);
+          var toNode = byId.get(toKey);
+          if (!fromNode || !toNode) return;
+          var length = edgeLength(edge, fromNode, toNode);
+          if (!Number.isFinite(length) || length < 0) return;
+          adjacency.get(fromKey).push({ id: toKey, length: length });
+          if (edge && edge.one_way !== true) {
+            adjacency.get(toKey).push({ id: fromKey, length: length });
+          }
+        });
+        return { nodes: normalizedNodes, byId: byId, adjacency: adjacency };
+      }
+      function getNearestUberEatsGraphNode(graph, point) {
+        if (!graph || !Array.isArray(graph.nodes) || !point) return null;
+        var best = null;
+        var bestDistance = Number.POSITIVE_INFINITY;
+        for (var i = 0; i < graph.nodes.length; i += 1) {
+          var node = graph.nodes[i];
+          var distance = uberEatsDistanceMeters(point, node);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            best = node;
+          }
+        }
+        return best ? { node: best, distance: bestDistance } : null;
+      }
+      function runUberEatsDijkstra(graph, startId) {
+        var startKey = String(startId);
+        var distances = new Map();
+        var heap = [{ id: startKey, distance: 0 }];
+        distances.set(startKey, 0);
+        function push(item) {
+          heap.push(item);
+          var idx = heap.length - 1;
+          while (idx > 0) {
+            var parent = Math.floor((idx - 1) / 2);
+            if (heap[parent].distance <= item.distance) break;
+            heap[idx] = heap[parent];
+            idx = parent;
+          }
+          heap[idx] = item;
+        }
+        function pop() {
+          if (!heap.length) return null;
+          var top = heap[0];
+          var last = heap.pop();
+          if (heap.length && last) {
+            var idx = 0;
+            while (true) {
+              var left = idx * 2 + 1;
+              var right = left + 1;
+              if (left >= heap.length) break;
+              var child = right < heap.length && heap[right].distance < heap[left].distance ? right : left;
+              if (heap[child].distance >= last.distance) break;
+              heap[idx] = heap[child];
+              idx = child;
+            }
+            heap[idx] = last;
+          }
+          return top;
+        }
+        while (heap.length) {
+          var current = pop();
+          if (!current) break;
+          if (current.distance !== distances.get(current.id)) continue;
+          var nextEdges = graph.adjacency.get(current.id) || [];
+          for (var i = 0; i < nextEdges.length; i += 1) {
+            var next = nextEdges[i];
+            var candidate = current.distance + next.length;
+            if (candidate < (distances.get(next.id) ?? Number.POSITIVE_INFINITY)) {
+              distances.set(next.id, candidate);
+              push({ id: next.id, distance: candidate });
+            }
+          }
+        }
+        return distances;
+      }
+      function getUberEatsGraphDistanceFromMap(distances, targetId) {
+        var value = distances && distances.get(String(targetId));
+        return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
+      }
+      function getUberEatsRouteDistanceMeters(graph, fromPoint, toPoint) {
+        var fromNearest = getNearestUberEatsGraphNode(graph, fromPoint);
+        var toNearest = getNearestUberEatsGraphNode(graph, toPoint);
+        if (!fromNearest || !toNearest) return Number.POSITIVE_INFINITY;
+        var distances = runUberEatsDijkstra(graph, fromNearest.node.id);
+        var graphDistance = getUberEatsGraphDistanceFromMap(distances, toNearest.node.id);
+        if (!Number.isFinite(graphDistance)) return Number.POSITIVE_INFINITY;
+        return fromNearest.distance + graphDistance + toNearest.distance;
+      }
+      function hasUberEatsRouteWithinMeters(point, nodes, maxMeters) {
+        if (!point || !Array.isArray(nodes) || !nodes.length) return false;
+        var limit = Number(maxMeters);
+        if (!Number.isFinite(limit) || limit <= 0) return false;
+        var limitSq = limit * limit;
+        for (var i = 0; i < nodes.length; i += 1) {
+          var node = nodes[i];
+          var dx = Number(point.x) - Number(node.x);
+          var dy = Number(point.y) - Number(node.y);
+          if (!Number.isFinite(dx) || !Number.isFinite(dy)) continue;
+          if ((dx * dx) + (dy * dy) <= limitSq) return true;
+        }
+        return false;
+      }
+      function pickRandomItem(items) {
+        return items[Math.floor(Math.random() * items.length)];
+      }
+      function getUberEatsOfferDelayMs() {
+        var nowMs = typeof getSaeivNowTimestampMs === "function" ? getSaeivNowTimestampMs() : Date.now();
+        var hour = new Date(nowMs).getHours();
+        var minSec = 30;
+        var maxSec = 40;
+        if (hour >= 0 && hour < 8) { minSec = 60; maxSec = 180; }
+        else if (hour >= 9 && hour < 11) { minSec = 30; maxSec = 50; }
+        else if (hour >= 11 && hour < 13) { minSec = 10; maxSec = 20; }
+        else if (hour >= 13 && hour < 18) { minSec = 30; maxSec = 40; }
+        else if (hour >= 18 && hour < 20) { minSec = 5; maxSec = 15; }
+        else if (hour >= 20 && hour <= 23) { minSec = 30; maxSec = 40; }
+        return Math.round((minSec + Math.random() * (maxSec - minSec)) * 1000);
+      }
+      function buildUberEatsOffer() {
+        return loadUberEatsOfferData().then(function (data) {
+          if (!data.restaurants.length) throw new Error("Aucun restaurant Uber Eats disponible.");
+          if (!data.dropoffNodes.length) throw new Error("Aucun nav point rp_log disponible.");
+          if (!data.routeNodes.length) throw new Error("Aucune route disponible pour les départs.");
+          if (!data.routeGraph) throw new Error("Graphe routier indisponible.");
+          var player = getUberEatsPlayerPoint();
+          var playerNearest = getNearestUberEatsGraphNode(data.routeGraph, player);
+          if (!playerNearest) throw new Error("Position joueur hors graphe routier.");
+          var playerGraphDistances = runUberEatsDijkstra(data.routeGraph, playerNearest.node.id);
+          var restaurantsNearRoute = data.restaurants.filter(function (restaurant) {
+            return hasUberEatsRouteWithinMeters(restaurant, data.routeNodes, 100);
+          }).map(function (restaurant) {
+            var nearestNode = getNearestUberEatsGraphNode(data.routeGraph, restaurant);
+            var graphDistance = nearestNode
+              ? playerNearest.distance + getUberEatsGraphDistanceFromMap(playerGraphDistances, nearestNode.node.id) + nearestNode.distance
+              : Number.POSITIVE_INFINITY;
+            return Object.assign({}, restaurant, {
+              routeNodeId: nearestNode && nearestNode.node ? nearestNode.node.id : null,
+              routeAccessMeters: nearestNode ? nearestNode.distance : Number.POSITIVE_INFINITY,
+              playerDirectDistanceMeters: uberEatsDistanceMeters(player, restaurant),
+              playerRouteDistanceMeters: graphDistance
+            });
+          }).filter(function (restaurant) {
+            return Number.isFinite(restaurant.playerRouteDistanceMeters);
+          });
+          if (!restaurantsNearRoute.length) throw new Error("Aucun restaurant avec route à moins de 100 m.");
+          var nearest = restaurantsNearRoute.slice().sort(function (a, b) {
+            return a.playerRouteDistanceMeters - b.playerRouteDistanceMeters;
+          }).slice(0, 10);
+          var nearbyRestaurants = restaurantsNearRoute.filter(function (restaurant) {
+            return Number.isFinite(restaurant.playerDirectDistanceMeters) && restaurant.playerDirectDistanceMeters <= 50;
+          }).sort(function (a, b) {
+            return a.playerDirectDistanceMeters - b.playerDirectDistanceMeters;
+          });
+          var pickupPool = nearest.length ? nearest : restaurantsNearRoute;
+          if (nearbyRestaurants.length && Math.random() < 0.85) pickupPool = nearbyRestaurants;
+          var pickup = pickRandomItem(pickupPool);
+          var pickupNearest = pickup.routeNodeId
+            ? { node: data.routeGraph.byId.get(String(pickup.routeNodeId)), distance: pickup.routeAccessMeters }
+            : getNearestUberEatsGraphNode(data.routeGraph, pickup);
+          if (!pickupNearest || !pickupNearest.node) throw new Error("Restaurant hors graphe routier.");
+          var pickupGraphDistances = runUberEatsDijkstra(data.routeGraph, pickupNearest.node.id);
+          var longTrip = Math.random() >= 0.97;
+          var minDistance = longTrip ? 4000 : 100;
+          var maxDistance = longTrip ? 12000 : 4000;
+          var candidates = data.dropoffNodes.filter(function (node) {
+            var d = pickupNearest.distance + getUberEatsGraphDistanceFromMap(pickupGraphDistances, node.id);
+            node.__uberEatsRouteDistanceM = d;
+            return d >= minDistance && d <= maxDistance;
+          });
+          if (!candidates.length) {
+            candidates = data.dropoffNodes.filter(function (node) {
+              var d = pickupNearest.distance + getUberEatsGraphDistanceFromMap(pickupGraphDistances, node.id);
+              node.__uberEatsRouteDistanceM = d;
+              return d >= 100 && d <= 12000;
+            });
+          }
+          if (!candidates.length) {
+            candidates = data.dropoffNodes.filter(function (node) {
+              var d = pickupNearest.distance + getUberEatsGraphDistanceFromMap(pickupGraphDistances, node.id);
+              node.__uberEatsRouteDistanceM = d;
+              return d >= 100 && Number.isFinite(d);
+            });
+          }
+          var dropoff = pickRandomItem(candidates.length ? candidates : data.dropoffNodes);
+          var pickupDistanceM = pickup.playerRouteDistanceMeters;
+          var deliveryDistanceM = Number(dropoff.__uberEatsRouteDistanceM);
+          if (!Number.isFinite(deliveryDistanceM)) deliveryDistanceM = getUberEatsRouteDistanceMeters(data.routeGraph, pickup, dropoff);
+          if (!Number.isFinite(pickupDistanceM) || !Number.isFinite(deliveryDistanceM)) {
+            throw new Error("Impossible de calculer la distance via le nav graph.");
+          }
+          return {
+            id: "uber-eats-" + Date.now() + "-" + (++uberEatsOfferSeq),
+            player: { x: player.x, y: player.y },
+            pickup: { name: pickup.name, x: pickup.x, y: pickup.y },
+            dropoff: { name: "Client", x: dropoff.x, y: dropoff.y, nodeId: dropoff.id },
+            pickupDistanceKm: Math.round((pickupDistanceM / 1000) * 10) / 10,
+            deliveryDistanceKm: Math.round((deliveryDistanceM / 1000) * 10) / 10,
+            distanceKm: Math.round(((pickupDistanceM + deliveryDistanceM) / 1000) * 10) / 10,
+            nextDelayMs: getUberEatsOfferDelayMs()
+          };
+        });
+      }
+      function postUberEatsWindowMessage(target, message) {
+        if (!target || !message) return false;
+        try {
+          target.postMessage(Object.assign({ source: "game-uber-eats" }, message), "*");
+          return true;
+        } catch (err) {
+          return false;
+        }
+      }
+      function handleUberEatsWindowMessage(data, sourceWindow) {
+        if (!data || typeof data !== "object") return false;
+        if (String(data.source || "") !== "iphone-uber-eats") return false;
+        var type = String(data.type || "");
+        if (type === "mode_probe") {
+          postUberEatsWindowMessage(sourceWindow, {
+            type: "mode",
+            mode: normalizeGameMode(currentGameMode),
+            enabled: normalizeGameMode(currentGameMode) === GAME_MODES.UBER_EATS
+          });
+          return true;
+        }
+        if (type !== "request_offer") return true;
+        if (normalizeGameMode(currentGameMode) !== GAME_MODES.UBER_EATS) {
+          postUberEatsWindowMessage(sourceWindow, { type: "disabled", mode: normalizeGameMode(currentGameMode) });
+          return true;
+        }
+        buildUberEatsOffer()
+          .then(function (offer) {
+            postUberEatsWindowMessage(sourceWindow, { type: "offer", requestId: data.requestId || "", offer: offer });
+          })
+          .catch(function (err) {
+            postUberEatsWindowMessage(sourceWindow, {
+              type: "error",
+              requestId: data.requestId || "",
+              message: err && err.message ? err.message : "Impossible de proposer une course."
+            });
+          });
+        return true;
+      }
       function handleGameWindowMessage(event) {
         var data = event && event.data;
         if (handleBusStatusWindowMessage(data)) return;
+        if (handleUberEatsWindowMessage(data, event && event.source)) return;
         handleWidgetBridgeEnvelope(data);
       }
       function ensureBackgroundBusStatusRuntime() {

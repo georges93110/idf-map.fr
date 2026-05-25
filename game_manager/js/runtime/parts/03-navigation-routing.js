@@ -1903,6 +1903,7 @@
         var navPoint = (linkPoints.length ? linkPoints[0] : null) || getSaeivStopNavWorldPoint(stopEntry) || stopPoint;
         if (!start || !stopPoint || !navPoint) return [];
         var out = [];
+        appendUniqueWorldPoint(out, start);
         var navSegment = buildShortestRoutePoints(start, navPoint, {
           forceNav: false,
           maxNearbyCandidates: SAEIV_NAV_STOP_CANDIDATES
@@ -2060,9 +2061,10 @@
         if (canUseCache) {
           var cachedRemaining = Number(activeRouteEtaCache.remainingMinutes);
           var cachedPlanned = Number(activeRouteEtaCache.plannedMinutes);
+          var cachedNowTs = (typeof getSaeivNowTimestampMs === "function") ? getSaeivNowTimestampMs() : Date.now();
           return {
             remainingMinutes: cachedRemaining,
-            arrivalTimestampMs: Date.now() + Math.round(Math.max(0, cachedRemaining) * 60000),
+            arrivalTimestampMs: cachedNowTs + Math.round(Math.max(0, cachedRemaining) * 60000),
             segmentDurationMinutes: Number.isFinite(cachedPlanned) ? cachedPlanned : 0
           };
         }
@@ -2103,9 +2105,10 @@
         activeRouteEtaCache.lastComputedAt = Date.now();
         activeRouteEtaCache.remainingMinutes = remainingMinutes;
         activeRouteEtaCache.plannedMinutes = plannedMinutes;
+        var nowForEtaMs = (typeof getSaeivNowTimestampMs === "function") ? getSaeivNowTimestampMs() : Date.now();
         return {
           remainingMinutes: remainingMinutes,
-          arrivalTimestampMs: Date.now() + Math.round(remainingMinutes * 60000),
+          arrivalTimestampMs: nowForEtaMs + Math.round(remainingMinutes * 60000),
           segmentDurationMinutes: plannedMinutes
         };
       }
@@ -2152,6 +2155,7 @@
         var etaSegmentDurationMinutes = null;
         var routeCacheKey = "";
         var routeEndPoint = activeBridgeDestinationPoint;
+        var skipGenericFallbackRoute = false;
         if (saeivRouteState && typeof saeivRouteState === "object") {
           var entries = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
           if (entries.length) {
@@ -2229,7 +2233,29 @@
                 }
               }
             } else {
-              if (allowRecompute) {
+              var useLightweightSaeivRoute = opts.lightweightSaeivRoute === true;
+              if (useLightweightSaeivRoute) {
+                skipGenericFallbackRoute = true;
+                var lightweightEntry = entries[routeTargetIndex] || displayEntry || entries[0] || null;
+                var lightweightTarget =
+                  getSaeivStopExactWorldPoint(lightweightEntry) ||
+                  getSaeivStopNavWorldPoint(lightweightEntry) ||
+                  displayPoint;
+                routePoints = [];
+                appendUniqueWorldPoint(routePoints, lastBridgeArrowPoint);
+                appendUniqueWorldPoint(routePoints, lightweightTarget);
+                if (routePoints.length >= 2 && worldPointDistance(routePoints[0], routePoints[routePoints.length - 1]) > 0.5) {
+                  activeBridgeRoutePoints = routePoints;
+                  activeBridgeRouteStartPoint = parseWorldPoint3D(lastBridgeArrowPoint);
+                  activeBridgeRouteEndPoint = parseWorldPoint3D(lightweightTarget);
+                  activeBridgeRouteComputedAt = Date.now();
+                  activeBridgeRouteForceNavMode = false;
+                  routeEndPoint = lightweightTarget;
+                } else {
+                  routePoints = [];
+                }
+                routePointsChanged = true;
+              } else if (allowRecompute) {
                 var composed = getActiveComposedRoutePoints(lastBridgeArrowPoint, entries, routeTargetIndex, !!forceRecompute);
                 if (composed && Array.isArray(composed.points) && composed.points.length >= 2) {
                   routePoints = composed.points;
@@ -2257,8 +2283,9 @@
                   var cachedRemaining = Number(activeRouteEtaCache.remainingMinutes);
                   var cachedPlanned = Number(activeRouteEtaCache.plannedMinutes);
                   if (Number.isFinite(cachedRemaining)) {
+                    var cachedRouteNowTs = (typeof getSaeivNowTimestampMs === "function") ? getSaeivNowTimestampMs() : Date.now();
                     etaRemainingMinutes = cachedRemaining;
-                    etaArrivalTimestampMs = Date.now() + Math.round(Math.max(0, cachedRemaining) * 60000);
+                    etaArrivalTimestampMs = cachedRouteNowTs + Math.round(Math.max(0, cachedRemaining) * 60000);
                   }
                   if (Number.isFinite(cachedPlanned)) {
                     etaSegmentDurationMinutes = cachedPlanned;
@@ -2268,7 +2295,29 @@
             }
           }
         }
-        if (!routePoints.length) {
+        if (routeWaitingStart === true && (!Array.isArray(routePoints) || routePoints.length < 2)) {
+          var waitingEntries = (saeivRouteState && typeof saeivRouteState === "object" && Array.isArray(saeivRouteState.stops))
+            ? saeivRouteState.stops
+            : [];
+          var waitingFirstEntry = waitingEntries[0] || null;
+          var waitingFirstTarget =
+            getSaeivStopExactWorldPoint(waitingFirstEntry) ||
+            getSaeivStopNavWorldPoint(waitingFirstEntry);
+          var waitingDirectRoute = [];
+          appendUniqueWorldPoint(waitingDirectRoute, lastBridgeArrowPoint);
+          appendUniqueWorldPoint(waitingDirectRoute, waitingFirstTarget);
+          if (waitingDirectRoute.length >= 2 && worldPointDistance(waitingDirectRoute[0], waitingDirectRoute[waitingDirectRoute.length - 1]) > 0.5) {
+            routePoints = waitingDirectRoute;
+            routePointsChanged = true;
+            routeEndPoint = waitingFirstTarget;
+            activeBridgeRoutePoints = routePoints;
+            activeBridgeRouteStartPoint = parseWorldPoint3D(lastBridgeArrowPoint);
+            activeBridgeRouteEndPoint = parseWorldPoint3D(waitingFirstTarget);
+            activeBridgeRouteComputedAt = Date.now();
+            activeBridgeRouteForceNavMode = false;
+          }
+        }
+        if (routeWaitingStart !== true && skipGenericFallbackRoute !== true && (!Array.isArray(routePoints) || routePoints.length < 2)) {
           var hasCachedFallbackRoute =
             Array.isArray(activeBridgeRoutePoints) &&
             activeBridgeRoutePoints.length >= 2 &&
@@ -2309,6 +2358,8 @@
         if (allowRecompute) {
           lastWazeRouteRecomputeAt = Date.now();
         }
-        postWazeBridgePayload(bridgePayload);
+        if (postWazeBridgePayload(bridgePayload) && routeWaitingStart === true && lastWazeBridgePacket) {
+          postWazeBridgePayloadToVisibleWidgets(lastWazeBridgePacket);
+        }
         return true;
       }

@@ -1,0 +1,177 @@
+﻿[
+    {
+        "Name":  "Google",
+        "Path":  "apps/disabled_icons/google.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f0/56/7f/f0567fc0-e243-7ac0-54f9-d2ac9ea96ecf/SuperG_ios26-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Chrome",
+        "Path":  "apps/disabled_icons/chrome.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/1d/9a/3c/1d9a3cdd-361e-b151-077c-86cc2d8dd8a9/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Gmail",
+        "Path":  "apps/disabled_icons/gmail.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/51/0f/b7/510fb7e2-9f59-e5d9-5167-df0ac3fe4f75/logo_gmail_2020q4_color-0-0-1x_U007emarketing-0-0-0-7-0-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Google Maps",
+        "Path":  "apps/disabled_icons/google_maps.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/e5/dd/93/e5dd9368-7b52-e9f1-1dd3-a514c350f722/maps_2025-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Google Drive",
+        "Path":  "apps/disabled_icons/google_drive.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/81/a4/b0/81a4b0a4-594e-3b31-91ae-bbe9ca047a03/drive_2026_ios-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Google Docs",
+        "Path":  "apps/disabled_icons/google_docs.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/09/02/2c/09022c9d-4ac9-dd02-c562-27e0c0f507d8/docs_2026_ios-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Google Sheets",
+        "Path":  "apps/disabled_icons/google_sheets.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6c/d3/e2/6cd3e27b-1818-55ee-0102-f9aece24e125/sheets_2026_ios-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Google Slides",
+        "Path":  "apps/disabled_icons/google_slides.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/6b/90/02/6b9002b5-4686-1a69-e4dd-c62295294482/slides_2026_ios-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Facebook",
+        "Path":  "apps/disabled_icons/facebook.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/81/c6/b3/81c6b352-843b-8591-89ca-636c969459a0/Icon-Production-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Instagram",
+        "Path":  "apps/disabled_icons/instagram.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/46/61/cb/4661cbe0-5216-7acc-2147-b307c5cb3f82/Prod-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "TikTok",
+        "Path":  "apps/disabled_icons/tiktok.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/27/72/88/27728897-f836-a3dc-162c-c6b93e2869e4/TikTok_AppIcon26-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Snapchat",
+        "Path":  "apps/disabled_icons/snapchat.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/52/18/bd/5218bd7b-2e2f-5cba-dabd-fef9c67ed835/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "WhatsApp",
+        "Path":  "apps/disabled_icons/whatsapp.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4f/d0/9d/4fd09dd1-f838-06a7-3d7a-3f44a5d41b53/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Messenger",
+        "Path":  "apps/disabled_icons/messenger.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d1/aa/87/d1aa87ae-7b1a-cb48-1813-a6cc8eeca86b/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "X",
+        "Path":  "apps/disabled_icons/x.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7c/ae/ff/7caeffa7-ca46-cfc2-fa23-5d7fc5083a06/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Spotify",
+        "Path":  "apps/disabled_icons/spotify.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/26/53/7b/26537b47-88c8-845a-fb1b-a65702602a10/AppIcon-0-0-1x_U007epad-0-1-0-0-sRGB-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Netflix",
+        "Path":  "apps/disabled_icons/netflix.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/67/97/e1/6797e1f1-276b-97a8-8b9c-4954bceab658/AppIcon-0-0-1x_U007emarketing-0-11-0-sRGB-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Prime Video",
+        "Path":  "apps/disabled_icons/prime_video.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/09/fa/06/09fa068e-108e-b530-8c75-b2d31f967806/AppIcon-0-0-1x_U007epad-0-1-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Disney+",
+        "Path":  "apps/disabled_icons/disney.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/f4/22/4c/f4224c72-15f4-bd0f-bbf1-2dc32b99555a/AppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Twitch",
+        "Path":  "apps/disabled_icons/twitch.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/c6/fd/8a/c6fd8a15-38fb-a2ae-0345-0a8871e0b6f7/TwitchAppIcon-0-0-1x_U007epad-0-1-0-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Discord",
+        "Path":  "apps/disabled_icons/discord.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/67/74/91/67749147-a506-9e7f-196d-a01ee0f6bfcc/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Uber",
+        "Path":  "apps/disabled_icons/uber.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/46/5c/63/465c63be-e67b-848e-fbd3-f21b4887a86c/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Uber Eats",
+        "Path":  "apps/disabled_icons/uber_eats.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b4/5f/2d/b45f2df0-16de-903e-7f50-a2633d28b142/AppIcon-0-0-1x_U007emarketing-0-8-0-0-sRGB-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Deliveroo",
+        "Path":  "apps/disabled_icons/deliveroo.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7c/79/e9/7c79e945-966b-1476-7064-ba8383f17e5e/Production-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Airbnb",
+        "Path":  "apps/disabled_icons/airbnb.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b8/e9/cd/b8e9cd05-cbc7-3cee-23ef-42e36ba8828a/AppIcon-0-0-1x_U007epad-0-1-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Booking.com",
+        "Path":  "apps/disabled_icons/booking_com.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/fd/97/61/fd976102-cd0a-6054-d83c-d1233a3e79c8/AppIcon-0-0-1x_U007epad-0-9-0-85-220.jpeg/512x512bb.jpg"
+    },
+    {
+        "Name":  "Outlook",
+        "Path":  "apps/disabled_icons/outlook.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/fa/c5/6c/fac56ca7-0793-ff92-c34d-8b3156a77c05/AppIcon-outlook.prod-0-0-1x_U007epad-0-1-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Word",
+        "Path":  "apps/disabled_icons/word.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/3c/f8/3a/3cf83a27-2e39-b1a6-f2e0-8ab822be46a0/AppIcon-0-0-1x_U007epad-0-1-0-0-sRGB-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Excel",
+        "Path":  "apps/disabled_icons/excel.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7c/1f/1c/7c1f1c68-4d04-4416-b41f-7cc9438d05c9/AppIcon-0-0-1x_U007epad-0-1-0-0-sRGB-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "PowerPoint",
+        "Path":  "apps/disabled_icons/powerpoint.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/53/2d/6a/532d6aae-2273-9d7e-443f-94927d2551ac/AppIcon-0-0-1x_U007epad-0-1-0-0-sRGB-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "OneDrive",
+        "Path":  "apps/disabled_icons/onedrive.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/90/d1/11/90d111b3-d407-e4a6-a017-52a188d37b70/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Microsoft Edge",
+        "Path":  "apps/disabled_icons/microsoft_edge.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/0e/5d/cc/0e5dcc2b-35b1-43bc-1919-5d6253e9b7f2/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "PayPal",
+        "Path":  "apps/disabled_icons/paypal.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/92/2e/b7/922eb779-54f2-2dbe-a747-e62f1f8cd75a/AppIcon-0-0-1x_U007ephone-0-1-0-GLES2_U002c0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "Pinterest",
+        "Path":  "apps/disabled_icons/pinterest.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/16/d6/a4/16d6a497-90d5-0ee8-0ee4-66d8f11cfcbd/AppIcon-0-0-1x_U007epad-0-1-0-0-0-85-220.png/512x512bb.jpg"
+    },
+    {
+        "Name":  "LinkedIn",
+        "Path":  "apps/disabled_icons/linkedin.jpg",
+        "Source":  "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9b/b5/7c/9bb57c5d-fdca-96e3-fe01-3d9919dffcae/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg"
+    }
+]

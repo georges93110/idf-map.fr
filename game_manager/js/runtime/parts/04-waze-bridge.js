@@ -34,6 +34,7 @@
             normalizeGameMode(currentGameMode) === GAME_MODES.BUS &&
             !saeivMiniVisible &&
             !busStatusVisible,
+          speedKmh: (telemetryLastSignal && Number.isFinite(Number(telemetryLastSignal.speedKmh))) ? Number(telemetryLastSignal.speedKmh) : 0,
           truckDamage: (telemetryLastSignal && Number.isFinite(telemetryLastSignal.truckDamagePercent)) ? telemetryLastSignal.truckDamagePercent : 0,
           trailerDamage: (telemetryLastSignal && Number.isFinite(telemetryLastSignal.trailerDamagePercent)) ? telemetryLastSignal.trailerDamagePercent : 0,
           cargoDamage: (telemetryLastSignal && Number.isFinite(telemetryLastSignal.cargoDamagePercent)) ? telemetryLastSignal.cargoDamagePercent : 0
@@ -121,7 +122,28 @@
           sendWidgetBridgeMessage(WIDGET_BRIDGE_CHANNEL_WAZE, packet);
           lastWazeBridgeWsSendAt = now;
         }
+        postWazeBridgePayloadToIphoneWidgets(packet);
         return packet;
+      }
+      function postWazeBridgePayloadToIphoneWidgets(packet) {
+        if (!packet || typeof packet !== "object") return false;
+        var sent = false;
+        document
+          .querySelectorAll('iframe[data-widget-type="iphone_simulator"]')
+          .forEach(function (frame) {
+            try {
+              var win = frame && frame.contentWindow;
+              if (!win) return;
+              win.postMessage({
+                scope: WIDGET_BRIDGE_SCOPE,
+                channel: WIDGET_BRIDGE_CHANNEL_WAZE,
+                payload: packet,
+                ts: Number(packet.ts) || Date.now()
+              }, "*");
+              sent = true;
+            } catch (err) { }
+          });
+        return sent;
       }
       function postWazeBridgePayloadToVisibleWidgets(packet) {
         if (!packet || typeof packet !== "object") return false;
@@ -296,21 +318,30 @@
         var rawDest = { x: dx, y: dy, z: dz };
         var dest = rawDest;
         ensureWazeBridgeStartPointFallback(saeivRouteStartPoint, { allowFallbackPoint: true });
+        var hasSaeivRoute = !!(saeivRouteState && Array.isArray(saeivRouteState.stops) && saeivRouteState.stops.length);
         var prevDest = activeBridgeDestinationPoint;
         if (prevDest && worldPointDistance(prevDest, dest) <= 0.001) {
+          if (saeivRouteState && typeof saeivRouteState === "object" && lastBridgeArrowPoint) {
+            if (publishActiveRouteFromState(true, { allowRecompute: true, lightweightSaeivRoute: false }) && lastWazeBridgePacket) {
+              postWazeBridgePayloadToVisibleWidgets(lastWazeBridgePacket);
+            }
+          }
           return true;
         }
         activeBridgeDestinationPoint = dest;
         clearActiveRouteCache();
-        ensureNavGraphLoaded();
         var start = lastBridgeArrowPoint || null;
         var heading = Number.isFinite(lastBridgeHeadingDeg) ? lastBridgeHeadingDeg : 0;
-        var hasSaeivRoute = !!(saeivRouteState && Array.isArray(saeivRouteState.stops) && saeivRouteState.stops.length);
+        ensureNavGraphLoaded();
         if (hasSaeivRoute && start) {
-          publishActiveRouteFromState(true);
+          if (publishActiveRouteFromState(true, { allowRecompute: true, lightweightSaeivRoute: false }) && lastWazeBridgePacket) {
+            postWazeBridgePayloadToVisibleWidgets(lastWazeBridgePacket);
+          }
           ensureNavGraphLoaded().then(function (g) {
             if (!g) return;
-            publishActiveRouteFromState(true);
+            if (publishActiveRouteFromState(true, { allowRecompute: true, lightweightSaeivRoute: false }) && lastWazeBridgePacket) {
+              postWazeBridgePayloadToVisibleWidgets(lastWazeBridgePacket);
+            }
           });
           return true;
         }

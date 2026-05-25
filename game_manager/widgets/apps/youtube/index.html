@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; frame-src https://www.youtube.com https://www.youtube-nocookie.com; child-src https://www.youtube.com https://www.youtube-nocookie.com; style-src 'unsafe-inline' 'self'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://www.youtube.com; connect-src 'self' https://r.jina.ai; form-action 'self'; base-uri 'self';"
+  >
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YouTube</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #0f0f0f;
+      color: #fff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      display: grid;
+      grid-template-rows: 45px 1fr;
+    }
+    .bar {
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: center;
+      padding: 7px 9px 6px;
+      background: #0f0f0f;
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
+      z-index: 5;
+    }
+    input {
+      min-width: 0;
+      height: 32px;
+      border: 0;
+      border-radius: 17px;
+      padding: 0 12px;
+      color: #f8f8f8;
+      background: #242424;
+      font: inherit;
+      font-size: 12px;
+      outline: none;
+    }
+    .stage {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+      display: none;
+    }
+    iframe.ready {
+      display: block;
+    }
+    .empty,
+    .results,
+    .loading,
+    .blocked {
+      position: absolute;
+      inset: 0;
+      background: #0f0f0f;
+      z-index: 2;
+    }
+    .empty,
+    .loading,
+    .blocked {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      text-align: center;
+      color: #d7d7d7;
+    }
+    .empty.hidden,
+    .results.hidden,
+    .loading.hidden,
+    .blocked.hidden {
+      display: none;
+    }
+    .empty strong,
+    .loading strong,
+    .blocked strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #fff;
+      font-size: 18px;
+    }
+    .empty p,
+    .blocked p {
+      max-width: 240px;
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .loading {
+      background: #000;
+      z-index: 3;
+    }
+    .blocked {
+      z-index: 4;
+    }
+    .results {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px;
+      overflow: auto;
+      scrollbar-width: none;
+    }
+    .results::-webkit-scrollbar {
+      display: none;
+    }
+    .searchStatus {
+      color: #aaa;
+      font-size: 12px;
+      line-height: 1.3;
+      min-height: 16px;
+    }
+    .resultCard {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 9px;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+    }
+    .resultThumb {
+      width: 92px;
+      aspect-ratio: 16 / 9;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #222;
+    }
+    .resultTitle {
+      margin: 0;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.25;
+      font-weight: 750;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .resultMeta {
+      margin: 5px 0 0;
+      color: #aaa;
+      font-size: 11px;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+  <form class="bar" id="navForm" autocomplete="off">
+    <input id="urlInput" aria-label="Adresse YouTube" placeholder="youtube.com/watch?v=..." inputmode="url" autocapitalize="none" spellcheck="false">
+  </form>
+  <main class="stage">
+    <section class="results hidden" id="resultsPanel">
+      <div class="searchStatus" id="searchStatus"></div>
+      <div id="resultsList"></div>
+    </section>
+    <div class="loading hidden" id="loadingPanel">
+      <div>
+        <strong>Chargement...</strong>
+      </div>
+    </div>
+    <div class="blocked hidden" id="blockedPanel">
+      <div>
+        <strong>Lecture indisponible</strong>
+        <p>Cette vidéo ne peut pas être lue ici, car elle contient de la musique soumise à des droits d’auteur. Ce lecteur ne peut pas lire ce type de contenu.</p>
+      </div>
+    </div>
+    <iframe
+      id="youtubePlayer"
+      title="YouTube"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+      allowfullscreen
+    ></iframe>
+  </main>
+
+  <script>
+    const frame = document.getElementById('youtubePlayer');
+    const form = document.getElementById('navForm');
+    const input = document.getElementById('urlInput');
+    const emptyState = document.getElementById('emptyState');
+    const resultsPanel = document.getElementById('resultsPanel');
+    const resultsList = document.getElementById('resultsList');
+    const searchStatus = document.getElementById('searchStatus');
+    const loadingPanel = document.getElementById('loadingPanel');
+    const blockedPanel = document.getElementById('blockedPanel');
+    const videoIdPattern = /^[a-zA-Z0-9_-]{11}$/;
+    const playbackUnavailableMessage = 'Cette vidéo ne peut pas être lue ici, car elle contient de la musique soumise à des droits d’auteur. Ce lecteur ne peut pas lire ce type de contenu.';
+    let inputTimer = 0;
+    let activeSearchId = 0;
+    let loadTimer = 0;
+    let hasPlayerMetadata = false;
+    const state = {
+      title: '',
+      author: '',
+      playing: false,
+      state: 'attente',
+      videoId: ''
+    };
+
+    function extractVideoId(value) {
+      let raw = String(value || '').trim();
+      if (!raw) return '';
+      if (videoIdPattern.test(raw)) return raw;
+      if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)) raw = 'https://' + raw;
+
+      try {
+        const url = new URL(raw);
+        const host = url.hostname.replace(/^www\./, '').replace(/^m\./, '').replace(/^music\./, '');
+        if (host === 'youtu.be') {
+          const id = url.pathname.split('/').filter(Boolean)[0] || '';
+          return videoIdPattern.test(id) ? id : '';
+        }
+        if (host !== 'youtube.com' && host !== 'youtube-nocookie.com') return '';
+
+        const fromQuery = url.searchParams.get('v');
+        if (fromQuery && videoIdPattern.test(fromQuery)) return fromQuery;
+
+        const parts = url.pathname.split('/').filter(Boolean);
+        const knownPath = parts.findIndex(function(part) {
+          return part === 'embed' || part === 'shorts' || part === 'live';
+        });
+        if (knownPath !== -1 && parts[knownPath + 1] && videoIdPattern.test(parts[knownPath + 1])) {
+          return parts[knownPath + 1];
+        }
+      } catch (error) {
+        return '';
+      }
+      return '';
+    }
+
+    function embedUrl(videoId) {
+      const origin = location.origin && location.origin !== 'null'
+        ? '&origin=' + encodeURIComponent(location.origin)
+          : '';
+        return 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) +
+        '?enablejsapi=1&playsinline=1&rel=0&modestbranding=1' + origin;
+    }
+
+    function watchUrl(videoId) {
+      return 'https://www.youtube.com/watch?v=' + encodeURIComponent(videoId);
+    }
+
+    function setPanel(panel) {
+      emptyState.classList.toggle('hidden', panel !== 'empty');
+      resultsPanel.classList.toggle('hidden', panel !== 'results');
+      loadingPanel.classList.toggle('hidden', panel !== 'loading');
+      blockedPanel.classList.toggle('hidden', panel !== 'blocked');
+      frame.classList.toggle('ready', panel === 'player' || panel === 'loading');
+    }
+
+    function setSearchStatus(text) {
+      searchStatus.textContent = text || '';
+    }
+
+    function getPlainQuery(value) {
+      return String(value || '').trim();
+    }
+
+    function sendPlayerCommand(command) {
+      if (!frame.contentWindow || !state.videoId) return;
+      frame.contentWindow.postMessage(JSON.stringify({
+        event: 'command',
+        func: command,
+        args: []
+      }), 'https://www.youtube.com');
+    }
+
+    function publishStatus() {
+      window.parent.postMessage({
+        source: 'iphone-youtube-player',
+        type: 'status',
+        title: state.title,
+        author: state.author,
+        playing: state.playing,
+        state: state.state,
+        url: state.videoId ? watchUrl(state.videoId) : 'https://www.youtube.com/'
+      }, '*');
+    }
+
+    function schedulePlaybackUnavailable(videoId, delay) {
+      clearTimeout(loadTimer);
+      loadTimer = setTimeout(function() {
+        if (state.videoId === videoId && !hasPlayerMetadata) {
+          showPlaybackUnavailable();
+        }
+      }, delay);
+    }
+
+    function markPlayerReady() {
+      hasPlayerMetadata = true;
+      clearTimeout(loadTimer);
+      if (state.state !== 'indisponible') setPanel('player');
+    }
+
+    function loadVideo(videoId) {
+      state.videoId = videoId;
+      state.title = '';
+      state.author = '';
+      state.playing = false;
+      state.state = 'chargement';
+      hasPlayerMetadata = false;
+      clearTimeout(loadTimer);
+      input.value = watchUrl(videoId);
+      setPanel('loading');
+      frame.src = embedUrl(videoId);
+      schedulePlaybackUnavailable(videoId, 1800);
+      publishStatus();
+    }
+
+    function showBlockedInput() {
+      state.title = 'YouTube';
+      state.author = 'youtube.com';
+      state.playing = false;
+      state.state = 'lien refuse';
+      setPanel('empty');
+      emptyState.querySelector('p').textContent = 'Saisis une recherche ou une URL de video YouTube.';
+      publishStatus();
+    }
+
+    function showPlaybackUnavailable() {
+      clearTimeout(loadTimer);
+      state.title = 'Lecture indisponible';
+      state.author = 'Droits d’auteur';
+      state.playing = false;
+      state.state = 'indisponible';
+      blockedPanel.querySelector('p').textContent = playbackUnavailableMessage;
+      setPanel('blocked');
+      publishStatus();
+    }
+
+    function parseSearchResults(markdown) {
+      const output = [];
+      const seen = new Set();
+      const titlePattern = /###\s+\[([^\]]+)\]\(https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})[^\)]*\)/g;
+      let match;
+      while ((match = titlePattern.exec(markdown)) && output.length < 10) {
+        const videoId = match[2];
+        if (seen.has(videoId)) continue;
+        seen.add(videoId);
+        output.push({
+          videoId,
+          title: match[1].replace(/\\([\\[\]()])/g, '$1').trim(),
+          thumbnail: 'https://i.ytimg.com/vi/' + videoId + '/hqdefault.jpg'
+        });
+      }
+      if (output.length) return output;
+
+      const linkPattern = /https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})[^\s)]*/g;
+      while ((match = linkPattern.exec(markdown)) && output.length < 10) {
+        const videoId = match[1];
+        if (seen.has(videoId)) continue;
+        seen.add(videoId);
+        output.push({
+          videoId,
+          title: 'Video YouTube',
+          thumbnail: 'https://i.ytimg.com/vi/' + videoId + '/hqdefault.jpg'
+        });
+      }
+      return output;
+    }
+
+    function renderResults(results, query) {
+      resultsList.innerHTML = '';
+      setPanel('results');
+      setSearchStatus(results.length ? 'Resultats pour "' + query + '"' : 'Aucun resultat trouve.');
+
+      results.forEach(function(result) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'resultCard';
+
+        const thumb = document.createElement('img');
+        thumb.className = 'resultThumb';
+        thumb.src = result.thumbnail;
+        thumb.alt = '';
+
+        const text = document.createElement('span');
+        const title = document.createElement('p');
+        title.className = 'resultTitle';
+        title.textContent = result.title;
+        const meta = document.createElement('p');
+        meta.className = 'resultMeta';
+        meta.textContent = 'youtube.com';
+
+        text.appendChild(title);
+        text.appendChild(meta);
+        button.appendChild(thumb);
+        button.appendChild(text);
+        button.addEventListener('click', function() {
+          loadVideo(result.videoId);
+        });
+        resultsList.appendChild(button);
+      });
+    }
+
+    async function searchVideos(query) {
+      const cleanQuery = getPlainQuery(query);
+      if (!cleanQuery) {
+        showBlockedInput();
+        return;
+      }
+      const searchId = ++activeSearchId;
+      state.title = 'Recherche YouTube';
+      state.author = cleanQuery;
+      state.playing = false;
+      state.state = 'recherche';
+      resultsList.innerHTML = '';
+      setPanel('results');
+      setSearchStatus('Recherche...');
+      publishStatus();
+
+      try {
+        const readerUrl = 'https://r.jina.ai/http://https://www.youtube.com/results?search_query=' + encodeURIComponent(cleanQuery);
+        const response = await fetch(readerUrl, { cache: 'no-store' });
+        if (!response.ok) throw new Error('search failed');
+        const markdown = await response.text();
+        if (searchId !== activeSearchId) return;
+        renderResults(parseSearchResults(markdown), cleanQuery);
+      } catch (error) {
+        if (searchId !== activeSearchId) return;
+        setPanel('results');
+        setSearchStatus('Recherche indisponible. Colle une URL YouTube.');
+      }
+    }
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const videoId = extractVideoId(input.value);
+      if (videoId) {
+        loadVideo(videoId);
+        return;
+      }
+      searchVideos(input.value);
+    });
+
+    function loadFromInputWhenReady() {
+      const videoId = extractVideoId(input.value);
+      if (!videoId || videoId === state.videoId) return;
+      loadVideo(videoId);
+    }
+
+    input.addEventListener('input', function() {
+      clearTimeout(inputTimer);
+      inputTimer = setTimeout(function() {
+        const videoId = extractVideoId(input.value);
+        if (videoId) {
+          loadFromInputWhenReady();
+        } else if (getPlainQuery(input.value).length >= 3) {
+          searchVideos(input.value);
+        }
+      }, 800);
+    });
+
+    input.addEventListener('paste', function() {
+      clearTimeout(inputTimer);
+      inputTimer = setTimeout(function() {
+        const videoId = extractVideoId(input.value);
+        if (videoId) {
+          loadFromInputWhenReady();
+        } else if (getPlainQuery(input.value).length >= 3) {
+          searchVideos(input.value);
+        }
+      }, 50);
+    });
+
+    frame.addEventListener('load', function() {
+      if (!state.videoId || !frame.contentWindow) return;
+      frame.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 'youtubePlayer' }), 'https://www.youtube.com');
+      if (!hasPlayerMetadata) schedulePlaybackUnavailable(state.videoId, 1200);
+      publishStatus();
+    });
+
+    window.addEventListener('message', function(event) {
+      let data = event.data;
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch (error) {
+          return;
+        }
+      }
+
+      if (data && data.source === 'iphone-control-center') {
+        if (data.command === 'toggle') sendPlayerCommand(state.playing ? 'pauseVideo' : 'playVideo');
+        if (data.command === 'play') sendPlayerCommand('playVideo');
+        if (data.command === 'pause') sendPlayerCommand('pauseVideo');
+        return;
+      }
+
+      if (data && data.event === 'onError') {
+        showPlaybackUnavailable();
+        return;
+      }
+
+      if (!data || (data.event !== 'infoDelivery' && data.event !== 'initialDelivery') || !data.info) return;
+      if (data.info.videoData && data.info.videoData.title) {
+        state.title = data.info.videoData.title;
+        state.author = data.info.videoData.author || 'YouTube';
+      }
+      if (typeof data.info.playerState === 'number') {
+        if ([1, 2, 3, 5].includes(data.info.playerState)) markPlayerReady();
+        state.playing = data.info.playerState === 1 || data.info.playerState === 3;
+        state.state = state.playing ? 'lecture' : 'pause';
+      }
+      publishStatus();
+    });
+
+    setInterval(function() {
+      if (state.videoId && frame.contentWindow) {
+        frame.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 'youtubePlayer' }), 'https://www.youtube.com');
+      }
+      publishStatus();
+    }, 2000);
+
+    publishStatus();
+  </script>
+</body>
+</html>

@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Waze</title>
+  <style>
+    :root {
+      --nav-footer-bg: #202124;
+      --waze-overlay-font-size: clamp(11px, 4vw, 13px);
+      --waze-homebar-space: 48px;
+      --waze-footer-content-height: 64px;
+      --waze-footer-button-size: 3.05em;
+      --waze-footer-side-column: 3.55em;
+      --waze-speed-badge-size: 4.55em;
+      --waze-speed-text-scale: 1.42;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    }
+
+    .waze-app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #000;
+    }
+
+    .waze-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      font-size: var(--waze-overlay-font-size);
+    }
+
+    .middle-zoom-controls {
+      position: absolute;
+      top: 0.75em;
+      right: 0.75em;
+      z-index: 5;
+      display: grid;
+      width: 3em;
+      grid-auto-rows: 3em;
+      gap: 0.45em;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      border: none;
+      backdrop-filter: none;
+      pointer-events: auto;
+    }
+
+    .footer-control {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border: none;
+      border-radius: 999px;
+      background: #484d56;
+      color: #e8eaed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    .middle-zoom-btn {
+      width: 100%;
+      font-size: 1.08em;
+      font-weight: 700;
+      line-height: 1;
+      padding: 0;
+      background: #202124 !important;
+      color: #f1f3f4;
+      cursor: pointer;
+      touch-action: none;
+      user-select: none;
+      box-shadow: inset 0 0 0 0.05em rgba(255, 255, 255, 0.08), 0 0.22em 0.55em rgba(0, 0, 0, 0.32);
+    }
+
+    .middle-zoom-btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .middle-zoom-btn .middle-zoom-icon {
+      width: 58%;
+      height: 58%;
+      display: block;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 2.4;
+    }
+
+    .middle-speed-badge {
+      position: absolute;
+      left: 0.75em;
+      bottom: calc(var(--waze-homebar-space) + var(--waze-footer-content-height) + 0.6em);
+      width: var(--waze-speed-badge-size);
+      height: var(--waze-speed-badge-size);
+      padding: 0;
+      border: 0.0625em solid #3c4043;
+      border-radius: 50%;
+      background: rgba(32, 33, 36, 0.95);
+      color: #e8eaed;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.04em;
+      box-shadow: 0 0.22em 0.55em rgba(0, 0, 0, 0.32);
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .middle-speed-value {
+      font-size: calc(1.34em * var(--waze-speed-text-scale));
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.01em;
+    }
+
+    .middle-speed-unit {
+      font-size: calc(0.58em * var(--waze-speed-text-scale));
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-transform: lowercase;
+      opacity: 0.95;
+    }
+
+    .nav-footer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: var(--waze-footer-side-column) minmax(0, 1fr) var(--waze-footer-side-column);
+      grid-template-rows: var(--waze-footer-content-height) var(--waze-homebar-space);
+      align-items: center;
+      background: var(--nav-footer-bg);
+      min-height: calc(var(--waze-footer-content-height) + var(--waze-homebar-space));
+      padding: 0 0.95em;
+      border-top: 0.0625em solid rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+      pointer-events: none;
+    }
+
+    .footer-left {
+      grid-column: 1;
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      align-self: center;
+      justify-self: center;
+    }
+
+    .footer-left[hidden],
+    .footer-center[hidden] {
+      display: none !important;
+    }
+
+    .footer-cancel-btn,
+    .waze-report-btn {
+      width: var(--waze-footer-button-size);
+      height: var(--waze-footer-button-size);
+      inline-size: var(--waze-footer-button-size);
+      block-size: var(--waze-footer-button-size);
+      min-width: var(--waze-footer-button-size);
+      min-height: var(--waze-footer-button-size);
+      max-width: var(--waze-footer-button-size);
+      max-height: var(--waze-footer-button-size);
+      aspect-ratio: 1 / 1;
+      flex: 0 0 var(--waze-footer-button-size);
+      align-self: center;
+      border: 0;
+      border-radius: 50%;
+      background: #555b66;
+      color: #f1f3f4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      pointer-events: auto;
+      touch-action: manipulation;
+      line-height: 1;
+      box-shadow: 0 0.16em 0.38em rgba(0, 0, 0, 0.2);
+    }
+
+    .waze-report-btn {
+      position: absolute;
+      right: 0.9em;
+      bottom: calc(var(--waze-homebar-space) + var(--waze-footer-content-height) + 1.18em);
+      z-index: 5;
+      background: #24272d;
+    }
+
+    .waze-report-btn[hidden] {
+      display: none !important;
+    }
+
+    .waze-report-btn.temporarily-hidden {
+      display: none !important;
+    }
+
+    .waze-report-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .footer-cancel-btn svg {
+      width: 55%;
+      height: 55%;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .waze-report-btn svg {
+      width: 68%;
+      height: 68%;
+      display: block;
+    }
+
+    .waze-report-btn .warning-triangle {
+      fill: #ffc928;
+      stroke: #f6f7f8;
+      stroke-width: 2.4;
+      stroke-linejoin: round;
+    }
+
+    .waze-report-btn .warning-plus {
+      stroke: #111827;
+      stroke-width: 2.7;
+      stroke-linecap: round;
+    }
+
+    .report-panel {
+      position: absolute;
+      inset: 0;
+      z-index: 8;
+      display: flex;
+      flex-direction: column;
+      padding: 3.6em 1.05em 1.1em;
+      background: #111315;
+      color: #f1f3f4;
+      pointer-events: auto;
+    }
+
+    .report-panel[hidden] {
+      display: none !important;
+    }
+
+    .report-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      margin-bottom: 1.1em;
+    }
+
+    .report-panel-title {
+      margin: 0;
+      font-size: 1.35em;
+      line-height: 1.05;
+      font-weight: 760;
+    }
+
+    .report-panel-close {
+      width: 2.55em;
+      height: 2.55em;
+      border: 0;
+      border-radius: 999px;
+      background: #2f333b;
+      color: #f1f3f4;
+      font-size: 1.15em;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.72em;
+    }
+
+    .report-option {
+      min-height: 5.1em;
+      border: 0;
+      border-radius: 1.05em;
+      background: #24272d;
+      color: #f1f3f4;
+      font-size: 0.95em;
+      font-weight: 720;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.42em;
+      cursor: pointer;
+    }
+
+    .report-option-icon {
+      width: 2.15em;
+      height: 2.15em;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: #3b4049;
+      color: #ffc928;
+      font-size: 1.2em;
+      font-weight: 800;
+    }
+
+    .footer-center {
+      grid-column: 2;
+      grid-row: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.08em;
+      min-width: 0;
+      text-align: center;
+      cursor: not-allowed;
+    }
+
+    .footer-time-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    .footer-time {
+      font-size: 2.58em;
+      line-height: 1;
+      font-weight: 650;
+      color: #e8eaed;
+      cursor: not-allowed;
+    }
+
+    .footer-trip {
+      font-size: 1.08em;
+      line-height: 1;
+      color: #e8eaed;
+      font-weight: 650;
+      cursor: not-allowed;
+    }
+
+    @media (max-height: 540px) {
+      :root {
+        --waze-overlay-font-size: clamp(10px, 3.7vw, 12px);
+        --waze-homebar-space: 46px;
+        --waze-footer-content-height: 60px;
+        --waze-footer-button-size: 2.9em;
+        --waze-footer-side-column: 3.35em;
+        --waze-speed-badge-size: 3.7em;
+        --waze-speed-text-scale: 1.34;
+      }
+
+      .nav-footer {
+        padding-inline: 0.8em;
+      }
+
+      .footer-time {
+        font-size: 2.35em;
+      }
+
+      .footer-trip {
+        font-size: 1em;
+      }
+    }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      color: rgba(255, 255, 255, 0.78);
+      background: #000;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .loading.hidden {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="waze-app">
+    <iframe id="wazeFrame" title="Waze" allow="geolocation"></iframe>
+    <div class="waze-overlay" aria-hidden="false">
+      <div class="middle-zoom-controls" role="group" aria-label="Zoom GPS">
+        <button id="gpsZoomInBtn" class="middle-zoom-btn footer-control" type="button" aria-label="Zoom GPS">
+          <svg class="middle-zoom-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 6V18"></path>
+            <path d="M6 12H18"></path>
+          </svg>
+        </button>
+        <button id="gpsZoomOutBtn" class="middle-zoom-btn footer-control" type="button" aria-label="Dezoom GPS">
+          <svg class="middle-zoom-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 12H18"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="wazeMapSpeedBadge" class="middle-speed-badge" aria-live="polite" aria-label="Vitesse">
+        <span class="middle-speed-value">0</span>
+        <span class="middle-speed-unit">km/h</span>
+      </div>
+      <button id="footerReportBtn" class="waze-report-btn temporarily-hidden" type="button" aria-label="Signaler" hidden disabled>
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <path class="warning-triangle" d="M16 4.4 29.2 27H2.8L16 4.4Z"></path>
+          <path class="warning-plus" d="M16 12.2V21"></path>
+          <path class="warning-plus" d="M11.6 16.6H20.4"></path>
+        </svg>
+      </button>
+      <footer class="nav-footer">
+        <div class="footer-left" hidden aria-hidden="true">
+          <button id="footerCancelBtn" class="footer-cancel-btn" type="button" aria-label="Annuler le trajet">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6L18 18"></path>
+              <path d="M18 6L6 18"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="footer-center" aria-label="Informations de trajet" hidden aria-hidden="true">
+          <div class="footer-time-row">
+            <div class="footer-time">00:00</div>
+          </div>
+          <div class="footer-trip">0 min &bull; 0 km</div>
+        </div>
+      </footer>
+    </div>
+    <section id="reportPanel" class="report-panel" hidden aria-hidden="true" aria-label="Signalement">
+      <div class="report-panel-header">
+        <h2 class="report-panel-title">Signaler</h2>
+        <button id="reportPanelClose" class="report-panel-close" type="button" aria-label="Fermer">x</button>
+      </div>
+      <div class="report-grid">
+        <button class="report-option" type="button"><span class="report-option-icon">!</span>Accident</button>
+        <button class="report-option" type="button"><span class="report-option-icon">+</span>Danger</button>
+        <button class="report-option" type="button"><span class="report-option-icon">x</span>Route fermée</button>
+        <button class="report-option" type="button"><span class="report-option-icon">T</span>Travaux</button>
+      </div>
+    </section>
+    <div class="loading" id="loading">Chargement...</div>
+  </main>
+
+  <script>
+    const frame = document.getElementById('wazeFrame');
+    const loading = document.getElementById('loading');
+    const zoomInBtn = document.getElementById('gpsZoomInBtn');
+    const zoomOutBtn = document.getElementById('gpsZoomOutBtn');
+    const speedValue = document.querySelector('#wazeMapSpeedBadge .middle-speed-value');
+    const speedUnit = document.querySelector('#wazeMapSpeedBadge .middle-speed-unit');
+    const footerCenter = document.querySelector('.footer-center');
+    const footerTime = document.querySelector('.footer-time');
+    const footerTrip = document.querySelector('.footer-trip');
+    const footerCancelBtn = document.getElementById('footerCancelBtn');
+    const footerLeft = document.querySelector('.footer-left');
+    const footerReportBtn = document.getElementById('footerReportBtn');
+    const reportPanel = document.getElementById('reportPanel');
+    const reportPanelClose = document.getElementById('reportPanelClose');
+
+    function getHostWindowCandidates() {
+      const candidates = [];
+      let current = window;
+      for (let i = 0; i < 8; i += 1) {
+        let parent = null;
+        try { parent = current.parent; } catch (err) { parent = null; }
+        if (!parent || parent === current) break;
+        if (!candidates.includes(parent)) candidates.push(parent);
+        current = parent;
+      }
+      try {
+        if (window.top && window.top !== window && !candidates.includes(window.top)) candidates.push(window.top);
+      } catch (err) { }
+      try {
+        if (window.opener && window.opener !== window && !candidates.includes(window.opener)) candidates.push(window.opener);
+      } catch (err) { }
+      return candidates;
+    }
+
+    function hasDevMapFlagInSearch(search) {
+      const rawSearch = String(search || '');
+      try {
+        const params = new URLSearchParams(rawSearch);
+        return params.has('devmap') || params.has('dev_map') || params.has('nextversion');
+      } catch (err) {
+        return /(?:^|[?&])(?:devmap|dev_map|nextversion)(?:[=&]|$)/i.test(rawSearch);
+      }
+    }
+
+    function isDevMapStorageEnabled(storage) {
+      try {
+        const raw = String(storage.getItem('idf_game2_dev_map_mode_v1') || '').trim().toLowerCase();
+        return raw === '1' || raw === 'true' || raw === 'on';
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function isHostDevMapMode() {
+      let ownStorageEnabled = false;
+      try { ownStorageEnabled = isDevMapStorageEnabled(window.localStorage); } catch (err) { }
+      if (hasDevMapFlagInSearch(location.search) || ownStorageEnabled) return true;
+
+      const candidates = getHostWindowCandidates();
+      for (let i = 0; i < candidates.length; i += 1) {
+        const win = candidates[i];
+        try {
+          if (win.GAME2_DEV_MAP_MODE === true) return true;
+        } catch (err) { }
+        try {
+          if (win.document && win.document.body && win.document.body.classList.contains('is-dev-map-mode')) return true;
+        } catch (err) { }
+        try {
+          if (hasDevMapFlagInSearch(win.location && win.location.search)) return true;
+        } catch (err) { }
+        try {
+          if (isDevMapStorageEnabled(win.localStorage)) return true;
+        } catch (err) { }
+      }
+      return false;
+    }
+
+    function buildWazeUrl() {
+      const url = new URL('../../gps_mini.html', location.href);
+      url.searchParams.set('waze_app', '');
+      if (isHostDevMapMode()) url.searchParams.set('devmap', '1');
+      return url.href;
+    }
+
+    frame.src = buildWazeUrl();
+
+    function getFrameDocument() {
+      try {
+        return frame.contentDocument || (frame.contentWindow && frame.contentWindow.document) || null;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function getFrameElement(selector) {
+      const doc = getFrameDocument();
+      return doc ? doc.querySelector(selector) : null;
+    }
+
+    function normalizeFrameText(text) {
+      return String(text || '').trim().replace(/â€¢/g, '\u2022');
+    }
+
+    function copyTextFromFrame(selector, target) {
+      if (!target) return;
+      const source = getFrameElement(selector);
+      if (!source) return;
+      const text = normalizeFrameText(source.textContent);
+      if (text) target.textContent = text;
+    }
+
+    function syncOverlayFromFrame() {
+      copyTextFromFrame('#wazeMapSpeedBadge .middle-speed-value', speedValue);
+      copyTextFromFrame('#wazeMapSpeedBadge .middle-speed-unit', speedUnit);
+      copyTextFromFrame('.footer-time', footerTime);
+      copyTextFromFrame('.footer-trip', footerTrip);
+
+      const frameZoomIn = getFrameElement('#gpsZoomInBtn');
+      const frameZoomOut = getFrameElement('#gpsZoomOutBtn');
+      if (frameZoomIn && zoomInBtn) zoomInBtn.disabled = frameZoomIn.disabled;
+      if (frameZoomOut && zoomOutBtn) zoomOutBtn.disabled = frameZoomOut.disabled;
+    }
+
+    function clickFrameButton(selector) {
+      const button = getFrameElement(selector);
+      if (!button || button.disabled) return;
+      button.click();
+      syncOverlayFromFrame();
+    }
+
+    const WAZE_WIDGET_BRIDGE_SCOPE = 'idf_game_widget_bridge_v1';
+    const WAZE_WIDGET_BRIDGE_CHANNEL = 'waze';
+    let lastHostBridgeTs = 0;
+    let cancelButtonAllowed = true;
+    let localRouteActive = false;
+
+    function isCancelAllowedFromHostBridge(payload) {
+      if (!payload || typeof payload !== 'object') return true;
+      const rawMode = String(payload.gameMode ?? '').trim().toLowerCase();
+      if (!rawMode) return true;
+      return rawMode === 'free';
+    }
+
+    function hasActiveRouteFromHostBridge(payload) {
+      if (!payload || typeof payload !== 'object') return false;
+      if (payload.clearNavigation === true || payload.clearDestination === true) return false;
+      if (
+        payload.routeSelected === false &&
+        payload.routeStarted !== true &&
+        payload.routeWaitingStart !== true &&
+        !(payload.end || payload.to || payload.b)
+      ) {
+        return false;
+      }
+      if (payload.routeSelected === true || payload.routeStarted === true || payload.routeWaitingStart === true) return true;
+      if (Array.isArray(payload.routePoints) && payload.routePoints.length >= 2) return true;
+      if (Array.isArray(payload.routeStops) && payload.routeStops.length > 0) return true;
+      if (payload.end || payload.to || payload.b) return true;
+      return false;
+    }
+
+    function updateCancelButtonVisibility(allowed, routeActive) {
+      cancelButtonAllowed = allowed !== false && routeActive === true;
+      if (!footerCancelBtn) return;
+      footerCancelBtn.hidden = !cancelButtonAllowed;
+      footerCancelBtn.setAttribute('aria-hidden', cancelButtonAllowed ? 'false' : 'true');
+      footerCancelBtn.disabled = !cancelButtonAllowed;
+      if (footerLeft) {
+        footerLeft.hidden = !cancelButtonAllowed;
+        footerLeft.setAttribute('aria-hidden', cancelButtonAllowed ? 'false' : 'true');
+      }
+    }
+
+    function updateFooterRouteVisibility(routeActive) {
+      const timeText = String(footerTime ? footerTime.textContent : '').trim();
+      const tripText = String(footerTrip ? footerTrip.textContent : '').trim();
+      const defaultTrip = /^(?:0+\s*min\s*[•·]\s*0+\s*km|0+\s*min\s*-\s*0+\s*km)$/i.test(tripText);
+      const visible = routeActive === true && !(timeText === '00:00' && defaultTrip);
+      if (footerCenter) {
+        footerCenter.hidden = !visible;
+        footerCenter.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      }
+      if (footerReportBtn) {
+        const reportVisible = routeActive === true;
+        footerReportBtn.hidden = true;
+        footerReportBtn.setAttribute('aria-hidden', 'true');
+        footerReportBtn.disabled = true;
+        if (!reportVisible) closeReportPanel();
+      }
+    }
+
+    function openReportPanel() {
+      if (!reportPanel) return;
+      reportPanel.hidden = false;
+      reportPanel.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeReportPanel() {
+      if (!reportPanel) return;
+      reportPanel.hidden = true;
+      reportPanel.setAttribute('aria-hidden', 'true');
+    }
+
+    window.closeWazeReportPopup = closeReportPanel;
+
+    function postFrameBridgePayload(payload) {
+      if (!payload || typeof payload !== 'object') return false;
+      try {
+        if (!frame.contentWindow) return false;
+        frame.contentWindow.postMessage({
+          scope: WAZE_WIDGET_BRIDGE_SCOPE,
+          channel: WAZE_WIDGET_BRIDGE_CHANNEL,
+          payload: payload,
+          ts: Number(payload.ts) || Date.now()
+        }, '*');
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    window.addEventListener('message', function(event) {
+      const msg = event && event.data;
+      if (!msg || msg.scope !== WAZE_WIDGET_BRIDGE_SCOPE) return;
+      if (String(msg.channel || '').trim().toLowerCase() !== WAZE_WIDGET_BRIDGE_CHANNEL) return;
+      const payload = msg.payload && typeof msg.payload === 'object' ? msg.payload : null;
+      if (!payload) return;
+      postFrameBridgePayload(payload);
+      if (String(payload.kind || '') === 'waze-dev' && (payload.type === 'zoom_in' || payload.type === 'zoom_out')) {
+        window.setTimeout(syncOverlayFromFrame, 80);
+      }
+    });
+
+    function readHostWazeBridgeState() {
+      const candidates = getHostWindowCandidates();
+      for (let i = 0; i < candidates.length; i += 1) {
+        const win = candidates[i];
+        try {
+          if (typeof win.wazeGetBridgeState !== 'function') continue;
+          const payload = win.wazeGetBridgeState();
+          if (payload && typeof payload === 'object') return payload;
+        } catch (err) { }
+      }
+      return null;
+    }
+
+    function syncFrameFromHostBridge(force) {
+      const payload = readHostWazeBridgeState();
+      if (!payload || typeof payload !== 'object') {
+        updateCancelButtonVisibility(true, localRouteActive);
+        updateFooterRouteVisibility(localRouteActive);
+        return false;
+      }
+      const routeActive = hasActiveRouteFromHostBridge(payload);
+      updateCancelButtonVisibility(isCancelAllowedFromHostBridge(payload), routeActive);
+      updateFooterRouteVisibility(routeActive);
+      const ts = Number(payload.ts) || 0;
+      if (!force && Number.isFinite(ts) && ts > 0 && ts <= lastHostBridgeTs) return false;
+      if (Number.isFinite(ts) && ts > 0) lastHostBridgeTs = ts;
+      const sent = postFrameBridgePayload(payload);
+      if (sent) syncOverlayFromFrame();
+      return sent;
+    }
+
+    function callHostWazeDestination(destination) {
+      const candidates = getHostWindowCandidates();
+      for (let i = 0; i < candidates.length; i += 1) {
+        const win = candidates[i];
+        try {
+          if (typeof win.wazeSetNavigationDestinationXYZ !== 'function') continue;
+          const result = win.wazeSetNavigationDestinationXYZ(
+            destination.x,
+            Number.isFinite(destination.h) ? destination.h : 0,
+            destination.y
+          );
+          window.setTimeout(function () { syncFrameFromHostBridge(true); }, 120);
+          window.setTimeout(function () { syncFrameFromHostBridge(true); }, 650);
+          return result !== false;
+        } catch (err) { }
+      }
+      return false;
+    }
+
+    function callHostWazeClearDestination() {
+      const candidates = getHostWindowCandidates();
+      for (let i = 0; i < candidates.length; i += 1) {
+        const win = candidates[i];
+        try {
+          if (typeof win.wazeClearNavigationDestination !== 'function') continue;
+          const result = win.wazeClearNavigationDestination();
+          window.setTimeout(function () { syncFrameFromHostBridge(true); }, 120);
+          return result !== false;
+        } catch (err) { }
+      }
+      return false;
+    }
+
+    function clearFrameNavigation() {
+      localRouteActive = false;
+      try {
+        if (frame.contentWindow && typeof frame.contentWindow.wazeClearNavigationDestination === 'function') {
+          frame.contentWindow.wazeClearNavigationDestination();
+          syncOverlayFromFrame();
+          return true;
+        }
+      } catch (err) { }
+      return false;
+    }
+
+    function cancelFrameNavigation() {
+      if (!cancelButtonAllowed) return false;
+      const hostCleared = callHostWazeClearDestination();
+      const localCleared = clearFrameNavigation();
+      return hostCleared || localCleared;
+    }
+
+    let pendingDestinationPoint = null;
+    function normalizeWorldPoint(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      const x = Number(raw.x ?? raw.X);
+      const hasZ = Object.prototype.hasOwnProperty.call(raw, 'z') || Object.prototype.hasOwnProperty.call(raw, 'Z');
+      const y = Number(hasZ ? (raw.z ?? raw.Z) : (raw.y ?? raw.Y));
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      let h = Number(raw.h ?? raw.H ?? raw.height ?? raw.alt ?? raw.altitude);
+      if (!Number.isFinite(h) && hasZ) h = Number(raw.y ?? raw.Y);
+      const point = { x, y };
+      if (Number.isFinite(h)) point.h = h;
+      return point;
+    }
+
+    function applyLocalFrameDestination(point) {
+      const destination = normalizeWorldPoint(point);
+      if (!destination) return false;
+      try {
+        if (frame.contentWindow && typeof frame.contentWindow.wazeSetNavigationDestinationXYZ === 'function') {
+          const ok = frame.contentWindow.wazeSetNavigationDestinationXYZ(
+            destination.x,
+            Number.isFinite(destination.h) ? destination.h : 0,
+            destination.y
+          );
+          localRouteActive = ok !== false;
+          updateFooterRouteVisibility(localRouteActive);
+          syncOverlayFromFrame();
+          return ok !== false;
+        }
+      } catch (err) { }
+      pendingDestinationPoint = destination;
+      localRouteActive = true;
+      updateFooterRouteVisibility(true);
+      return true;
+    }
+
+    function applyFrameDestination(point) {
+      const destination = normalizeWorldPoint(point);
+      if (!destination) return false;
+      const hostApplied = callHostWazeDestination(destination);
+      const localApplied = applyLocalFrameDestination(destination);
+      return hostApplied || localApplied;
+    }
+
+    window.wazeSetNavigationDestinationPoint = function(point) {
+      return applyFrameDestination(point);
+    };
+    window.wazeSetNavigationDestinationXYZ = function(X, Y, Z) {
+      return applyFrameDestination({ x: X, h: Y, y: Z });
+    };
+    window.wazeClearNavigationDestination = cancelFrameNavigation;
+
+    function bindProxyZoom(button, frameSelector) {
+      if (!button) return;
+      let holdTimer = 0;
+      let repeatTimer = 0;
+
+      function stopPress() {
+        window.clearTimeout(holdTimer);
+        window.clearInterval(repeatTimer);
+        holdTimer = 0;
+        repeatTimer = 0;
+      }
+
+      button.addEventListener('pointerdown', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (button.disabled) return;
+        try { button.setPointerCapture(event.pointerId); } catch (err) { }
+        clickFrameButton(frameSelector);
+        holdTimer = window.setTimeout(function () {
+          repeatTimer = window.setInterval(function () {
+            clickFrameButton(frameSelector);
+          }, 120);
+        }, 280);
+      });
+
+      button.addEventListener('pointerup', stopPress);
+      button.addEventListener('pointercancel', stopPress);
+      button.addEventListener('pointerleave', stopPress);
+      button.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+    }
+
+    bindProxyZoom(zoomInBtn, '#gpsZoomInBtn');
+    bindProxyZoom(zoomOutBtn, '#gpsZoomOutBtn');
+
+    if (footerCancelBtn) {
+      updateCancelButtonVisibility(true, false);
+      updateFooterRouteVisibility(false);
+      footerCancelBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        cancelFrameNavigation();
+      });
+    }
+
+    if (footerReportBtn) {
+      footerReportBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (footerReportBtn.disabled) return;
+        openReportPanel();
+      });
+    }
+
+    if (reportPanelClose) {
+      reportPanelClose.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeReportPanel();
+      });
+    }
+
+    frame.addEventListener('load', function () {
+      loading.classList.add('hidden');
+      syncOverlayFromFrame();
+      syncFrameFromHostBridge(true);
+      if (pendingDestinationPoint) {
+        const point = pendingDestinationPoint;
+        pendingDestinationPoint = null;
+        window.setTimeout(function () {
+          applyFrameDestination(point);
+        }, 60);
+      }
+    });
+    window.setInterval(function () {
+      syncFrameFromHostBridge(false);
+    }, 350);
+    window.setInterval(syncOverlayFromFrame, 250);
+  </script>
+</body>
+</html>

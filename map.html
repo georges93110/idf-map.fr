@@ -85,6 +85,28 @@
       window.setTimeout(reveal, 7000);
     })();
   </script>
+  <script>
+    (function setupMapsAppMode() {
+      var enabled = false;
+      try {
+        enabled = new URLSearchParams(window.location.search || "").has("maps_app");
+      } catch (err) {
+        enabled = /(?:^|[?&])maps_app(?:[=&]|$)/.test(String(window.location.search || ""));
+      }
+      if (!enabled) return;
+      document.documentElement.classList.add("maps-app-mode");
+      try {
+        if (new URLSearchParams(window.location.search || "").has("uber_eats_app")) {
+          document.documentElement.classList.add("uber-eats-map-embed");
+        }
+      } catch (err) {
+        if (/(?:^|[?&])uber_eats_app(?:[=&]|$)/.test(String(window.location.search || ""))) {
+          document.documentElement.classList.add("uber-eats-map-embed");
+        }
+      }
+      window.IDF_MAPS_APP_MODE = true;
+    })();
+  </script>
   <title>Map</title>
   <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -118,6 +140,235 @@
       color:#fff;font-weight:600;white-space:nowrap;text-align:center;
       text-shadow:0 2px 4px rgba(0,0,0,.8);
       pointer-events:auto; cursor:pointer;
+    }
+    .maps-app-player-dot{
+      filter:drop-shadow(0 2px 5px rgba(15,23,42,.36));
+    }
+    .uber-eats-route-label{
+      color:#fff;
+      width:150px !important;
+      height:auto !important;
+      overflow:visible !important;
+      font:800 13px/1.1 Inter,ui-sans-serif,system-ui,sans-serif;
+      text-shadow:0 2px 6px rgba(0,0,0,.92),0 0 2px rgba(0,0,0,.95);
+      white-space:nowrap;
+      pointer-events:none;
+    }
+    .uber-eats-route-label span{
+      display:block;
+      max-width:148px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      transform:translate(10px,-24px);
+    }
+    html.maps-app-mode,
+    html.maps-app-mode body,
+    html.maps-app-mode *{
+      -webkit-user-select:none !important;
+      user-select:none !important;
+      -webkit-touch-callout:none !important;
+    }
+    html.maps-app-mode body{background:#121212}
+    html.maps-app-mode #topBar,
+    html.maps-app-mode .map-topbar,
+    html.maps-app-mode .selected-chip,
+    html.maps-app-mode #dbusPanel,
+    html.maps-app-mode #settingsPanel,
+    html.maps-app-mode .dbus-stop-panel,
+    html.maps-app-mode .line-preview-panel,
+    html.maps-app-mode .line-preview-audio-panel,
+    html.maps-app-mode .analysis-hud,
+    html.maps-app-mode .watermark,
+    html.maps-app-mode #sharedHeaderMount,
+    html.maps-app-mode #siteTopBar,
+    html.maps-app-mode .site-topbar,
+    html.maps-app-mode .site-header,
+    html.maps-app-mode .shared-header,
+    html.maps-app-mode .leaflet-control-container{
+      display:none !important;
+    }
+    html.maps-app-mode #map{
+      position:fixed !important;
+      inset:0 !important;
+    }
+    html.maps-app-mode .search-input{
+      background:#171717 !important;
+      color:#f8fafc !important;
+      border-color:rgba(248,250,252,.12) !important;
+      box-shadow:none !important;
+    }
+    html.maps-app-mode .search-input::placeholder{
+      color:rgba(248,250,252,.58) !important;
+    }
+    html.maps-app-mode .search-panel{
+      position:fixed !important;
+      left:11px !important;
+      right:11px !important;
+      top:58px !important;
+      z-index:1200 !important;
+      pointer-events:auto !important;
+    }
+    html.maps-app-mode #searchPanel.search-panel-modal,
+    html.maps-app-mode #searchPanel{
+      width:auto !important;
+      max-width:none !important;
+      max-height:47vh !important;
+      border-radius:18px !important;
+      overflow:hidden !important;
+      background:#171717 !important;
+      color:#f8fafc !important;
+      border-color:rgba(248,250,252,.12) !important;
+      box-shadow:0 12px 35px rgba(0,0,0,.42) !important;
+    }
+    html.maps-app-mode #searchPanel .dbus-header,
+    html.maps-app-mode #searchPanel .dbus-footer{
+      display:none !important;
+    }
+    html.maps-app-mode #searchPanel .dbus-content,
+    html.maps-app-mode #results{
+      max-height:47vh !important;
+      background:#171717 !important;
+      color:#f8fafc !important;
+      scrollbar-width:none !important;
+      -ms-overflow-style:none !important;
+    }
+    html.maps-app-mode #searchPanel .dbus-content::-webkit-scrollbar,
+    html.maps-app-mode #results::-webkit-scrollbar,
+    html.maps-app-mode .results::-webkit-scrollbar{
+      width:0 !important;
+      height:0 !important;
+      display:none !important;
+    }
+    html.maps-app-mode .results{
+      background:#171717 !important;
+      border-color:rgba(248,250,252,.12) !important;
+      box-shadow:none !important;
+      scrollbar-width:none !important;
+      -ms-overflow-style:none !important;
+    }
+    html.maps-app-mode .result-item,
+    html.maps-app-mode #results .result-item,
+    html.maps-app-mode #searchPanel .result-item{
+      color:#f8fafc !important;
+      background:#171717 !important;
+      border-bottom-color:rgba(248,250,252,.08) !important;
+      gap:6px !important;
+      padding:3px 8px !important;
+      font-size:10px !important;
+      line-height:1.1 !important;
+      min-height:24px !important;
+      height:auto !important;
+      box-sizing:border-box !important;
+    }
+    html.maps-app-mode .result-item:hover{
+      background:#252525 !important;
+    }
+    html.maps-app-mode .result-item img.ico{
+      width:38px !important;
+      height:16px !important;
+      border-radius:4px !important;
+    }
+    html.maps-app-mode .result-item img.ico.ico-service{
+      width:18px !important;
+      height:18px !important;
+    }
+    html.maps-app-mode .result-sechead,
+    html.maps-app-mode .result-empty,
+    html.maps-app-mode .result-text{
+      color:#f8fafc !important;
+    }
+    html.maps-app-mode .result-text{
+      font-size:10px !important;
+      line-height:1.1 !important;
+    }
+    html.maps-app-mode .result-sechead{
+      background:#202020 !important;
+      border-bottom:1px solid rgba(248,250,252,.08) !important;
+      font-size:8px !important;
+      letter-spacing:.08em !important;
+      padding:4px 8px !important;
+      min-height:20px !important;
+      box-sizing:border-box !important;
+    }
+    html.maps-app-mode .result-empty{
+      font-size:10px !important;
+      padding:5px 8px !important;
+    }
+    html.maps-app-mode .results-filters,
+    html.maps-app-mode .search-categories{
+      background:#171717 !important;
+      border-bottom:1px solid rgba(248,250,252,.08) !important;
+      gap:3px !important;
+      padding:3px 5px !important;
+    }
+    html.maps-app-mode .dbus-mode-btn{
+      background:#252525 !important;
+      color:#e2e8f0 !important;
+      border-color:rgba(248,250,252,.12) !important;
+      box-shadow:none !important;
+      min-height:18px !important;
+      padding:2px 6px !important;
+      border-radius:7px !important;
+      font-size:9px !important;
+      line-height:1 !important;
+    }
+    html.maps-app-mode .dbus-mode-btn.active{
+      background:#3a3a3a !important;
+      color:#fff !important;
+    }
+    html.maps-app-mode .city-label,
+    html.maps-app-mode .city-selected{
+      color:#fff !important;
+    }
+    html.uber-eats-map-embed .city-label,
+    html.uber-eats-map-embed .city-selected{
+      display:none !important;
+    }
+    html.maps-app-mode .leaflet-popup-content-wrapper,
+    html.maps-app-mode .leaflet-popup-tip{
+      background:#171717 !important;
+      color:#f8fafc !important;
+      border-color:rgba(248,250,252,.14) !important;
+      box-shadow:0 14px 35px rgba(0,0,0,.42) !important;
+    }
+    html.maps-app-mode .leaflet-popup-content-wrapper{
+      max-width:250px !important;
+      border-radius:12px !important;
+    }
+    html.maps-app-mode .leaflet-popup-content{
+      width:auto !important;
+      max-width:220px !important;
+      margin:8px 10px !important;
+      font-size:12px !important;
+      line-height:1.25 !important;
+    }
+    html.maps-app-mode .leaflet-popup-content img{
+      max-width:96px !important;
+      max-height:72px !important;
+    }
+    html.maps-app-mode .leaflet-popup-content,
+    html.maps-app-mode .leaflet-popup-content b,
+    html.maps-app-mode .leaflet-popup-content div,
+    html.maps-app-mode .leaflet-popup-content span{
+      color:#f8fafc !important;
+    }
+    html.maps-app-mode .leaflet-popup-content i,
+    html.maps-app-mode .leaflet-popup-content [style*="color:#8f8f8f"],
+    html.maps-app-mode .leaflet-popup-content [style*="color: #8f8f8f"]{
+      color:#cbd5e1 !important;
+    }
+    html.maps-app-mode .leaflet-popup-close-button{
+      color:#f8fafc !important;
+      width:22px !important;
+      height:22px !important;
+      font-size:16px !important;
+      line-height:22px !important;
+    }
+    html.maps-app-mode .leaflet-popup-content a{
+      color:#60a5fa !important;
+    }
+    html.maps-app-mode .leaflet-popup-content a[href*="wikipedia.org"]{
+      display:none !important;
     }
     .city-selected{color:#ffda3a !important;text-shadow:0 0 0 rgba(0,0,0,0),0 2px 6px rgba(0,0,0,.9)}
     body.map-icons-disabled .leaflet-image-layer.leaflet-zoom-animated.leaflet-interactive,
@@ -1546,6 +1797,32 @@
     .inline-ico{ height:1.5em; width:auto; vertical-align:-.35em; margin:0 .12em }
     .rer-invert { filter: invert(1); }
     .leaflet-popup-content{white-space:normal;overflow:visible}
+    .popup-route-action{
+      margin-top:10px;
+      display:flex;
+      justify-content:center;
+    }
+    .popup-route-btn{
+      width:100%;
+      border:0;
+      border-radius:999px;
+      padding:8px 12px;
+      background:#0a84ff;
+      color:#fff;
+      font-weight:800;
+      font-size:13px;
+      line-height:1.1;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(10,132,255,.28);
+    }
+    .popup-route-btn:disabled,
+    .popup-route-btn[aria-disabled="true"]{
+      background:#4b5563;
+      color:#cbd5e1;
+      cursor:not-allowed;
+      box-shadow:none;
+      opacity:.72;
+    }
     .dbus-stop-name{font-size:15px;line-height:1.35;word-break:break-word}
     .stop-popup{
       display:flex;
@@ -4038,6 +4315,7 @@
     return `${label} (${count})`;
   }
   function resultsEmptyText(){
+    if (window.IDF_MAPS_APP_MODE === true) return "Aucun résultat";
     const label = searchCategoryDisplay(ACTIVE_SEARCH_CATEGORY);
     return t("results_empty_category").replace("{category}", label);
   }
@@ -4958,6 +5236,7 @@
     const DEV_LINES_EDITOR_ENABLED = false;
     const DEV_GRAPH = QS.has("dev_graph");
     const NEXT_VERSION_MODE = QS.has("nextversion");
+    const UBER_EATS_MAP_EMBED_MODE = QS.has("uber_eats_app");
     const NEXT_VERSION_BASE_VERSION = "0.1.6a";
     const DEV_NAV_POINTS_DEBUG = DEV_MODE || DEV_GRAPH;
     const DEV_NAV_BRIDGES_DEBUG = DEV_GRAPH || QS.has("dev_bridges");
@@ -5187,7 +5466,7 @@
       crs:L.CRS.Simple,
       attributionControl:false,
       zoomControl:false,
-      minZoom:minNativeZoom+4,
+      minZoom:UBER_EATS_MAP_EMBED_MODE ? minNativeZoom : minNativeZoom+4,
       maxZoom:maxNativeZoom+2,
       zoomSnap:0.25,
       zoomDelta:0.25,
@@ -5220,6 +5499,12 @@
     const dbusRouteMarkerPane = map.createPane("dbusRouteMarkerPane");
     dbusRouteMarkerPane.style.zIndex = "330";
     dbusRouteMarkerPane.style.pointerEvents = "auto";
+    const mapsAppPlayerPane = map.createPane("mapsAppPlayerPane");
+    mapsAppPlayerPane.style.zIndex = "650";
+    mapsAppPlayerPane.style.pointerEvents = "none";
+    const uberEatsRoutePane = map.createPane("uberEatsRoutePane");
+    uberEatsRoutePane.style.zIndex = "640";
+    uberEatsRoutePane.style.pointerEvents = "none";
     const fullBounds=L.latLngBounds(map.unproject(L.point(0,heightPx),maxNativeZoom),map.unproject(L.point(widthPx,0),maxNativeZoom));
     const MARGIN=64;
     function innerBounds(m){const sw=L.point(0+m,heightPx-m),ne=L.point(widthPx-m,0+m);return L.latLngBounds(map.unproject(sw,maxNativeZoom),map.unproject(ne,maxNativeZoom));}
@@ -5286,8 +5571,46 @@
         errorTileUrl: TRANSPARENT_TILE_URL
       }).addTo(map);
     }
-    function applyBounds(){const ib=innerBounds(MARGIN);map.setMaxBounds(ib);map.panInsideBounds(ib,{animate:false});}
-    map.fitBounds(innerBounds(MARGIN),{animate:false});applyBounds();map.on('zoomend resize',applyBounds);
+    let NAV_GRAPH_DRAG_CONTENT_BOUNDS = null;
+    const NAV_GRAPH_MIN_VISIBLE_PX = 48;
+    function expandBoundsForViewportVisibility(bounds){
+      if (!bounds || !bounds.isValid || !bounds.isValid()) return null;
+      const zoom = map.getZoom();
+      const size = map.getSize();
+      const paddingX = Math.max(0, size.x - NAV_GRAPH_MIN_VISIBLE_PX);
+      const paddingY = Math.max(0, size.y - NAV_GRAPH_MIN_VISIBLE_PX);
+      const nw = map.project(bounds.getNorthWest(), zoom);
+      const se = map.project(bounds.getSouthEast(), zoom);
+      const minX = Math.min(nw.x, se.x) - paddingX;
+      const maxX = Math.max(nw.x, se.x) + paddingX;
+      const minY = Math.min(nw.y, se.y) - paddingY;
+      const maxY = Math.max(nw.y, se.y) + paddingY;
+      return L.latLngBounds(
+        map.unproject(L.point(minX, maxY), zoom),
+        map.unproject(L.point(maxX, minY), zoom)
+      );
+    }
+    function getMapDragBounds(){
+      return expandBoundsForViewportVisibility(NAV_GRAPH_DRAG_CONTENT_BOUNDS) || innerBounds(MARGIN);
+    }
+    function enforceMapDragBounds(){
+      const ib=getMapDragBounds();
+      map.setMaxBounds(ib);
+      map.panInsideBounds(ib,{animate:false});
+      return ib;
+    }
+    let enforceMapDragBoundsRaf=0;
+    function scheduleMapDragBoundsEnforce(){
+      if(enforceMapDragBoundsRaf) return;
+      enforceMapDragBoundsRaf=requestAnimationFrame(()=>{
+        enforceMapDragBoundsRaf=0;
+        enforceMapDragBounds();
+      });
+    }
+    function applyBounds(){enforceMapDragBounds();}
+    map.fitBounds(getMapDragBounds(),{animate:false});applyBounds();
+    map.on('zoomend resize',applyBounds);
+    map.on('drag moveend',scheduleMapDragBoundsEnforce);
 
     let TileMapInfo;
     const tileInfoReady = fetchMapFile("TileMapInfo.json").then(r=>{ if(!r.ok) throw new Error('TileMapInfo'); return r.json(); }).then(info => (TileMapInfo = info));
@@ -5558,6 +5881,165 @@
       const py=(Y-TileMapInfo.y1)/(TileMapInfo.y2-TileMapInfo.y1)*heightPx;
       return map.unproject([px,py],maxNativeZoom);
     }
+    let mapsAppPlayerMarker = null;
+    window.__idfMapsAppPlayerWorldPoint = null;
+    window.__idfMapsAppRouteAllowed = true;
+    function normalizeMapsAppWorldPoint(raw){
+      if (!raw || typeof raw !== "object") return null;
+      const x = Number(raw.x ?? raw.X);
+      const hasZ = Object.prototype.hasOwnProperty.call(raw, "z") || Object.prototype.hasOwnProperty.call(raw, "Z");
+      const y = Number(hasZ ? (raw.z ?? raw.Z) : (raw.y ?? raw.Y));
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      let h = Number(raw.h ?? raw.H ?? raw.height ?? raw.alt ?? raw.altitude);
+      if (!Number.isFinite(h) && hasZ) h = Number(raw.y ?? raw.Y);
+      const point = { x, y };
+      if (Number.isFinite(h)) point.h = h;
+      return point;
+    }
+    function clearMapsAppPlayerPoint(){
+      window.__idfMapsAppPlayerWorldPoint = null;
+      if (mapsAppPlayerMarker) {
+        try { mapsAppPlayerMarker.remove(); } catch {}
+        mapsAppPlayerMarker = null;
+      }
+      updatePopupRouteButtonsState();
+    }
+    function setMapsAppPlayerPoint(rawPoint, options = {}){
+      const point = normalizeMapsAppWorldPoint(rawPoint);
+      if (!point || !TileMapInfo) {
+        clearMapsAppPlayerPoint();
+        return { ok:false };
+      }
+      const latlng = toLatLng(point.x, point.y);
+      if (!latlng) {
+        clearMapsAppPlayerPoint();
+        return { ok:false };
+      }
+      window.__idfMapsAppPlayerWorldPoint = point;
+      if (!mapsAppPlayerMarker) {
+        mapsAppPlayerMarker = L.circleMarker(latlng, {
+          pane:"mapsAppPlayerPane",
+          radius:6,
+          color:"#fff",
+          weight:2.5,
+          fillColor:"#0a84ff",
+          fillOpacity:1,
+          opacity:1,
+          interactive:false,
+          className:"maps-app-player-dot"
+        }).addTo(map);
+      } else {
+        mapsAppPlayerMarker.setLatLng(latlng);
+      }
+      if (options && options.center === true) {
+        const targetZoom = Math.max(map.getZoom(), minNativeZoom + 5);
+        map.setView(latlng, targetZoom, { animate: true });
+      }
+      updatePopupRouteButtonsState();
+      return { ok:true, x:point.x, y:point.y };
+    }
+    window.__idfMapsAppSetPlayerWorldPoint = setMapsAppPlayerPoint;
+    window.__idfMapsAppClearPlayerWorldPoint = clearMapsAppPlayerPoint;
+    window.__idfMapsAppSetRouteAllowed = function(allowed){
+      window.__idfMapsAppRouteAllowed = allowed !== false;
+      updatePopupRouteButtonsState();
+      return true;
+    };
+    const uberEatsRouteLayer = L.layerGroup().addTo(map);
+    let uberEatsRouteRenderSeq = 0;
+    function normalizeUberEatsRouteWorldPoint(raw){
+      if (!raw || typeof raw !== "object") return null;
+      const x = Number(raw.x ?? raw.X);
+      const y = Number(raw.z ?? raw.Z ?? raw.y ?? raw.Y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      return {
+        x,
+        y,
+        name: String(raw.name || "").trim()
+      };
+    }
+    function clearUberEatsRouteMap(){
+      uberEatsRouteRenderSeq += 1;
+      uberEatsRouteLayer.clearLayers();
+      return true;
+    }
+    function renderUberEatsRouteMapOnLeaflet(payload){
+      const renderSeq = ++uberEatsRouteRenderSeq;
+      const data = payload && typeof payload === "object" ? payload : {};
+      const points = data.points && typeof data.points === "object" ? data.points : {};
+      const player = normalizeUberEatsRouteWorldPoint(points.player);
+      const pickup = normalizeUberEatsRouteWorldPoint(points.pickup);
+      const dropoff = normalizeUberEatsRouteWorldPoint(points.dropoff);
+      return Promise.resolve(tileInfoReady).then(() => {
+        if (renderSeq !== uberEatsRouteRenderSeq) return false;
+        clearUberEatsRouteMap();
+        uberEatsRouteRenderSeq = renderSeq;
+        if (!player || !pickup || !dropoff || !TileMapInfo) return false;
+        const routePoints = [
+          { point: player, label: "Vous", color: "#3b82f6", radius: 6 },
+          { point: pickup, label: pickup.name || "Restaurant", color: "#39e879", radius: 7 },
+          { point: dropoff, label: "Client", color: "#f8fafc", radius: 7 }
+        ];
+        const latlngs = routePoints.map((item) => toLatLng(item.point.x, item.point.y)).filter(Boolean);
+        if (latlngs.length !== 3) return false;
+        L.polyline(latlngs, {
+          pane: "uberEatsRoutePane",
+          color: "rgba(0,0,0,.62)",
+          weight: 11,
+          opacity: 1,
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: false
+        }).addTo(uberEatsRouteLayer);
+        L.polyline(latlngs, {
+          pane: "uberEatsRoutePane",
+          color: "#39e879",
+          weight: 5,
+          opacity: .96,
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: false
+        }).addTo(uberEatsRouteLayer);
+        routePoints.forEach((item, index) => {
+          const latlng = latlngs[index];
+          L.circleMarker(latlng, {
+            pane: "uberEatsRoutePane",
+            radius: item.radius,
+            color: "#0b0f12",
+            weight: 3,
+            fillColor: item.color,
+            fillOpacity: 1,
+            opacity: 1,
+            interactive: false
+          }).addTo(uberEatsRouteLayer);
+        });
+        const bounds = L.latLngBounds(latlngs);
+        function fitUberEatsRouteBounds() {
+          try { map.invalidateSize(false); } catch {}
+          map.setMinZoom(UBER_EATS_MAP_EMBED_MODE ? minNativeZoom : minNativeZoom + 4);
+          if (!bounds.isValid()) return;
+          map.fitBounds(bounds.pad(.06), {
+            animate: false,
+            paddingTopLeft: [42, 42],
+            paddingBottomRight: [42, 54],
+            maxZoom: maxNativeZoom + 2
+          });
+          scheduleMapDragBoundsEnforce();
+        }
+        fitUberEatsRouteBounds();
+        requestAnimationFrame(fitUberEatsRouteBounds);
+        window.setTimeout(fitUberEatsRouteBounds, 120);
+        return true;
+      }).catch(() => false);
+    }
+    window.__idfMapsAppRenderUberEatsRoute = renderUberEatsRouteMapOnLeaflet;
+    window.__idfMapsAppClearUberEatsRoute = clearUberEatsRouteMap;
+    window.addEventListener("message", (event) => {
+      const data = event && event.data;
+      if (!data || data.source !== "iphone-uber-eats") return;
+      if (data.type === "render_route_map") renderUberEatsRouteMapOnLeaflet(data);
+      if (data.type === "clear_route_map") clearUberEatsRouteMap();
+    });
     function fromLatLngToXY(latlng){
       const pt = map.project(latlng, maxNativeZoom);
       const X = (pt.x/widthPx) * (TileMapInfo.x2 - TileMapInfo.x1) + TileMapInfo.x1;
@@ -5882,12 +6364,114 @@
         .trim();
     }
 
+    function normalizeRouteWorldPoint(raw){
+      if (!raw || typeof raw !== "object") return null;
+      const x = Number(raw.x ?? raw.X);
+      const hasZ = Object.prototype.hasOwnProperty.call(raw, "z") || Object.prototype.hasOwnProperty.call(raw, "Z");
+      const y = Number(hasZ ? (raw.z ?? raw.Z) : (raw.y ?? raw.Y));
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      let h = Number(raw.h ?? raw.H ?? raw.height ?? raw.alt ?? raw.altitude);
+      if (!Number.isFinite(h) && hasZ) h = Number(raw.y ?? raw.Y);
+      const point = { x, y };
+      if (Number.isFinite(h)) point.h = h;
+      return point;
+    }
+    function hasMapsAppPlayerPoint(){
+      return !!normalizeRouteWorldPoint(window.__idfMapsAppPlayerWorldPoint || null);
+    }
+    function isMapsAppRouteAllowed(){
+      return window.__idfMapsAppRouteAllowed !== false;
+    }
+    function routeButtonHtml(point){
+      const normalized = normalizeRouteWorldPoint(point);
+      if (!normalized) return "";
+      const disabled = !hasMapsAppPlayerPoint() || !isMapsAppRouteAllowed();
+      const payload = escapeHTML(JSON.stringify(normalized));
+      return `
+        <div class="popup-route-action">
+          <button type="button" class="popup-route-btn" data-idf-route-point="${payload}" ${disabled ? "disabled aria-disabled=\"true\"" : "aria-disabled=\"false\""}>
+            Itinéraire
+          </button>
+        </div>`;
+    }
+    function withRouteButton(html, point){
+      return `${String(html || "")}${routeButtonHtml(point)}`;
+    }
+    function updatePopupRouteButtonsState(){
+      const disabled = !hasMapsAppPlayerPoint() || !isMapsAppRouteAllowed();
+      document.querySelectorAll(".popup-route-btn[data-idf-route-point]").forEach((button) => {
+        button.disabled = disabled;
+        button.setAttribute("aria-disabled", disabled ? "true" : "false");
+      });
+    }
+    function getNearestNavGraphDestinationPoint(point){
+      const target = normalizeRouteWorldPoint(point);
+      const graph = DBUS_NAV_GRAPH;
+      if (!target || !graph) return target;
+      let best = null;
+      const consider = (candidate) => {
+        const normalized = normalizeRouteWorldPoint(candidate);
+        if (!normalized) return;
+        const dx = normalized.x - target.x;
+        const dy = normalized.y - target.y;
+        const distanceSq = (dx * dx) + (dy * dy);
+        if (!best || distanceSq < best.distanceSq) best = { ...normalized, distanceSq };
+      };
+      (graph.nodeList || []).forEach(consider);
+      if (!best) return target;
+      const out = { x: best.x, y: best.y };
+      if (Number.isFinite(best.h)) out.h = best.h;
+      return out;
+    }
+    function requestWazeRouteToPoint(point){
+      const dest = getNearestNavGraphDestinationPoint(point);
+      if (!dest || !hasMapsAppPlayerPoint() || !isMapsAppRouteAllowed()) return false;
+      const candidates = [];
+      let current = window;
+      for (let i = 0; i < 8; i += 1) {
+        let parent = null;
+        try { parent = current.parent; } catch {}
+        if (!parent || parent === current) break;
+        if (!candidates.includes(parent)) candidates.push(parent);
+        current = parent;
+      }
+      try { if (window.top && window.top !== window && !candidates.includes(window.top)) candidates.push(window.top); } catch {}
+      try { if (window.opener && window.opener !== window && !candidates.includes(window.opener)) candidates.push(window.opener); } catch {}
+      for (const win of candidates) {
+        try {
+          if (typeof win.__idfMapsAppOpenWazeDestination === "function") {
+            const result = win.__idfMapsAppOpenWazeDestination(dest);
+            if (result !== false) return true;
+          }
+        } catch {}
+      }
+      for (const win of candidates) {
+        try {
+          if (typeof win.wazeSetNavigationDestinationXYZ === "function") {
+            return !!win.wazeSetNavigationDestinationXYZ(dest.x, Number.isFinite(dest.h) ? dest.h : 0, dest.y);
+          }
+        } catch {}
+      }
+      return false;
+    }
+    document.addEventListener("click", (event) => {
+      const button = event.target instanceof Element ? event.target.closest(".popup-route-btn[data-idf-route-point]") : null;
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (button.disabled || button.getAttribute("aria-disabled") === "true") return;
+      let point = null;
+      try { point = JSON.parse(button.getAttribute("data-idf-route-point") || "null"); } catch {}
+      requestWazeRouteToPoint(point);
+    }, true);
+
     async function openCityPopup(cityObj, marker) {
       const latlng = marker.getLatLng();
+      const routePoint = { x: cityObj.X, y: cityObj.Y };
       let rawTitle = normalizeParisArrondissement(wikiTitleForCity(cityObj.Name));
       const p = L.popup({ maxWidth: 380, autoPan: true })
         .setLatLng(latlng)
-        .setContent(`<b>${cityObj.Name}</b><br><span class="spinner" aria-label="${t('loading')}"></span>`).openOn(map);
+        .setContent(withRouteButton(`<b>${cityObj.Name}</b><br><span class="spinner" aria-label="${t('loading')}"></span>`, routePoint)).openOn(map);
       try {
         const { title: finalTitle, data } = await (async function resolveWikiSummary(baseTitle){
           try {
@@ -5925,7 +6509,7 @@
             <div style="font-weight:700;margin-bottom:6px">${cityObj.Name}</div>
             <a href="${pageUrl}" target="_blank" rel="noopener" style="color:#3aa0ff;text-decoration:underline">${t("see_wiki")}</a>
           </div>`;
-        p.setContent(html);
+        p.setContent(withRouteButton(html, routePoint));
       } catch {}
     }
 
@@ -5971,8 +6555,17 @@
     function openLayerPopup(layer, latlng){
       if (!layer || typeof layer.openPopup !== "function") return;
       try { map.closePopup(); } catch {}
-      layer.openPopup(latlng);
+      const popup = typeof layer.getPopup === "function" ? layer.getPopup() : null;
+      if (popup && latlng && typeof popup.setLatLng === "function") {
+        popup.setLatLng(latlng);
+      }
+      window.requestAnimationFrame(() => {
+        try {
+          layer.openPopup(latlng);
+        } catch {}
+      });
     }
+    map.on("popupopen", updatePopupRouteButtonsState);
     function setPopupContentWithImage(layer, html){
       if (layer.getPopup()) {
         layer.setPopupContent(html);
@@ -6031,6 +6624,7 @@
           const rawName = String(ov.Name || "").trim();
           const city = String(ov.City || "").trim();
           const wikiKey = String(ov.wiki || "").trim();
+          const routePoint = { x: ov.X, y: ov.Y };
 
           overlay.on("click", async () => {
             const displayName = `${t("mall")} ${rawName}`.trim();
@@ -6038,12 +6632,12 @@
             p.setLatLng(bounds.getCenter());
 
             if (!wikiKey) {
-              p.setContent(`<div style="min-width:0"><b>${escapeHTML(displayName)}</b>${city?`<br><i>${escapeHTML(city)}</i>`:""}</div>`);
+              p.setContent(withRouteButton(`<div style="min-width:0"><b>${escapeHTML(displayName)}</b>${city?`<br><i>${escapeHTML(city)}</i>`:""}</div>`, routePoint));
               openLayerPopup(overlay);
               return;
             }
 
-            p.setContent(`<div style="min-width:0"><b>${escapeHTML(displayName)}</b><br><span class="spinner" aria-label="${t('loading')}"></span></div>`);
+            p.setContent(withRouteButton(`<div style="min-width:0"><b>${escapeHTML(displayName)}</b><br><span class="spinner" aria-label="${t('loading')}"></span></div>`, routePoint));
             openLayerPopup(overlay);
 
             try {
@@ -6091,9 +6685,9 @@
                 </div>`;
 
 
-              p.setContent(html);
+              p.setContent(withRouteButton(html, routePoint));
             } catch {
-              p.setContent(`<div style="min-width:0"><b>${escapeHTML(displayName)}</b>${city?`<br><i>${escapeHTML(city)}</i>`:""}</div>`);
+              p.setContent(withRouteButton(`<div style="min-width:0"><b>${escapeHTML(displayName)}</b>${city?`<br><i>${escapeHTML(city)}</i>`:""}</div>`, routePoint));
             }
           });
 
@@ -6153,14 +6747,15 @@
         );
 
         const logoPath = overlayPath(`${ov.IconId}.png`);
+        const routePoint = { x: companyCenterX, y: companyCenterY };
 
-        bindPopupWithImage(overlay, `
+        bindPopupWithImage(overlay, withRouteButton(`
           <div style="text-align:center">
             <img data-autosize src="${logoPath}"
                 style="width:168px;height:auto;display:block;margin:0 auto 10px;object-fit:contain"/>
             <b>${escapeHTML(ov.Name)}</b><br/><i>${escapeHTML(ov.City||"")}</i>
           </div>
-        `);
+        `, routePoint));
 
         searchIndex.push({
           type:"Entreprise",
@@ -6176,6 +6771,7 @@
               { centerX: ov.X, centerY: ov.Y, width, height }
             );
             const btxt = brandsText(ov) || '?';
+            const routePoint = { x: ov.X, y: ov.Y };
 
             const brandKey = dealerBrandKeyFrom(ov);
             const brandLogo = brandKey ? overlayPath(`dealer_${brandKey}.png`) : overlayPath("dealer_ico.png");
@@ -6188,7 +6784,7 @@
                   <b>${escapeHTML(`${t("dealer")} ${btxt}`.trim())}</b><br/><i>${escapeHTML(ov.City || "")}</i>
                 </div>
               `;
-              setPopupContentWithImage(overlay, html);
+              setPopupContentWithImage(overlay, withRouteButton(html, routePoint));
             };
 
             const openDealerPopup = () => {
@@ -6216,17 +6812,23 @@
           );
           const updateIconPopup = () => {
             const label = iconLabel(ov.IconId) || ov.Name || ov.Type || t("place");
+            const routePoint = { x: ov.X, y: ov.Y };
             if (overlay.getPopup()) {
-              overlay.setPopupContent(`<b>${escapeHTML(label)}</b>`);
+              overlay.setPopupContent(withRouteButton(`<b>${escapeHTML(label)}</b>`, routePoint));
             } else {
-              overlay.bindPopup(`<b>${escapeHTML(label)}</b>`);
+              overlay.bindPopup(withRouteButton(`<b>${escapeHTML(label)}</b>`, routePoint));
             }
           };
           const openIconPopup = () => {
             updateIconPopup();
             openLayerPopup(overlay, bounds.getCenter());
           };
-          overlay.on("click", openIconPopup);
+          overlay.on("click", (event) => {
+            if (event && event.originalEvent) {
+              L.DomEvent.stop(event.originalEvent);
+            }
+            openIconPopup();
+          });
           registerI18nLayer(overlay, updateIconPopup);
 
           const typeTag =
@@ -6308,11 +6910,12 @@
       const name = String(ov.Name || "").trim();
       const city = String(ov.City || "").trim();
       const wikiTitle = wikiTitleFrom(ov.wiki || ov.IconId || name);
+      const routePoint = { x: ov.X, y: ov.Y };
 
       overlay.on("click", async () => {
         const p = overlay.getPopup();
         p.setLatLng(bounds.getCenter());
-        p.setContent(`<div style="min-width:0"><b>${escapeHTML(name)}</b><br><span class="spinner" aria-label="${t('loading')}"></span></div>`);
+        p.setContent(withRouteButton(`<div style="min-width:0"><b>${escapeHTML(name)}</b><br><span class="spinner" aria-label="${t('loading')}"></span></div>`, routePoint));
         openLayerPopup(overlay);
 
         try {
@@ -6354,9 +6957,9 @@
               <a href="${pageUrl}" target="_blank" rel="noopener" style="color:#3aa0ff;text-decoration:underline">${t("see_wiki")}</a>
             </div>`;
 
-          p.setContent(html);
+          p.setContent(withRouteButton(html, routePoint));
         } catch {
-          p.setContent(`<div style="min-width:0"><b>${escapeHTML(name)}</b>${city?`<br><i>${escapeHTML(city)}</i>`:""}</div>`);
+          p.setContent(withRouteButton(`<div style="min-width:0"><b>${escapeHTML(name)}</b>${city?`<br><i>${escapeHTML(city)}</i>`:""}</div>`, routePoint));
         }
       });
 
@@ -6388,7 +6991,7 @@
       if (Number.isFinite(x) && Number.isFinite(y)) {
         const ll = toLatLng(x, y);
 
-        const ib = innerBounds(MARGIN);
+        const ib = getMapDragBounds();
         const clamped = L.latLng(
           Math.max(Math.min(ll.lat, ib.getNorth()), ib.getSouth()),
           Math.max(Math.min(ll.lng, ib.getEast()),  ib.getWest())
@@ -9704,6 +10307,7 @@
 
     function resetDbusNavGraphState(){
       DBUS_NAV_GRAPH = null;
+      NAV_GRAPH_DRAG_CONTENT_BOUNDS = null;
       dbusNavNodesByStopId.clear();
       dbusNavPathCache.clear();
     }
@@ -9873,6 +10477,24 @@
       });
       return { nodesById, nodeList, adjacency, edgeList, edgesById };
     }
+    function updateMapDragBoundsFromDbusNavGraph(graph){
+      if (!graph || !TileMapInfo) return false;
+      const bounds = L.latLngBounds();
+      const extendWorldPoint = (point) => {
+        const parsed = parseWorldPoint3D(point);
+        if (!parsed) return;
+        const latlng = toLatLng(parsed.x, parsed.y);
+        if (latlng) bounds.extend(latlng);
+      };
+      (graph.nodeList || []).forEach(extendWorldPoint);
+      (graph.edgeList || []).forEach((edge) => {
+        (edge?.polyline || []).forEach(extendWorldPoint);
+      });
+      if (!bounds.isValid()) return false;
+      NAV_GRAPH_DRAG_CONTENT_BOUNDS = bounds;
+      enforceMapDragBounds();
+      return true;
+    }
     async function loadDbusNavGraph(){
       resetDbusNavGraphState();
       let res;
@@ -9885,6 +10507,7 @@
       try {
         const raw = await res.json();
         DBUS_NAV_GRAPH = buildDbusNavGraph(raw);
+        updateMapDragBoundsFromDbusNavGraph(DBUS_NAV_GRAPH);
       } catch (err) {
         console.warn("DBus nav_graph.json invalide", err);
       }
@@ -14010,7 +14633,6 @@
         if (isSearchOpen()) closeSearchUI({ reset: true });
         else {
           setActiveSearchCategory(SEARCH_CATEGORY_ALL);
-          $search.value = "";
           openSearchUI({ focus: true, refresh: true });
         }
       });
@@ -16389,6 +17011,54 @@
       $results.hidden = false;
     }
 
+    window.__idfMapsAppOpenSearch = function(query){
+      const raw = String(query || "").trim();
+      if (!raw) {
+        closeSearchUI({ reset: true });
+        return { ok: false, reason: "empty", indexed: searchIndex.length };
+      }
+
+      doSearch(raw);
+
+      const allowTypeFilter = ACTIVE_SEARCH_CATEGORY === SEARCH_CATEGORY_ALL;
+      const baseFiltered = filterSearchList(searchIndex, raw, allowTypeFilter);
+      const activeTypes = (ACTIVE_SEARCH_CATEGORY === SEARCH_CATEGORY_ALL)
+        ? ALL_TYPES
+        : [ACTIVE_SEARCH_CATEGORY];
+      const allowed = new Set(activeTypes);
+      const filtered = baseFiltered.filter(item => allowed.has(item.type));
+
+      filtered.sort((a, b) => {
+        const pa = (a.type === "Ville") ? 0 : 1;
+        const pb = (b.type === "Ville") ? 0 : 1;
+        if (pa !== pb) return pa - pb;
+        return String(a.name).localeCompare(String(b.name), LANG === "en" ? "en" : "fr", { numeric: true });
+      });
+
+      filtered.sort((a, b) => {
+        if (a.type === "Lignes DBus" && b.type === "Lignes DBus") {
+          return (a.num ?? Infinity) - (b.num ?? Infinity);
+        }
+        return 0;
+      });
+
+      const item = filtered.find(candidate => candidate && candidate.center) || filtered[0];
+      if (!item) {
+        return { ok: false, reason: "no_result", indexed: searchIndex.length };
+      }
+
+      closeSearchUI({ reset: true });
+      if (item.center) {
+        map.setView(item.center, Math.max(map.getZoom(), minNativeZoom + 4));
+      }
+      if (typeof item.open === "function") {
+        window.setTimeout(() => {
+          try { item.open(); } catch {}
+        }, 150);
+      }
+      return { ok: true, type: item.type || "", name: item.name || "", indexed: searchIndex.length };
+    };
+
     function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); } }
     const doSearchDebounced = debounce(q => {
       doSearch(String(q||''));
@@ -16590,4 +17260,3 @@
     </script>
 </body>
 </html>
-

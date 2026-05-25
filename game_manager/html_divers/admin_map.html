@@ -969,14 +969,14 @@
     <div class="admin-map-mode-title">Mode</div>
     <div class="admin-map-mode-actions">
       <button type="button" class="admin-map-mode-btn is-active" data-admin-map-mode="admin" aria-pressed="true">Admin</button>
-      <button type="button" class="admin-map-mode-btn" data-admin-map-mode="pcc" aria-pressed="false">PCC</button>
+      <button type="button" class="admin-map-mode-btn" data-admin-map-mode="pcc" aria-pressed="false">CRIV</button>
     </div>
   </div>
   <div id="pccLinesPanel" class="pcc-lines-panel" aria-label="Console PCC" hidden>
     <div class="pcc-panel-header">
       <div>
-        <div class="pcc-panel-kicker">PCC BUS</div>
-        <div id="pccSelectedLineName" class="pcc-lines-title">PCC Bus</div>
+        <div class="pcc-panel-kicker">CRIV BUS</div>
+        <div id="pccSelectedLineName" class="pcc-lines-title">CRIV Bus</div>
       </div>
     </div>
     <div class="pcc-panel-body">
@@ -1023,7 +1023,7 @@
   <div id="pccRecordingModal" class="pcc-recording-modal" role="dialog" aria-modal="true" aria-labelledby="pccRecordingTitle" hidden>
     <div class="pcc-recording-dialog">
       <div class="pcc-recording-indicator" aria-hidden="true"></div>
-      <div id="pccRecordingTitle" class="pcc-recording-title">Enregistrement vocal PCC</div>
+      <div id="pccRecordingTitle" class="pcc-recording-title">Enregistrement vocal CRIV</div>
       <div id="pccRecordingTarget" class="pcc-recording-target">Message vocal en cours</div>
       <div id="pccRecordingTimer" class="pcc-recording-timer">00:00</div>
       <div class="pcc-recording-actions">
@@ -3503,7 +3503,15 @@
         return isPccLineVisibleByNumber(getPccLineNumberFromBusLine(busLine));
       }
 
+      function isPlayerInBusModeForPcc(player) {
+        const modeKey = String(player && player.gameModeKey || "").trim().toLowerCase();
+        if (modeKey) return modeKey === "bus";
+        const busLine = player && player.busLine && typeof player.busLine === "object" ? player.busLine : null;
+        return !!(busLine && busLine.active === true);
+      }
+
       function isPlayerVisibleInPccMode(player) {
+        if (!isPlayerInBusModeForPcc(player)) return false;
         if (isPccOutOfServiceKey(selectedPccLineKey)) return !getPlayerBusLine(player);
         const busLine = getPlayerBusLine(player);
         if (!isPccLineVisibleForBusLine(busLine)) return false;
@@ -3523,6 +3531,8 @@
       }
 
       function getPlayerBusLine(player) {
+        const modeKey = String(player && player.gameModeKey || "").trim().toLowerCase();
+        if (modeKey && modeKey !== "bus") return null;
         const busLine = player && player.busLine && typeof player.busLine === "object" ? player.busLine : null;
         if (!busLine || busLine.active !== true) return null;
         return busLine;
@@ -4784,7 +4794,7 @@
         const averageDelay = delayValues.length
           ? delayValues.reduce(function (sum, value) { return sum + value; }, 0) / delayValues.length
           : null;
-        if (pccSelectedLineName) pccSelectedLineName.textContent = selected ? `Ligne ${selected.label}` : "PCC Bus";
+        if (pccSelectedLineName) pccSelectedLineName.textContent = selected ? `Ligne ${selected.label}` : "CRIV Bus";
         if (pccActiveBusCount) pccActiveBusCount.textContent = String(selectedRecords.length);
         if (pccRouteCount) pccRouteCount.textContent = String(routeCount || 0);
         if (pccAverageDelay) {

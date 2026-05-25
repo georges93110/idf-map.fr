@@ -30,7 +30,6 @@
               <span class="widget-select-label">GPS</span>
               <select id="widgetGpsSelect" class="add-select" aria-label="Widget GPS">
                 <option value="">Désactivé</option>
-                <option value="waze">GPS Waze</option>
                 <option value="gps_mini">GPS Mini</option>
               </select>
             </label>
@@ -260,7 +259,7 @@
                   </div>
 
                   <!-- Mode Livraisons -->
-                  <div class="play-mode-card is-disabled">
+                  <div class="play-mode-card" data-mode="uber_eats">
                     <img src="images/modes/ubereats.png" class="play-mode-image" alt="Mode Livraisons">
                     <div class="play-mode-overlay">
                       <div class="play-mode-header">
@@ -269,7 +268,7 @@
                       </div>
                       <div class="play-mode-footer">
                         <button type="button" class="play-mode-info-btn" disabled>Informations</button>
-                        <div class="play-mode-beta-tag">Prochainement</div>
+                        <button type="button" class="play-mode-beta-tag gm-accent-outline" data-role="play-action" data-mode="uber_eats">Jouer</button>
                       </div>
                     </div>
                   </div>
