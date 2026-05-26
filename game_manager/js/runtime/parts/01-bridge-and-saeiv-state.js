@@ -241,9 +241,33 @@
             return parseUberEatsJsonResponse(res);
           });
       }
-      function getUberEatsMapVersions() {
-        var versions = gameMapCandidateVersions(GAME_DEV_MAP_BASE_VERSION);
-        if (versions.indexOf(GAME_DEV_MAP_LAYER_VERSION) === -1) versions.push(GAME_DEV_MAP_LAYER_VERSION);
+      function pushUniqueUberEatsVersion(target, version) {
+        var safeVersion = String(version || "").trim();
+        if (safeVersion && target.indexOf(safeVersion) === -1) target.push(safeVersion);
+      }
+      function getUberEatsRouteGraphVersions(bestVersion) {
+        var versions = [];
+        if (isGameDevMapModeEnabled()) {
+          pushUniqueUberEatsVersion(versions, GAME_DEV_MAP_LAYER_VERSION);
+          pushUniqueUberEatsVersion(versions, GAME_DEV_MAP_BASE_VERSION);
+          return versions;
+        }
+        pushUniqueUberEatsVersion(versions, bestVersion);
+        pushUniqueUberEatsVersion(versions, GAME_DEV_MAP_BASE_VERSION);
+        return versions.filter(function (version) {
+          return version !== GAME_DEV_MAP_LAYER_VERSION;
+        });
+      }
+      function getUberEatsTrafficAreaVersions(routeGraphVersions) {
+        var versions = [];
+        (Array.isArray(routeGraphVersions) ? routeGraphVersions : []).forEach(function (version) {
+          pushUniqueUberEatsVersion(versions, version);
+        });
+        if (isGameDevMapModeEnabled()) {
+          if (versions.indexOf(GAME_DEV_MAP_LAYER_VERSION) === -1) versions.unshift(GAME_DEV_MAP_LAYER_VERSION);
+          return versions;
+        }
+        pushUniqueUberEatsVersion(versions, GAME_DEV_MAP_LAYER_VERSION);
         return versions;
       }
       function normalizeUberEatsRestaurant(raw) {
@@ -287,39 +311,58 @@
       function loadUberEatsOfferData() {
         if (uberEatsOfferDataCache) return Promise.resolve(uberEatsOfferDataCache);
         if (uberEatsOfferDataPromise) return uberEatsOfferDataPromise;
-        var versions = getUberEatsMapVersions();
-        uberEatsOfferDataPromise = Promise.all([
-          fetchGameMapFile("uber_eats_restaurants.json", GAME_DEV_MAP_BASE_VERSION, { cache: "no-store" }).then(parseUberEatsJsonResponse),
-          Promise.all(versions.map(function (version) {
-            return Promise.all([
-              fetchUberEatsMapJsonFromVersion(version, "traffic_areas.json").catch(function () { return []; }),
-              fetchUberEatsMapJsonFromVersion(version, "nav_graph.json").catch(function () { return { nodes: [] }; })
-            ]).then(function (pair) {
-              var areas = Array.isArray(pair[0]) ? pair[0] : [];
-              var navGraph = pair[1] && typeof pair[1] === "object" ? pair[1] : {};
-              return {
-                areas: areas,
-                nodes: Array.isArray(navGraph.nodes) ? navGraph.nodes : [],
-                edges: Array.isArray(navGraph.edges) ? navGraph.edges : []
-              };
-            });
-          }))
-        ]).then(function (parts) {
+        var bestNavGraphVersionPromise = typeof loadBestNavGraphVersion === "function"
+          ? loadBestNavGraphVersion()
+          : Promise.resolve(GAME_DEV_MAP_BASE_VERSION);
+        uberEatsOfferDataPromise = bestNavGraphVersionPromise.then(function (bestVersion) {
+          var routeGraphVersions = getUberEatsRouteGraphVersions(bestVersion);
+          var trafficAreaVersions = getUberEatsTrafficAreaVersions(routeGraphVersions);
+          return Promise.all([
+            fetchGameMapFile("uber_eats_restaurants.json", GAME_DEV_MAP_BASE_VERSION, { cache: "no-store" }).then(parseUberEatsJsonResponse),
+            Promise.all(routeGraphVersions.map(function (version) {
+              return fetchUberEatsMapJsonFromVersion(version, "nav_graph.json")
+                .then(function (raw) {
+                  return {
+                    version: version,
+                    nodes: Array.isArray(raw && raw.nodes) ? raw.nodes : [],
+                    edges: Array.isArray(raw && raw.edges) ? raw.edges : []
+                  };
+                })
+                .catch(function () { return null; });
+            })),
+            Promise.all(trafficAreaVersions.map(function (version) {
+              return fetchUberEatsMapJsonFromVersion(version, "traffic_areas.json")
+                .then(function (raw) {
+                  return {
+                    version: version,
+                    areas: Array.isArray(raw) ? raw : []
+                  };
+                })
+                .catch(function () { return null; });
+            }))
+          ]);
+        }).then(function (parts) {
           var restaurants = (Array.isArray(parts[0]) ? parts[0] : []).map(normalizeUberEatsRestaurant).filter(Boolean);
-          var selectedMap = parts[1].map(function (entry) {
-            var polygons = entry.areas.map(normalizeUberEatsTrafficPolygon).filter(Boolean);
-            if (!polygons.length) return null;
+          var selectedRouteMap = (Array.isArray(parts[1]) ? parts[1] : []).map(function (entry) {
+            if (!entry) return null;
             var allNodes = entry.nodes.map(normalizeUberEatsNavNode).filter(Boolean);
-            var nodes = allNodes.filter(function (node) {
-              return polygons.some(function (polygon) { return isPointInsideUberEatsPolygon(node, polygon); });
-            });
-            return nodes.length ? { polygons: polygons, nodes: nodes, allNodes: allNodes, edges: entry.edges } : null;
+            return allNodes.length ? { version: entry.version, allNodes: allNodes, edges: entry.edges } : null;
           }).filter(Boolean)[0];
+          var selectedTrafficAreas = (Array.isArray(parts[2]) ? parts[2] : []).map(function (entry) {
+            if (!entry) return null;
+            var polygons = entry.areas.map(normalizeUberEatsTrafficPolygon).filter(Boolean);
+            return polygons.length ? { version: entry.version, polygons: polygons } : null;
+          }).filter(Boolean)[0];
+          var routeNodes = selectedRouteMap ? selectedRouteMap.allNodes : [];
+          var polygons = selectedTrafficAreas ? selectedTrafficAreas.polygons : [];
+          var dropoffNodes = routeNodes.filter(function (node) {
+            return polygons.some(function (polygon) { return isPointInsideUberEatsPolygon(node, polygon); });
+          });
           uberEatsOfferDataCache = {
             restaurants: restaurants,
-            dropoffNodes: selectedMap ? selectedMap.nodes : [],
-            routeNodes: selectedMap ? selectedMap.allNodes : [],
-            routeGraph: selectedMap ? buildUberEatsRouteGraph(selectedMap.allNodes, selectedMap.edges) : null
+            dropoffNodes: dropoffNodes,
+            routeNodes: routeNodes,
+            routeGraph: selectedRouteMap ? buildUberEatsRouteGraph(routeNodes, selectedRouteMap.edges) : null
           };
           return uberEatsOfferDataCache;
         }).catch(function (err) {
