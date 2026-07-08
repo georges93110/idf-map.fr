@@ -323,6 +323,29 @@
       text-transform: uppercase;
     }
 
+    .pcc-panel-status {
+      margin-top: 8px;
+      padding: 7px 9px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.82);
+      font: 700 12px/1.25 Arial, Helvetica, sans-serif;
+    }
+
+    .pcc-panel-status[hidden] {
+      display: none;
+    }
+
+    .pcc-panel-status.is-ok {
+      background: rgba(46, 204, 113, 0.16);
+      color: #bff3d2;
+    }
+
+    .pcc-panel-status.is-error {
+      background: rgba(255, 91, 91, 0.16);
+      color: #ffd0d0;
+    }
+
     .pcc-tool-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1064,6 +1087,8 @@
 
       const WS_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       const MAP_FILES_ROOT = "../../map_files";
+      const WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
+      const WIDGET_BRIDGE_CHANNEL_SAEIV = "saeiv";
       const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
       const WS_RECONNECT_MS = 2000;
       const PLAYER_WARNING_MS = 3500;
@@ -1078,6 +1103,13 @@
       const PCC_OUT_OF_SERVICE_KEY = "__hors_service__";
       const PCC_OUT_OF_SERVICE_LABEL = "Hors Service";
       const PCC_VOICE_ACTION = "pcc_voice";
+      const SAEIV_REG_CALL_ENABLED = false;
+      const SAEIV_REG_VOICE_ACTION = "saeiv_reg_voice";
+      const SAEIV_REG_VOICE_TYPE = "saeiv:reg_voice";
+      const SAEIV_REG_PRESENCE_ACTION = "saeiv_reg_presence";
+      const SAEIV_REG_PRESENCE_TYPE = "saeiv:reg_presence";
+      const SAEIV_REG_VOICE_SEEN_LIMIT = 80;
+      const SAEIV_REG_PRESENCE_INTERVAL_MS = 1200;
       const PCC_VOICE_MAX_DURATION_MS = 12000;
       const PCC_VOICE_MAX_BYTES = 3000000;
       const PCC_VOICE_CHUNK_CHARS = 48000;
@@ -1166,8 +1198,16 @@
       let pccRecording = null;
       let pccRecordTimeout = 0;
       let pccRecordUiTimer = 0;
+      let pccPanelStatusTimer = 0;
+      let saeivRegPresenceTimer = 0;
+      let saeivRegPresenceLastUnavailableSignature = "";
+      let saeivRegVoiceActiveAudio = null;
+      let saeivRegVoicePendingPlayback = null;
+      const saeivRegPresenceClientId = createSaeivRegPresenceClientId();
       const playerMarkers = new Map();
       const pccStatusByPlayerId = new Map();
+      const saeivRegVoiceSeenIds = [];
+      const saeivRegVoiceSeenSet = new Set();
       const playerFilters = {
         [PLAYER_GROUP_SOLO]: true,
         [PLAYER_GROUP_CONVOY]: true
@@ -2386,6 +2426,12 @@
         return number.toFixed(digits);
       }
 
+      function formatInfoSpeedKmh(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "";
+        return `${Math.round(Math.abs(number))} km/h`;
+      }
+
       function formatInfoAge(ms) {
         const age = Math.max(0, Number(ms) || 0);
         if (age < 1000) return `${Math.round(age)} ms`;
@@ -2569,7 +2615,313 @@
         return "";
       }
 
-      function setPccPanelStatus() {}
+      function ensurePccPanelStatusElement() {
+        let node = document.getElementById("pccPanelStatus");
+        if (node) return node;
+        if (!pccLinesPanel) return null;
+        node = document.createElement("div");
+        node.id = "pccPanelStatus";
+        node.className = "pcc-panel-status";
+        node.hidden = true;
+        const header = pccLinesPanel.querySelector(".pcc-panel-header");
+        if (header && header.parentNode) header.parentNode.insertBefore(node, header.nextSibling);
+        else pccLinesPanel.insertBefore(node, pccLinesPanel.firstChild || null);
+        return node;
+      }
+
+      function setPccPanelStatus(text = "", kind = "") {
+        const node = ensurePccPanelStatusElement();
+        if (!node) return;
+        const message = String(text || "").trim();
+        const state = String(kind || "").trim().toLowerCase();
+        if (pccPanelStatusTimer) {
+          window.clearTimeout(pccPanelStatusTimer);
+          pccPanelStatusTimer = 0;
+        }
+        if (!message) {
+          node.hidden = true;
+          node.textContent = "";
+          node.classList.remove("is-ok", "is-error");
+          return;
+        }
+        node.textContent = message;
+        node.hidden = false;
+        node.classList.toggle("is-ok", state === "ok");
+        node.classList.toggle("is-error", state === "error");
+        if (state === "ok") {
+          pccPanelStatusTimer = window.setTimeout(function () {
+            setPccPanelStatus("", "");
+          }, 6500);
+        }
+      }
+
+      function createSaeivRegPresenceClientId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          try { return "admin-map-" + window.crypto.randomUUID(); } catch (err0) { }
+        }
+        return "admin-map-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
+      }
+
+      function readSaeivRegVoiceString(source, keys) {
+        if (!source || typeof source !== "object") return "";
+        const aliases = Array.isArray(keys) ? keys : [];
+        for (const key of aliases) {
+          if (!Object.prototype.hasOwnProperty.call(source, key)) continue;
+          const value = String(source[key] == null ? "" : source[key]).trim();
+          if (value) return value;
+        }
+        return "";
+      }
+
+      function findSaeivRegPresencePayload(source, depth = 0) {
+        const level = Math.max(0, Math.floor(Number(depth) || 0));
+        if (!source || typeof source !== "object" || level > 5) return null;
+        const action = String(source.action || source.type || source.event || source.kind || "").trim().toLowerCase();
+        if (action === SAEIV_REG_PRESENCE_ACTION || action === SAEIV_REG_PRESENCE_TYPE || source.saeivRegPresence === true) return source;
+        const channel = String(source.channel || "").trim().toLowerCase();
+        if (channel === WIDGET_BRIDGE_CHANNEL_SAEIV && source.payload && typeof source.payload === "object") {
+          const foundPayload = findSaeivRegPresencePayload(source.payload, level + 1);
+          if (foundPayload) return foundPayload;
+        }
+        const candidates = [source.payload, source.data, source.message, source.body];
+        for (const candidate of candidates) {
+          if (!candidate || typeof candidate !== "object" || candidate === source) continue;
+          const found = findSaeivRegPresencePayload(candidate, level + 1);
+          if (found) return found;
+        }
+        return null;
+      }
+
+      function isSaeivRegPresenceMessage(message) {
+        return !!findSaeivRegPresencePayload(message);
+      }
+
+      function isSaeivRegPresenceAvailable() {
+        if (!SAEIV_REG_CALL_ENABLED) return false;
+        return adminMapMode === ADMIN_MAP_MODE_PCC && !!selectedPccLineKey && !isPccOutOfServiceKey(selectedPccLineKey);
+      }
+
+      function sendSaeivRegPresence(availableOverride = null) {
+        if (!SAEIV_REG_CALL_ENABLED) return false;
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+        const forcedUnavailable = availableOverride === false;
+        const available = forcedUnavailable ? false : isSaeivRegPresenceAvailable();
+        const lineKey = String(selectedPccLineKey || "").trim();
+        const lineLabel = lineKey ? getSelectedPccLineDispatchLabel() : "";
+        const unavailableSignature = (available ? "" : "0|" + lineKey + "|" + adminMapMode);
+        if (!available && unavailableSignature && unavailableSignature === saeivRegPresenceLastUnavailableSignature) return;
+        const payload = {
+          type: SAEIV_REG_PRESENCE_TYPE,
+          action: SAEIV_REG_PRESENCE_ACTION,
+          saeivRegPresence: true,
+          source: "admin_map",
+          role: "criv",
+          mode: ADMIN_MAP_MODE_PCC,
+          clientId: saeivRegPresenceClientId,
+          available,
+          selectedLineKey: lineKey,
+          lineKey,
+          lineNumber: lineLabel || lineKey,
+          selectedLineLabel: lineLabel,
+          lineLabel,
+          time: Date.now()
+        };
+        const envelope = Object.assign({
+          scope: WIDGET_BRIDGE_SCOPE,
+          channel: WIDGET_BRIDGE_CHANNEL_SAEIV,
+          clientId: saeivRegPresenceClientId,
+          ts: Date.now(),
+          payload
+        }, payload);
+        try {
+          socket.send(JSON.stringify(envelope));
+          saeivRegPresenceLastUnavailableSignature = available ? "" : unavailableSignature;
+        } catch (err0) { }
+      }
+
+      function startSaeivRegPresenceLoop() {
+        if (!SAEIV_REG_CALL_ENABLED) return;
+        if (!saeivRegPresenceTimer) {
+          saeivRegPresenceTimer = window.setInterval(function () {
+            if (isSaeivRegPresenceAvailable()) sendSaeivRegPresence(true);
+            else syncSaeivRegPresenceLoop();
+          }, SAEIV_REG_PRESENCE_INTERVAL_MS);
+        }
+        sendSaeivRegPresence(true);
+      }
+
+      function stopSaeivRegPresenceLoop(announceUnavailable = false) {
+        if (saeivRegPresenceTimer) {
+          window.clearInterval(saeivRegPresenceTimer);
+          saeivRegPresenceTimer = 0;
+        }
+        if (announceUnavailable) sendSaeivRegPresence(false);
+      }
+
+      function syncSaeivRegPresenceLoop() {
+        if (isSaeivRegPresenceAvailable()) startSaeivRegPresenceLoop();
+        else stopSaeivRegPresenceLoop(true);
+      }
+
+      function findSaeivRegVoicePayload(source, depth = 0) {
+        const level = Math.max(0, Math.floor(Number(depth) || 0));
+        if (!source || typeof source !== "object" || level > 5) return null;
+        const action = String(source.action || source.type || source.event || source.kind || "").trim().toLowerCase();
+        if (action === SAEIV_REG_VOICE_ACTION || action === SAEIV_REG_VOICE_TYPE || source.saeivRegVoice === true) return source;
+        const channel = String(source.channel || "").trim().toLowerCase();
+        if (channel === "saeiv" && source.payload && typeof source.payload === "object") {
+          const foundPayload = findSaeivRegVoicePayload(source.payload, level + 1);
+          if (foundPayload) return foundPayload;
+        }
+        const candidates = [source.payload, source.data, source.message, source.body, source.audioMessage];
+        for (const candidate of candidates) {
+          if (!candidate || typeof candidate !== "object" || candidate === source) continue;
+          const found = findSaeivRegVoicePayload(candidate, level + 1);
+          if (found) return found;
+        }
+        return null;
+      }
+
+      function getSaeivRegVoiceAudioObject(message) {
+        return message && message.audio && typeof message.audio === "object" ? message.audio : message;
+      }
+
+      function getSaeivRegVoiceMessageId(message) {
+        return String(message && (message.id || message.messageId || message.message_id || message.time) || "").trim();
+      }
+
+      function rememberSaeivRegVoiceMessageId(id) {
+        const text = String(id || "").trim();
+        if (!text) return false;
+        if (saeivRegVoiceSeenSet.has(text)) return true;
+        saeivRegVoiceSeenSet.add(text);
+        saeivRegVoiceSeenIds.push(text);
+        while (saeivRegVoiceSeenIds.length > SAEIV_REG_VOICE_SEEN_LIMIT) {
+          const old = saeivRegVoiceSeenIds.shift();
+          if (old) saeivRegVoiceSeenSet.delete(old);
+        }
+        return false;
+      }
+
+      function formatSaeivRegVoiceSourceLabel(message) {
+        const bus = message && message.bus && typeof message.bus === "object" ? message.bus : null;
+        const directLabel = readSaeivRegVoiceString(bus, ["label"]) || readSaeivRegVoiceString(message, ["label"]);
+        if (directLabel) return directLabel;
+        const line = readSaeivRegVoiceString(message, ["lineNumber", "line", "targetLineLabel"]) || readSaeivRegVoiceString(bus, ["lineNumber", "line"]);
+        const route = readSaeivRegVoiceString(message, ["routeName", "route"]) || readSaeivRegVoiceString(bus, ["routeName", "route"]);
+        const name = readSaeivRegVoiceString(message, ["displayname", "displayName", "name"]) || readSaeivRegVoiceString(bus, ["displayname", "displayName", "name"]);
+        const vehicle = readSaeivRegVoiceString(message, ["vehicleName"]) || readSaeivRegVoiceString(bus, ["vehicleName"]);
+        return [line && "Ligne " + line, route, name || vehicle].filter(Boolean).join(" - ") || "Bus";
+      }
+
+      function saeivRegVoiceMatchesSelectedPccLine(message) {
+        const selectedKey = normalizePccLineKey(selectedPccLineKey);
+        if (!selectedKey || isPccOutOfServiceKey(selectedKey)) return false;
+        const bus = message && message.bus && typeof message.bus === "object" ? message.bus : null;
+        const routeName = readSaeivRegVoiceString(message, ["routeName", "route"]) || readSaeivRegVoiceString(bus, ["routeName", "route"]);
+        const routeLineMatch = /^([^:]+)\s*:/.exec(routeName);
+        const candidates = [
+          readSaeivRegVoiceString(message, ["lineNumber", "line", "lineKey", "selectedLineKey", "selectedLineLabel", "targetLineLabel"]),
+          readSaeivRegVoiceString(bus, ["lineNumber", "line", "lineKey", "selectedLineKey", "selectedLineLabel"]),
+          routeLineMatch && routeLineMatch[1]
+        ].filter(function (candidate) {
+          return !!normalizePccLineKey(candidate);
+        });
+        if (!candidates.length) return true;
+        return candidates.some(function (candidate) {
+          return normalizePccLineKey(candidate) === selectedKey;
+        });
+      }
+
+      function stopSaeivRegVoiceAudio() {
+        const audio = saeivRegVoiceActiveAudio;
+        saeivRegVoiceActiveAudio = null;
+        if (!audio) return;
+        try { audio.pause(); } catch (err0) { }
+        try { audio.src = ""; } catch (err1) { }
+      }
+
+      function playSaeivRegVoiceDataUrl(dataUrl, label) {
+        const src = String(dataUrl || "").trim();
+        if (!/^data:audio\//i.test(src)) return false;
+        stopSaeivRegVoiceAudio();
+        saeivRegVoicePendingPlayback = null;
+        let audio = null;
+        try { audio = new Audio(src); } catch (err0) { audio = null; }
+        if (!audio) return false;
+        saeivRegVoiceActiveAudio = audio;
+        const clear = function () {
+          if (saeivRegVoiceActiveAudio === audio) saeivRegVoiceActiveAudio = null;
+        };
+        audio.onended = clear;
+        audio.onerror = clear;
+        let promise = null;
+        try { promise = audio.play(); } catch (err1) {
+          clear();
+          return false;
+        }
+        if (promise && typeof promise.catch === "function") {
+          promise.catch(function () {
+            clear();
+            saeivRegVoicePendingPlayback = { dataUrl: src, label: label || "Bus", updatedAt: Date.now() };
+            try { console.warn("[admin_map] Appel REG recu mais lecture bloquee", { label }); } catch (err2) { }
+            setPccPanelStatus("Appel REG recu de " + label + " - cliquez sur la carte pour lire.", "error");
+          });
+        }
+        return true;
+      }
+
+      function retryPendingSaeivRegVoicePlayback() {
+        if (!SAEIV_REG_CALL_ENABLED) return;
+        const pending = saeivRegVoicePendingPlayback;
+        if (!pending || !pending.dataUrl) return;
+        if (Date.now() - Number(pending.updatedAt || 0) > 60000) {
+          saeivRegVoicePendingPlayback = null;
+          return;
+        }
+        const label = pending.label || "Bus";
+        const playing = playSaeivRegVoiceDataUrl(pending.dataUrl, label);
+        setPccPanelStatus("Appel REG recu de " + label + (playing ? "." : " - lecture impossible."), playing ? "ok" : "error");
+      }
+
+      function handleSaeivRegVoiceMessage(message) {
+        const payload = findSaeivRegVoicePayload(message);
+        if (!payload) return false;
+        if (!SAEIV_REG_CALL_ENABLED) return true;
+        if (adminMapMode !== ADMIN_MAP_MODE_PCC) {
+          try { console.info("[admin_map] Appel REG recu hors mode PCC"); } catch (err0) { }
+          setPccPanelStatus("Appel REG recu, mais admin_map n'est pas en mode PCC.", "error");
+          return true;
+        }
+        if (!saeivRegVoiceMatchesSelectedPccLine(payload)) {
+          try { console.info("[admin_map] Appel REG recu pour une autre ligne", payload); } catch (err1) { }
+          setPccPanelStatus("Appel REG recu pour une autre ligne.", "error");
+          return true;
+        }
+        const messageId = getSaeivRegVoiceMessageId(payload);
+        if (rememberSaeivRegVoiceMessageId(messageId)) return true;
+        const audio = getSaeivRegVoiceAudioObject(payload);
+        let dataUrl = readSaeivRegVoiceString(audio, ["dataUrl", "dataURL", "data_uri", "dataUri", "src"]);
+        if (!dataUrl && typeof audio.base64 === "string") {
+          const mime = readSaeivRegVoiceString(audio, ["mimeType", "mime", "type"]) || "audio/webm";
+          dataUrl = "data:" + mime + ";base64," + String(audio.base64 || "").trim();
+        }
+        const label = formatSaeivRegVoiceSourceLabel(payload);
+        try {
+          console.info("[admin_map] Appel REG recu", {
+            id: messageId,
+            label,
+            dataUrlLength: String(dataUrl || "").length
+          });
+        } catch (err2) { }
+        if (!dataUrl) {
+          setPccPanelStatus("Appel REG recu de " + label + ", audio indisponible.", "error");
+          return true;
+        }
+        const playing = playSaeivRegVoiceDataUrl(dataUrl, label);
+        setPccPanelStatus("Appel REG recu de " + label + (playing ? "." : " - lecture impossible."), playing ? "ok" : "error");
+        return true;
+      }
 
       function getPccRecordingTargets(recording) {
         if (!recording || typeof recording !== "object") return [];
@@ -2674,7 +3026,7 @@
           ]),
           playerInfoSection("Vehicule", [
             playerInfoRow("Vehicule", player.vehicleName, "vehicleName"),
-            playerInfoRow("Vitesse", formatInfoNumber(player.speedKmh, 1), "speedKmh"),
+            playerInfoRow("Vitesse", formatInfoSpeedKmh(player.speedKmh), "speedKmh"),
             playerInfoRow("Degats camion", formatInfoPercent(player.truckDamagePercent), "truckDamagePercent")
           ]),
           playerInfoSection("Position", [
@@ -2745,7 +3097,7 @@
           modsCount: formatInfoInteger(player.modsCount),
           profile: formatProfileInfo(player.profileName, player.profileId),
           vehicleName: player.vehicleName,
-          speedKmh: formatInfoNumber(player.speedKmh, 1),
+          speedKmh: formatInfoSpeedKmh(player.speedKmh),
           truckDamagePercent: formatInfoPercent(player.truckDamagePercent),
           x: formatInfoNumber(player.x, 2),
           z: formatInfoNumber(player.z, 2),
@@ -4030,9 +4382,7 @@
       }
 
       function formatPccBusSpeed(player) {
-        const value = Number(player && player.speedKmh);
-        if (!Number.isFinite(value)) return "--";
-        return `${Math.max(0, Math.round(value))} km/h`;
+        return formatInfoSpeedKmh(player && player.speedKmh) || "--";
       }
 
       function formatPccNextStop(busLine) {
@@ -4765,6 +5115,7 @@
       }
 
       function refreshPccModeUi() {
+        const previousSelectedLineKey = selectedPccLineKey;
         if (adminMapMode === ADMIN_MAP_MODE_PCC && !dbusLines.length && dataBase) {
           ensurePccDbusDataLoaded()
             .then(function () {
@@ -4806,6 +5157,7 @@
         renderPccLineList(lines);
         renderPccSelectedPlayers();
         syncPccDispatchControls();
+        if (previousSelectedLineKey !== selectedPccLineKey) syncSaeivRegPresenceLoop();
       }
 
       function syncAdminMapModeUi() {
@@ -4859,8 +5211,10 @@
           refreshAllPlayerMarkerIcons();
           refreshPccModeUi();
           refreshPccLineRouteLayers();
+          syncSaeivRegPresenceLoop();
           return;
         }
+        if (adminMapMode === ADMIN_MAP_MODE_PCC && nextMode !== ADMIN_MAP_MODE_PCC) stopSaeivRegPresenceLoop(true);
         adminMapMode = nextMode;
         syncAdminMapModeUi();
         refreshAllPlayerMarkerIcons();
@@ -4868,6 +5222,7 @@
         refreshPccModeUi();
         syncAllPlayerFilterUi();
         refreshPccLineRouteLayers();
+        syncSaeivRegPresenceLoop();
       }
 
       function selectPccLine(key) {
@@ -4875,13 +5230,16 @@
         if (!safeKey) return;
         selectedPccLineSetByUser = true;
         if (safeKey === selectedPccLineKey) {
+          sendSaeivRegPresence(false);
           selectedPccLineKey = "";
           selectedPccPlayerId = "";
           refreshPccModeUi();
           syncAllPlayerFilterUi();
           refreshPccLineRouteLayers();
+          syncSaeivRegPresenceLoop();
           return;
         }
+        if (selectedPccLineKey) sendSaeivRegPresence(false);
         selectedPccLineKey = safeKey;
         selectedPccPlayerId = "";
         const line = collectPccLineSummaries().find(function (item) { return item.key === selectedPccLineKey; });
@@ -4889,6 +5247,7 @@
         refreshPccModeUi();
         syncAllPlayerFilterUi();
         refreshPccLineRouteLayers();
+        syncSaeivRegPresenceLoop();
       }
 
       function getSelectedPccLineDispatchLabel() {
@@ -5244,6 +5603,7 @@
           showError("");
           syncPccDispatchControls();
           syncAllPccVoiceControls();
+          syncSaeivRegPresenceLoop();
         };
 
         socket.onmessage = function (event) {
@@ -5255,6 +5615,8 @@
             return;
           }
 
+          if (isSaeivRegPresenceMessage(message)) return;
+          if (handleSaeivRegVoiceMessage(message)) return;
           if (isPccVoiceMessage(message)) return;
 
           if (message && message.type === "data") {
@@ -5277,6 +5639,7 @@
           show("Deconnecte, reconnexion...");
           showError("WebSocket panel deconnecte, reconnexion...");
           if (pccRecording) finishPccVoiceRecording(true);
+          stopSaeivRegPresenceLoop(false);
           syncPccDispatchControls();
           syncAllPccVoiceControls();
           scheduleReconnect();
@@ -5402,6 +5765,16 @@
       bindAdminMapModeEvents();
       bindPlayerMarkerDomClick();
       document.addEventListener("click", handlePccVoicePopupClick, true);
+      window.addEventListener("pointerdown", retryPendingSaeivRegVoicePlayback, true);
+      window.addEventListener("keydown", retryPendingSaeivRegVoicePlayback, true);
+      window.addEventListener("pagehide", function () {
+        stopSaeivRegPresenceLoop(true);
+        stopSaeivRegVoiceAudio();
+      });
+      window.addEventListener("beforeunload", function () {
+        stopSaeivRegPresenceLoop(true);
+        stopSaeivRegVoiceAudio();
+      });
       window.setInterval(refreshPlayerMarkerStates, PLAYER_STATE_REFRESH_MS);
       boot();
     })();

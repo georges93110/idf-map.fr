@@ -1224,7 +1224,7 @@
         frame.src = meta.url;
         frame.title = meta.label;
         frame.setAttribute("frameborder", "0");
-        frame.setAttribute("allow", "autoplay");
+        frame.setAttribute("allow", "autoplay; microphone");
         frame.dataset.widgetType = type;
         content.appendChild(frame);
 
@@ -1586,6 +1586,7 @@
             el.overlayWorkspace.appendChild(node);
           }
           var frame = node.querySelector("iframe.overlay-window-frame");
+          if (frame) frame.setAttribute("allow", "autoplay; microphone");
           if (frame && frame.dataset.widgetType !== type) {
             frame.src = TYPES[type].url;
             frame.dataset.widgetType = type;

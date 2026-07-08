@@ -170,33 +170,33 @@
         bus_status: 1 / 1,
         waze: 9 / 19.5,
         gps_mini: 1.2 / 1,
-        gps_ets2_old: 1.25 / 1,
+        gps_ets2_old: 1.15 / 1,
         iphone_simulator: 320 / 640,
         ws_dev: 1 / 1
       };
       var MODE_CONFIGS = {};
       MODE_CONFIGS[GAME_MODES.BUS] = {
-        gpsTypes: ["gps_mini", ""],
+        gpsTypes: ["gps_mini", "gps_ets2_old"],
         hudTypes: ["saeiv", "saeiv_mini", "bus_status"],
         widgetTypes: ["iphone_simulator"],
         defaultGpsType: "",
         forceDefaultGps: false
       };
       MODE_CONFIGS[GAME_MODES.FREE] = {
-        gpsTypes: ["gps_mini", ""],
+        gpsTypes: ["gps_mini", "gps_ets2_old"],
         hudTypes: [],
         widgetTypes: ["iphone_simulator"],
         defaultGpsType: "",
         forceDefaultGps: false
       };
       MODE_CONFIGS[GAME_MODES.UBER_EATS] = {
-        gpsTypes: ["gps_mini", ""],
+        gpsTypes: ["gps_mini", "gps_ets2_old"],
         hudTypes: [],
         widgetTypes: ["iphone_simulator"],
         defaultGpsType: "",
         forceDefaultGps: false
       };
-      var GPS_WIDGET_TYPES = ["gps_mini"];
+      var GPS_WIDGET_TYPES = ["gps_mini", "gps_ets2_old"];
       var HUD_WIDGET_TYPES = ["saeiv", "saeiv_mini"];
       var currentGameMode = GAME_MODES.BUS;
 

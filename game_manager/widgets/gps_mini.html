@@ -1504,8 +1504,6 @@
       let bridgeSpeedKmh = 0;
       let bridgeDisplaySpeedKmh = 0;
       let bridgeSpeedDecayTimer = 0;
-      let mapSpeedDisplayEmaKmh = NaN;
-      let mapSpeedDisplayInt = 0;
       let headingInferenceBlockedUntilTs = 0;
       let headingNeedsFreshPair = true;
       let manualZoomOffset = 0;
@@ -1578,9 +1576,6 @@
       const bridgeSpeedComputeMaxDtSec = 4;
       const bridgeSpeedMaxReasonableKmh = 220;
       const bridgeSpeedIdleCutoffMs = 900;
-      const mapSpeedDisplayEmaAlpha = 0.2;
-      const mapSpeedDisplaySnapDeltaKmh = 8;
-      const mapSpeedDisplayHysteresisKmh = 0.75;
       const bridgeStopLabelDistanceThresholdM = 10;
       const destinationArrivalDistanceThresholdM = 12;
       const headingDeadzoneStopDeg = 2.2;
@@ -1653,48 +1648,9 @@
         }
         return deg;
       }
-      function resetMapSpeedDisplayStabilizer() {
-        mapSpeedDisplayEmaKmh = NaN;
-        mapSpeedDisplayInt = 0;
-      }
-      function smoothMapDisplaySpeedKmh(speedKmh) {
-        const speed = Number(speedKmh);
-        if (!Number.isFinite(speed) || speed <= (bridgeStopSpeedKmh * 0.2)) {
-          resetMapSpeedDisplayStabilizer();
-          return 0;
-        }
-        const clamped = Math.max(0, Math.min(bridgeSpeedMaxReasonableKmh, speed));
-        if (!Number.isFinite(mapSpeedDisplayEmaKmh) || Math.abs(clamped - mapSpeedDisplayEmaKmh) >= mapSpeedDisplaySnapDeltaKmh) {
-          mapSpeedDisplayEmaKmh = clamped;
-        } else {
-          mapSpeedDisplayEmaKmh = (mapSpeedDisplayEmaKmh * (1 - mapSpeedDisplayEmaAlpha)) + (clamped * mapSpeedDisplayEmaAlpha);
-        }
-        return mapSpeedDisplayEmaKmh;
-      }
-      function toStableMapSpeedInt(speedKmh) {
-        const speed = Number(speedKmh);
-        if (!Number.isFinite(speed) || speed <= (bridgeStopSpeedKmh * 0.2)) {
-          resetMapSpeedDisplayStabilizer();
-          return 0;
-        }
-        const clamped = Math.max(0, Math.min(bridgeSpeedMaxReasonableKmh, speed));
-        const rawInt = Math.round(clamped);
-        if (!Number.isFinite(mapSpeedDisplayInt) || mapSpeedDisplayInt < 0) {
-          mapSpeedDisplayInt = rawInt;
-          return rawInt;
-        }
-        const currentInt = mapSpeedDisplayInt;
-        if (rawInt === currentInt) return currentInt;
-        if (rawInt > currentInt && clamped >= (currentInt + mapSpeedDisplayHysteresisKmh)) {
-          mapSpeedDisplayInt = rawInt;
-        } else if (rawInt < currentInt && clamped <= (currentInt - mapSpeedDisplayHysteresisKmh)) {
-          mapSpeedDisplayInt = rawInt;
-        }
-        return mapSpeedDisplayInt;
-      }
       function formatMapSpeedValue(speedKmh) {
-        const stableInt = toStableMapSpeedInt(speedKmh);
-        return String(Math.max(0, stableInt));
+        const speed = Number(speedKmh);
+        return String(Number.isFinite(speed) ? Math.round(Math.abs(speed)) : 0);
       }
       function syncMapSpeedBadgeSize() {
         if (!phoneScreenEl || !footerSearchBtnEl) return;
@@ -1703,7 +1659,7 @@
         phoneScreenEl.style.setProperty("--waze-speed-badge-size", `${size.toFixed(2)}px`);
       }
       function renderMapSpeedValue(speedKmh) {
-        const absoluteSpeed = formatMapSpeedValue(Math.abs(Number(speedKmh) || 0));
+        const absoluteSpeed = formatMapSpeedValue(speedKmh);
         if (mapSpeedValueEl) {
           mapSpeedValueEl.textContent = String(absoluteSpeed);
         } else if (mapSpeedBadgeEl) {
@@ -1713,8 +1669,7 @@
 
       function setMapSpeedKmh(speedKmh) {
         if (!mapSpeedBadgeEl) return;
-        const val = Number(speedKmh);
-        renderMapSpeedValue(smoothMapDisplaySpeedKmh(!Number.isFinite(val) ? 0 : val));
+        renderMapSpeedValue(speedKmh);
       }
       let gpsPassengerLastInBus = 0;
       let gpsPassengerLastBoardDone = 0;
@@ -1873,6 +1828,31 @@
         if (!Number.isFinite(kmh)) return NaN;
         return Math.max(0, Math.min(bridgeSpeedMaxReasonableKmh, kmh));
       }
+      function normalizeIncomingDisplaySpeedKmh(rawSpeed, rawUnit = "") {
+        const raw = Number(rawSpeed);
+        if (!Number.isFinite(raw)) return 0;
+        const unit = String(rawUnit || "").trim().toLowerCase();
+        let kmh = raw;
+        if (
+          unit === "m/s" ||
+          unit === "mps" ||
+          unit === "ms" ||
+          unit === "meter_per_second" ||
+          unit === "meters_per_second"
+        ) {
+          kmh = raw * 3.6;
+        } else if (
+          unit === "mph" ||
+          unit === "mi/h" ||
+          unit === "mile_per_hour" ||
+          unit === "miles_per_hour"
+        ) {
+          kmh = raw * 1.609344;
+        } else if (unit === "knot" || unit === "knots" || unit === "kt" || unit === "kts") {
+          kmh = raw * 1.852;
+        }
+        return Number.isFinite(kmh) ? Math.round(Math.abs(kmh)) : 0;
+      }
       function resolveBridgeEventTimeMs(rawTimestamp) {
         const ts = Number(rawTimestamp);
         if (Number.isFinite(ts) && ts > 0) {
@@ -1930,9 +1910,12 @@
         bridgeSpeedKmh = (bridgeSpeedKmh * (1 - alpha)) + (next * alpha);
         if (Math.abs(bridgeSpeedKmh) < (bridgeStopSpeedKmh * 0.35)) bridgeSpeedKmh = 0;
 
-        let displayKmh = bridgeSpeedKmh;
-        bridgeDisplaySpeedKmh = Math.abs(displayKmh) < (bridgeStopSpeedKmh * 0.2) ? 0 : displayKmh;
-        setMapSpeedKmh(bridgeDisplaySpeedKmh);
+        const smoothedDisplayKmh = bridgeSpeedKmh;
+        bridgeDisplaySpeedKmh = Math.abs(smoothedDisplayKmh) < (bridgeStopSpeedKmh * 0.2) ? 0 : smoothedDisplayKmh;
+        const displayKmh = Object.prototype.hasOwnProperty.call(options, "displayKmh")
+          ? options.displayKmh
+          : bridgeDisplaySpeedKmh;
+        setMapSpeedKmh(displayKmh);
       }
       function startBridgeSpeedDecayLoop() {
         if (bridgeSpeedDecayTimer) return;
@@ -5029,7 +5012,6 @@
           lastBridgeArrowWorldPoint = null;
           lastBridgeSampleWorldPoint = null;
           lastBridgeSampleTimestampMs = 0;
-          resetMapSpeedDisplayStabilizer();
           if (bridgeFollowRaf) cancelAnimationFrame(bridgeFollowRaf);
           bridgeFollowRaf = 0;
           bridgeFollowLastRenderAt = 0;
@@ -5699,10 +5681,13 @@
         const arrowLatLng = toLatLngFromXY(arrowPoint.x, arrowPoint.y);
         if (!arrowLatLng) return;
         const eventTimeMs = resolveBridgeEventTimeMs(ts);
+        const rawPayloadSpeed = payload.speedKmh ?? payload.speed_kmh ?? payload.speed ?? payload.kmh ?? payload.vitesse;
+        const rawPayloadSpeedUnit = payload.speedUnit ?? payload.velocityUnit ?? payload.kmhUnit ?? payload.speed_unit;
         const payloadSpeedKmh = normalizeIncomingSpeedKmh(
-          payload.speed ?? payload.kmh ?? payload.vitesse,
-          payload.speedUnit ?? payload.velocityUnit ?? payload.kmhUnit ?? payload.speed_unit
+          rawPayloadSpeed,
+          rawPayloadSpeedUnit
         );
+        const payloadDisplaySpeedKmh = normalizeIncomingDisplaySpeedKmh(rawPayloadSpeed, rawPayloadSpeedUnit);
         const computedSpeedKmh = computeInstantBridgeSpeedKmh(
           arrowPoint,
           lastBridgeSampleWorldPoint,
@@ -5713,7 +5698,7 @@
         lastBridgeSampleTimestampMs = eventTimeMs;
         const resolvedSpeedKmh = chooseResolvedBridgeSpeedKmh(payloadSpeedKmh, computedSpeedKmh);
         if (Number.isFinite(resolvedSpeedKmh)) {
-          updateBridgeSpeedKmh(resolvedSpeedKmh, { displayKmh: resolvedSpeedKmh });
+          updateBridgeSpeedKmh(resolvedSpeedKmh, { displayKmh: payloadDisplaySpeedKmh });
         }
         const explicitHeadingRaw = payload.heading ?? payload.Heading;
         const explicitHeadingUnit = String(payload.headingUnit ?? payload.unit ?? "");

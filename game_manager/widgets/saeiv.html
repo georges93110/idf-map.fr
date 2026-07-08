@@ -364,6 +364,19 @@
       padding-bottom: 0;
     }
 
+    .call-btn:disabled {
+      cursor: default;
+      opacity: 1;
+    }
+
+    .call-btn.is-recording {
+      background: #b41628;
+    }
+
+    .call-btn.is-sending {
+      opacity: .78;
+    }
+
     .call-btn-left {
       left: 0;
       background: var(--hud-dark);
@@ -2263,6 +2276,7 @@
   <script>
     (() => {
       const WIDGET_BRIDGE_WS_URL = "ws://localhost:3001";
+      const SAEIV_REG_PANEL_WS_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       const WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
       const WIDGET_BRIDGE_CHANNEL = "saeiv";
       const params = new URLSearchParams(location.search);
@@ -2277,6 +2291,18 @@
       const isDevMapMode = params.has("devmap") || params.has("dev_map") || params.has("nextversion");
       const SAEIV_HOST_POLL_INTERVAL_MS = 140;
       const SAEIV_STATE_REQUEST_INTERVAL_MS = 1000;
+      const SAEIV_REG_CALL_ENABLED = false;
+      const SAEIV_REG_VOICE_ACTION = "saeiv_reg_voice";
+      const SAEIV_REG_VOICE_TYPE = "saeiv:reg_voice";
+      const SAEIV_REG_PRESENCE_ACTION = "saeiv_reg_presence";
+      const SAEIV_REG_PRESENCE_TYPE = "saeiv:reg_presence";
+      const SAEIV_REG_VOICE_MAX_DURATION_MS = 12000;
+      const SAEIV_REG_VOICE_MAX_BYTES = 3000000;
+      const SAEIV_REG_PRESENCE_TTL_MS = 3800;
+      const SAEIV_REG_PRESENCE_SWEEP_MS = 700;
+      const SAEIV_REG_PANEL_RECONNECT_MIN_MS = 700;
+      const SAEIV_REG_PANEL_RECONNECT_MAX_MS = 8000;
+      const SAEIV_REG_PANEL_OUTBOX_LIMIT = 12;
       const DEFAULT_DBUS_VERSION = "0.1.6a";
       const SERVICE_LINE_UID_MAX_LENGTH = 6;
       const SERVICE_VEHICLE_MIN_NUMBER = 1;
@@ -2319,6 +2345,7 @@
       const lineRefAgentVehicleEl = document.getElementById("lineRefAgentVehicle");
       const lineRefMissionEl = document.getElementById("lineRefMission");
       const lineRefRouteNumberEl = document.getElementById("lineRefRouteNumber");
+      const callRegBtnEl = document.querySelector('[data-action="call-reg"]');
       const stopAEl = document.getElementById("stopNameA");
       const stopBEl = document.getElementById("stopNameB");
       const stopCEl = document.getElementById("stopNameC");
@@ -2430,6 +2457,18 @@
       let serviceSelectedMatricule = "";
       let serviceConfirmTimer = 0;
       let serviceStartFlow = null;
+      let callRegRecording = null;
+      let callRegRecordTimeout = 0;
+      let callRegStartInProgress = false;
+      let callRegHoldActive = false;
+      let callRegPresenceTimer = 0;
+      let callRegButtonState = "";
+      let callRegPanelSocket = null;
+      let callRegPanelReconnectTimer = 0;
+      let callRegPanelReconnectDelayMs = SAEIV_REG_PANEL_RECONNECT_MIN_MS;
+      let callRegPanelStopped = false;
+      const callRegPanelOutbox = [];
+      const callRegPresenceByClientId = new Map();
       let pipHudWindow = null;
       let pipResizeHandler = null;
       let pipDrawerOpen = false;
@@ -3027,8 +3066,9 @@
 
       function handleBridgePayload(data) {
         if (!data || typeof data !== "object") return;
-        if (!data || data.sourceId !== sourceId) return;
         const type = String(data.type || "").trim();
+        if (SAEIV_REG_CALL_ENABLED && handleCallRegPresence(data)) return;
+        if (!data || data.sourceId !== sourceId) return;
         if (type === "saeiv:action_result") {
           handleServiceStartActionResult(data);
           const action = String(data.action || "").trim();
@@ -3042,6 +3082,115 @@
         }
         if (type !== "saeiv:state") return;
         renderState(data.payload || {});
+      }
+
+      function queueCallRegPanelMessage(message) {
+        if (!message || typeof message !== "object") return;
+        callRegPanelOutbox.push(message);
+        while (callRegPanelOutbox.length > SAEIV_REG_PANEL_OUTBOX_LIMIT) callRegPanelOutbox.shift();
+      }
+
+      function flushCallRegPanelOutbox() {
+        const socket = callRegPanelSocket;
+        if (!socket || socket.readyState !== WebSocket.OPEN || !callRegPanelOutbox.length) return;
+        const pending = callRegPanelOutbox.splice(0);
+        pending.forEach((message) => {
+          try {
+            socket.send(JSON.stringify(message));
+          } catch {
+            queueCallRegPanelMessage(message);
+          }
+        });
+      }
+
+      function scheduleCallRegPanelReconnect() {
+        if (callRegPanelStopped || callRegPanelReconnectTimer) return;
+        const delay = Math.max(SAEIV_REG_PANEL_RECONNECT_MIN_MS, Math.min(SAEIV_REG_PANEL_RECONNECT_MAX_MS, callRegPanelReconnectDelayMs));
+        callRegPanelReconnectDelayMs = Math.min(SAEIV_REG_PANEL_RECONNECT_MAX_MS, Math.round(delay * 1.7));
+        callRegPanelReconnectTimer = window.setTimeout(() => {
+          callRegPanelReconnectTimer = 0;
+          connectCallRegPanelSocket();
+        }, delay);
+      }
+
+      function buildCallRegPanelEnvelope(payload) {
+        const body = payload && typeof payload === "object" ? payload : {};
+        return Object.assign({
+          scope: WIDGET_BRIDGE_SCOPE,
+          channel: WIDGET_BRIDGE_CHANNEL,
+          clientId: widgetBridgeClientId,
+          ts: Date.now(),
+          payload: body
+        }, body);
+      }
+
+      function sendCallRegPanelPayload(payload) {
+        if (!SAEIV_REG_CALL_ENABLED) return false;
+        const envelope = buildCallRegPanelEnvelope(payload);
+        const socket = callRegPanelSocket;
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+          queueCallRegPanelMessage(envelope);
+          connectCallRegPanelSocket();
+          return false;
+        }
+        try {
+          socket.send(JSON.stringify(envelope));
+          return true;
+        } catch {
+          queueCallRegPanelMessage(envelope);
+          scheduleCallRegPanelReconnect();
+          return false;
+        }
+      }
+
+      function closeCallRegPanelSocket(stop = false) {
+        callRegPanelStopped = stop === true;
+        if (callRegPanelReconnectTimer) {
+          window.clearTimeout(callRegPanelReconnectTimer);
+          callRegPanelReconnectTimer = 0;
+        }
+        const socket = callRegPanelSocket;
+        callRegPanelSocket = null;
+        if (!socket) return;
+        try { socket.onopen = null; } catch {}
+        try { socket.onmessage = null; } catch {}
+        try { socket.onerror = null; } catch {}
+        try { socket.onclose = null; } catch {}
+        try { socket.close(); } catch {}
+      }
+
+      function connectCallRegPanelSocket() {
+        if (!SAEIV_REG_CALL_ENABLED) return;
+        if (callRegPanelStopped) return;
+        if (callRegPanelSocket && (callRegPanelSocket.readyState === WebSocket.OPEN || callRegPanelSocket.readyState === WebSocket.CONNECTING)) return;
+        let socket = null;
+        try { socket = new WebSocket(SAEIV_REG_PANEL_WS_URL); } catch { socket = null; }
+        if (!socket) {
+          scheduleCallRegPanelReconnect();
+          return;
+        }
+        callRegPanelSocket = socket;
+        socket.onopen = () => {
+          if (callRegPanelSocket !== socket) return;
+          callRegPanelReconnectDelayMs = SAEIV_REG_PANEL_RECONNECT_MIN_MS;
+          flushCallRegPanelOutbox();
+        };
+        socket.onmessage = (event) => {
+          let msg = null;
+          try { msg = JSON.parse(event && event.data ? event.data : ""); } catch { msg = null; }
+          if (!msg || typeof msg !== "object") return;
+          if (String(msg.clientId || "") === widgetBridgeClientId) return;
+          if (String(msg.scope || "") === WIDGET_BRIDGE_SCOPE && String(msg.channel || "").trim().toLowerCase() === WIDGET_BRIDGE_CHANNEL) {
+            handleBridgePayload(msg.payload || {});
+            return;
+          }
+          handleCallRegPresence(msg);
+        };
+        socket.onerror = () => {};
+        socket.onclose = () => {
+          if (callRegPanelSocket === socket) callRegPanelSocket = null;
+          scheduleCallRegPanelReconnect();
+        };
       }
 
       function connectBridgeSocket() {
@@ -3076,6 +3225,15 @@
         };
       }
 
+      window.addEventListener("message", (event) => {
+        const msg = event && event.data;
+        if (!msg || typeof msg !== "object") return;
+        if (String(msg.scope || "") !== WIDGET_BRIDGE_SCOPE) return;
+        if (String(msg.clientId || "") === widgetBridgeClientId) return;
+        if (String(msg.channel || "").trim().toLowerCase() !== WIDGET_BRIDGE_CHANNEL) return;
+        handleBridgePayload(msg.payload || {});
+      });
+
       function ensureBridgeSocket() {
         if (channelStopped) return;
         if (channel && (channel.readyState === WebSocket.OPEN || channel.readyState === WebSocket.CONNECTING)) return;
@@ -3096,6 +3254,430 @@
             queueBridgeEnvelope(envelope);
           }
         }
+      }
+
+      function pickCallRegRecorderMimeType() {
+        if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== "function") return "";
+        const candidates = [
+          "audio/webm;codecs=opus",
+          "audio/webm",
+          "audio/ogg;codecs=opus",
+          "audio/mp4"
+        ];
+        for (const type of candidates) {
+          try {
+            if (MediaRecorder.isTypeSupported(type)) return type;
+          } catch {}
+        }
+        return "";
+      }
+
+      function blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(reader.error || new Error("Lecture audio impossible"));
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      function createCallRegMessageId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          try { return "saeiv-reg-" + window.crypto.randomUUID(); } catch {}
+        }
+        return "saeiv-reg-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
+      }
+
+      function stopCallRegMediaStream(stream) {
+        if (!stream || typeof stream.getTracks !== "function") return;
+        stream.getTracks().forEach((track) => {
+          try { track.stop(); } catch {}
+        });
+      }
+
+      function normalizeCallRegLineKey(value) {
+        const text = String(value == null ? "" : value).trim();
+        if (!text) return "";
+        return text
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/^ligne\s+/i, "")
+          .replace(/\s+/g, " ")
+          .toLowerCase();
+      }
+
+      function getCallRegCurrentLineKeys(state = latestStatePayload) {
+        const data = state && typeof state === "object" ? state : {};
+        const bonus = data.game2Bonus && typeof data.game2Bonus === "object" ? data.game2Bonus : null;
+        const busLine = data.busLine && typeof data.busLine === "object"
+          ? data.busLine
+          : (bonus && bonus.busLine && typeof bonus.busLine === "object" ? bonus.busLine : null);
+        const routeName = String(data.routeName || data.directionName || (busLine && busLine.routeName) || "").trim();
+        const routeLineMatch = /^([^:]+)\s*:/.exec(routeName);
+        const candidates = [
+          data.lineNumber,
+          data.line,
+          data.lineName,
+          data.selectedLineLabel,
+          data.selectedLineUid,
+          busLine && busLine.lineNumber,
+          busLine && busLine.line,
+          busLine && busLine.lineName,
+          routeLineMatch && routeLineMatch[1]
+        ];
+        const keys = new Set();
+        candidates.forEach((candidate) => {
+          const key = normalizeCallRegLineKey(candidate);
+          if (key) keys.add(key);
+        });
+        return keys;
+      }
+
+      function cleanupCallRegPresence(now = Date.now()) {
+        for (const [clientId, record] of callRegPresenceByClientId.entries()) {
+          if (!record || now - Number(record.updatedAt || 0) > SAEIV_REG_PRESENCE_TTL_MS) {
+            callRegPresenceByClientId.delete(clientId);
+          }
+        }
+      }
+
+      function isCallRegAvailableForCurrentLine() {
+        if (!SAEIV_REG_CALL_ENABLED) return false;
+        const now = Date.now();
+        cleanupCallRegPresence(now);
+        const currentLineKeys = getCallRegCurrentLineKeys();
+        if (!currentLineKeys.size) return false;
+        for (const record of callRegPresenceByClientId.values()) {
+          const lineKeys = record && record.lineKeys instanceof Set ? record.lineKeys : new Set();
+          for (const key of lineKeys) {
+            if (currentLineKeys.has(key)) return true;
+          }
+        }
+        return false;
+      }
+
+      function syncCallRegAvailability() {
+        setCallRegButtonState(callRegButtonState);
+      }
+
+      function startCallRegPresenceWatch() {
+        if (!callRegPresenceTimer) {
+          callRegPresenceTimer = window.setInterval(syncCallRegAvailability, SAEIV_REG_PRESENCE_SWEEP_MS);
+        }
+        syncCallRegAvailability();
+      }
+
+      function stopCallRegPresenceWatch() {
+        if (!callRegPresenceTimer) return;
+        window.clearInterval(callRegPresenceTimer);
+        callRegPresenceTimer = 0;
+      }
+
+      function findCallRegPresencePayload(source, depth = 0) {
+        const level = Math.max(0, Math.floor(Number(depth) || 0));
+        if (!source || typeof source !== "object" || level > 5) return null;
+        const marker = String(source.action || source.type || source.event || source.kind || "").trim().toLowerCase();
+        if (marker === SAEIV_REG_PRESENCE_ACTION || marker === SAEIV_REG_PRESENCE_TYPE || source.saeivRegPresence === true) return source;
+        if (String(source.scope || "") === WIDGET_BRIDGE_SCOPE && String(source.channel || "").trim().toLowerCase() === WIDGET_BRIDGE_CHANNEL && source.payload && typeof source.payload === "object") {
+          const foundPayload = findCallRegPresencePayload(source.payload, level + 1);
+          if (foundPayload) return foundPayload;
+        }
+        const candidates = [source.payload, source.data, source.message, source.body];
+        for (const candidate of candidates) {
+          if (!candidate || typeof candidate !== "object" || candidate === source) continue;
+          const found = findCallRegPresencePayload(candidate, level + 1);
+          if (found) return found;
+        }
+        return null;
+      }
+
+      function handleCallRegPresence(data) {
+        const payload = findCallRegPresencePayload(data, 0);
+        if (!payload) return false;
+        data = payload;
+        const clientId = String(data.clientId || data.adminMapClientId || data.pccClientId || data.id || "").trim() || "admin-map";
+        const available = data.available !== false && data.online !== false;
+        if (!available) {
+          callRegPresenceByClientId.delete(clientId);
+          syncCallRegAvailability();
+          return true;
+        }
+        const lineKeys = new Set([
+          data.selectedLineKey,
+          data.lineKey,
+          data.lineNumber,
+          data.line,
+          data.selectedLineLabel,
+          data.lineLabel
+        ].map(normalizeCallRegLineKey).filter(Boolean));
+        if (!lineKeys.size) {
+          callRegPresenceByClientId.delete(clientId);
+          syncCallRegAvailability();
+          return true;
+        }
+        callRegPresenceByClientId.set(clientId, {
+          lineKeys,
+          updatedAt: Date.now()
+        });
+        syncCallRegAvailability();
+        return true;
+      }
+
+      function setCallRegButtonState(state = callRegButtonState, label) {
+        if (!callRegBtnEl) return;
+        const safeState = String(state || "").trim();
+        callRegButtonState = safeState;
+        callRegBtnEl.classList.toggle("is-recording", safeState === "recording");
+        callRegBtnEl.classList.toggle("is-sending", safeState === "sending");
+        const busy = safeState === "recording" || safeState === "sending" || callRegStartInProgress;
+        const available = busy || isCallRegAvailableForCurrentLine();
+        callRegBtnEl.disabled = !SAEIV_REG_CALL_ENABLED || safeState === "sending" || (!busy && !available);
+        callRegBtnEl.setAttribute("aria-disabled", callRegBtnEl.disabled ? "true" : "false");
+        callRegBtnEl.dataset.callRegAvailable = available ? "true" : "false";
+        callRegBtnEl.title = !SAEIV_REG_CALL_ENABLED ? "Appel REG temporairement desactive" : (!busy && !available ? "Aucun CRIV connecte sur cette ligne" : "");
+        const labelEl = callRegBtnEl.querySelector("span");
+        if (labelEl) labelEl.textContent = "APPEL REG";
+      }
+
+      function flashCallRegButtonLabel(label, delayMs = 1600) {
+        setCallRegButtonState("");
+        window.setTimeout(() => {
+          if (!callRegRecording && !callRegStartInProgress) setCallRegButtonState("", "APPEL REG");
+        }, Math.max(250, Number(delayMs) || 1600));
+      }
+
+      function clearCallRegRecordTimeout() {
+        if (!callRegRecordTimeout) return;
+        clearTimeout(callRegRecordTimeout);
+        callRegRecordTimeout = 0;
+      }
+
+      function buildCallRegVoiceContext(durationMs, blob, dataUrl, mimeType) {
+        const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
+        const bonus = state.game2Bonus && typeof state.game2Bonus === "object" ? state.game2Bonus : null;
+        const busLine = (state.busLine && typeof state.busLine === "object")
+          ? state.busLine
+          : (bonus && bonus.busLine && typeof bonus.busLine === "object" ? bonus.busLine : null);
+        const routeName = String(state.routeName || state.directionName || (busLine && (busLine.routeName || busLine.route || busLine.directionName)) || "").trim();
+        const routeLineMatch = /^([^:]+)\s*:/.exec(routeName);
+        const lineNumber = String(state.lineNumber || state.line || state.lineName || (busLine && (busLine.lineNumber || busLine.line || busLine.lineName)) || (routeLineMatch && routeLineMatch[1]) || "").trim();
+        const displayName = String(state.displayname || state.name || "").trim();
+        return {
+          action: SAEIV_REG_VOICE_ACTION,
+          id: createCallRegMessageId(),
+          time: Date.now(),
+          direction: "driver_to_criv",
+          source: "saeiv",
+          sourceId,
+          steamid: String(state.steamid || ""),
+          displayname: displayName,
+          lineNumber,
+          routeName,
+          currentStopName: String(state.stopName || state.currentStopName || ""),
+          nextStopName: String(state.nextStopName || ""),
+          refTime: String(state.refTime || ""),
+          selectedLineUid: String(state.selectedLineUid || ""),
+          selectedRouteUid: String(state.selectedRouteUid || ""),
+          lineKey: lineNumber,
+          selectedLineKey: lineNumber,
+          selectedLineLabel: lineNumber,
+          vehicleName: String(state.vehicleName || ""),
+          bus: {
+            label: [lineNumber, routeName].filter(Boolean).join(" - "),
+            lineNumber,
+            lineKey: lineNumber,
+            selectedLineKey: lineNumber,
+            selectedLineLabel: lineNumber,
+            routeName,
+            currentStopName: String(state.stopName || state.currentStopName || ""),
+            nextStopName: String(state.nextStopName || ""),
+            vehicleName: String(state.vehicleName || ""),
+            steamid: String(state.steamid || ""),
+            displayname: displayName
+          },
+          audio: {
+            dataUrl,
+            mimeType: mimeType || (blob && blob.type) || "audio/webm",
+            sizeBytes: blob ? blob.size : 0,
+            durationMs: Math.max(0, Math.round(Number(durationMs) || 0))
+          }
+        };
+      }
+
+      async function sendCallRegVoiceRecording(recording, blob) {
+        if (!recording || !blob) return;
+        if (blob.size <= 0) {
+          flashCallRegButtonLabel();
+          return;
+        }
+        if (blob.size > SAEIV_REG_VOICE_MAX_BYTES) {
+          flashCallRegButtonLabel();
+          return;
+        }
+        setCallRegButtonState("sending");
+        let dataUrl = "";
+        try {
+          dataUrl = await blobToDataUrl(blob);
+        } catch {
+          flashCallRegButtonLabel();
+          return;
+        }
+        if (!/^data:audio\//i.test(dataUrl)) {
+          flashCallRegButtonLabel();
+          return;
+        }
+        const durationMs = Date.now() - Number(recording.startedAt || Date.now());
+        const context = buildCallRegVoiceContext(durationMs, blob, dataUrl, recording.mimeType);
+        try { console.info("[saeiv] Appel REG audio pret", { sizeBytes: blob.size, durationMs, lineNumber: context.lineNumber }); } catch {}
+        post(SAEIV_REG_VOICE_TYPE, context);
+        sendCallRegPanelPayload(Object.assign({ type: SAEIV_REG_VOICE_TYPE, sourceId }, context));
+        flashCallRegButtonLabel(null, 1100);
+      }
+
+      function finishCallRegRecording(cancelled) {
+        callRegHoldActive = false;
+        if (!callRegRecording) return;
+        const recording = callRegRecording;
+        callRegRecording = null;
+        callRegStartInProgress = false;
+        clearCallRegRecordTimeout();
+        recording.cancelled = cancelled === true;
+        try {
+          if (recording.recorder && recording.recorder.state !== "inactive") {
+            recording.recorder.stop();
+          } else {
+            stopCallRegMediaStream(recording.stream);
+          }
+        } catch {
+          stopCallRegMediaStream(recording.stream);
+        }
+        if (recording.cancelled) flashCallRegButtonLabel();
+        else setCallRegButtonState("sending");
+      }
+
+      async function startCallRegRecording() {
+        if (!SAEIV_REG_CALL_ENABLED) {
+          syncCallRegAvailability();
+          return;
+        }
+        if (callRegRecording || callRegStartInProgress) return;
+        if (!isCallRegAvailableForCurrentLine()) {
+          syncCallRegAvailability();
+          return;
+        }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+          flashCallRegButtonLabel();
+          return;
+        }
+        callRegStartInProgress = true;
+        setCallRegButtonState("recording");
+        let stream = null;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          });
+        } catch {
+          callRegStartInProgress = false;
+          flashCallRegButtonLabel();
+          return;
+        }
+        if (!callRegHoldActive) {
+          callRegStartInProgress = false;
+          stopCallRegMediaStream(stream);
+          setCallRegButtonState("", "APPEL REG");
+          return;
+        }
+        const mimeType = pickCallRegRecorderMimeType();
+        let recorder = null;
+        try {
+          const options = { audioBitsPerSecond: 24000 };
+          if (mimeType) options.mimeType = mimeType;
+          recorder = new MediaRecorder(stream, options);
+        } catch {
+          callRegStartInProgress = false;
+          stopCallRegMediaStream(stream);
+          flashCallRegButtonLabel();
+          return;
+        }
+        const chunks = [];
+        const recording = {
+          stream,
+          recorder,
+          chunks,
+          mimeType,
+          startedAt: Date.now(),
+          cancelled: false
+        };
+        recorder.ondataavailable = (event) => {
+          if (event && event.data && event.data.size > 0) chunks.push(event.data);
+        };
+        recorder.onstop = () => {
+          stopCallRegMediaStream(stream);
+          if (recording.cancelled) return;
+          const blob = new Blob(chunks, { type: recorder.mimeType || mimeType || "audio/webm" });
+          sendCallRegVoiceRecording(recording, blob);
+        };
+        recorder.onerror = () => {
+          flashCallRegButtonLabel();
+          finishCallRegRecording(true);
+        };
+        callRegRecording = recording;
+        try {
+          recorder.start(250);
+        } catch {
+          callRegRecording = null;
+          callRegStartInProgress = false;
+          stopCallRegMediaStream(stream);
+          flashCallRegButtonLabel();
+          return;
+        }
+        callRegStartInProgress = false;
+        setCallRegButtonState("recording");
+        clearCallRegRecordTimeout();
+        callRegRecordTimeout = window.setTimeout(() => {
+          if (callRegRecording === recording) finishCallRegRecording(false);
+        }, SAEIV_REG_VOICE_MAX_DURATION_MS);
+        if (!callRegHoldActive && callRegRecording === recording) finishCallRegRecording(false);
+      }
+
+      function isCallRegHoldKey(event) {
+        const key = String(event && event.key || "");
+        const code = String(event && event.code || "");
+        return key === " " || key === "Spacebar" || key === "Enter" || code === "Space" || code === "Enter";
+      }
+
+      function beginCallRegHold(event) {
+        if (!callRegBtnEl) return;
+        if (event && typeof event.preventDefault === "function") event.preventDefault();
+        if (!SAEIV_REG_CALL_ENABLED) {
+          syncCallRegAvailability();
+          return;
+        }
+        if (event && typeof callRegBtnEl.setPointerCapture === "function" && event.pointerId !== undefined) {
+          try { callRegBtnEl.setPointerCapture(event.pointerId); } catch {}
+        }
+        if (callRegBtnEl.disabled || callRegHoldActive || callRegRecording || callRegStartInProgress) return;
+        if (!isCallRegAvailableForCurrentLine()) {
+          syncCallRegAvailability();
+          return;
+        }
+        callRegHoldActive = true;
+        startCallRegRecording();
+      }
+
+      function endCallRegHold(event, cancelled = false) {
+        if (!callRegHoldActive && !callRegRecording && !callRegStartInProgress) return;
+        if (event && typeof event.preventDefault === "function") event.preventDefault();
+        callRegHoldActive = false;
+        if (callRegRecording) {
+          finishCallRegRecording(cancelled === true);
+          return;
+        }
+        if (!callRegStartInProgress) setCallRegButtonState("", "APPEL REG");
       }
 
       function sanitizeLineCode(raw) {
@@ -4421,6 +5003,7 @@
       function renderState(payload) {
         const data = withDevGlobalAudioFallback(payload);
         latestStatePayload = data;
+        syncCallRegAvailability();
         applyDiffusionAudioVolumeFromPayload(data);
         updateDiffusionActionButtons(data);
         const hasLineSelection = data.lineSelected === true || !!String(data.selectedLineUid || data.lineNumber || "").trim();
@@ -4617,6 +5200,7 @@
       }
 
       ensureBridgeSocket();
+      connectCallRegPanelSocket();
       startStateRequestPolling();
       startHostBridgePolling();
       invokeExternalHostFunctionValueWithArgs("saeivGetBridgeState")
@@ -4626,7 +5210,7 @@
         .catch(() => {});
 
       const actionButtons = Array.from(document.querySelectorAll("[data-action]"));
-      const localNavActions = new Set(["top-left-a", "top-left-b", "menu", "slot-b", "slot-c"]);
+      const localNavActions = new Set(["top-left-a", "top-left-b", "menu", "slot-b", "slot-c", "call-reg"]);
       actionButtons.forEach((btn) => {
         const action = String(btn.getAttribute("data-action") || "").trim();
         const isLocalNav = localNavActions.has(action);
@@ -4657,12 +5241,33 @@
             setOverlayPage(currentOverlayPage === "diffusion" ? "ligne" : "diffusion");
             return;
           }
-          if (action === "call-reg") return;
+          if (action === "call-reg") {
+            return;
+          }
           if (btn.disabled) return;
           if (!action) return;
           post("saeiv:action", { action });
         });
       });
+
+      if (callRegBtnEl) {
+        callRegBtnEl.addEventListener("pointerdown", beginCallRegHold);
+        window.addEventListener("pointerup", (event) => endCallRegHold(event, false));
+        window.addEventListener("pointercancel", (event) => endCallRegHold(event, true));
+        callRegBtnEl.addEventListener("keydown", (event) => {
+          if (!isCallRegHoldKey(event) || event.repeat) return;
+          beginCallRegHold(event);
+        });
+        callRegBtnEl.addEventListener("keyup", (event) => {
+          if (!isCallRegHoldKey(event)) return;
+          endCallRegHold(event, false);
+        });
+        callRegBtnEl.addEventListener("blur", (event) => endCallRegHold(event, true));
+        callRegBtnEl.addEventListener("click", (event) => {
+          event.preventDefault();
+        });
+      }
+      startCallRegPresenceWatch();
 
       if (menuCloseBtnEl) {
         menuCloseBtnEl.addEventListener("click", () => {
@@ -4954,6 +5559,9 @@
       }
 
       window.addEventListener("pagehide", () => {
+        finishCallRegRecording(true);
+        closeCallRegPanelSocket(true);
+        stopCallRegPresenceWatch();
         detachPipWindow({ closeWindow: true });
         post("saeiv:closed");
         stopHostBridgePolling();
@@ -4970,6 +5578,9 @@
       tickClock();
       clockTimer = window.setInterval(tickClock, 1000);
       window.addEventListener("beforeunload", () => {
+        finishCallRegRecording(true);
+        closeCallRegPanelSocket(true);
+        stopCallRegPresenceWatch();
         stopDiffusionAudioPlayback();
         stopHostBridgePolling();
         stopStateRequestPolling();

@@ -5,8 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Road Advisor - ETS2 Ancien</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     :root {
       --w: 100%;
@@ -79,7 +77,8 @@
     .speed {
       width: 112px;
       font-size: 16px;
-      text-align: center;
+      text-align: left;
+      padding-left: 4px;
     }
 
     .road {
@@ -163,21 +162,25 @@
       top: 34px;
       left: 0;
       right: 0;
-      height: 30px;
+      height: 24px;
       z-index: 9;
       background: linear-gradient(#252525, #0f0f0f);
       display: flex;
       align-items: center;
-      padding: 0 10px;
-      font-weight: 800;
+      padding: 0 8px;
+      font-weight: 600;
       border-bottom: 1px solid rgba(255, 255, 255, .06);
       text-shadow: 0 1px 2px #000;
     }
 
+    .routebar[hidden] {
+      display: none !important;
+    }
+
     .flag {
-      width: 24px;
-      height: 24px;
-      margin-right: 8px;
+      width: 20px;
+      height: 20px;
+      margin-right: 7px;
       object-fit: contain;
     }
 
@@ -194,7 +197,8 @@
     }
 
     .route-text {
-      font-size: 17px;
+      font-size: 13px;
+      font-weight: 600;
     }
 
     .money {
@@ -205,7 +209,7 @@
 
     .main {
       position: absolute;
-      inset: 70px 6px 60px 6px;
+      inset: 64px 6px 60px 6px;
       overflow: hidden;
       z-index: 5;
     }
@@ -246,31 +250,14 @@
       background: #202020;
     }
 
-    /* Styles pour les marqueurs de navigation */
-    .nav-arrow-icon {
-      width: 28px;
-      height: 28px;
-      background: #2c99f4;
-      border: 3px solid #fff;
-      border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .nav-arrow-icon svg {
-      width: 80%;
-      height: 80%;
-      fill: #fff;
-    }
-
-    .leaflet-container {
-      background: #202020 !important;
-    }
-
-    .leaflet-tile {
-      filter: brightness(0.9) contrast(1.1) saturate(0.8);
+    .waze-leaflet-frame {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #202020;
     }
 
     .map-label {
@@ -567,29 +554,6 @@
       transform: rotate(-3deg)
     }
 
-    .zoom {
-      position: absolute;
-      right: 11px;
-      top: 13px;
-      width: 62px;
-      height: 24px;
-      background: linear-gradient(#666, #303030);
-      border: 1px solid #4e4e4e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #e8e8e8;
-      font-weight: 800;
-      gap: 5px;
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, .25);
-    }
-
-    .zoom:before {
-      content: "🔎";
-      font-size: 16px;
-      filter: grayscale(1)
-    }
-
     /* rest / services */
     .striped {
       position: absolute;
@@ -662,6 +626,38 @@
     .damage-icons img {
       height: auto;
       object-fit: contain;
+    }
+
+    .dmg-icon {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      --damage-fill: 0%;
+    }
+
+    .dmg-icon>img,
+    .dmg-fill img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .dmg-fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--damage-fill);
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .dmg-fill img {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      filter: brightness(0) saturate(100%) invert(18%) sepia(95%) saturate(4925%) hue-rotate(354deg) brightness(95%) contrast(106%);
+      opacity: .9;
     }
 
     .dmg-truck {
@@ -1016,13 +1012,13 @@
     <div class="screen"></div>
     <div class="topbar">
       <div class="speed">0 km/h</div>
-      <div class="road">
+      <!-- <div class="road">
         <img src="../images/widgets/truck.png" class="mini-ico" alt="Truck">
         <img src="../images/widgets/fuel_warning.png" class="mini-ico" alt="Fuel">
-      </div>
+      </div>-->
       <div id="timeTop" class="clock">00:00</div>
     </div>
-    <div id="routebar" class="routebar">
+    <div id="routebar" class="routebar" hidden>
       <img src="../images/widgets/job_target.png" class="flag" alt="Target">
       <div id="routeText" class="route-text">00:00, 0 km, 0min</div>
     </div>
@@ -1030,8 +1026,9 @@
     <main class="main">
       <section id="view-map" class="view active">
         <div class="map-wrap">
-          <div id="wazeLeafletMap" class="map-bg"></div>
-          <div class="zoom">F5</div>
+          <div id="wazeLeafletMap" class="map-bg">
+            <iframe id="wazeLeafletFrame" class="waze-leaflet-frame" title="Waze" allow="geolocation"></iframe>
+          </div>
         </div>
       </section>
 
@@ -1047,15 +1044,24 @@
         <div class="damage-title">Dégats</div>
         <div class="damage-icons">
           <div class="dmg-item">
-            <img src="../images/widgets/truck.png" class="dmg-truck" alt="Camion">
+            <div id="truckDmgIcon" class="dmg-icon dmg-truck">
+              <img src="../images/widgets/truck.png" alt="Camion">
+              <span class="dmg-fill" aria-hidden="true"><img src="../images/widgets/truck.png" alt=""></span>
+            </div>
             <span class="dmg-val" id="truckDmg">0%</span>
           </div>
           <div class="dmg-item">
-            <img src="../images/widgets/trailer.png" class="dmg-trailer" alt="Remorque">
+            <div id="trailerDmgIcon" class="dmg-icon dmg-trailer">
+              <img src="../images/widgets/trailer.png" alt="Remorque">
+              <span class="dmg-fill" aria-hidden="true"><img src="../images/widgets/trailer.png" alt=""></span>
+            </div>
             <span class="dmg-val" id="trailerDmg">0%</span>
           </div>
           <div class="dmg-item">
-            <img src="../images/widgets/cargo.png" class="dmg-cargo" alt="Cargaison">
+            <div id="cargoDmgIcon" class="dmg-icon dmg-cargo">
+              <img src="../images/widgets/cargo.png" alt="Cargaison">
+              <span class="dmg-fill" aria-hidden="true"><img src="../images/widgets/cargo.png" alt=""></span>
+            </div>
             <span class="dmg-val" id="cargoDmg">0%</span>
           </div>
         </div>
@@ -1067,10 +1073,10 @@
     <nav class="menubar">
       <button class="navbtn active" data-view="map" title="Carte"><img src="../images/widgets/compass.png"
           class="ico-img" alt=""></button>
-      <button class="navbtn" data-view="rest" title="Jobs"><img src="../images/widgets/job.png" class="ico-img"
+      <!-- <button class="navbtn" data-view="rest" title="Jobs"><img src="../images/widgets/job.png" class="ico-img"
           alt=""></button>
       <button class="navbtn" data-view="service" title="Services"><img src="../images/widgets/degats.png"
-          class="ico-img" alt=""></button>
+          class="ico-img" alt=""></button>-->
       <span class="caret">⌄</span>
     </nav>
   </div>
@@ -1080,193 +1086,439 @@
       const navbtns = document.querySelectorAll('.navbtn');
       const views = document.querySelectorAll('.view');
 
-      // --- Map Integration Logic ---
-      let map, truckMarker, routePolyline;
-      let tileMapInfo = null;
-      const tileSize = 256;
-      const maxNativeZoom = 8;
-      const widthPx = tileSize * Math.pow(2, maxNativeZoom);
-      const heightPx = tileSize * Math.pow(2, maxNativeZoom);
+      // --- Embedded Waze from gps_mini ---
+      const wazeFrame = document.getElementById('wazeLeafletFrame');
+      const WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
+      const WIDGET_BRIDGE_CHANNEL_WAZE = "waze";
+      const WIDGET_BRIDGE_WS_URL = "ws://localhost:3001";
+      const SAEIV_TIME_SYSTEM_STORAGE_KEY = "idf_game2_saeiv_time_system_v1";
       const QS = new URLSearchParams(location.search || "");
-      const DEV_MAP_MODE = QS.has("devmap") || QS.has("dev_map") || QS.has("nextversion");
-      const MAP_FILES_ROOT = "../../map_files";
-      const DEV_MAP_BASE_VERSION = "0.1.6a";
-      const DEV_MAP_LAYER_VERSION = "Dev";
-      const DATA_BASE = `${MAP_FILES_ROOT}/${DEV_MAP_BASE_VERSION}`;
-      const DEV_DATA_BASE = `${MAP_FILES_ROOT}/${DEV_MAP_LAYER_VERSION}`;
-      const TILE_BASE = `${DATA_BASE}/Tiles`;
-      const DEV_TILE_BASE = `${DEV_DATA_BASE}/Tiles`;
-      const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-      let speedDisplayEmaKmh = NaN;
-      let speedDisplayInt = 0;
-      const speedDisplayEmaAlpha = 0.2;
-      const speedDisplaySnapDeltaKmh = 8;
-      const speedDisplayHysteresisKmh = 0.75;
-      const speedDisplayStopKmh = 0.25;
-      const speedDisplayMaxKmh = 220;
+      const routebarEl = document.getElementById('routebar');
+      const routeTextEl = document.getElementById('routeText');
+      const speedEl = document.querySelector('.speed');
+      const timeTopEl = document.getElementById('timeTop');
+      let lastPauseMessage = null;
+      let lastWazeBridgeMessage = null;
+      let lastTelemetryState = null;
+      let lastHostWazeTs = 0;
+      let widgetBridgeSocket = null;
+      let widgetBridgeReconnectTimer = 0;
 
-      function resetSpeedDisplayStabilizer() {
-        speedDisplayEmaKmh = NaN;
-        speedDisplayInt = 0;
+      function buildWazeFrameUrl() {
+        const url = new URL("gps_mini.html", location.href);
+        url.searchParams.set("waze_app", "");
+        const hostMode = String(QS.get("host") || "").trim();
+        if (hostMode) url.searchParams.set("host", hostMode);
+        ["devmap", "dev_map", "nextversion"].forEach((key) => {
+          if (QS.has(key)) url.searchParams.set(key, QS.get(key) || "1");
+        });
+        return url.href;
       }
 
-      function stableDisplaySpeedKmh(rawSpeed) {
-        const speed = Number(rawSpeed);
-        if (!Number.isFinite(speed) || speed <= speedDisplayStopKmh) {
-          resetSpeedDisplayStabilizer();
-          return 0;
-        }
-
-        const clamped = Math.max(0, Math.min(speedDisplayMaxKmh, speed));
-        if (!Number.isFinite(speedDisplayEmaKmh) || Math.abs(clamped - speedDisplayEmaKmh) >= speedDisplaySnapDeltaKmh) {
-          speedDisplayEmaKmh = clamped;
-        } else {
-          speedDisplayEmaKmh = (speedDisplayEmaKmh * (1 - speedDisplayEmaAlpha)) + (clamped * speedDisplayEmaAlpha);
-        }
-
-        const nextInt = Math.round(speedDisplayEmaKmh);
-        const currentInt = speedDisplayInt;
-        if (nextInt === currentInt) return currentInt;
-        if (nextInt > currentInt && speedDisplayEmaKmh >= (currentInt + speedDisplayHysteresisKmh)) {
-          speedDisplayInt = nextInt;
-        } else if (nextInt < currentInt && speedDisplayEmaKmh <= (currentInt - speedDisplayHysteresisKmh)) {
-          speedDisplayInt = nextInt;
-        }
-        return speedDisplayInt;
+      function initWazeFrame() {
+        if (!wazeFrame) return;
+        wazeFrame.addEventListener('load', () => {
+          if (lastPauseMessage) postToWazeFrame(lastPauseMessage);
+          if (lastWazeBridgeMessage) postToWazeFrame(lastWazeBridgeMessage);
+        });
+        wazeFrame.src = buildWazeFrameUrl();
       }
 
-      function mapFileCandidatePaths(file) {
-        const clean = String(file || "").replace(/^\/+/, "");
-        const paths = [];
-        if (DEV_MAP_MODE) paths.push(`${DEV_DATA_BASE}/${clean}`);
-        paths.push(`${DATA_BASE}/${clean}`);
-        return paths;
+      function postToWazeFrame(message) {
+        if (!wazeFrame || !wazeFrame.contentWindow) return;
+        try {
+          wazeFrame.contentWindow.postMessage(message, "*");
+        } catch (err) {
+        }
       }
 
-      async function fetchMapFile(file, options) {
-        let lastResponse = null;
-        let lastError = null;
-        for (const path of mapFileCandidatePaths(file)) {
-          try {
-            const response = await fetch(path, options);
-            if (response && response.ok) return response;
-            lastResponse = response;
-          } catch (err) {
-            lastError = err;
+      function getPayloadNumber(payload, keys, fallback) {
+        for (const key of keys) {
+          const value = Number(payload && payload[key]);
+          if (Number.isFinite(value)) return value;
+        }
+        return fallback;
+      }
+
+      function formatDisplaySpeedKmh(value) {
+        const speed = Number(value);
+        return String(Number.isFinite(speed) ? Math.round(Math.abs(speed)) : 0);
+      }
+
+      function clampPercent(value) {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return 0;
+        const percent = n > 0 && n < 1 ? n * 100 : n;
+        return Math.max(0, Math.min(100, percent));
+      }
+
+      function getMaxPayloadNumber(payload, keys, fallback) {
+        let found = Number.NaN;
+        keys.forEach((key) => {
+          const value = Number(payload && payload[key]);
+          if (Number.isFinite(value)) found = Number.isFinite(found) ? Math.max(found, value) : value;
+        });
+        return Number.isFinite(found) ? found : fallback;
+      }
+
+      function setDamageValue(textId, iconId, value) {
+        const percent = clampPercent(value);
+        const rounded = Math.round(percent);
+        const textEl = document.getElementById(textId);
+        const iconEl = document.getElementById(iconId);
+        if (textEl) textEl.textContent = rounded + '%';
+        if (iconEl) iconEl.style.setProperty('--damage-fill', rounded + '%');
+      }
+
+      function updateDamagesFromPayload(payload) {
+        if (!payload || typeof payload !== 'object') return;
+        setDamageValue('truckDmg', 'truckDmgIcon', getMaxPayloadNumber(payload, [
+          'truckDamagePercent',
+          'truck_damage_percent',
+          'truckDamage',
+          'damage',
+          'wearSum'
+        ], 0));
+        setDamageValue('trailerDmg', 'trailerDmgIcon', getMaxPayloadNumber(payload, [
+          'trailerDamagePercent',
+          'trailer_damage_percent',
+          'trailerDamage',
+          'trailerWearSum',
+          'trailerWearBody',
+          'trailerWearChassis',
+          'trailerWearWheels',
+          'trailerCargoDamage'
+        ], 0));
+        setDamageValue('cargoDmg', 'cargoDmgIcon', getMaxPayloadNumber(payload, [
+          'cargoDamagePercent',
+          'cargo_damage_percent',
+          'cargoDamage',
+          'cargoWear',
+          'jobCargoDamage',
+          'trailerCargoDamage'
+        ], 0));
+      }
+
+      function normalizeTimeSystem(value) {
+        return String(value || '').trim().toLowerCase() === 'irl' ? 'irl' : 'game';
+      }
+
+      function getConfiguredTimeSystem(payload) {
+        if (payload && payload.timeSystem) return normalizeTimeSystem(payload.timeSystem);
+        try {
+          return normalizeTimeSystem(localStorage.getItem(SAEIV_TIME_SYSTEM_STORAGE_KEY));
+        } catch (err) {
+          return 'game';
+        }
+      }
+
+      function pad2(value) {
+        return String(Math.max(0, Math.floor(Number(value) || 0))).padStart(2, '0');
+      }
+
+      function formatClockText(value) {
+        if (value == null) return '';
+        if (typeof value === 'string') {
+          const match = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(value.trim());
+          if (match) return pad2(match[1]) + ':' + pad2(match[2]);
+          const numeric = Number(value);
+          if (!Number.isFinite(numeric)) return '';
+          value = numeric;
+        }
+        const n = Number(value);
+        if (!Number.isFinite(n)) return '';
+        const minutes = n > 1440 ? Math.floor(n / 60) : Math.floor(n);
+        const h = Math.floor(minutes / 60) % 24;
+        const m = minutes % 60;
+        return pad2(h) + ':' + pad2(m);
+      }
+
+      function formatIrlClock() {
+        const now = new Date();
+        return pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+      }
+
+      function resolveClockText(payload) {
+        const source = payload && typeof payload === 'object' ? payload : {};
+        if (getConfiguredTimeSystem(source) === 'irl') return formatIrlClock();
+        return (
+          formatClockText(source.refTime) ||
+          formatClockText(source.gameTimeSim) ||
+          formatClockText(source.gameTime) ||
+          formatClockText(source.gameTimeMinutes) ||
+          '00:00'
+        );
+      }
+
+      function parseClockMinutes(text) {
+        const match = /^(\d{1,2}):(\d{2})/.exec(String(text || '').trim());
+        if (!match) return Number.NaN;
+        const h = Number(match[1]);
+        const m = Number(match[2]);
+        if (!Number.isFinite(h) || !Number.isFinite(m)) return Number.NaN;
+        return ((Math.floor(h) % 24) * 60) + Math.floor(m);
+      }
+
+      function addMinutesToClock(text, minutes) {
+        const base = parseClockMinutes(text);
+        const add = Number(minutes);
+        if (!Number.isFinite(base) || !Number.isFinite(add)) return text || '00:00';
+        const total = ((Math.round(base + add) % 1440) + 1440) % 1440;
+        return pad2(Math.floor(total / 60)) + ':' + pad2(total % 60);
+      }
+
+      function formatDistance(meters) {
+        const m = Number(meters);
+        if (!Number.isFinite(m) || m <= 0) return '0 km';
+        if (m < 1000) return Math.round(m) + ' m';
+        const km = m / 1000;
+        return (km < 10 ? km.toFixed(1) : Math.round(km).toString()) + ' km';
+      }
+
+      function normalizeRoutePoint(point) {
+        if (!point || typeof point !== 'object') return null;
+        const x = Number(point.x ?? point.X);
+        const y = Number(point.y ?? point.Y ?? point.z ?? point.Z);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        return { x, y };
+      }
+
+      function routeDistanceFromPoints(points) {
+        if (!Array.isArray(points) || points.length < 2) return Number.NaN;
+        let total = 0;
+        let prev = normalizeRoutePoint(points[0]);
+        for (let i = 1; i < points.length; i += 1) {
+          const next = normalizeRoutePoint(points[i]);
+          if (prev && next) {
+            const dx = next.x - prev.x;
+            const dy = next.y - prev.y;
+            total += Math.sqrt((dx * dx) + (dy * dy));
+          }
+          if (next) prev = next;
+        }
+        return total > 0 ? total : Number.NaN;
+      }
+
+      function formatMinutes(value) {
+        const n = Number(value);
+        if (!Number.isFinite(n) || n <= 0) return 0;
+        return Math.max(0, Math.round(n));
+      }
+
+      function updateSpeedFromPayload(payload) {
+        if (!speedEl) return;
+        const speedKmh = getPayloadNumber(payload, ['speedKmh', 'speed_kmh', 'speed', 'kmh'], 0);
+        speedEl.textContent = formatDisplaySpeedKmh(speedKmh) + ' km/h';
+      }
+
+      function updateTimeFromPayload(payload) {
+        if (!timeTopEl) return;
+        timeTopEl.textContent = resolveClockText(payload || lastTelemetryState || {});
+      }
+
+      function hasWazeNavigation(payload) {
+        if (!payload || typeof payload !== 'object') return false;
+        if (payload.clearNavigation === true || payload.clearDestination === true) return false;
+        if (payload.routeSelected === false && payload.routeStarted !== true && payload.routeWaitingStart !== true) {
+          const points = Array.isArray(payload.routePoints) ? payload.routePoints : [];
+          return points.length >= 2 || !!(payload.end || payload.to || payload.b);
+        }
+        return (
+          payload.routeSelected === true ||
+          payload.routeStarted === true ||
+          payload.routeWaitingStart === true ||
+          Array.isArray(payload.routePoints) && payload.routePoints.length >= 2 ||
+          Array.isArray(payload.routeStops) && payload.routeStops.length > 0 ||
+          !!(payload.end || payload.to || payload.b) ||
+          getPayloadNumber(payload, ['distanceToCurrentStopM', 'remainingDistanceM'], 0) > 0 ||
+          getPayloadNumber(payload, ['etaRemainingMinutes', 'remainingMinutes'], 0) > 0
+        );
+      }
+
+      function updateRouteTextFromWazePayload(payload) {
+        const active = hasWazeNavigation(payload);
+        if (routebarEl) routebarEl.hidden = !active;
+        if (!active || !routeTextEl) return;
+
+        const etaMinutes = getPayloadNumber(payload, ['etaRemainingMinutes', 'remainingMinutes'], 0);
+        let distanceM = getPayloadNumber(payload, [
+          'distanceToCurrentStopM',
+          'remainingDistanceM',
+          'distanceM',
+          'distanceMeters',
+          'navigationDistanceM'
+        ], 0);
+        if (!Number.isFinite(distanceM) || distanceM <= 0) {
+          const routeDistance = routeDistanceFromPoints(payload && payload.routePoints);
+          if (Number.isFinite(routeDistance)) distanceM = routeDistance;
+        }
+        const arrivalTs = Number(payload && payload.etaArrivalTimestampMs);
+        let arrivalTime = Number.isFinite(arrivalTs) && arrivalTs > 0
+          ? formatClockText(new Date(arrivalTs).getHours() * 60 + new Date(arrivalTs).getMinutes())
+          : '';
+        if (!arrivalTime) {
+          arrivalTime = addMinutesToClock(resolveClockText(payload || lastTelemetryState || {}), etaMinutes);
+        }
+        routeTextEl.textContent = `${arrivalTime}, ${formatDistance(distanceM)}, ${formatMinutes(etaMinutes)}min`;
+      }
+
+      function applyTelemetryState(payload) {
+        if (!payload || typeof payload !== 'object') return false;
+        lastTelemetryState = payload;
+        updateSpeedFromPayload(payload);
+        updateTimeFromPayload(payload);
+        updateDamagesFromPayload(payload);
+        return true;
+      }
+
+      function applyWazePayload(payload) {
+        if (!payload || typeof payload !== 'object') return false;
+        lastWazeBridgeMessage = {
+          scope: WIDGET_BRIDGE_SCOPE,
+          channel: WIDGET_BRIDGE_CHANNEL_WAZE,
+          payload: payload,
+          ts: Number(payload.ts) || Date.now()
+        };
+        updateSpeedFromPayload(payload);
+        updateTimeFromPayload(payload);
+        updateDamagesFromPayload(payload);
+        updateRouteTextFromWazePayload(payload);
+        return true;
+      }
+
+      function parseMaybeJson(value) {
+        if (typeof value !== 'string') return value;
+        try {
+          return JSON.parse(value);
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function looksLikeTelemetryState(value) {
+        if (!value || typeof value !== 'object') return false;
+        return (
+          String(value.kind || '') === 'game2_html_state' ||
+          value.game2Bonus && String(value.game2Bonus.kind || '') === 'game2_html_state' ||
+          Object.prototype.hasOwnProperty.call(value, 'speedKmh') ||
+          Object.prototype.hasOwnProperty.call(value, 'gameTime') ||
+          Object.prototype.hasOwnProperty.call(value, 'gameTimeSim') ||
+          Object.prototype.hasOwnProperty.call(value, 'truckDamagePercent')
+        );
+      }
+
+      function extractTelemetryState(message) {
+        const msg = parseMaybeJson(message);
+        if (!msg || typeof msg !== 'object') return null;
+        if (msg.type === 'ws_log') return extractTelemetryState(msg.payload);
+        if (msg.action === 'telemetry' && msg.data && typeof msg.data === 'object') {
+          return Object.assign({}, msg.data, { game2Bonus: msg.bonus || msg.data.game2Bonus });
+        }
+        if (looksLikeTelemetryState(msg)) return msg;
+        if (msg.payload && looksLikeTelemetryState(msg.payload)) return msg.payload;
+        if (msg.data && looksLikeTelemetryState(msg.data)) return msg.data;
+        return null;
+      }
+
+      function handleIncomingMessage(message, sourceWindow) {
+        const msg = parseMaybeJson(message);
+        if (!msg || typeof msg !== 'object') return false;
+
+        if (wazeFrame && sourceWindow === wazeFrame.contentWindow) return true;
+
+        if (msg.scope === WIDGET_BRIDGE_SCOPE) {
+          if (msg.type === 'game_pause_state') {
+            lastPauseMessage = msg;
+            postToWazeFrame(msg);
+            return true;
+          }
+
+          if (String(msg.channel || '').trim().toLowerCase() === WIDGET_BRIDGE_CHANNEL_WAZE) {
+            const payload = msg.payload && typeof msg.payload === 'object' ? msg.payload : null;
+            if (payload) {
+              applyWazePayload(payload);
+              postToWazeFrame(msg);
+            }
+            return true;
           }
         }
-        if (lastResponse) return lastResponse;
-        throw lastError || new Error(`Map file load failed: ${String(file || "")}`);
+
+        const telemetry = extractTelemetryState(msg);
+        if (telemetry) {
+          applyTelemetryState(telemetry);
+          return true;
+        }
+
+        return false;
       }
 
-      function initMap() {
-        if (typeof L === 'undefined') {
-          const mapEl = document.getElementById("wazeLeafletMap");
-          if (mapEl) mapEl.innerHTML = '<div style="color:#f2a319;padding:20px;text-align:center;font-weight:bold;">Erreur: Leaflet non chargé.<br>Vérifiez votre connexion internet.</div>';
-          return;
-        }
-        map = L.map("wazeLeafletMap", {
-          crs: L.CRS.Simple,
-          attributionControl: false,
-          zoomControl: false,
-          dragging: false,
-          touchZoom: false,
-          scrollWheelZoom: false,
-          doubleClickZoom: false,
-          boxZoom: false,
-          keyboard: false,
-          tap: false,
-          minZoom: 1,
-          maxZoom: 12,
-          zoomSnap: 0.25
-        });
-
-        // Tiles
-        const baseTileLayerOptions = {
-          tileSize: tileSize,
-          minNativeZoom: 0,
-          maxNativeZoom: 8,
-          noWrap: true,
-          crossOrigin: true
+      function getHostWindowCandidates() {
+        const out = [];
+        const seen = new Set();
+        const push = (win) => {
+          if (!win || win === window || seen.has(win)) return;
+          seen.add(win);
+          out.push(win);
         };
-        L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, baseTileLayerOptions).addTo(map);
-        if (DEV_MAP_MODE) {
-          L.tileLayer(`${DEV_TILE_BASE}/{z}/{x}/{y}.png`, {
-            ...baseTileLayerOptions,
-            errorTileUrl: TRANSPARENT_TILE_URL
-          }).addTo(map);
+        try { push(window.parent); } catch (err) { }
+        try { push(window.top); } catch (err) { }
+        try { push(window.opener); } catch (err) { }
+        return out;
+      }
+
+      function pollHostWazeState() {
+        const hosts = getHostWindowCandidates();
+        for (let i = 0; i < hosts.length; i += 1) {
+          const host = hosts[i];
+          try {
+            if (typeof host.wazeGetBridgeState !== 'function') continue;
+            const payload = host.wazeGetBridgeState();
+            if (!payload || typeof payload !== 'object') continue;
+            const ts = Number(payload.ts) || 0;
+            if (ts && ts === lastHostWazeTs) return;
+            if (ts) lastHostWazeTs = ts;
+            applyWazePayload(payload);
+            return;
+          } catch (err) {
+          }
         }
-
-        // Fetch Coord Info
-        fetchMapFile("TileMapInfo.json")
-          .then(r => r.json())
-          .then(info => {
-            tileMapInfo = info;
-            // Centrer la carte sur le milieu des coordonnées
-            const centerX = (info.x1 + info.x2) / 2;
-            const centerY = (info.y1 + info.y2) / 2;
-            const centerLatLng = toLatLng(centerX, centerY);
-            if (centerLatLng) {
-              map.setView(centerLatLng, 8);
-            } else {
-              map.setView([0, 0], 8);
-            }
-            map.invalidateSize();
-          })
-          .catch(e => {
-            console.error("Map info error:", e);
-            // Fallback view
-            map.setView([0, 0], 2);
-          });
-
-        setTimeout(() => map.invalidateSize(), 500);
       }
 
-      function toLatLng(X, Y) {
-        if (!tileMapInfo) return null;
-        const px = ((X - tileMapInfo.x1) / (tileMapInfo.x2 - tileMapInfo.x1)) * widthPx;
-        const py = ((Y - tileMapInfo.y1) / (tileMapInfo.y2 - tileMapInfo.y1)) * heightPx;
-        return map.unproject([px, py], maxNativeZoom);
+      function scheduleWidgetBridgeReconnect() {
+        if (widgetBridgeReconnectTimer) return;
+        widgetBridgeReconnectTimer = window.setTimeout(() => {
+          widgetBridgeReconnectTimer = 0;
+          connectWidgetBridgeSocket();
+        }, 900);
       }
 
-      function updateTruck(truck) {
-        if (!map || !tileMapInfo) return;
-        const latlng = toLatLng(truck.placement.x, truck.placement.z);
-        if (!latlng) return;
+      function connectWidgetBridgeSocket() {
+        if (widgetBridgeSocket && (
+          widgetBridgeSocket.readyState === WebSocket.OPEN ||
+          widgetBridgeSocket.readyState === WebSocket.CONNECTING
+        )) return;
 
-        if (!truckMarker) {
-          const icon = L.divIcon({
-            className: 'nav-arrow-wrap',
-            html: '<div class="nav-arrow-icon"><svg viewBox="0 0 24 24"><path d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z"/></svg></div>',
-            iconSize: [28, 28],
-            iconAnchor: [14, 14]
-          });
-          truckMarker = L.marker(latlng, { icon }).addTo(map);
-        } else {
-          truckMarker.setLatLng(latlng);
-        }
-
-        const heading = (truck.placement.heading || 0) * 360 + 90;
-        const arrow = truckMarker.getElement().querySelector('.nav-arrow-icon');
-        if (arrow) arrow.style.transform = `rotate(${heading}deg)`;
-
-        map.setView(latlng, map.getZoom());
-      }
-
-      function updateRoute(nav) {
-        if (!map || !tileMapInfo || !nav || !nav.route || nav.route.length < 2) {
-          if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
+        let socket = null;
+        try {
+          socket = new WebSocket(WIDGET_BRIDGE_WS_URL);
+        } catch (err) {
+          scheduleWidgetBridgeReconnect();
           return;
         }
-        const latlngs = nav.route.map(p => toLatLng(p.x, p.z)).filter(l => !!l);
-        if (!routePolyline) {
-          routePolyline = L.polyline(latlngs, { color: '#ff9000', weight: 6, opacity: 0.8 }).addTo(map);
-        } else {
-          routePolyline.setLatLngs(latlngs);
-        }
+
+        widgetBridgeSocket = socket;
+        socket.addEventListener('message', (event) => {
+          handleIncomingMessage(event && event.data);
+        });
+        socket.addEventListener('close', () => {
+          if (widgetBridgeSocket === socket) widgetBridgeSocket = null;
+          scheduleWidgetBridgeReconnect();
+        });
+        socket.addEventListener('error', () => {
+        });
       }
 
-      initMap();
+      initWazeFrame();
 
       function switchView(viewId) {
         views.forEach(v => v.classList.remove('active'));
@@ -1278,9 +1530,6 @@
         if (targetView) targetView.classList.add('active');
         if (targetBtn) targetBtn.classList.add('active');
 
-        if (viewId === 'map' && map) {
-          setTimeout(() => map.invalidateSize(), 100);
-        }
       }
 
       navbtns.forEach(btn => {
@@ -1291,85 +1540,19 @@
       });
 
       window.addEventListener('message', (event) => {
-        const msg = event.data;
-        if (!msg || msg.scope !== "idf_game_widget_bridge_v1") return;
-
-        if (msg.type === "game_pause_state") {
-          // Gérer l'état de pause si nécessaire
-          return;
-        }
-
-        if (msg.channel === "waze") {
-          const p = msg.payload;
-          if (!p) return;
-
-          // Vitesse
-          const speedEl = document.querySelector('.speed');
-          if (speedEl) {
-            const speedKmh = stableDisplaySpeedKmh(Number(p.speed || p.kmh || 0));
-            speedEl.textContent = speedKmh + ' km/h';
-          }
-
-          // Horloge
-          if (p.refTime) {
-            const timeEl = document.getElementById('timeTop');
-            if (timeEl) timeEl.textContent = p.refTime;
-          }
-
-          // Camion (Position et Cap)
-          if (p.arrow) {
-            updateTruck({
-              placement: {
-                x: p.arrow.x,
-                z: p.arrow.z,
-                heading: (p.heading || 0) / 360
-              }
-            });
-          }
-
-          // Dégâts
-          const truckDmgEl = document.getElementById('truckDmg');
-          if (truckDmgEl) truckDmgEl.textContent = Math.round(Number(msg.truckDamage || 0) * 100) + '%';
-
-          const trailerDmgEl = document.getElementById('trailerDmg');
-          if (trailerDmgEl) trailerDmgEl.textContent = Math.round(Number(msg.trailerDamage || 0) * 100) + '%';
-
-          const cargoDmgEl = document.getElementById('cargoDmg');
-          if (cargoDmgEl) cargoDmgEl.textContent = Math.round(Number(msg.cargoDamage || 0) * 100) + '%';
-
-          // Navigation (Itinéraire et Infos)
-          if (p.routePoints) {
-            updateRoute({
-              route: p.routePoints
-            });
-
-            const routeTextEl = document.getElementById('routeText');
-            if (routeTextEl) {
-              const distKm = (Number(p.distanceToCurrentStopM || 0) / 1000).toFixed(1);
-              const timeMin = Math.round(Number(p.etaRemainingMinutes || 0));
-
-              // Calculer l'heure d'arrivée estimée
-              let arrivalTime = p.refTime;
-              if (p.refTime && timeMin > 0) {
-                const parts = p.refTime.split(':');
-                let h = parseInt(parts[0]);
-                let m = parseInt(parts[1]) + timeMin;
-                h = (h + Math.floor(m / 60)) % 24;
-                m = m % 60;
-                arrivalTime = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
-              }
-
-              routeTextEl.textContent = `${arrivalTime}, ${distKm} km, ${timeMin}min`;
-            }
-          }
-        }
+        handleIncomingMessage(event && event.data, event && event.source);
       });
 
-      function formatGameTime(minutes) {
-        const h = Math.floor(minutes / 60) % 24;
-        const m = Math.floor(minutes % 60);
-        return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
-      }
+      updateTimeFromPayload({});
+      pollHostWazeState();
+      connectWidgetBridgeSocket();
+      window.setInterval(pollHostWazeState, 250);
+      window.setInterval(() => {
+        const source = lastWazeBridgeMessage && lastWazeBridgeMessage.payload
+          ? lastWazeBridgeMessage.payload
+          : lastTelemetryState;
+        updateTimeFromPayload(source || {});
+      }, 1000);
     })();
   </script>
 </body>

@@ -7,7 +7,10 @@
       var remotePanelBusRouteGeometryCache = null;
       var remotePanelBusRouteGeometryLastSentKey = "";
       var remotePanelBusRouteGeometryLastSentAt = 0;
+      var remotePanelSaeivBridgeQueue = [];
       var REMOTE_PANEL_ROUTE_GEOMETRY_RESEND_MS = 6000;
+      var REMOTE_PANEL_SAEIV_BRIDGE_QUEUE_LIMIT = 12;
+      var SAEIV_REG_REMOTE_BRIDGE_ENABLED = false;
 
       function isPipBrowserSupported() {
         var dpi = window.documentPictureInPicture;
@@ -2687,6 +2690,73 @@
           return false;
         }
       }
+      function isSaeivRegVoiceBridgePayload(payload) {
+        if (!payload || typeof payload !== "object") return false;
+        var marker = String(payload.type || payload.action || payload.event || payload.kind || "").trim().toLowerCase();
+        return marker === "saeiv:reg_voice" || marker === "saeiv_reg_voice" || payload.saeivRegVoice === true;
+      }
+      function isSaeivRegPresenceBridgePayload(payload) {
+        if (!payload || typeof payload !== "object") return false;
+        var marker = String(payload.type || payload.action || payload.event || payload.kind || "").trim().toLowerCase();
+        return marker === "saeiv:reg_presence" || marker === "saeiv_reg_presence" || payload.saeivRegPresence === true;
+      }
+      function queueRemotePanelSaeivBridgeEnvelope(envelope) {
+        if (!SAEIV_REG_REMOTE_BRIDGE_ENABLED) return;
+        if (!envelope || typeof envelope !== "object") return;
+        remotePanelSaeivBridgeQueue.push(envelope);
+        while (remotePanelSaeivBridgeQueue.length > REMOTE_PANEL_SAEIV_BRIDGE_QUEUE_LIMIT) {
+          remotePanelSaeivBridgeQueue.shift();
+        }
+      }
+      function sendRemotePanelBridgeEnvelope(envelope) {
+        if (!SAEIV_REG_REMOTE_BRIDGE_ENABLED) return false;
+        if (!envelope || typeof envelope !== "object") return false;
+        if (!isRemotePanelWsOpen()) {
+          startRemotePanelWsBridge();
+          return false;
+        }
+        var body = "";
+        try { body = JSON.stringify(envelope); } catch (err0) { body = ""; }
+        if (!body) return false;
+        try {
+          getRemotePanelWsSocket().send(body);
+          remoteServerWsLastMessageAtMs = Date.now();
+          remoteServerWsLastMessageText = "Message SAEIV envoye au panel.";
+          return true;
+        } catch (err1) {
+          remoteServerWsLastEventText = "Erreur envoi message SAEIV panel.";
+          try { getRemotePanelWsSocket().close(); } catch (err2) { }
+          scheduleRemotePanelWsReconnect();
+          return false;
+        }
+      }
+      function flushRemotePanelSaeivBridgeQueue() {
+        if (!SAEIV_REG_REMOTE_BRIDGE_ENABLED) return;
+        if (!remotePanelSaeivBridgeQueue.length || !isRemotePanelWsOpen()) return;
+        var pending = remotePanelSaeivBridgeQueue.slice();
+        remotePanelSaeivBridgeQueue.length = 0;
+        pending.forEach(function (envelope) {
+          if (!sendRemotePanelBridgeEnvelope(envelope)) queueRemotePanelSaeivBridgeEnvelope(envelope);
+        });
+      }
+      function forwardLocalSaeivRegBridgeEnvelopeToRemotePanel(envelope) {
+        if (!SAEIV_REG_REMOTE_BRIDGE_ENABLED) return false;
+        if (!envelope || typeof envelope !== "object") return false;
+        if (String(envelope.scope || "") !== WIDGET_BRIDGE_SCOPE) return false;
+        if (String(envelope.channel || "").trim().toLowerCase() !== WIDGET_BRIDGE_CHANNEL_SAEIV) return false;
+        var payload = envelope.payload && typeof envelope.payload === "object" ? envelope.payload : null;
+        if (!isSaeivRegVoiceBridgePayload(payload)) return false;
+        var remoteEnvelope = {
+          scope: WIDGET_BRIDGE_SCOPE,
+          channel: WIDGET_BRIDGE_CHANNEL_SAEIV,
+          clientId: String(envelope.clientId || "game-saeiv"),
+          ts: Date.now(),
+          payload: payload
+        };
+        if (sendRemotePanelBridgeEnvelope(remoteEnvelope)) return true;
+        queueRemotePanelSaeivBridgeEnvelope(remoteEnvelope);
+        return false;
+      }
       function flushRemotePanelTelemetryQueue() {
         if (remotePanelTelemetryInFlight || !isRemotePanelWsOpen()) return;
         var payload = remotePanelTelemetryQueuedPayload;
@@ -3469,6 +3539,80 @@
         remoteServerWsPlayerList = [];
         remoteServerWsLastPongAtMs = 0;
       }
+      function postRemoteWidgetBridgeEnvelopeToTarget(target, envelope) {
+        if (!target || !envelope) return false;
+        try {
+          target.postMessage(envelope, "*");
+          return true;
+        } catch (err0) {
+          return false;
+        }
+      }
+      function findRemoteSaeivBridgeEnvelope(source, depth) {
+        var level = Math.max(0, Math.floor(Number(depth) || 0));
+        if (!source || typeof source !== "object" || level > 5) return null;
+        if (
+          String(source.scope || "") === WIDGET_BRIDGE_SCOPE &&
+          String(source.channel || "").trim().toLowerCase() === WIDGET_BRIDGE_CHANNEL_SAEIV &&
+          source.payload && typeof source.payload === "object"
+        ) {
+          return source;
+        }
+        if (isSaeivRegVoiceBridgePayload(source) || isSaeivRegPresenceBridgePayload(source)) {
+          return {
+            scope: WIDGET_BRIDGE_SCOPE,
+            channel: WIDGET_BRIDGE_CHANNEL_SAEIV,
+            clientId: String(source.clientId || "remote-panel"),
+            ts: Date.now(),
+            payload: source
+          };
+        }
+        var candidates = [source.payload, source.data, source.message, source.body];
+        for (var i = 0; i < candidates.length; i += 1) {
+          var candidate = candidates[i];
+          if (!candidate || typeof candidate !== "object" || candidate === source) continue;
+          var found = findRemoteSaeivBridgeEnvelope(candidate, level + 1);
+          if (found) return found;
+        }
+        return null;
+      }
+      function forwardRemoteSaeivBridgeEnvelope(parsed) {
+        if (!SAEIV_REG_REMOTE_BRIDGE_ENABLED) return false;
+        var envelope = findRemoteSaeivBridgeEnvelope(parsed, 0);
+        if (!envelope) return false;
+        var delivered = false;
+        var seenTargets = [];
+        function deliverWindow(win) {
+          if (!win || seenTargets.indexOf(win) !== -1) return;
+          seenTargets.push(win);
+          if (postRemoteWidgetBridgeEnvelopeToTarget(win, envelope)) delivered = true;
+        }
+        function deliverFrame(frame) {
+          if (!frame || String(frame.dataset && frame.dataset.widgetType || "").trim().toLowerCase() !== "saeiv") return;
+          try { deliverWindow(frame.contentWindow); } catch (err1) { }
+        }
+        try {
+          Array.prototype.forEach.call(document.querySelectorAll('iframe[data-widget-type="saeiv"]'), deliverFrame);
+        } catch (err2) { }
+        if (typeof windowNodeByType !== "undefined" && windowNodeByType && windowNodeByType.saeiv) {
+          try { deliverFrame(windowNodeByType.saeiv.querySelector("iframe")); } catch (err3) { }
+        }
+        if (typeof pipWindow !== "undefined" && pipWindow && !pipWindow.closed) {
+          try {
+            Array.prototype.forEach.call(pipWindow.document.querySelectorAll('iframe[data-widget-type="saeiv"]'), deliverFrame);
+          } catch (err4) { }
+        }
+        if (typeof tabRefs !== "undefined" && tabRefs && typeof widgetsById !== "undefined") {
+          Object.keys(tabRefs).forEach(function (id) {
+            var widget = widgetsById[id];
+            if (!widget || String(widget.type || "").trim().toLowerCase() !== "saeiv") return;
+            var win = tabRefs[id];
+            if (!win || win.closed) return;
+            deliverWindow(win);
+          });
+        }
+        return delivered;
+      }
       function handleRemotePanelWsMessage(event) {
         if (!remoteServerWs || remoteServerWs.socket !== (event && (event.currentTarget || event.target))) return;
         remoteServerWsLastPongAtMs = Date.now();
@@ -3485,6 +3629,13 @@
         try {
           var parsed = null;
           try { parsed = JSON.parse(event.data); } catch (err0) { parsed = null; }
+          if (forwardRemoteSaeivBridgeEnvelope(parsed)) {
+            if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
+            if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
+              syncConvoyStatusFromRemotePanelWs();
+            }
+            return;
+          }
           if (handlePccVoiceMessage(parsed)) {
             if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
             if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
@@ -3552,6 +3703,7 @@
             syncConvoyStatusFromRemotePanelWs();
           }
           flushRemotePanelTelemetryQueue();
+          flushRemotePanelSaeivBridgeQueue();
         };
         socket.onmessage = handleRemotePanelWsMessage;
         socket.onerror = function () {

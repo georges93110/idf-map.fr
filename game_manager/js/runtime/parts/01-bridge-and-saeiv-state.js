@@ -132,6 +132,9 @@
         var payload = parsed.payload && typeof parsed.payload === "object" ? parsed.payload : null;
         if (!payload) return true;
         if (channel === WIDGET_BRIDGE_CHANNEL_SAEIV) {
+          if (typeof forwardLocalSaeivRegBridgeEnvelopeToRemotePanel === "function") {
+            forwardLocalSaeivRegBridgeEnvelopeToRemotePanel(parsed);
+          }
           handleSaeivBridgeData(payload);
           return true;
         }

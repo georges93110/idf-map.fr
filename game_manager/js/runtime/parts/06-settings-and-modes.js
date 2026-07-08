@@ -10,7 +10,7 @@
       }
       function isExperimentalWidgetType(type) {
         var safeType = normalizeWidgetType(type);
-        return safeType === "saeiv" || safeType === "waze" || safeType === "iphone_simulator";
+        return safeType === "saeiv" || safeType === "gps_ets2_old";
       }
       function applyWidgetTitleWithExperimentalBadge(targetEl, labelText, type) {
         if (!targetEl) return;
@@ -743,7 +743,7 @@
         var safeType = normalizeWidgetType(type);
         if (!isExperimentalWidgetType(safeType)) return true;
         if (showExperimentalWidgets) return true;
-        return currentGameMode === GAME_MODES.UBER_EATS && safeType === "iphone_simulator";
+        return false;
       }
 
       function applyModeWidgetTypeLists(mode) {

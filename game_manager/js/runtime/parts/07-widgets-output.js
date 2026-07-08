@@ -222,7 +222,7 @@
         frame.src = meta.url;
         frame.title = meta.label;
         frame.setAttribute("frameborder", "0");
-        frame.setAttribute("allow", "autoplay");
+        frame.setAttribute("allow", "autoplay; microphone");
         frame.dataset.widgetType = widget.type;
 
         section.appendChild(frame);
@@ -326,7 +326,7 @@
         frame.src = meta.url;
         frame.title = meta.label;
         frame.setAttribute("frameborder", "0");
-        frame.setAttribute("allow", "autoplay");
+        frame.setAttribute("allow", "autoplay; microphone");
         frame.dataset.widgetType = widget.type;
         section.appendChild(frame);
         return section;
@@ -345,7 +345,7 @@
           frame.dataset.widgetType = widget.type;
           pane.appendChild(frame);
         }
-        frame.setAttribute("allow", "autoplay");
+        frame.setAttribute("allow", "autoplay; microphone");
         if (frame.dataset.widgetType !== widget.type) {
           frame.src = meta.url;
           frame.dataset.widgetType = widget.type;
