@@ -94,10 +94,10 @@
         "Le Parc",
         "Le Raincy - Villemomble - Montfermeil RER",
         "Ledru-Rollin - Général de Gaulle",
+        "Léon Blum",
         "Les Marnaudes",
         "Letessier",
         "Lucien Berneux",
-        "Léon Blum",
         "Mairie de Neuilly-Plaisance",
         "Mairie de Nogent-sur-Marne",
         "Marceau",
@@ -189,7 +189,6 @@
         "Validez votre titre",
         "Validez votre titre (Ancien)"
       ]
-    },
-    "TRANSDEV": {}
+    }
   }
 }
