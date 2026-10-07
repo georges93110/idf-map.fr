@@ -11,6 +11,7 @@
     "parts/03-navigation-routing.js",
     "parts/04-waze-bridge.js",
     "parts/05-telemetry-and-shortcuts.js",
+    "parts/05a-native-stop-marker.js",
     "parts/06-settings-and-modes.js",
     "parts/07-widgets-output.js",
     "parts/08-overlay-ui-state.js",
