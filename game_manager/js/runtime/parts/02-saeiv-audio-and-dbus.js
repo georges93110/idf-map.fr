@@ -2191,6 +2191,7 @@
           ensureBackgroundBusStatusRuntime();
         }
         var payload = buildSaeivStatePayloadFromGame();
+        syncNativeStopMarker(false, payload);
         var key = "";
         try { key = JSON.stringify(payload); } catch (err) { key = ""; }
         if (!force && key && key === saeivLastStateKey) return false;
