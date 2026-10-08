@@ -62,16 +62,16 @@ function syncNativeUiSettings() {
   if (status) {
     var fresh = nativeUiStatus && Date.now() - nativeUiStatusAt < 3000;
     var reason = fresh && nativeUiStatus.status;
-    status.textContent = nativeUiMode === "widgets" ? "Interfaces dans les widgets." : nativeUiIsActive() ? "Interface bus active dans ETS2. Ferme le gestionnaire avec son raccourci habituel pour cliquer dans le jeu." :
-      normalizeGameMode(currentGameMode) !== "bus" ? "Sélectionne le mode Bus pour utiliser l’interface intégrée." :
+    status.textContent = nativeUiMode === "widgets" ? "Interfaces dans les widgets." : nativeUiIsActive() ? "Interface ETS2 active : Échap > Mode Bus ou Missions bus, en bas à gauche. Ferme le gestionnaire HTML avec Suppr pour cliquer dans le jeu." :
+      normalizeGameMode(currentGameMode) !== "bus" ? "Échap > Mode Camion > Bus IDF pour changer de mode dans ETS2." :
       reason === "owned_by_other_tab" ? "Interface utilisée par une autre fenêtre du site. Les widgets restent disponibles." :
       reason === "unsupported_build" ? "Cette version d’ETS2 n’est pas prise en charge. Les widgets restent disponibles." :
       reason === "native_ui_unavailable" ? "Interface native indisponible dans cette DLL. Les widgets restent disponibles." :
       !telemetryWs || telemetryWs.readyState !== 1 ? "Telemetry est déconnecté. Le mode choisi est conservé." :
-      reason === "backend_unavailable" ? "Le pont telemetry répond, mais pas l’interface native de la DLL. Charge une partie et vérifie que la DLL UI2 est installée." :
+      reason === "backend_unavailable" ? "Le pont telemetry répond, mais pas l’interface native de la DLL. Charge une partie et vérifie que la DLL UI4 est installée." :
       reason === "native_ui_hidden" ? "La DLL répond, mais ETS2 garde la fenêtre bus masquée. Le mode est enregistré ; consulte le journal NativeUI." :
       reason === "native_ui_context_hidden" ? "Interface bus en attente : reviens en conduite ou au menu de pause/bureau." :
-      reason === "native_ui_dismissed" ? "Menu bus fermé. Reprends la conduite puis ouvre à nouveau le menu du jeu." :
+      reason === "native_ui_dismissed" ? "Échap > Missions bus pour ouvrir la sélection de ligne." :
       reason === "native_ui_waiting_manager" ? "Le gestionnaire d’interface ETS2 n’est pas encore disponible." :
       reason === "native_ui_shutting_down" ? "ETS2 ferme ses interfaces. Le mode choisi est conservé." :
       reason === "invalid_state" ? "L’état bus envoyé à la DLL est invalide. Les widgets restent disponibles." :
@@ -133,17 +133,18 @@ function receiveNativeUiStatus(message) {
   if(wasActive!==nativeUiIsActive())renderManager();
 }
 function receiveNativeUiAction(message) {
-  if(!message||message.protocol!==1||nativeUiMode!=="ingame"||normalizeGameMode(currentGameMode)!=="bus"||
+  if(!message||message.protocol!==1||nativeUiMode!=="ingame"||(normalizeGameMode(currentGameMode)!=="bus"&&["mode_bus","mode_truck"].indexOf(message.cmd)<0)||
     !Number.isInteger(message.id)||message.id<1||!Number.isInteger(message.session)||!nativeUiStatus||message.session!==nativeUiStatus.session)return;
   if(nativeUiActionSession!==message.session){nativeUiActionSession=message.session;nativeUiAck=0;nativeUiPending=0;}
   if(message.id<=nativeUiAck||nativeUiPending)return;
-  if(["select","start","clear","widgets"].indexOf(message.cmd)<0)return;
+  if(["select","start","clear","widgets","mode_bus","mode_truck"].indexOf(message.cmd)<0)return;
   var id=message.id,session=message.session,mode=nativeUiMode;nativeUiPending=id;
   Promise.resolve().then(function(){
     if(nativeUiMode!==mode||nativeUiActionSession!==session)return {ok:false,error:"Action annulée."};
     if(message.cmd==="select")return Promise.all([ensureDbusDataLoaded(),ensureNavStopLinksLoaded().catch(function(){return new Map();})])
       .then(function(){if(nativeUiMode!==mode||nativeUiActionSession!==session)return {ok:false,error:"Action annulée."};
         return selectRouteByReferences(String(message.lineUid||""),String(message.routeUid||""),{uidOnly:true});});
+    if(message.cmd==="mode_bus"||message.cmd==="mode_truck"){setGameMode(message.cmd==="mode_bus"?"bus":"free");renderManager();return {ok:true};}
     if(message.cmd==="start")return startSaeivSelectedRoute();
     if(message.cmd==="clear"){clearSaeivRouteSelection();return {ok:true};}
     nativeUiMode="widgets";saveNativeUiPreference();return {ok:true};
