@@ -7,20 +7,28 @@ var nativePassengerLockedMission = "";
 var nativePassengerValidationKey = "";
 var nativePassengerValidationEpoch = null;
 var nativePassengerValidationCount = 0;
+var nativePassengerSelectionSerial = 0;
 function nativePassengerMissionKey() {
-  return saeivRouteState && saeivRouteState.started === true
-    ? [saeivRouteState.selectedKey, saeivRouteSelectedAtMs, saeivRouteStartedAtMs].join(":") : "";
+  if (!saeivRouteState || !saeivRouteState.selectedKey) return "";
+  // Selection owns the actors. Starting service must not recreate the crowd.
+  if (!saeivRouteState.nativePassengerKey) saeivRouteState.nativePassengerKey =
+    [saeivRouteState.selectedKey, Date.now(), ++nativePassengerSelectionSerial].join(":");
+  return saeivRouteState.nativePassengerKey;
+}
+function nativePassengerStopKey() {
+  var mission=nativePassengerMissionKey(),state=saeivPassengerState;
+  return mission&&state ? [mission,state.targetIndex,state.targetUid].join(":") : "";
 }
 function nativePassengersExpected() {
   var mission = nativePassengerMissionKey();
-  if (!mission || normalizeGameMode(currentGameMode) !== "bus") return false;
+  if (!mission || saeivRouteState.started !== true || normalizeGameMode(currentGameMode) !== "bus") return false;
   if (nativePassengerLockedMission === mission) return true;
   if (nativePassengerStatus && Date.now() - nativePassengerReceivedAt < 4000 && nativePassengerStatus.supported) return true;
   return /bluebus/i.test(String(saeivVehicleName || "") + " " + String((telemetryLastSignal || {}).vehicleName || ""));
 }
 function buildNativePassengerPayload() {
   var off = {type:"nativePassengers",version:2,enabled:false};
-  var key=getSaeivBusServiceKey(),mission=nativePassengerMissionKey();
+  var key=nativePassengerStopKey(),mission=nativePassengerMissionKey();
   if (!mission || !key || normalizeGameMode(currentGameMode)!=="bus" || !saeivPassengerState) return off;
   var stops=saeivRouteState.stops,index=saeivRouteState.targetIndex;
   if (!Array.isArray(stops)||!stops[index]) return off;
@@ -29,6 +37,7 @@ function buildNativePassengerPayload() {
   var state=saeivPassengerState,capacity=getSaeivActiveCapacityState(saeivVehicleName);
   var count=function(v){return Math.max(0,Math.min(500,Math.floor(Number(v)||0)));};
   return {type:"nativePassengers",version:2,enabled:true,missionKey:mission,stopKey:key,
+    preview:saeivRouteState.started!==true,
     running:!telemetryPaused && hasRecentTelemetryPositionSignal(),
     world:{x:point.x,y:point.h,z:point.y,yawDegrees:((yaw%360)+540)%360-180},
     radiusM:Math.max(SAEIV_STOP_REACH_DISTANCE,SAEIV_STOP_DWELL_REACH_DISTANCE),
@@ -50,7 +59,7 @@ function receiveNativePassengerStatus(message) {
   nativePassengerStatus=message;nativePassengerReceivedAt=Date.now();
   window.GAME2_MANAGER.nativePassengerStatus=message;
   var s=message.snapshot;
-  if(message.status!=="active"||!s||message.stopKey!==getSaeivBusServiceKey()||message.missionKey!==nativePassengerMissionKey())return;
+  if(message.status!=="active"||!s||message.stopKey!==nativePassengerStopKey()||message.missionKey!==nativePassengerMissionKey()||saeivRouteState.started!==true)return;
   nativePassengerLockedMission=message.missionKey;
   if(nativePassengerValidationKey!==message.stopKey||nativePassengerValidationEpoch!==s.epoch){
     nativePassengerValidationKey=message.stopKey;nativePassengerValidationEpoch=s.epoch;
@@ -64,7 +73,7 @@ function nativePassengerServiceView(key) {
   if(!nativePassengersExpected())return null;
   syncNativePassengers(false);
   var m=nativePassengerStatus,s=m&&m.snapshot;
-  var valid=m&&m.status==="active"&&m.stopKey===key&&m.missionKey===nativePassengerMissionKey()&&s;
+  var valid=m&&m.status==="active"&&m.stopKey===nativePassengerStopKey()&&m.missionKey===nativePassengerMissionKey()&&s;
   var fresh=valid&&Date.now()-nativePassengerReceivedAt<1500&&m.ready&&s.lease;
   if(!valid){
     // Hold instead of silently running the HTML timer in parallel with real people.
