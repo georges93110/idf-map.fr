@@ -50,13 +50,21 @@
       height: 0;
     }
 
+    .scene-world {
+      --scene-zoom: 1.75;
+      position: absolute;
+      width: 0;
+      height: 0;
+      transform: scale(var(--scene-zoom));
+      transform-origin: 0 0;
+    }
+
     .bus {
       position: absolute;
       left: -25px;
       top: -70px;
       width: 50px;
       height: 140px;
-      transform: scale(1.75);
       border: 2px solid rgba(255, 255, 255, 0.92);
       border-radius: 8px;
       background: rgba(15, 15, 18, 0.95);
@@ -206,6 +214,7 @@
   <div class="root">
     <div id="scene" class="scene">
       <div id="scene-center" class="scene-center">
+        <div id="scene-world" class="scene-world">
         <div id="bus" class="bus" aria-label="Statut passagers bus">
           <div id="door-entry" class="door-gap door-in" data-state="unknown" role="img" aria-label="Entrée : indisponible"></div>
           <div id="door-exit" class="door-gap door-out" data-state="unknown" role="img" aria-label="Sortie : indisponible"></div>
@@ -220,10 +229,12 @@
 
         <div id="dots-container"></div>
         <div id="orientation-readout" class="orientation-readout">Bus X: --<br>Arret X: --</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="../js/bus-status.js?v=bus-service-4" defer></script>
+  <script src="../js/telemetry-connection.js?v=ports-widget-1" defer></script>
+  <script src="../js/bus-status.js?v=ports-widget-1" defer></script>
 </body>
 </html>

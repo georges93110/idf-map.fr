@@ -92,7 +92,7 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "native-gps-1");
+    partUrl.searchParams.set("v", "ports-widget-1");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
       return sourceForPart(part, text);

@@ -1020,6 +1020,7 @@
       background: var(--screen-bg) !important;
     }
   </style>
+  <script src="../js/telemetry-connection.js?v=ports-widget-1"></script>
 </head>
 
 <body>
@@ -1322,7 +1323,7 @@
         y: 11.731,
         z: -1672.27
       };
-      const WIDGET_BRIDGE_WS_URL = "ws://localhost:3001";
+      // Local IDF bridge: automatic endpoint discovery.
       const WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
       const WIDGET_BRIDGE_CHANNEL_WAZE = "waze";
       const WIDGET_BRIDGE_CHANNEL_SAEIV = "saeiv";
@@ -5930,7 +5931,7 @@
         if (bridgeStopped) return;
         closeBridgeSocket({ keepOutbox: true, stop: false });
         let socket = null;
-        try { socket = new WebSocket(WIDGET_BRIDGE_WS_URL); } catch { socket = null; }
+        try { socket = window.IdfTelemetry.connect(); } catch { socket = null; }
         if (!socket) {
           scheduleBridgeReconnect();
           return;

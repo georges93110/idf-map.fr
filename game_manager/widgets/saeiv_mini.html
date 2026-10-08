@@ -1177,6 +1177,7 @@
       line-height: 1.06;
     }
   </style>
+  <script src="../js/telemetry-connection.js?v=ports-widget-1"></script>
 </head>
 
 <body>
@@ -1315,7 +1316,7 @@
   <script src="../config/line-config.js"></script>
   <script>
     (function () {
-      var WIDGET_BRIDGE_WS_URL = "ws://localhost:3001";
+      // Local IDF bridge: automatic endpoint discovery.
       var WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
       var WIDGET_BRIDGE_CHANNEL = "saeiv";
       var LINE_STYLES = (typeof window !== "undefined" && window.LINE_STYLES) ? window.LINE_STYLES : {};
@@ -1618,7 +1619,7 @@
         if (channelStopped) return;
         closeBridgeSocket({ keepOutbox: true, stop: false });
         var socket = null;
-        try { socket = new WebSocket(WIDGET_BRIDGE_WS_URL); } catch (err0) { socket = null; }
+        try { socket = window.IdfTelemetry.connect(); } catch (err0) { socket = null; }
         if (!socket) {
           scheduleBridgeReconnect();
           return;

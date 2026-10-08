@@ -3751,9 +3751,9 @@
         setTelemetryConnectionState(false, "Aucun signal telemetrie.");
         refreshTelemetryVisibility();
         var ws = null;
-        try { ws = new WebSocket(TELEMETRY_WS_URL); } catch (err) { ws = null; }
+        try { ws = window.IdfTelemetry.connect(); } catch (err) { ws = null; }
         if (!ws) {
-          setTelemetryConnectionState(false, "Impossible d'ouvrir la telemetrie (ws://localhost:3001).");
+          setTelemetryConnectionState(false, "Recherche automatique du pont IDF local...");
           scheduleTelemetryReconnect();
           return;
         }
@@ -3894,7 +3894,9 @@
         };
         ws.onclose = function () {
           telemetryValidBurstCount = 0;
-          setTelemetryConnectionState(false, "Socket telemetrie fermee.");
+          setTelemetryConnectionState(false, ws.localNetworkDenied
+            ? "Accès local refusé : autorisez la connexion au PC pour ce site dans les permissions du navigateur."
+            : "Pont IDF déconnecté, recherche automatique en cours...");
           refreshTelemetryVisibility();
           scheduleTelemetryReconnect();
         };

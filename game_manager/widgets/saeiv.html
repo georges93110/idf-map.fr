@@ -1886,6 +1886,7 @@
       filter: brightness(0.85) !important;
     }
   </style>
+  <script src="../js/telemetry-connection.js?v=ports-widget-1"></script>
 </head>
 <body>
   <div class="root">
@@ -2275,7 +2276,7 @@
 
   <script>
     (() => {
-      const WIDGET_BRIDGE_WS_URL = "ws://localhost:3001";
+      // Local IDF bridge: automatic endpoint discovery.
       const SAEIV_REG_PANEL_WS_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       const WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
       const WIDGET_BRIDGE_CHANNEL = "saeiv";
@@ -3197,7 +3198,7 @@
         if (channelStopped) return;
         closeBridgeSocket({ keepOutbox: true, stop: false });
         let socket = null;
-        try { socket = new WebSocket(WIDGET_BRIDGE_WS_URL); } catch { socket = null; }
+        try { socket = window.IdfTelemetry.connect(); } catch { socket = null; }
         if (!socket) {
           scheduleBridgeReconnect();
           return;

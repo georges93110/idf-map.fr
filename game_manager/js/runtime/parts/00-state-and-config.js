@@ -107,7 +107,7 @@
       function buildWidgetUrl(path) {
         var url = new URL(path, location.href);
         if (isGameDevMapModeEnabled()) url.searchParams.set("devmap", "1");
-        url.searchParams.set("v", "bus-service-4");
+        url.searchParams.set("v", "ports-widget-1");
         return url.href;
       }
       function normalizeGameMapFilePath(file) {
@@ -550,7 +550,7 @@
         z: 1200,
         visible: false
       };
-      
+
       function resolveGameSystemName() {
         var configured = "";
         try {
@@ -569,7 +569,7 @@
       var gameVersion = "Beta 0.1a";
 
       var activeOverlayDrag = null;
-      var TELEMETRY_WS_URL = "ws://localhost:3001";
+      // The local endpoint is discovered by window.IdfTelemetry.connect().
       var DISCORD_PRESENCE_SEND_INTERVAL_MS = 15000;
       var discordPresenceTimer = 0;
       var discordPresenceLastSentAtMs = 0;

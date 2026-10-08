@@ -1005,6 +1005,7 @@
       font-size: 14px;
     }
   </style>
+  <script src="../js/telemetry-connection.js?v=ports-widget-1"></script>
 </head>
 
 <body>
@@ -1090,7 +1091,7 @@
       const wazeFrame = document.getElementById('wazeLeafletFrame');
       const WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
       const WIDGET_BRIDGE_CHANNEL_WAZE = "waze";
-      const WIDGET_BRIDGE_WS_URL = "ws://localhost:3001";
+      // Local IDF bridge: automatic endpoint discovery.
       const SAEIV_TIME_SYSTEM_STORAGE_KEY = "idf_game2_saeiv_time_system_v1";
       const QS = new URLSearchParams(location.search || "");
       const routebarEl = document.getElementById('routebar');
@@ -1500,7 +1501,7 @@
 
         let socket = null;
         try {
-          socket = new WebSocket(WIDGET_BRIDGE_WS_URL);
+          socket = window.IdfTelemetry.connect();
         } catch (err) {
           scheduleWidgetBridgeReconnect();
           return;

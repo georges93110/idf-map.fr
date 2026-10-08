@@ -13,7 +13,7 @@
   function number(value) { return typeof value === "number" && Number.isFinite(value); }
   function setText(id, text) {
     var el = document.getElementById(id);
-    if (el.textContent !== text) el.textContent = text;
+    if (el && el.textContent !== text) el.textContent = text;
   }
   function setDoor(el, value, name) {
     var labels = { closed: "fermée", moving: "en cours", open: "ouverte", unknown: "indisponible" };
@@ -64,7 +64,7 @@
   }
   function platformPoint(pose, index) {
     // Stable positions prevent passengers from jumping on every telemetry packet.
-    var x = 40 + (index % 3) * 10, y = 68 - Math.floor(index / 3) * 12;
+    var x = 38 + (index % 4) * 8, y = 64 - Math.floor(index / 4) * 9;
     return { x: pose.x + x * Math.cos(pose.angle) - y * Math.sin(pose.angle),
       y: pose.y + x * Math.sin(pose.angle) + y * Math.cos(pose.angle) };
   }
@@ -79,21 +79,21 @@
       var around = start.y < 0 ? -90 : 90;
       points.push({x:Math.min(start.x,-40),y:around},{x:40,y:around});
     }
-    points.push({x:35,y:46});
+    points.push({x:35,y:44});
     return points;
   }
   function passengerPoint(w, progress) {
     // Exactly match the service clock's 0.6 boundary at x=25 (right bus wall).
     var p = Math.max(0,Math.min(1,progress));
     if (w.type === "out") {
-      if (p <= .35) return {x:0,y:-46*p/.35};
-      if (p <= .6) return {x:25*(p-.35)/.25,y:-46};
-      return {x:25+33*(p-.6)/.4,y:-46};
+      if (p <= .35) return {x:0,y:-44*p/.35};
+      if (p <= .6) return {x:25*(p-.35)/.25,y:-44};
+      return {x:25+33*(p-.6)/.4,y:-44};
     }
     if (p <= .4) return along(w.path,p/.4);
-    if (p <= .6) return {x:35-10*(p-.4)/.2,y:46};
-    if (p <= .8) return {x:25-25*(p-.6)/.2,y:46};
-    return {x:0,y:46*(1-p)/.2};
+    if (p <= .6) return {x:35-10*(p-.4)/.2,y:44};
+    if (p <= .8) return {x:25-25*(p-.6)/.2,y:44};
+    return {x:0,y:44*(1-p)/.2};
   }
   function along(points, progress) {
     var lengths = [], total = 0;
@@ -217,7 +217,8 @@
       else if (service && service.entryNeedsOpen && service.exitNeedsOpen && d.entryState !== "open" && d.exitState !== "open") message = "Ouvrir complètement les portes";
       else message = "Échanges passagers";
     }
-    if (info.textContent !== message) info.textContent = message;
+    if (info && info.textContent !== message) info.textContent = message;
+    document.getElementById("bus").setAttribute("aria-label", "Statut passagers bus : " + message);
   }
   function envelope(value) {
     if (!value || typeof value !== "object") return;
@@ -245,7 +246,7 @@
   }
   function connect() {
     if (dead || hosted) return;
-    ws = new WebSocket("ws://localhost:3001");
+    ws = window.IdfTelemetry.connect();
     ws.onopen = requestState;
     ws.onmessage = function(event) { try { envelope(JSON.parse(event.data)); } catch (_) {} };
     ws.onclose = function() { if (!dead) retry=setTimeout(connect,1500); };
@@ -255,7 +256,12 @@
     envelope(event.data);
   });
   function scale() {
-    document.getElementById("scene-center").style.transform = "scale("+Math.max(.2,Math.min(2.5,innerWidth/180,innerHeight/250))+")";
+    // One zoom for the bus, doors, platform, paths and dot sizes. Keep the
+    // chosen 40% anchor / vertical flip; fit the full near-stop drawing.
+    var zoom = parseFloat(getComputedStyle(document.getElementById("scene-world")).getPropertyValue("--scene-zoom")) || 1.75;
+    zoom = Math.max(.1,zoom);
+    var fit = Math.max(.05,Math.min(2.5,innerWidth*.4/(50*zoom),innerWidth*.6/(80*zoom),innerHeight/(190*zoom)));
+    document.getElementById("scene-center").style.transform = "scale("+fit+")";
   }
   window.addEventListener("resize",scale); scale();
   var poll = setInterval(function() { pollHost(); updateStatus(); },150);
