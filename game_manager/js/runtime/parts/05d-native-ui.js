@@ -109,7 +109,7 @@ function nativeUiMapCatalog() {
   });return nativeUiMapCatalogCache;
 }
 function nativeUiSelectedMapStops() {
-  var stops=typeof saeivRouteState!=="undefined"&&Array.isArray(saeivRouteState.stops)?saeivRouteState.stops:[];
+  var stops=typeof saeivRouteState!=="undefined"&&saeivRouteState&&Array.isArray(saeivRouteState.stops)?saeivRouteState.stops:[];
   var points=stops.map(nativeUiWorldPoint).filter(Boolean);
   if(points.length<=64)return points;
   // Bounded datagram, preserving both termini on unusually long routes.
@@ -125,8 +125,8 @@ function buildNativeUiState() {
     distance:Number.isFinite(distance)&&distance>=0?Math.min(32000000,distance):null,
     onboard:count(state.passengersInBus),board:board,boardDone:Math.min(board,count(state.stopBoardingDone)),
     alight:alight,alightDone:Math.min(alight,count(state.stopAlightingDone)),
-    lineUid:typeof saeivRouteState!=="undefined"?String(saeivRouteState.lineUid||""):"",
-    routeUid:typeof saeivRouteState!=="undefined"?String(saeivRouteState.routeUid||""):"",mapStops:nativeUiSelectedMapStops()};
+    lineUid:typeof saeivRouteState!=="undefined"&&saeivRouteState?String(saeivRouteState.lineUid||""):"",
+    routeUid:typeof saeivRouteState!=="undefined"&&saeivRouteState?String(saeivRouteState.routeUid||""):"",mapStops:nativeUiSelectedMapStops()};
 }
 function syncNativeUi(force) {
   if(!telemetryWs||telemetryWs.readyState!==1)return false;
