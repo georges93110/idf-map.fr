@@ -4,6 +4,8 @@
   var hosted = /^(game|1|true)$/.test(new URLSearchParams(location.search).get("host") || "");
   var state = null, receivedAt = 0, hostTs = null, serviceKey = "", ws = null, retry = 0, frame = 0;
   var dead = false, waiting = [], walkers = new Map();
+  var lastRenderAt = 0, sampleInterval = 150;
+  var geometryFrom = null, geometryTarget = null, geometryAt = 0, geometryDuration = 150;
   var container = document.getElementById("dots-container");
   var platform = document.getElementById("platform-container");
   var entry = document.getElementById("door-entry"), exit = document.getElementById("door-exit");
@@ -27,7 +29,7 @@
     return el;
   }
   function put(el, point) {
-    el.style.transform = "translate(" + point.x.toFixed(2) + "px," + point.y.toFixed(2) + "px) translate(-50%,-50%)";
+    el.style.transform = "translate3d(" + point.x.toFixed(2) + "px," + point.y.toFixed(2) + "px,0) translate(-50%,-50%)";
   }
   function pose(s) {
     if (![s.busX, s.busZ, s.stopX, s.stopZ, s.busHeading].every(number)) return null;
@@ -35,6 +37,30 @@
     var angle = ((number(s.stopHeading) ? s.stopHeading : s.busHeading) - s.busHeading) * Math.PI / 180;
     return { x: (dx * Math.cos(h) - dz * Math.sin(h)) * 8,
       y: -(dx * Math.sin(h) + dz * Math.cos(h)) * 8, angle: angle };
+  }
+  function smoothingDuration(now) {
+    if (lastRenderAt > 0) {
+      var gap = now - lastRenderAt;
+      if (gap >= 16 && gap <= 1200) sampleInterval = sampleInterval * 0.65 + gap * 0.35;
+    }
+    lastRenderAt = now;
+    return Math.max(100,Math.min(900,sampleInterval * 1.2));
+  }
+  function interpolatedGeometry(now) {
+    if (!geometryTarget) return null;
+    if (!geometryFrom) return {x:geometryTarget.x,y:geometryTarget.y,angle:geometryTarget.angle,moving:false};
+    var f = Math.max(0,Math.min(1,(now-geometryAt)/Math.max(1,geometryDuration)));
+    var delta = Math.atan2(Math.sin(geometryTarget.angle-geometryFrom.angle),Math.cos(geometryTarget.angle-geometryFrom.angle));
+    return {x:geometryFrom.x+(geometryTarget.x-geometryFrom.x)*f,
+      y:geometryFrom.y+(geometryTarget.y-geometryFrom.y)*f,
+      angle:geometryFrom.angle+delta*f,moving:f<1};
+  }
+  function retargetGeometry(next, now, duration) {
+    var current = interpolatedGeometry(now);
+    geometryFrom = current || next;
+    geometryTarget = next;
+    geometryAt = now;
+    geometryDuration = duration;
   }
   function platformPoint(pose, index) {
     // Stable positions prevent passengers from jumping on every telemetry packet.
@@ -44,7 +70,10 @@
   }
   function pathFor(particle, geometry) {
     if (particle.type === "out") return null;
-    var start = platformPoint(geometry, particle.id % 18);
+    var queueIndex = number(particle.queueIndex) && particle.queueIndex >= 0
+      ? Math.floor(particle.queueIndex) : particle.id % 18;
+    queueIndex=Math.min(59,queueIndex);
+    var start = platformPoint(geometry,queueIndex);
     var points = [start];
     if (start.x < 30) {
       var around = start.y < 0 ? -90 : 90;
@@ -86,16 +115,33 @@
     var d = state && state.busDoors;
     return !!(d && d.available && number(d.sampleAt) && Date.now()-d.sampleAt >= 0 && Date.now()-d.sampleAt <= 1500 && Date.now()-receivedAt <= 1500);
   }
+  function walkerProgressAt(w, now) {
+    var fraction = Math.max(0,Math.min(1,(now-w.at)/Math.max(1,w.duration)));
+    return { value:w.from+(w.target-w.from)*fraction, finished:fraction>=1 };
+  }
   function animate(now) {
     frame = 0;
     var needsFrame = false;
-    var fresh = freshDoors();
-    walkers.forEach(function (w) {
-      // Interpolate only received progress; never predict a crossing or a count.
-      var fraction = fresh ? Math.min(1,(now-w.at)/120) : 1;
-      w.drawn = w.from + (w.target-w.from)*fraction;
+    var geometry = interpolatedGeometry(now);
+    if (geometry) {
+      platform.style.transform = "translate3d("+geometry.x.toFixed(2)+"px,"+geometry.y.toFixed(2)+"px,0) rotate("+geometry.angle+"rad) translate(50px,8px)";
+      waiting.forEach(function(el,i) { put(el,platformPoint(geometry,i)); });
+      if (geometry.moving) needsFrame = true;
+    }
+    var finished = [];
+    walkers.forEach(function (w,id) {
+      // Always animate toward the last authoritative progress. Stale door data
+      // changes the status display, but must never teleport a passenger.
+      var visual = walkerProgressAt(w,now);
+      w.drawn = visual.value;
       put(w.el,passengerPoint(w,w.drawn));
-      if (fraction < 1) needsFrame = true;
+      if (!visual.finished) needsFrame = true;
+      else if (w.finishing) finished.push(id);
+    });
+    finished.forEach(function(id) {
+      var w = walkers.get(id);
+      if (w) w.el.remove();
+      walkers.delete(id);
     });
     if (needsFrame && !dead) frame = requestAnimationFrame(animate);
   }
@@ -105,6 +151,8 @@
   }
   function render(s) {
     state = s; receivedAt = Date.now();
+    var renderNow = performance.now();
+    var duration = smoothingDuration(renderNow);
     var service = s.routeStarted === true ? s.busService : null;
     var nextKey = service ? service.key : "";
     if (nextKey !== serviceKey) { clearPeople(); serviceKey = nextKey; }
@@ -112,25 +160,43 @@
     setText("counterMax"," / " + (s.busMaxCapacityUnlimited === true ? "∞" : String(s.busMaxCapacity || 100)));
     var geometry = pose(s);
     platform.hidden = !geometry || !s.routeSelected;
-    if (geometry) platform.style.transform = "translate("+geometry.x+"px,"+geometry.y+"px) rotate("+geometry.angle+"rad) translate(50px,8px)";
+    if (geometry) retargetGeometry(geometry,renderNow,duration);
+    else { geometryFrom=null; geometryTarget=null; }
+    var displayGeometry = interpolatedGeometry(renderNow) || geometry;
     var amount = geometry && service ? Math.min(60,service.waiting) : 0;
     while(waiting.length > amount) waiting.pop().remove();
     while(waiting.length < amount) waiting.push(dot("waiting-dot"));
-    waiting.forEach(function(el,i) { put(el,platformPoint(geometry,i)); });
     var keep = new Set();
     if (geometry && service) {
       service.particles.forEach(function(p) {
         keep.add(p.id);
         var w = walkers.get(p.id);
         if (!w) {
+          // Start at progress zero. queueIndex points to the waiting dot that was
+          // just removed, producing one continuous path instead of a new dot jump.
           w = { el: dot(p.type === "out" ? "leaving" : "boarding"), type:p.type,
-            path:pathFor(p,geometry), drawn:p.progress };
+            id:p.id, path:pathFor(p,displayGeometry), drawn:0, from:0,
+            target:0, at:renderNow, duration:duration, finishing:false };
           walkers.set(p.id,w);
         }
-        w.from = w.drawn; w.target = p.progress; w.at = performance.now();
+        var nextProgress=Math.max(0,Math.min(1,Number(p.progress)||0));
+        if (nextProgress>w.target+0.000001 || w.finishing) {
+          var visual=walkerProgressAt(w,renderNow);
+          w.drawn=visual.value; w.from=w.drawn; w.target=nextProgress;
+          w.at=renderNow; w.duration=duration;
+        }
+        w.finishing = false;
       });
     }
-    walkers.forEach(function(w,id) { if (!keep.has(id)) { w.el.remove(); walkers.delete(id); } });
+    walkers.forEach(function(w,id) {
+      if (!keep.has(id) && !w.finishing) {
+        // The authoritative clock removes a particle at progress=1. Finish the
+        // last visual segment smoothly instead of making the dot disappear.
+        var visual=walkerProgressAt(w,renderNow);
+        w.drawn=visual.value; w.from=w.drawn; w.target=1; w.at=renderNow;
+        w.duration=Math.max(140,Math.min(420,duration)); w.finishing=true;
+      }
+    });
     updateStatus();
     if (!frame) frame = requestAnimationFrame(animate);
   }

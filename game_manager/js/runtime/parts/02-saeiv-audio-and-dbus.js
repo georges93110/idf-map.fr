@@ -2373,6 +2373,7 @@
         if (passengerTick && passengerTick.changed) saeivLastStateKey = "";
 
         if (targetDistance > reachDistance) {
+          var completedOnDeparture = !!(passengerTick && passengerTick.completed === true);
           var stopNecessaryFar = !!(saeivPassengerState && saeivPassengerState.stopNecessary === true);
           var minSeenDistance = Number(saeivPassengerState && saeivPassengerState.targetMinDistanceM);
           var missedAdvanceMultiplier = Number(SAEIV_STOP_MISSED_ADVANCE_DISTANCE_MULTIPLIER);
@@ -2383,10 +2384,10 @@
             minSeenDistance <= reachDistance &&
             targetDistance >= passThroughThreshold;
           if (
-            hasPassedTarget &&
+            (completedOnDeparture || hasPassedTarget) &&
             (now - saeivLastStopAdvanceAt) >= SAEIV_STOP_ADVANCE_COOLDOWN_MS
           ) {
-            applySaeivStopPassengerService(targetIndex, false, reachedTerminusNow);
+            applySaeivStopPassengerService(targetIndex, completedOnDeparture, reachedTerminusNow);
             currentIndex = targetIndex;
             saeivRouteState.reachedIndex = currentIndex;
             saeivRouteState.targetIndex = currentIndex < lastIndex ? (currentIndex + 1) : currentIndex;
@@ -2403,7 +2404,7 @@
             saeivTargetDwellStartAt = 0;
             saeivLastStopAdvanceAt = now;
             resetSaeivPassengerTargetState(entries, saeivRouteState.targetIndex);
-            saeivLastAction = "game-stop-missed";
+            saeivLastAction = completedOnDeparture ? "game-stop-reached" : "game-stop-missed";
             saeivLastStateKey = "";
             syncSaeivExternalState(true);
             ensureSaeivRouteDestinationSynced(true);

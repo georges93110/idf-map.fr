@@ -1594,11 +1594,13 @@
         state.stopServiceProgressInitialized = true;
         state.requestedDropCount = Math.max(0, view.alightingTotal - view.alightingDone);
         state.stopRequested = state.requestedDropCount > 0;
-        state.stopNecessary = !view.ready;
+        // Doors still control whether a stopped bus is ready to depart, but once all
+        // planned transfers are finished the stop must not become "missed" merely
+        // because the driver starts moving before both doors report fully closed.
+        state.stopNecessary = !view.flowComplete;
         saeivMaxPassengersEverInBus = Math.max(saeivMaxPassengersEverInBus, view.inBus);
-        var optional = state.stopOptionalByPlan === true;
-        var completed = view.ready && (optional || opts.isStopped === true);
-        if (completed && opts.inReach === true) {
+        var completed = IDFBusService.completed(view, opts.isStopped === true);
+        if (completed) {
           saeivStopServedLog[stopIndex] = true;
           saeivCurrentStopWasServed = true;
         } else {

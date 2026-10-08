@@ -8,6 +8,9 @@ var IDFBusService = (function () {
     if (position === 1) return "open";
     return "moving";
   }
+  function completed(view, isStopped) {
+    return !!(view && (view.ready || (view.flowComplete && isStopped !== true)));
+  }
   function Service() { this.reset(); }
   Service.prototype.reset = function () {
     this.key = ""; this.lastTime = null; this.dwell = 0; this.serial = 0;
@@ -51,11 +54,15 @@ var IDFBusService = (function () {
     this.active = this.active.filter(function (p) {
       var open = p.type === "in" ? self.entry === "open" : self.exit === "open";
       var wasOpen = p.type === "in" ? previousEntry === "open" : previousExit === "open";
-      if (canMove && wasStopped) {
+      // A passenger who already crossed the 0.6 door boundary has completed the
+      // physical transfer. Let the remaining visual walk finish if the door closes
+      // or the bus starts moving; passengers still at the boundary stay blocked.
+      var crossedDoor = p.progress > 0.6;
+      if ((canMove && wasStopped) || crossedDoor) {
         var next = Math.min(1, p.progress + dt / (p.type === "in" ? 4800 : 3200));
         // 0.6 is the bus boundary in the widget path. Only crossing needs an open door.
         // Once inside (boarding) or outside (alighting), walking continues independently.
-        p.progress = p.progress > 0.6 || (open && wasOpen) ? next : Math.min(0.6, next);
+        p.progress = crossedDoor || (open && wasOpen) ? next : Math.min(0.6, next);
       }
       if (p.progress < 1) return true;
       if (p.type === "in") { self.boardDone++; self.inBus++; }
@@ -68,12 +75,15 @@ var IDFBusService = (function () {
     if (canMove && this.exit === "open") this.alightDelay = Math.max(0, this.alightDelay - dt);
     if (canMove && this.exit === "open" && this.alightDelay === 0 &&
         this.alightDone + activeOut < this.alightTotal && activeOut < this.inBus) {
-      this.active.push({ id: ++this.serial, type: "out", progress: 0 });
+      this.active.push({ id: ++this.serial, type: "out", progress: 0, queueIndex: -1 });
       this.alightDelay = 700;
     }
     if (canMove && this.entry === "open" && this.boardDelay === 0 &&
         this.boardDone + activeIn < this.boardTotal && this.inBus + activeIn < capacity) {
-      this.active.push({ id: ++this.serial, type: "in", progress: 0 });
+      // The widget removes the last waiting point when this passenger starts.
+      // Preserve that exact slot so the same point begins walking without teleporting.
+      var queueIndex = Math.max(0, this.boardTotal - this.boardDone - activeIn - 1);
+      this.active.push({ id: ++this.serial, type: "in", progress: 0, queueIndex: queueIndex });
       this.boardDelay = 700;
     }
     var full = this.inBus >= capacity && this.alightDone >= this.alightTotal;
@@ -97,10 +107,12 @@ var IDFBusService = (function () {
       exitNeedsOpen: this.alightTotal - this.alightDone - activeOut > 0 || this.active.some(function (p) { return p.type === "out" && p.progress <= 0.6; }),
       leftBehind: this.leftBehind, flowComplete: this.flowComplete, ready: this.ready,
       active: !this.ready, entry: this.entry, exit: this.exit,
-      particles: this.active.map(function (p) { return { id: p.id, type: p.type, progress: p.progress }; })
+      particles: this.active.map(function (p) {
+        return { id: p.id, type: p.type, progress: p.progress, queueIndex: p.queueIndex };
+      })
     };
   };
-  return { Service: Service, door: door };
+  return { Service: Service, door: door, completed: completed };
 })();
 var saeivBusService = new IDFBusService.Service();
 var saeivBoardingValidationAudio = null;

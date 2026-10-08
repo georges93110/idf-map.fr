@@ -107,7 +107,7 @@
       function buildWidgetUrl(path) {
         var url = new URL(path, location.href);
         if (isGameDevMapModeEnabled()) url.searchParams.set("devmap", "1");
-        url.searchParams.set("v", "bus-doors-2");
+        url.searchParams.set("v", "bus-service-4");
         return url.href;
       }
       function normalizeGameMapFilePath(file) {
