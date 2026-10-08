@@ -56,11 +56,11 @@
       top: -70px;
       width: 50px;
       height: 140px;
+      transform: scale(1.75);
       border: 2px solid rgba(255, 255, 255, 0.92);
       border-radius: 8px;
       background: rgba(15, 15, 18, 0.95);
       z-index: 20;
-      /* La transition permet au bus de tourner fluidement */
       transition: transform 0.4s linear;
       will-change: transform;
     }
@@ -224,11 +224,6 @@
     </div>
   </div>
 
-  <div class="legend">
-    <div id="service-info" role="status" aria-live="polite">En attente du service</div>
-    Portes : <span style="color:#ef4444">● Fermée</span> · <span style="color:#f59e0b">● En cours</span> · <span style="color:#22c55e">● Ouverte</span><br>
-    Passagers : <span style="color:#15ff68">● Attente / montée</span> · <span style="color:#ff3b3b">● Descente</span>
-  </div>
   <script src="../js/bus-status.js?v=bus-service-4" defer></script>
 </body>
 </html>
