@@ -1577,14 +1577,22 @@
         var doors = getSaeivDoorsState();
         var capacity = getSaeivActiveCapacityState(saeivVehicleName);
         var sig = telemetryLastSignal || {};
-        var view = saeivBusService.tick({
+        var view = nativePassengerServiceView(key);
+        if (view) {
+          saeivBusService.nativeView = view;
+          saeivBusService.boardDone = view.boardingDone; saeivBusService.alightDone = view.alightingDone;
+          saeivBusService.inBus = view.inBus;
+        } else {
+          saeivBusService.nativeView = null;
+          view = saeivBusService.tick({
           now: opts.nowMs || Date.now(), inReach: opts.inReach === true && opts.isStopped === true,
           speed: sig.speedKmh, paused: telemetryPaused, fresh: doors.fresh,
           available: doors.available, entry: doors.entry, exit: doors.exit,
           capacity: capacity.capacity, unlimited: capacity.unlimited
         });
+        }
         addSaeivRouteBoardedPassengers(view.boardingDone - before);
-        playSaeivBoardingValidationSound(view.boardingDone - before);
+        if (!view.native) playSaeivBoardingValidationSound(view.boardingDone - before);
         state.passengersInBus = view.inBus;
         state.passengersAtStop = Math.max(0, view.boardingTotal - view.boardingDone);
         state.stopBoardingTotal = view.boardingTotal;

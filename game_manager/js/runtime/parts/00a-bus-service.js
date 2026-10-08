@@ -4,16 +4,14 @@ var IDFBusService = (function () {
   function count(n) { return Math.max(0, Math.floor(Number(n) || 0)); }
   function door(position, available) {
     if (!available || typeof position !== "number" || !Number.isFinite(position) || position < 0 || position > 1) return "unknown";
-    if (position === 0) return "closed";
-    if (position === 1) return "open";
-    return "moving";
+    return position >= 0.5 ? "open" : "closed";
   }
   function completed(view, isStopped) {
     return !!(view && (view.ready || (view.flowComplete && isStopped !== true)));
   }
   function Service() { this.reset(); }
   Service.prototype.reset = function () {
-    this.key = ""; this.lastTime = null; this.dwell = 0; this.serial = 0;
+    this.nativeView = null; this.key = ""; this.lastTime = null; this.dwell = 0; this.serial = 0;
     this.inBus = 0; this.boardTotal = 0; this.alightTotal = 0;
     this.boardDone = 0; this.alightDone = 0; this.active = [];
     this.boardDelay = 0; this.alightDelay = 0; this.leftBehind = 0;
@@ -95,6 +93,7 @@ var IDFBusService = (function () {
     return this.snapshot();
   };
   Service.prototype.snapshot = function () {
+    if (this.nativeView) return Object.assign({}, this.nativeView);
     var activeIn = this.active.filter(function (p) { return p.type === "in"; }).length;
     var activeOut = this.active.length - activeIn;
     var waiting = Math.max(0, this.boardTotal - this.boardDone - activeIn);
@@ -116,10 +115,10 @@ var IDFBusService = (function () {
 })();
 var saeivBusService = new IDFBusService.Service();
 var saeivBoardingValidationAudio = null;
-function playSaeivBoardingValidationSound(boarded) {
+function playSaeivBoardingValidationSound(boarded, everyPassenger) {
   if (boarded <= 0 || typeof Audio !== "function" || saeivPassengerValidationSoundsEnabled !== true) return;
   if (getActiveSaeivLineAudioConfig().validationSoundsAllowed === false) return;
-  var roll = Math.random();
+  var roll = everyPassenger ? 0.5 : Math.random();
   if (roll >= 0.8) return;
   if (saeivBoardingValidationAudio) saeivBoardingValidationAudio.pause();
   saeivBoardingValidationAudio = new Audio("sounds/bus/" + (roll < 0.01 ? "navigo_ratp_error.mp3" : "navigo_ratp_pass.mp3"));

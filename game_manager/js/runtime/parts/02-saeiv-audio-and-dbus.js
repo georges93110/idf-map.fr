@@ -1912,6 +1912,10 @@
         payload.busMaxCapacity = Math.max(1, Math.round(Number(runtimeActiveCapacity.capacity) || SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT));
         payload.busMaxCapacityUnlimited = runtimeActiveCapacity.unlimited === true;
         payload.busMaxCapacityDisplay = String(runtimeActiveCapacity.display || payload.busMaxCapacity);
+        if (payload.busService && payload.busService.native && payload.busService.capacity) {
+          payload.busMaxCapacity = payload.busService.capacity;
+          payload.busMaxCapacityUnlimited = false; payload.busMaxCapacityDisplay = String(payload.busMaxCapacity);
+        }
         var gpsComputedDistanceToStop = Number(lastWazeBridgePacket && lastWazeBridgePacket.distanceToCurrentStopM);
         if (Number.isFinite(gpsComputedDistanceToStop) && gpsComputedDistanceToStop >= 0) {
           payload.distanceToDisplayStopGpsM = gpsComputedDistanceToStop;
@@ -2012,6 +2016,10 @@
         payload.busMaxCapacity = Math.max(1, Math.round(Number(activeCapacity.capacity) || SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT));
         payload.busMaxCapacityUnlimited = activeCapacity.unlimited === true;
         payload.busMaxCapacityDisplay = String(activeCapacity.display || payload.busMaxCapacity);
+        if (payload.busService && payload.busService.native && payload.busService.capacity) {
+          payload.busMaxCapacity = payload.busService.capacity;
+          payload.busMaxCapacityUnlimited = false; payload.busMaxCapacityDisplay = String(payload.busMaxCapacity);
+        }
         if (saeivPassengerState && typeof saeivPassengerState === "object") {
           payload.passengerGenerationAvailable = true;
           payload.passengersInBus = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0));

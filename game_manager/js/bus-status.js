@@ -202,19 +202,20 @@
   }
   function updateStatus() {
     var valid = freshDoors(), d = state && state.busDoors;
-    setDoor(entry,valid ? d.entryState : "unknown","Entrée / porte avant");
+    setDoor(entry,valid ? d.entryState : "unknown","Entrée / porte avant (seuil 50 %)");
     setDoor(exit,valid ? d.exitState : "unknown","Sortie / porte arrière");
     var service = state && state.busService;
     var message = "En attente du service";
     if (state && state.routeStarted) {
-      if (!valid) message = "Portes : télémétrie indisponible";
+      if (service && service.native && service.nativeStatus !== "active") message = service.nativeStatus === "capacity_exceeded" ? "Passagers 3D : capacité du profil dépassée · redémarrer la mission" : service.nativeStatus === "model_error" ? "Passagers 3D : erreur de chargement du modèle" : "Passagers 3D : en attente de la DLL";
+      else if (!valid) message = "Portes : télémétrie indisponible";
       else if (state.stopOptionalByPlan === true) message = "Arrêt facultatif";
       else if (!state.vehicleAtStop) message = "Rejoindre l’arrêt et immobiliser le bus";
       else if (service && service.ready) message = "Prêt au départ";
       else if (service && service.flowComplete) message = service.leftBehind > 0 ? "Bus complet · refermer les portes" : "Échanges terminés · refermer les portes";
-      else if (service && !service.entryNeedsOpen && service.exitNeedsOpen && d.exitState !== "open") message = "Ouvrir complètement la porte arrière";
-      else if (service && !service.exitNeedsOpen && service.entryNeedsOpen && d.entryState !== "open") message = "Ouvrir complètement la porte avant";
-      else if (service && service.entryNeedsOpen && service.exitNeedsOpen && d.entryState !== "open" && d.exitState !== "open") message = "Ouvrir complètement les portes";
+      else if (service && !service.entryNeedsOpen && service.exitNeedsOpen && d.exitState !== "open") message = "Ouvrir à 50 % la porte arrière";
+      else if (service && !service.exitNeedsOpen && service.entryNeedsOpen && d.entryState !== "open") message = "Ouvrir à 50 % la porte avant";
+      else if (service && service.entryNeedsOpen && service.exitNeedsOpen && d.entryState !== "open" && d.exitState !== "open") message = "Ouvrir à 50 % les portes";
       else message = "Échanges passagers";
     }
     if (info && info.textContent !== message) info.textContent = message;
