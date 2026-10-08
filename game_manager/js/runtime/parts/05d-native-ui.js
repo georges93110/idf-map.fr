@@ -62,13 +62,13 @@ function syncNativeUiSettings() {
   if (status) {
     var fresh = nativeUiStatus && Date.now() - nativeUiStatusAt < 3000;
     var reason = fresh && nativeUiStatus.status;
-    status.textContent = nativeUiMode === "widgets" ? "Interfaces dans les widgets." : nativeUiIsActive() ? "Interface ETS2 active : Échap > Mode Bus ou Missions bus, en bas à gauche. Ferme le gestionnaire HTML avec Suppr pour cliquer dans le jeu." :
+    status.textContent = nativeUiMode === "widgets" ? "Interfaces dans les widgets." : nativeUiIsActive() ? "Interface ETS2 active : Échap > Missions bus : carte à gauche, lignes à droite. Ferme le gestionnaire HTML avec Suppr pour cliquer dans le jeu." :
       normalizeGameMode(currentGameMode) !== "bus" ? "Échap > Mode Camion > Bus IDF pour changer de mode dans ETS2." :
       reason === "owned_by_other_tab" ? "Interface utilisée par une autre fenêtre du site. Les widgets restent disponibles." :
       reason === "unsupported_build" ? "Cette version d’ETS2 n’est pas prise en charge. Les widgets restent disponibles." :
       reason === "native_ui_unavailable" ? "Interface native indisponible dans cette DLL. Les widgets restent disponibles." :
       !telemetryWs || telemetryWs.readyState !== 1 ? "Telemetry est déconnecté. Le mode choisi est conservé." :
-      reason === "backend_unavailable" ? "Le pont telemetry répond, mais pas l’interface native de la DLL. Charge une partie et vérifie que la DLL UI4 est installée." :
+      reason === "backend_unavailable" ? "Le pont telemetry répond, mais pas l’interface native de la DLL. Charge une partie et vérifie que la DLL UI5 est installée." :
       reason === "native_ui_hidden" ? "La DLL répond, mais ETS2 garde la fenêtre bus masquée. Le mode est enregistré ; consulte le journal NativeUI." :
       reason === "native_ui_context_hidden" ? "Interface bus en attente : reviens en conduite ou au menu de pause/bureau." :
       reason === "native_ui_dismissed" ? "Échap > Missions bus pour ouvrir la sélection de ligne." :
@@ -87,6 +87,34 @@ function setNativeUiMode(value) {
   syncNativeUiSettings();syncNativeUi(true);
   if (typeof renderManager === "function") renderManager();
 }
+function nativeUiWorldPoint(stop) {
+  if (!stop || typeof getSaeivStopExactWorldPoint !== "function") return null;
+  var p=getSaeivStopExactWorldPoint(stop);
+  if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y) || !Number.isFinite(p.h) || Math.abs(p.x)>1000000 || Math.abs(p.y)>1000000 || Math.abs(p.h)>100000) return null;
+  return {x:p.x,y:p.h,z:p.y};
+}
+var nativeUiMapCatalogKey="",nativeUiMapCatalogCache=[];
+function nativeUiMapCatalog() {
+  var list=listLineRouteCatalog("");
+  var key=JSON.stringify(list)+":"+(typeof dbusStopsById!=="undefined"?dbusStopsById.size:0);
+  if(key===nativeUiMapCatalogKey)return nativeUiMapCatalogCache;
+  nativeUiMapCatalogKey=key;
+  nativeUiMapCatalogCache=list.map(function(item){
+    var out=Object.assign({},item);
+    if(typeof findLineByReference!=="function"||typeof findRouteByReference!=="function"||typeof dbusStopsById==="undefined")return out;
+    var line=findLineByReference(item.lineUid,true,item.routeUid),route=findRouteByReference(line,item.routeUid,true);
+    var refs=route&&Array.isArray(route.stops)?route.stops:[];
+    for(var i=0;i<refs.length;i++){var point=nativeUiWorldPoint(dbusStopsById.get(Number(refs[i]&&refs[i].uid)));if(point){out.world=point;break;}}
+    return out;
+  });return nativeUiMapCatalogCache;
+}
+function nativeUiSelectedMapStops() {
+  var stops=typeof saeivRouteState!=="undefined"&&Array.isArray(saeivRouteState.stops)?saeivRouteState.stops:[];
+  var points=stops.map(nativeUiWorldPoint).filter(Boolean);
+  if(points.length<=64)return points;
+  // Bounded datagram, preserving both termini on unusually long routes.
+  return Array.from({length:64},function(_,i){return points[Math.round(i*(points.length-1)/63)];});
+}
 function buildNativeUiState() {
   var state = buildSaeivStatePayloadFromGame();
   var count = function(v) { return Math.min(100000,Math.max(0,Math.floor(Number(v)||0))); };
@@ -96,7 +124,9 @@ function buildNativeUiState() {
     line:String(state.lineNumber||""),route:String(state.routeName||""),stop:String(state.stopName||""),next:String(state.nextStopName||""),
     distance:Number.isFinite(distance)&&distance>=0?Math.min(32000000,distance):null,
     onboard:count(state.passengersInBus),board:board,boardDone:Math.min(board,count(state.stopBoardingDone)),
-    alight:alight,alightDone:Math.min(alight,count(state.stopAlightingDone))};
+    alight:alight,alightDone:Math.min(alight,count(state.stopAlightingDone)),
+    lineUid:typeof saeivRouteState!=="undefined"?String(saeivRouteState.lineUid||""):"",
+    routeUid:typeof saeivRouteState!=="undefined"?String(saeivRouteState.routeUid||""):"",mapStops:nativeUiSelectedMapStops()};
 }
 function syncNativeUi(force) {
   if(!telemetryWs||telemetryWs.readyState!==1)return false;
@@ -104,7 +134,7 @@ function syncNativeUi(force) {
   var message={type:"nativeUi",protocol:1,mode:nativeUiMode,bus:normalizeGameMode(currentGameMode)==="bus",state:buildNativeUiState(),ack:nativeUiAck,feedback:nativeUiFeedback};
   var catalogue=null;
   if(nativeUiMode==="ingame") {
-    var routes=listLineRouteCatalog(""),key=JSON.stringify(routes),now=Date.now();
+    var routes=nativeUiMapCatalog(),key=JSON.stringify(routes),now=Date.now();
     if(force||key!==nativeUiCatalogKey||now-nativeUiCatalogSentAt>5000){catalogue=routes;nativeUiCatalogKey=key;nativeUiCatalogSentAt=now;}
     if(!routes.length&&!nativeUiCatalogLoading){
       nativeUiCatalogLoading=Promise.all([ensureDbusDataLoaded(),ensureNavStopLinksLoaded().catch(function(){return new Map();})])
