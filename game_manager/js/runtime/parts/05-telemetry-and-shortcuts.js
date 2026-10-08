@@ -3827,6 +3827,11 @@
           }
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          if (raw && raw.type === "nativeGpsStatus") {
+            nativeGpsStatus = raw;
+            window.GAME2_MANAGER.nativeGpsStatus = raw;
+            return;
+          }
           try {
             var localIdentity = buildRemotePanelPlayerIdentity(raw, null);
             if (localIdentity) remotePanelLocalPlayerIdentity = localIdentity;

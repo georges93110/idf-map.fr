@@ -13,6 +13,7 @@
     "parts/04-waze-bridge.js",
     "parts/05-telemetry-and-shortcuts.js",
     "parts/05a-native-stop-marker.js",
+    "parts/05b-native-gps.js",
     "parts/06-settings-and-modes.js",
     "parts/07-widgets-output.js",
     "parts/08-overlay-ui-state.js",
@@ -91,7 +92,7 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "bus-service-4");
+    partUrl.searchParams.set("v", "native-gps-1");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
       return sourceForPart(part, text);
