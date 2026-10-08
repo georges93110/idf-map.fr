@@ -9,6 +9,45 @@ var nativeUiCatalogRevision = 0;
 var nativeUiPreferencePending = false, nativeUiPreferenceSocket = null;
 var nativeUiPreferenceReady = false, nativeUiPreferenceSentAt = 0, nativeUiPreferenceId = 0;
 var nativeUiPreferenceError = "";
+var nativeUiSocket = null, nativeUiEndpoint = "", nativeUiReconnectAt = 0;
+function getNativeUiSocket() {
+  // Use the discovered bridge endpoint, but keep native commands independent
+  // of large widget envelopes and reconnects on the telemetry connection.
+  if (typeof WebSocket !== "function") return telemetryWs;
+  var endpoint = telemetryWs && telemetryWs.readyState === 1 && telemetryWs.url;
+  if (endpoint && endpoint !== nativeUiEndpoint) {
+    var previous = nativeUiSocket; nativeUiSocket = null;
+    nativeUiEndpoint = endpoint; nativeUiReconnectAt = 0;
+    if (previous) previous.close();
+  }
+  if (!nativeUiEndpoint) return null;
+  if (nativeUiSocket && nativeUiSocket.readyState < 2) return nativeUiSocket;
+  if (Date.now() < nativeUiReconnectAt) return null;
+  var socket;
+  try { socket = new WebSocket(nativeUiEndpoint, "idf-telemetry-v1"); }
+  catch (err) { nativeUiReconnectAt = Date.now() + 1000; return null; }
+  nativeUiSocket = socket;
+  socket.onopen = function () {
+    if (nativeUiSocket !== socket) return;
+    nativeUiPreferenceReady = false; nativeUiPreferenceSentAt = 0; nativeUiCatalogSentAt = 0;
+    syncNativeUi(true);
+  };
+  socket.onmessage = function (event) {
+    if (nativeUiSocket !== socket) return;
+    var message; try { message = JSON.parse(event.data); } catch (err) { return; }
+    if (!message) return;
+    if (message.type === "nativeUiPreference") receiveNativeUiPreference(message);
+    else if (message.type === "nativeUiStatus") receiveNativeUiStatus(message);
+    else if (message.type === "nativeUiAction") receiveNativeUiAction(message);
+  };
+  socket.onclose = function () {
+    if (nativeUiSocket !== socket) return;
+    nativeUiSocket = null; nativeUiReconnectAt = Date.now() + 500;
+    nativeUiStatus = null; nativeUiStatusAt = 0; nativeUiPreferenceReady = false;
+    syncNativeUiSettings();
+  };
+  return socket;
+}
 try {
   var savedNativeUiMode = localStorage.getItem("idf_bus_interface_v1");
   if (savedNativeUiMode === "widgets" || savedNativeUiMode === "ingame") nativeUiMode = savedNativeUiMode;
@@ -22,15 +61,16 @@ function saveNativeUiPreference() {
   } catch (err) {}
 }
 function syncNativeUiPreference() {
-  if (!telemetryWs || telemetryWs.readyState !== 1) return false;
+  var socket = getNativeUiSocket();
+  if (!socket || socket.readyState !== 1) return false;
   var now = Date.now();
-  if (nativeUiPreferenceSocket !== telemetryWs) {
-    nativeUiPreferenceSocket = telemetryWs; nativeUiPreferenceReady = false; nativeUiPreferenceSentAt = 0;
+  if (nativeUiPreferenceSocket !== socket) {
+    nativeUiPreferenceSocket = socket; nativeUiPreferenceReady = false; nativeUiPreferenceSentAt = 0;
   }
   if (!nativeUiPreferenceReady || nativeUiPreferencePending) {
     if (!nativeUiPreferenceSentAt || now - nativeUiPreferenceSentAt > 5000) {
       nativeUiPreferenceSentAt = now;
-      telemetryWs.send(JSON.stringify({type:"nativeUiPreference",protocol:1,action:nativeUiPreferencePending?"set":"get",mode:nativeUiMode,id:++nativeUiPreferenceId}));
+      socket.send(JSON.stringify({type:"nativeUiPreference",protocol:1,action:nativeUiPreferencePending?"set":"get",mode:nativeUiMode,id:++nativeUiPreferenceId}));
     }
     // An older bridge may not implement preferences. Keep local persistence
     // and the existing UI protocol usable, without waiting forever.
@@ -63,7 +103,7 @@ function syncNativeUiSettings() {
     var fresh = nativeUiStatus && Date.now() - nativeUiStatusAt < 3000;
     var reason = fresh && nativeUiStatus.status;
     status.textContent = nativeUiMode === "widgets" ? "Interfaces dans les widgets." : nativeUiIsActive() ? "Interface ETS2 active : Échap > Missions bus : carte à gauche, lignes à droite. Ferme le gestionnaire HTML avec Suppr pour cliquer dans le jeu." :
-      normalizeGameMode(currentGameMode) !== "bus" ? "Échap > Mode Camion > Bus IDF pour changer de mode dans ETS2." :
+      normalizeGameMode(currentGameMode) !== "bus" ? "Échap > clique Mode Camion en bas à gauche pour passer en Bus." :
       reason === "owned_by_other_tab" ? "Interface utilisée par une autre fenêtre du site. Les widgets restent disponibles." :
       reason === "unsupported_build" ? "Cette version d’ETS2 n’est pas prise en charge. Les widgets restent disponibles." :
       reason === "native_ui_unavailable" ? "Interface native indisponible dans cette DLL. Les widgets restent disponibles." :
@@ -129,7 +169,8 @@ function buildNativeUiState() {
     routeUid:typeof saeivRouteState!=="undefined"&&saeivRouteState?String(saeivRouteState.routeUid||""):"",mapStops:nativeUiSelectedMapStops()};
 }
 function syncNativeUi(force) {
-  if(!telemetryWs||telemetryWs.readyState!==1)return false;
+  var socket=getNativeUiSocket();
+  if(!socket||socket.readyState!==1)return false;
   try { if (!syncNativeUiPreference()) return false; } catch (err) { return false; }
   var message={type:"nativeUi",protocol:1,mode:nativeUiMode,bus:normalizeGameMode(currentGameMode)==="bus",state:buildNativeUiState(),ack:nativeUiAck,feedback:nativeUiFeedback};
   var catalogue=null;
@@ -143,11 +184,11 @@ function syncNativeUi(force) {
     }
   }
   try{
-    telemetryWs.send(JSON.stringify(message));
+    socket.send(JSON.stringify(message));
     // The bridge's WebSocket has a 64 KiB limit. Keep large line catalogues
     // transactional and split into bounded messages instead of disconnecting.
     if(catalogue){nativeUiCatalogRevision=(nativeUiCatalogRevision+1)>>>0||1;
-      for(var offset=0;offset<Math.max(1,catalogue.length);offset+=32)telemetryWs.send(JSON.stringify({type:"nativeUiCatalog",protocol:1,id:nativeUiCatalogRevision,total:catalogue.length,offset:offset,routes:catalogue.slice(offset,offset+32)}));
+      for(var offset=0;offset<Math.max(1,catalogue.length);offset+=32)socket.send(JSON.stringify({type:"nativeUiCatalog",protocol:1,id:nativeUiCatalogRevision,total:catalogue.length,offset:offset,routes:catalogue.slice(offset,offset+32)}));
     }
     return true;
   }catch(err){nativeUiCatalogSentAt=0;return false;}
