@@ -43,7 +43,6 @@
         }
       })();
 
-      bindNativeUiSettings();
       syncStopAnnouncementSoundsUi();
       syncPassengerValidationSoundsUi();
       syncHideUiWhenManagerHiddenUi();
