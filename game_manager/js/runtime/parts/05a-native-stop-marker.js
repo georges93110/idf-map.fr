@@ -9,6 +9,7 @@
         var stops = saeivRouteState && saeivRouteState.stops;
         if (!Array.isArray(stops) || !stops.length) return off;
         var started = saeivRouteState.started === true;
+        if (started && saeiv.stopOptionalByPlan === true) return off;
         var index = started ? clampRouteStopIndex(saeivRouteState.targetIndex, stops.length - 1) : 0;
         var stop = stops[index];
         // These are game XYZ, not map XY and not a snapped navigation node.

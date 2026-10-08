@@ -166,68 +166,16 @@
         var body = Object.assign({}, message, { sourceId: SAEIV_SOURCE_ID });
         return sendWidgetBridgeMessage(WIDGET_BRIDGE_CHANNEL_SAEIV, body);
       }
-      function setBusStatusPassengerState(passengersInBus, updatedAtMs, serviceActive, serviceReady, boardingTotal, boardingDone, alightingTotal, alightingDone) {
-        var n = Math.round(Number(passengersInBus));
-        if (!Number.isFinite(n) || n < 0) return false;
-        busStatusPassengerCount = n;
-        if (typeof serviceActive === "boolean") {
-          busStatusPassengerServiceActive = serviceActive;
-        }
-        if (typeof serviceReady === "boolean") {
-          busStatusPassengerServiceReady = serviceReady;
-        } else if (typeof serviceActive === "boolean") {
-          busStatusPassengerServiceReady = !serviceActive;
-        }
-        var bTotal = Math.round(Number(boardingTotal));
-        var bDone = Math.round(Number(boardingDone));
-        var aTotal = Math.round(Number(alightingTotal));
-        var aDone = Math.round(Number(alightingDone));
-        if (Number.isFinite(bTotal) && bTotal >= 0) busStatusPassengerBoardingTotal = bTotal;
-        if (Number.isFinite(bDone) && bDone >= 0) busStatusPassengerBoardingDone = bDone;
-        if (Number.isFinite(aTotal) && aTotal >= 0) busStatusPassengerAlightingTotal = aTotal;
-        if (Number.isFinite(aDone) && aDone >= 0) busStatusPassengerAlightingDone = aDone;
-        var ts = Number(updatedAtMs);
-        busStatusPassengerUpdatedAt = Number.isFinite(ts) && ts > 0 ? ts : Date.now();
-        saeivLastStateKey = "";
-        syncSaeivExternalState(true);
-        return true;
-      }
       function getBusStatusPassengerCountNow() {
-        if (!Number.isFinite(Number(busStatusPassengerCount))) return null;
-        var age = Date.now() - Number(busStatusPassengerUpdatedAt || 0);
-        if (!Number.isFinite(age) || age < 0 || age > BUS_STATUS_PASSENGER_STATE_MAX_AGE_MS) return null;
-        return Math.max(0, Math.round(Number(busStatusPassengerCount) || 0));
+        // Compatibility accessor: game.html owns the count, never a widget.
+        return saeivPassengerState ? Math.max(0, Number(saeivPassengerState.passengersInBus) || 0) : null;
       }
       function getBusStatusPassengerServiceStateNow() {
-        var age = Date.now() - Number(busStatusPassengerUpdatedAt || 0);
-        if (!Number.isFinite(age) || age < 0 || age > BUS_STATUS_PASSENGER_STATE_MAX_AGE_MS) return null;
-        var active = typeof busStatusPassengerServiceActive === "boolean" ? busStatusPassengerServiceActive : null;
-        var ready = typeof busStatusPassengerServiceReady === "boolean" ? busStatusPassengerServiceReady : null;
-        if (active === null && ready === null) return null;
-        if (active === null && ready !== null) active = !ready;
-        if (ready === null && active !== null) ready = !active;
-        return {
-          active: active === true,
-          ready: ready === true,
-          boardingTotal: Math.max(0, Math.round(Number(busStatusPassengerBoardingTotal) || 0)),
-          boardingDone: Math.max(0, Math.round(Number(busStatusPassengerBoardingDone) || 0)),
-          alightingTotal: Math.max(0, Math.round(Number(busStatusPassengerAlightingTotal) || 0)),
-          alightingDone: Math.max(0, Math.round(Number(busStatusPassengerAlightingDone) || 0))
-        };
+        return getSaeivBusServiceSnapshot();
       }
       function handleBusStatusWindowMessage(data) {
-        if (!data || typeof data !== "object") return false;
-        if (String(data.type || "") !== "bus_status:passenger_state") return false;
-        return setBusStatusPassengerState(
-          data.passengersInBus,
-          data.ts,
-          data.passengerServiceActive,
-          data.passengerServiceReady,
-          data.passengerBoardingTotal,
-          data.passengerBoardingDone,
-          data.passengerAlightingTotal,
-          data.passengerAlightingDone
-        );
+        // Old/cached widgets cannot overwrite the authoritative mission state.
+        return !!(data && data.type === "bus_status:passenger_state");
       }
       var uberEatsOfferDataPromise = null;
       var uberEatsOfferDataCache = null;
@@ -665,32 +613,9 @@
         handleWidgetBridgeEnvelope(data);
       }
       function ensureBackgroundBusStatusRuntime() {
-        if (!document.body) return false;
-        var widgetId = typeof findWidgetIdByType === "function" ? findWidgetIdByType("bus_status") : null;
-        var shouldRunBackground = !widgetId;
         var frame = document.getElementById(BUS_STATUS_BACKGROUND_IFRAME_ID);
-        if (!shouldRunBackground) {
-          if (frame && frame.parentNode) frame.parentNode.removeChild(frame);
-          return false;
-        }
-        if (frame) return true;
-        frame = document.createElement("iframe");
-        frame.id = BUS_STATUS_BACKGROUND_IFRAME_ID;
-        frame.setAttribute("aria-hidden", "true");
-        frame.tabIndex = -1;
-        frame.style.position = "fixed";
-        frame.style.left = "-9999px";
-        frame.style.top = "-9999px";
-        frame.style.width = "1px";
-        frame.style.height = "1px";
-        frame.style.opacity = "0";
-        frame.style.pointerEvents = "none";
-        frame.style.border = "0";
-        frame.style.zIndex = "-1";
-        frame.setAttribute("allow", "autoplay");
-        frame.src = buildWidgetUrl("widgets/bus_status.html?host=game&source=game&background=1");
-        document.body.appendChild(frame);
-        return true;
+        if (frame) frame.remove();
+        return false;
       }
       function handleSaeivBridgeData(data) {
         if (!data || typeof data !== "object") return;
@@ -1403,7 +1328,6 @@
         var latentAlightRemaining = Math.max(0, Math.max(latentAlightTotal, plannedAlightTotal) - latentAlightDone);
         if (isTerminus === true) return inBus > 0;
         if (requestedDrop > 0) return true;
-        if (stateLike && stateLike.stopOptionalByConfig === true) return false;
         return atStop > 0 || latentAlightRemaining > 0;
       }
       function createSaeivPassengerState(options, entries, targetIndex) {
@@ -1527,72 +1451,7 @@
         return true;
       }
       function syncSaeivPassengerStateFromBusStatusCount() {
-        if (SAEIV_PASSENGERS_ENABLED !== true) return false;
-        if (!saeivPassengerState || typeof saeivPassengerState !== "object") return false;
-        var externalCount = getBusStatusPassengerCountNow();
-        if (externalCount === null) return false;
-        var inBus = Math.max(0, Math.round(Number(externalCount) || 0));
-        var isTerminusTarget = false;
-        if (saeivRouteState && typeof saeivRouteState === "object") {
-          var routeStops = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
-          var lastRouteStopIndex = routeStops.length > 0 ? routeStops.length - 1 : -1;
-          var currentTargetIndex = Math.floor(Number(saeivPassengerState.targetIndex));
-          isTerminusTarget = lastRouteStopIndex >= 0 && Number.isFinite(currentTargetIndex) && currentTargetIndex >= lastRouteStopIndex;
-        }
-        var changed = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0)) !== inBus;
-        saeivPassengerState.passengersInBus = inBus;
-        if (inBus > saeivMaxPassengersEverInBus) saeivMaxPassengersEverInBus = inBus;
-
-        var plannedDrop = Math.max(0, Math.round(Number(saeivPassengerState.plannedStopAlightingTotal) || 0));
-        if (isTerminusTarget) {
-          var currentAlightDone = Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingDone) || 0));
-          var terminusTotal = currentAlightDone + inBus;
-          saeivPassengerState.passengersAtStop = 0;
-          saeivPassengerState.stopBoardingTotal = 0;
-          saeivPassengerState.plannedStopBoardingTotal = 0;
-          if (Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingTotal) || 0)) < terminusTotal) {
-            saeivPassengerState.stopAlightingTotal = terminusTotal;
-            changed = true;
-          }
-          if (plannedDrop < terminusTotal) {
-            plannedDrop = terminusTotal;
-            saeivPassengerState.plannedStopAlightingTotal = plannedDrop;
-            changed = true;
-          }
-        }
-        if (plannedDrop > inBus) {
-          if (!isTerminusTarget) {
-            plannedDrop = inBus;
-            saeivPassengerState.plannedStopAlightingTotal = plannedDrop;
-            if (Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingTotal) || 0)) > plannedDrop) {
-              saeivPassengerState.stopAlightingTotal = plannedDrop;
-            }
-            changed = true;
-          }
-        }
-
-        var requestedDrop = Math.max(0, Math.round(Number(saeivPassengerState.requestedDropCount) || 0));
-        var maxRequestedDrop = Math.min(inBus, plannedDrop);
-        if (requestedDrop > maxRequestedDrop) {
-          requestedDrop = maxRequestedDrop;
-          saeivPassengerState.requestedDropCount = requestedDrop;
-          changed = true;
-        }
-        if (requestedDrop <= 0 && saeivPassengerState.stopRequested === true) {
-          saeivPassengerState.stopRequested = false;
-          changed = true;
-        }
-        if (changed) {
-          saeivPassengerState.stopNecessary = computeSaeivStopNecessaryState(
-            saeivPassengerState,
-            saeivPassengerState.passengersAtStop,
-            saeivPassengerState.requestedDropCount,
-            inBus,
-            isTerminusTarget
-          );
-          saeivLastStateKey = "";
-        }
-        return changed;
+        return false; // Counts and cumulative totals are committed together by the service clock.
       }
       function getSaeivPassengerRemainingRequestedDropCount(targetIndex, targetUid) {
         if (SAEIV_PASSENGERS_ENABLED !== true) return 0;
@@ -1704,243 +1563,48 @@
         return delta;
       }
       function processSaeivPassengerServiceTick(stopIndex, options) {
-        if (SAEIV_PASSENGERS_ENABLED !== true) {
-          return { completed: true, changed: false };
+        if (SAEIV_PASSENGERS_ENABLED !== true || !saeivPassengerState) return { completed: true, changed: false };
+        var state = saeivPassengerState;
+        var opts = options || {};
+        var key = getSaeivBusServiceKey();
+        if (!key) { saeivBusService.reset(); return { completed: false, changed: false }; }
+        saeivBusService.begin({
+          key: key, inBus: state.passengersInBus,
+          board: state.plannedStopBoardingTotal, alight: state.plannedStopAlightingTotal,
+          terminus: opts.isTerminus === true
+        });
+        var before = saeivBusService.boardDone;
+        var doors = getSaeivDoorsState();
+        var capacity = getSaeivActiveCapacityState(saeivVehicleName);
+        var sig = telemetryLastSignal || {};
+        var view = saeivBusService.tick({
+          now: opts.nowMs || Date.now(), inReach: opts.inReach === true && opts.isStopped === true,
+          speed: sig.speedKmh, paused: telemetryPaused, fresh: doors.fresh,
+          available: doors.available, entry: doors.entry, exit: doors.exit,
+          capacity: capacity.capacity, unlimited: capacity.unlimited
+        });
+        addSaeivRouteBoardedPassengers(view.boardingDone - before);
+        playSaeivBoardingValidationSound(view.boardingDone - before);
+        state.passengersInBus = view.inBus;
+        state.passengersAtStop = Math.max(0, view.boardingTotal - view.boardingDone);
+        state.stopBoardingTotal = view.boardingTotal;
+        state.stopBoardingDone = view.boardingDone;
+        state.stopAlightingTotal = view.alightingTotal;
+        state.stopAlightingDone = view.alightingDone;
+        state.stopServiceProgressInitialized = true;
+        state.requestedDropCount = Math.max(0, view.alightingTotal - view.alightingDone);
+        state.stopRequested = state.requestedDropCount > 0;
+        state.stopNecessary = !view.ready;
+        saeivMaxPassengersEverInBus = Math.max(saeivMaxPassengersEverInBus, view.inBus);
+        var optional = state.stopOptionalByPlan === true;
+        var completed = view.ready && (optional || opts.isStopped === true);
+        if (completed && opts.inReach === true) {
+          saeivStopServedLog[stopIndex] = true;
+          saeivCurrentStopWasServed = true;
+        } else {
+          delete saeivStopServedLog[stopIndex];
         }
-        if (!saeivPassengerState || typeof saeivPassengerState !== "object") {
-          return { completed: true, changed: false };
-        }
-        var opts = options && typeof options === "object" ? options : {};
-        var inReach = opts.inReach === true;
-        var isStopped = opts.isStopped === true;
-        var isTerminus = opts.isTerminus === true;
-        var now = Number(opts.nowMs);
-        if (!Number.isFinite(now) || now <= 0) now = Date.now();
-        var changed = false;
-        var prevInBus = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0));
-        var inBus = prevInBus;
-        var activeCapacity = getSaeivActiveCapacityState(saeivVehicleName);
-        var busCapacity = Math.max(1, Math.round(Number(activeCapacity.capacity) || SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT));
-        var busCapacityUnlimited = activeCapacity.unlimited === true;
-        var externalPassengerCount = getBusStatusPassengerCountNow();
-        var useExternalPassengerCount = externalPassengerCount !== null;
-        var externalPassengerServiceState = useExternalPassengerCount ? getBusStatusPassengerServiceStateNow() : null;
-        var externalBoardingProgressAvailable = !!(
-          externalPassengerServiceState &&
-          inReach &&
-          isStopped &&
-          (
-            Math.max(0, Math.round(Number(externalPassengerServiceState.boardingTotal) || 0)) > 0 ||
-            Math.max(0, Math.round(Number(externalPassengerServiceState.boardingDone) || 0)) > 0
-          )
-        );
-        if (useExternalPassengerCount) {
-          inBus = Math.max(0, Math.round(Number(externalPassengerCount) || 0));
-          var delta = inBus - prevInBus;
-          if (externalBoardingProgressAvailable) {
-            var externalTargetIndex = Math.floor(Number(saeivPassengerState.targetIndex));
-            var externalTargetUid = String(saeivPassengerState.targetUid || "");
-            if (
-              Math.floor(Number(saeivPassengerState.externalBoardingCountedTargetIndex)) !== externalTargetIndex ||
-              String(saeivPassengerState.externalBoardingCountedTargetUid || "") !== externalTargetUid
-            ) {
-              saeivPassengerState.externalBoardingCountedTargetIndex = externalTargetIndex;
-              saeivPassengerState.externalBoardingCountedTargetUid = externalTargetUid;
-              saeivPassengerState.externalBoardingCountedDone = 0;
-            }
-            var externalBoardingDone = Math.max(0, Math.round(Number(externalPassengerServiceState.boardingDone) || 0));
-            var externalBoardingCounted = Math.max(0, Math.round(Number(saeivPassengerState.externalBoardingCountedDone) || 0));
-            var externalBoardingDelta = Math.max(0, externalBoardingDone - externalBoardingCounted);
-            if (externalBoardingDelta > 0) {
-              saeivPassengerState.passengersAtStop = Math.max(0, Math.round(Number(saeivPassengerState.passengersAtStop) || 0) - externalBoardingDelta);
-              addSaeivRouteBoardedPassengers(externalBoardingDelta);
-              changed = true;
-            }
-            saeivPassengerState.externalBoardingCountedDone = Math.max(externalBoardingCounted, externalBoardingDone);
-          } else if (delta > 0) {
-            // External boarding: decrement passengers at stop AND increment transported sum
-            saeivPassengerState.passengersAtStop = Math.max(0, Math.round(Number(saeivPassengerState.passengersAtStop) || 0) - delta);
-            addSaeivRouteBoardedPassengers(delta);
-            if (inReach && isStopped) {
-              var fallbackExternalTargetIndex = Math.floor(Number(saeivPassengerState.targetIndex));
-              var fallbackExternalTargetUid = String(saeivPassengerState.targetUid || "");
-              if (
-                Math.floor(Number(saeivPassengerState.externalBoardingCountedTargetIndex)) !== fallbackExternalTargetIndex ||
-                String(saeivPassengerState.externalBoardingCountedTargetUid || "") !== fallbackExternalTargetUid
-              ) {
-                saeivPassengerState.externalBoardingCountedTargetIndex = fallbackExternalTargetIndex;
-                saeivPassengerState.externalBoardingCountedTargetUid = fallbackExternalTargetUid;
-                saeivPassengerState.externalBoardingCountedDone = 0;
-              }
-              saeivPassengerState.externalBoardingCountedDone = Math.max(
-                0,
-                Math.round(Number(saeivPassengerState.externalBoardingCountedDone) || 0) + delta
-              );
-            }
-          } else if (delta < 0) {
-            // External alighting
-            var alighted = Math.abs(delta);
-            saeivPassengerState.requestedDropCount = Math.max(0, Math.round(Number(saeivPassengerState.requestedDropCount) || 0) - alighted);
-          }
-        }
-        // CRITICAL: Always persist and track high-water mark
-        saeivPassengerState.passengersInBus = inBus;
-        if (inBus > saeivMaxPassengersEverInBus) saeivMaxPassengersEverInBus = inBus;
-
-        var atStop = Math.max(0, Math.round(Number(saeivPassengerState.passengersAtStop) || 0));
-        var hasRequestedDrop = saeivPassengerState.stopRequested === true;
-        var requestedCount = Math.max(0, Math.round(Number(saeivPassengerState.requestedDropCount) || 0));
-        if (!hasRequestedDrop || requestedCount <= 0) {
-          hasRequestedDrop = false;
-          requestedCount = 0;
-          saeivPassengerState.stopRequested = false;
-          saeivPassengerState.requestedDropCount = 0;
-        }
-        function refreshCurrentTargetServedFlag(isTerminusStop) {
-          var currentTargetIdx = Number(saeivPassengerState.targetIndex);
-          if (!Number.isFinite(currentTargetIdx) || currentTargetIdx < 0) return;
-          var atStopNow = Math.max(0, Math.round(Number(saeivPassengerState.passengersAtStop) || 0));
-          var reqDropNow = Math.max(0, Math.round(Number(saeivPassengerState.requestedDropCount) || 0));
-          var inBusNow = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0));
-          var servedCondition = (atStopNow === 0 && reqDropNow === 0);
-          if (isTerminusStop === true && inBusNow > 0) servedCondition = false;
-          if (servedCondition) {
-            saeivStopServedLog[currentTargetIdx] = true;
-          } else {
-            delete saeivStopServedLog[currentTargetIdx];
-          }
-        }
-        refreshCurrentTargetServedFlag(isTerminus);
-        function updateStopServiceProgress(currentAtStop, currentRequestedDrop, currentInBus, forceReset) {
-          if (forceReset === true) {
-            saeivPassengerState.stopBoardingTotal = 0;
-            saeivPassengerState.stopBoardingDone = 0;
-            saeivPassengerState.stopAlightingTotal = 0;
-            saeivPassengerState.stopAlightingDone = 0;
-            saeivPassengerState.stopServiceProgressInitialized = false;
-            return;
-          }
-          var atStopNow = Math.max(0, Math.round(Number(currentAtStop) || 0));
-          var reqNow = Math.max(0, Math.round(Number(currentRequestedDrop) || 0));
-          var inBusNow = Math.max(0, Math.round(Number(currentInBus) || 0));
-          var hasWorkNow = reqNow > 0 || atStopNow > 0 || (isTerminus && inBusNow > 0);
-          if (saeivPassengerState.stopServiceProgressInitialized !== true) {
-            if (hasWorkNow) {
-              saeivPassengerState.stopBoardingTotal = atStopNow;
-              saeivPassengerState.stopAlightingTotal = isTerminus ? inBusNow : reqNow;
-              saeivPassengerState.stopBoardingDone = 0;
-              saeivPassengerState.stopAlightingDone = 0;
-              saeivPassengerState.stopServiceProgressInitialized = true;
-            } else {
-              saeivPassengerState.stopBoardingTotal = 0;
-              saeivPassengerState.stopBoardingDone = 0;
-              saeivPassengerState.stopAlightingTotal = 0;
-              saeivPassengerState.stopAlightingDone = 0;
-            }
-          }
-          var boardTotal = Math.max(0, Math.round(Number(saeivPassengerState.stopBoardingTotal) || 0));
-          var alightTotal = Math.max(0, Math.round(Number(saeivPassengerState.stopAlightingTotal) || 0));
-          saeivPassengerState.stopBoardingDone = Math.max(0, Math.min(boardTotal, boardTotal - atStopNow));
-          var remainingAlight = isTerminus ? inBusNow : reqNow;
-          saeivPassengerState.stopAlightingDone = Math.max(0, Math.min(alightTotal, alightTotal - remainingAlight));
-          if (!hasWorkNow && boardTotal <= 0 && alightTotal <= 0) {
-            saeivPassengerState.stopServiceProgressInitialized = false;
-          }
-        }
-
-        if (!inReach) {
-          updateStopServiceProgress(atStop, requestedCount, inBus, true);
-          saeivPassengerState.stopNecessary = computeSaeivStopNecessaryState(saeivPassengerState, atStop, requestedCount, inBus, isTerminus);
-          refreshCurrentTargetServedFlag(isTerminus);
-          return { completed: !saeivPassengerState.stopNecessary, changed: false };
-        }
-
-        if (!isStopped) {
-          saeivPassengerState.stopNecessary = computeSaeivStopNecessaryState(saeivPassengerState, atStop, requestedCount, inBus, isTerminus);
-          refreshCurrentTargetServedFlag(isTerminus);
-          return { completed: !saeivPassengerState.stopNecessary, changed: false };
-        }
-
-        saeivCurrentStopWasServed = true; // Bus is stopped at the target stop
-        updateStopServiceProgress(atStop, requestedCount, inBus, false);
-
-        var lastAlightStep = Number(saeivPassengerState.lastAlightStepAtMs) || 0;
-        var canAlightNow = (now - lastAlightStep) >= Number(SAEIV_PASSENGER_ALIGHT_STEP_INTERVAL_MS);
-        var alightMin = Math.max(1, Math.round(Number(SAEIV_PASSENGER_ALIGHT_STEP_MIN) || 1));
-        var alightMax = Math.max(alightMin, Math.round(Number(SAEIV_PASSENGER_ALIGHT_STEP_MAX) || alightMin));
-        var nextAlightChunk = function () {
-          if (alightMax <= alightMin) return alightMin;
-          return alightMin + Math.floor(Math.random() * ((alightMax - alightMin) + 1));
-        };
-
-        if (hasRequestedDrop && inBus > 0 && requestedCount > 0 && canAlightNow) {
-          var requestDropNow = Math.min(inBus, requestedCount, nextAlightChunk());
-          if (requestDropNow > 0) {
-            if (!useExternalPassengerCount) inBus -= requestDropNow;
-            requestedCount -= requestDropNow;
-            saeivPassengerState.lastAlightStepAtMs = now;
-            changed = true;
-          }
-          if (requestedCount <= 0) {
-            requestedCount = 0;
-            hasRequestedDrop = false;
-          }
-          saeivPassengerState.requestedDropCount = requestedCount;
-          saeivPassengerState.stopRequested = hasRequestedDrop;
-        }
-
-        if (isTerminus) {
-          if (!useExternalPassengerCount && inBus > 0 && canAlightNow) {
-            var terminusDrop = Math.min(inBus, nextAlightChunk());
-            if (terminusDrop > 0) {
-              inBus -= terminusDrop;
-              saeivPassengerState.lastAlightStepAtMs = now;
-              changed = true;
-            }
-          }
-          saeivPassengerState.passengersInBus = Math.max(0, inBus);
-          saeivPassengerState.passengersAtStop = 0;
-          saeivPassengerState.stopRequested = false;
-          saeivPassengerState.requestedDropCount = 0;
-          saeivPassengerState.stopNecessary = computeSaeivStopNecessaryState(saeivPassengerState, 0, 0, inBus, true);
-          saeivPassengerState.lastBoardStepAtMs = now;
-          updateStopServiceProgress(0, 0, inBus, false);
-          refreshCurrentTargetServedFlag(true);
-          return { completed: inBus <= 0, changed: changed };
-        }
-
-        var lastBoardStep = Number(saeivPassengerState.lastBoardStepAtMs) || 0;
-        var canBoardNow = (now - lastBoardStep) >= Number(SAEIV_PASSENGER_BOARD_STEP_INTERVAL_MS);
-        if (atStop > 0 && canBoardNow) {
-          var boardMin = Math.max(1, Math.round(Number(SAEIV_PASSENGER_BOARD_STEP_MIN) || 1));
-          var boardMax = Math.max(boardMin, Math.round(Number(SAEIV_PASSENGER_BOARD_STEP_MAX) || boardMin));
-          var boardingChunk = boardMin;
-          if (boardMax > boardMin) {
-            boardingChunk = boardMin + Math.floor(Math.random() * ((boardMax - boardMin) + 1));
-          }
-          var availableSeats = busCapacityUnlimited ? Number.MAX_SAFE_INTEGER : Math.max(0, busCapacity - inBus);
-          var boarded = Math.min(atStop, boardingChunk, availableSeats);
-          if (boarded > 0) {
-            if (!useExternalPassengerCount) {
-              // Internal simulation: decrement stop queue and count boarding
-              atStop -= boarded;
-              inBus += boarded;
-              addSaeivRouteBoardedPassengers(boarded);
-            }
-            saeivPassengerState.lastBoardStepAtMs = now;
-            changed = true;
-          }
-        }
-
-        saeivPassengerState.passengersInBus = inBus;
-        if (inBus > saeivMaxPassengersEverInBus) saeivMaxPassengersEverInBus = inBus;
-        saeivPassengerState.passengersAtStop = atStop;
-        saeivPassengerState.stopRequested = hasRequestedDrop;
-        saeivPassengerState.requestedDropCount = requestedCount;
-        saeivPassengerState.stopNecessary = computeSaeivStopNecessaryState(saeivPassengerState, atStop, requestedCount, inBus, false);
-        updateStopServiceProgress(atStop, requestedCount, inBus, false);
-        refreshCurrentTargetServedFlag(false);
-        return { completed: !saeivPassengerState.stopNecessary, changed: changed };
+        return { completed: completed, changed: true };
       }
       function buildSaeivCompletionMetrics(entries, reachedIndex) {
         var list = Array.isArray(entries) ? entries : [];

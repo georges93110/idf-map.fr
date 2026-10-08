@@ -1846,6 +1846,9 @@
           plannedStopBoardingTotal: 0,
           plannedStopAlightingTotal: 0,
           passengerGenerationAvailable: false,
+          busService: getSaeivBusServiceSnapshot(),
+          busDoors: getSaeivDoorsState(),
+          busServiceProtocol: 2,
           busStatusPassengerServiceLinked: false,
           busStatusPassengerServiceActive: false,
           busStatusPassengerServiceReady: false,
@@ -1943,12 +1946,8 @@
         // UI rule: while driving to next target stop, display that target as current.
         // This keeps the arrow after a passed stop instead of before it.
         var displayIndex = reachedIndex < 0 ? 0 : reachedIndex;
-        // If vehicle is physically stopped at a stop, always keep this stop in UI.
-        if (saeivStoppedAtStopIndex >= 0) {
-          displayIndex = clampRouteStopIndex(saeivStoppedAtStopIndex, lastIndex);
-        } else if (targetIndex > reachedIndex) {
-          displayIndex = targetIndex;
-        }
+        // Display, plan and native marker refer to the same target throughout service.
+        if (targetIndex > reachedIndex) displayIndex = targetIndex;
         var displayEntry = entries[displayIndex] || entries[0] || null;
         var stopPoint = parseWorldPoint3D(displayEntry && displayEntry.point);
         var prevStopPoint = parseWorldPoint3D(entries[displayIndex - 1] && entries[displayIndex - 1].point);
@@ -2000,7 +1999,7 @@
         payload.stopName = currentName;
         payload.nextStopName = nextName;
         payload.thirdStopName = thirdName;
-        payload.vehicleAtStop = saeivStoppedAtStopIndex >= 0;
+        payload.vehicleAtStop = saeivStoppedAtStopIndex === displayIndex;
         payload.vehicleAtStopIndex = saeivStoppedAtStopIndex >= 0 ? saeivStoppedAtStopIndex : -1;
         payload.vehicleAtStopUid = String(saeivStoppedAtStopUid || "");
         payload.departMinutes = departMinutes;
@@ -2087,7 +2086,7 @@
           // total served = already alighted + still in bus.
           var computedTerminusTotal = alightDoneNow + inBusNowForTerminus;
           payload.stopAlightingTotal = Math.max(alightTotalNow, computedTerminusTotal);
-          payload.stopNecessary = true;
+          payload.stopNecessary = inBusNowForTerminus > 0 || !!(payload.busService && !payload.busService.ready);
         }
         payload.stopOptionalByPlan = payload.stopOptionalByPlan === true && hasSaeivPassengerWorkInPayload({
           passengersAtStop: payload.plannedStopBoardingTotal,
@@ -2320,13 +2319,12 @@
         var outsideTargetStopArea = Number.isFinite(targetDistance) && targetDistance > reachDistance;
         var outsideAnyStopAreaForAnnouncement = outsideCurrentStopArea && outsideTargetStopArea;
         var atStopIndex = -1;
-        if (isStopped && currentIndex >= 0 && entries[currentIndex]) {
+        if (isStopped && targetDistance <= reachDistance) {
+          atStopIndex = targetIndex;
+        } else if (isStopped && currentIndex >= 0 && entries[currentIndex]) {
           if (Number.isFinite(currentStopDistance) && currentStopDistance <= reachDistance) {
             atStopIndex = currentIndex;
           }
-        }
-        if (atStopIndex < 0 && isStopped && targetDistance <= reachDistance) {
-          atStopIndex = targetIndex;
         }
         var previousStoppedAtStopIndex = saeivStoppedAtStopIndex;
         setSaeivStoppedAtStop(atStopIndex, entries);
@@ -2419,16 +2417,9 @@
         if ((now - saeivLastStopAdvanceAt) < SAEIV_STOP_ADVANCE_COOLDOWN_MS) return false;
         var stopNecessary = !!(saeivPassengerState && saeivPassengerState.stopNecessary === true);
         if (stopNecessary && !isStopped) return false;
-        if (stopNecessary) {
-          // Si le widget bus_status est connecté, on attend son signal "ready" (Prêt au départ)
-          var busStatusState = getBusStatusPassengerServiceStateNow();
-          if (busStatusState !== null) {
-            if (busStatusState.ready !== true) return false;
-          } else {
-            // Sinon on utilise la simulation interne
-            if (!(passengerTick && passengerTick.completed === true)) return false;
-          }
-        }
+        // Do not infer completion from a zero counter or a widget heartbeat.
+        // This also keeps the native marker here until the last passenger and closed doors.
+        if (!(passengerTick && passengerTick.completed === true)) return false;
         var stopServed = !stopNecessary || (passengerTick && passengerTick.completed === true);
         applySaeivStopPassengerService(targetIndex, stopServed, reachedTerminusNow);
         currentIndex = targetIndex;
@@ -2510,6 +2501,7 @@
         };
       }
       function clearSaeivRouteSelection(options) {
+        saeivBusService.reset();
         var opts = options && typeof options === "object" ? options : {};
         var keepWazeDestination = opts.keepWazeDestination === true;
         cancelSaeivTerminusAnnouncement();
@@ -2626,6 +2618,7 @@
             error: "Aucun arret valide pour cette route."
           };
         }
+        saeivBusService.reset();
         cancelSaeivTerminusAnnouncement();
         saeivRouteSelectedAtMs = 0;
         saeivRouteStartedAtMs = 0;

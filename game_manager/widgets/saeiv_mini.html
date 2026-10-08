@@ -2142,6 +2142,7 @@
         return !(data && data.busStatusPassengerServiceActive === true);
       }
       function isStopPassengerFlowCompleted(data, isAtStop) {
+        if (data && data.busServiceProtocol === 2) return isAtStop && data.busStatusPassengerServiceReady === true;
         if (!hasStopPassengerServiceTotals(data, isAtStop)) return false;
         var totals = getStopPassengerServiceTotals(data);
         var total = totals.total;
@@ -2170,6 +2171,7 @@
         return idx <= 0 || idx >= tail;
       }
       function isNonMandatoryStop(data, isAtStop, displayIndex) {
+        if (data && data.busServiceProtocol === 2) return data.stopOptionalByPlan === true;
         void isAtStop;
         if (hasStopOptionalPlan(data)) {
           if (data.stopOptionalByPlan !== true) return false;
@@ -2194,6 +2196,7 @@
         return isNonMandatoryStop(data, isAtStop, displayIndex);
       }
       function shouldShowReadyToDepartWhenBusFull(data, isAtStop) {
+        if (data && data.busServiceProtocol === 2) return isAtStop && data.busStatusPassengerServiceReady === true;
         if (!isStopPassengerServiceInProgress(data, isAtStop)) return false;
         if (data && data.busMaxCapacityUnlimited === true) return false;
         var cap = Math.round(Number(data && data.busMaxCapacity));
@@ -2210,6 +2213,18 @@
       }
       function buildStopDistanceText(data, isAtStop, distanceToStopM) {
         if (!isAtStop) return formatDistanceMeters(distanceToStopM);
+        if (data.busServiceProtocol === 2 && data.busService) {
+          var service = data.busService, doors = data.busDoors || {};
+          if (service.ready) return "Prêt au départ";
+          if (service.flowComplete) return service.leftBehind > 0 ? "Bus complet · refermer les portes" : "Refermer les portes";
+          if (!doors.available) return "Portes : télémétrie indisponible";
+          var boardPending = service.boardingDone < service.boardingTotal;
+          var alightPending = service.alightingDone < service.alightingTotal;
+          if (service.entryNeedsOpen && doors.entryState !== "open" && !service.exitNeedsOpen) return "Ouvrir la porte avant";
+          if (service.exitNeedsOpen && doors.exitState !== "open" && !service.entryNeedsOpen) return "Ouvrir la porte arrière";
+          if (service.entryNeedsOpen && service.exitNeedsOpen && doors.entryState !== "open" && doors.exitState !== "open") return "Ouvrir les portes";
+          return boardPending ? "Embarquement en cours" : "Débarquement en cours";
+        }
         if (isStopPassengerServiceInProgress(data, isAtStop)) {
           var activeSpeedKmh = Number(data && data.busSpeedKmh);
           if (Number.isFinite(activeSpeedKmh) && Math.abs(activeSpeedKmh) > 0.1) {
@@ -2762,6 +2777,7 @@
         return Math.hypot(ax - bx, az - bz);
       }
       function syncOptionalStopBadgeLatch(data, shouldLatch, stopIndex, lastIndex) {
+        if (data && data.busServiceProtocol === 2) return shouldLatch === true;
         var idx = Number(stopIndex);
         if (isTerminalStopIndex(idx, lastIndex) || (hasStopOptionalPlan(data) && data.stopOptionalByPlan !== true)) {
           uiOptionalStopBadgeIndex = Number.NaN;
@@ -3841,7 +3857,7 @@
         var hasDistance = Number.isFinite(distanceToStopM) && distanceToStopM >= 0;
         var isAtStopByState = data.vehicleAtStop === true;
         var isAtStopByDistance = hasDistance && distanceToStopM <= STOP_AT_THRESHOLD_M;
-        var isAtStop = isAtStopByState || isAtStopByDistance;
+        var isAtStop = data.busServiceProtocol === 2 ? isAtStopByState : (isAtStopByState || isAtStopByDistance);
         var speedKmh = Number(data && data.busSpeedKmh);
         var isMoving = Number.isFinite(speedKmh) && Math.abs(speedKmh) > 0.1;
         var atStopIndexRaw = Number(data && data.vehicleAtStopIndex);
@@ -3852,7 +3868,7 @@
         if (isAtStop && Number.isFinite(atStopIndex) && isStopReadyToAdvance(data, isAtStop)) {
           uiReadyToDepartStopIndex = atStopIndex;
         }
-        var forceNextStopUi = isMoving &&
+        var forceNextStopUi = data.busServiceProtocol !== 2 && isMoving &&
           Number.isFinite(uiReadyToDepartStopIndex) &&
           (uiReadyToDepartStopIndex + 1) <= lastIndex;
         var displayIndex = forceNextStopUi

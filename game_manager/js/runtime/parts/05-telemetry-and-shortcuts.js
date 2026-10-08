@@ -221,6 +221,7 @@
         });
       }
       function toFiniteNumber(value) {
+        if (value == null || typeof value === "boolean" || (typeof value === "string" && !value.trim())) return null;
         var n = Number(value);
         return Number.isFinite(n) ? n : null;
       }
@@ -275,9 +276,11 @@
         var trailerDamagePercent = null;
         var cargoDamagePercent = null;
         var vehicleName = "";
+        var doorSource = null;
         for (var i = 0; i < pools.length; i += 1) {
           var src = pools[i];
           if (!src || typeof src !== "object") continue;
+          if (!doorSource && Object.prototype.hasOwnProperty.call(src, "busDoorsAvailable")) doorSource = src;
           if (x === null) x = pickTelemetryNumber(src, ["x", "X"]);
           if (y === null) y = pickTelemetryNumber(src, ["y", "Y"]);
           if (z === null) z = pickTelemetryNumber(src, ["z", "Z"]);
@@ -294,11 +297,15 @@
           y: y,
           z: z,
           heading: heading,
-          speedKmh: Number.isFinite(speedKmh) ? speedKmh : 0,
+          speedKmh: Number.isFinite(speedKmh) ? speedKmh : null,
           truckDamagePercent: Number.isFinite(truckDamagePercent) ? truckDamagePercent : 0,
           trailerDamagePercent: Number.isFinite(trailerDamagePercent) ? trailerDamagePercent : 0,
           cargoDamagePercent: Number.isFinite(cargoDamagePercent) ? cargoDamagePercent : 0,
-          vehicleName: vehicleName
+          vehicleName: vehicleName,
+          busDoorsAvailable: !!(doorSource && doorSource.busDoorsAvailable === true),
+          busDoorsStatus: doorSource ? String(doorSource.busDoorsStatus || "unavailable") : "unavailable",
+          busEntryDoorPosition: doorSource && typeof doorSource.busEntryDoorPosition === "number" ? doorSource.busEntryDoorPosition : null,
+          busExitDoorPosition: doorSource && typeof doorSource.busExitDoorPosition === "number" ? doorSource.busExitDoorPosition : null
         };
       }
 
@@ -3861,11 +3868,11 @@
           }
           lastWsMessageAt = Date.now();
           telemetryLastSignal = signal;
+          telemetryLastPacketAt = Date.now();
           updateWazeBridgePoseFromTelemetry(signal);
           handleSaeivTelemetrySignal(signal);
           publishTelemetryToWazeBridge(signal);
           sendTelemetryToRemotePanel(raw, signal);
-          telemetryLastPacketAt = Date.now();
           telemetryValidBurstCount += 1;
           if (telemetryValidBurstCount >= TELEMETRY_MIN_VALID_PACKETS_FOR_ONLINE) {
             telemetryOfflineLock = false;
