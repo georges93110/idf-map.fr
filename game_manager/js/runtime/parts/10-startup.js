@@ -43,6 +43,7 @@
         }
       })();
 
+      bindNativeUiSettings();
       syncStopAnnouncementSoundsUi();
       syncPassengerValidationSoundsUi();
       syncHideUiWhenManagerHiddenUi();
@@ -55,6 +56,7 @@
       restoreSaeivTimeSystemFromStorage();
       restoreWidgetLayoutState();
       syncSaeivTimeSystemUi();
+      bindNativeUiSettings();
       syncStopAnnouncementSoundsUi();
       syncPassengerValidationSoundsUi();
       syncHideUiWhenManagerHiddenUi();

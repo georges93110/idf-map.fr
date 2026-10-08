@@ -6,6 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Game Overlay</title>
   <link rel="stylesheet" href="css/game2.css" />
+  <style>
+    body.is-native-bus-ui #mainMenuModal,
+    body.is-native-bus-ui #overlayManager,
+    body.is-native-bus-ui #overlayRoot { display: none !important; }
+  </style>
 </head>
 
 <body>
@@ -447,6 +452,15 @@
                     Interface</h3>
 
                   <div class="manager-scale-row">
+                    <label class="manager-section-title" for="overlayInterfaceMode">Mode d’interface</label>
+                    <select id="overlayInterfaceMode" class="add-select manager-widget-select" aria-describedby="overlayInterfaceModeStatus">
+                      <option value="widgets">Système de widgets</option>
+                      <option value="ingame">Interface en jeu — Bus</option>
+                    </select>
+                  </div>
+                  <p id="overlayInterfaceModeStatus" role="status" aria-live="polite">Interfaces dans les widgets.</p>
+
+                  <div class="manager-scale-row">
                     <p class="manager-section-title">Opacité du fond</p>
                     <input id="overlayBackdropOpacity" type="range" min="0" max="90" step="1" value="50"
                       class="manager-scale-slider">
@@ -814,8 +828,8 @@
   <script defer src="js/i18n/game2-i18n.js"></script>
   <script defer src="../config/config.js"></script>
   <script defer src="config/line-config.js"></script>
-  <script defer src="js/telemetry-connection.js?v=bus-passengers-4"></script>
-  <script defer src="js/runtime/game2-main.js?v=bus-passengers-4"></script>
+  <script defer src="js/telemetry-connection.js?v=bus-native-ui-1"></script>
+  <script defer src="js/runtime/game2-main.js?v=bus-native-ui-1"></script>
 <!-- Global Loading Screen -->
   <div id="globalLoadingScreen" class="global-loading-screen">
     <div class="global-loading-content">

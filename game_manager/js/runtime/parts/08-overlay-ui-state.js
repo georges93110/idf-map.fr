@@ -1405,6 +1405,9 @@
 
       function renderManager() {
         if (!el.overlayManager) return;
+        // Keep the HTML settings accessible while the existing WebView host
+        // is interactive. Its usual shortcut switches back to click-through.
+        document.body.classList.toggle("is-native-bus-ui", !!nativeUiIsActive() && telemetryUiMode !== 2);
 
         var mainMenu = document.getElementById("mainMenuModal");
         var isMenuOpen = mainMenu && mainMenu.classList.contains("is-open");
@@ -1430,7 +1433,7 @@
         // 3. Gestion de l'affichage
         managerState.visible = !managerHidden;
         document.body.classList.toggle("is-telemetry-mode-1", FORCE_DEV_UI ? false : (telemetryUiMode === 2));
-        var hideAllUiNow = (telemetryUiMode !== 2 && hideUiWhenManagerHidden && !isMenuOpen);
+        var hideAllUiNow = (telemetryUiMode !== 2 && (hideUiWhenManagerHidden || nativeUiIsActive()) && !isMenuOpen);
         document.body.classList.toggle("is-overlay-ui-fully-hidden", hideAllUiNow);
         if (el.overlayRoot) el.overlayRoot.style.display = hideAllUiNow ? "none" : "";
         if (el.overlayNotificationPreview) el.overlayNotificationPreview.style.display = hideAllUiNow ? "none" : "";
