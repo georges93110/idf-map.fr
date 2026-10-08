@@ -1697,6 +1697,11 @@
         return true;
       }
       function resolveConfiguredDefaultStartupMode() {
+        // In-game starts in the stock truck mode. Later reconnects retain a
+        // mode chosen during this session; they must not cancel a bus service.
+        if (typeof nativeUiMode !== "undefined" && nativeUiMode === "ingame") {
+          return isGameUnlocked ? (normalizeGameMode(currentGameMode) || GAME_MODES.FREE) : GAME_MODES.FREE;
+        }
         var startupMode = normalizeDefaultStartupMode(defaultStartupMode);
 
         try {

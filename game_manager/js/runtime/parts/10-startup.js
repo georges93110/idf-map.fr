@@ -3,7 +3,7 @@
  * Initialisation runtime et lancement.
  * Charge par ../game2-main.js dans une fermeture runtime partagee.
  */
-      currentGameMode = "";
+      currentGameMode = GAME_MODES.FREE;
       setGameMode(currentGameMode, { apply: false });
       startGameSingletonGuard();
       syncManagerScaleUi();

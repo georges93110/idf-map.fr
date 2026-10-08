@@ -199,7 +199,7 @@
       };
       var GPS_WIDGET_TYPES = ["gps_mini", "gps_ets2_old"];
       var HUD_WIDGET_TYPES = ["saeiv", "saeiv_mini"];
-      var currentGameMode = GAME_MODES.BUS;
+      var currentGameMode = GAME_MODES.FREE;
 
       var VK_MAP = {
         0x01: "Clic Gauche", 0x02: "Clic Droit", 0x03: "Annul", 0x04: "Clic Milieu", 0x05: "X1", 0x06: "X2",
@@ -491,7 +491,7 @@
       var firstVisitMode1HintEnabled = isFirstVisitEver === true;
       var isGameUnlocked = false;
       var DEFAULT_STARTUP_MODE_MENU = "menu";
-      var defaultStartupMode = DEFAULT_STARTUP_MODE_MENU;
+      var defaultStartupMode = GAME_MODES.FREE;
       var managerScalePercent = OVERLAY_MANAGER_SCALE_DEFAULT;
       var telemetryOverlayAlphaPercent = TELEMETRY_OVERLAY_ALPHA_DEFAULT;
       var notificationScalePercent = NOTIFICATION_SCALE_DEFAULT;

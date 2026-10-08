@@ -102,13 +102,13 @@ function syncNativeUiSettings() {
   if (status) {
     var fresh = nativeUiStatus && Date.now() - nativeUiStatusAt < 3000;
     var reason = fresh && nativeUiStatus.status;
-    status.textContent = nativeUiMode === "widgets" ? "Interfaces dans les widgets." : nativeUiIsActive() ? "Interface ETS2 active : Échap > Missions bus : carte à gauche, lignes à droite. Ferme le gestionnaire HTML avec Suppr pour cliquer dans le jeu." :
+    status.textContent = nativeUiMode === "widgets" ? "Interfaces dans les widgets." : nativeUiIsActive() ? "Interface ETS2 active : Échap > Missions bus > catégorie de ligne > direction. Les actions utilisent le même service que les widgets. Ferme le gestionnaire HTML avec Suppr pour cliquer dans le jeu." :
       normalizeGameMode(currentGameMode) !== "bus" ? "Échap > clique Mode Camion en bas à gauche pour passer en Bus." :
       reason === "owned_by_other_tab" ? "Interface utilisée par une autre fenêtre du site. Les widgets restent disponibles." :
       reason === "unsupported_build" ? "Cette version d’ETS2 n’est pas prise en charge. Les widgets restent disponibles." :
       reason === "native_ui_unavailable" ? "Interface native indisponible dans cette DLL. Les widgets restent disponibles." :
       !telemetryWs || telemetryWs.readyState !== 1 ? "Telemetry est déconnecté. Le mode choisi est conservé." :
-      reason === "backend_unavailable" ? "Le pont telemetry répond, mais pas l’interface native de la DLL. Charge une partie et vérifie que la DLL UI5 est installée." :
+      reason === "backend_unavailable" ? "Le pont telemetry répond, mais pas l’interface native de la DLL. Charge une partie et vérifie que la DLL UI5.3 est installée." :
       reason === "native_ui_hidden" ? "La DLL répond, mais ETS2 garde la fenêtre bus masquée. Le mode est enregistré ; consulte le journal NativeUI." :
       reason === "native_ui_context_hidden" ? "Interface bus en attente : reviens en conduite ou au menu de pause/bureau." :
       reason === "native_ui_dismissed" ? "Échap > Missions bus pour ouvrir la sélection de ligne." :

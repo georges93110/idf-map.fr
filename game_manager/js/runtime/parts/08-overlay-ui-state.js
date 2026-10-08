@@ -960,7 +960,7 @@
             hasStoredDefaultStartupMode = true;
             storedDefaultStartupMode = parsed.manager.showMenuOnStartup === true
               ? DEFAULT_STARTUP_MODE_MENU
-              : GAME_MODES.BUS;
+              : GAME_MODES.FREE;
           }
           if (Object.prototype.hasOwnProperty.call(parsed.manager, "unknownBusCapacityValue")) {
             var storedCapacityRaw = parseStrictPositiveInteger(parsed.manager.unknownBusCapacityValue);
@@ -1052,7 +1052,7 @@
                 hasStoredDefaultStartupMode = true;
                 storedDefaultStartupMode = managerParsed.showMenuOnStartup === true
                   ? DEFAULT_STARTUP_MODE_MENU
-                  : GAME_MODES.BUS;
+                  : GAME_MODES.FREE;
               }
               if (Object.prototype.hasOwnProperty.call(managerParsed, "unknownBusCapacityValue")) {
                 var fallbackCapacityRaw = parseStrictPositiveInteger(managerParsed.unknownBusCapacityValue);
@@ -1109,7 +1109,7 @@
               hasStoredDefaultStartupMode = true;
               storedDefaultStartupMode = globalManagerParsed.showMenuOnStartup === true
                 ? DEFAULT_STARTUP_MODE_MENU
-                : GAME_MODES.BUS;
+                : GAME_MODES.FREE;
             }
             if (Object.prototype.hasOwnProperty.call(globalManagerParsed, "pccVoiceReceptionMode")) {
               hasStoredPccVoiceReceptionMode = true;
