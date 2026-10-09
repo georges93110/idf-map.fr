@@ -2199,6 +2199,7 @@
         }
         var payload = buildSaeivStatePayloadFromGame();
         syncNativeStopMarker(false, payload);
+        if(typeof syncNativeBusHud==="function")syncNativeBusHud(force,payload);
         var key = "";
         try { key = JSON.stringify(payload); } catch (err) { key = ""; }
         if (!force && key && key === saeivLastStateKey) return false;
