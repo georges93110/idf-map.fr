@@ -2536,6 +2536,7 @@
         saeivTerminusReachedAtMs = 0;
         saeivRouteCompletedAtMs = 0;
         saeivRouteState = null;
+        if (typeof syncNativeGpsDestination === "function") syncNativeGpsDestination(true);
         saeivRouteStartPoint = null;
         saeivTerminusAnnouncedRouteKey = "";
         saeivTransdevTerminusApproachAnnouncedRouteKey = "";

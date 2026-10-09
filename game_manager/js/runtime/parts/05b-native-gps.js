@@ -42,7 +42,10 @@
           nativeGpsLastKey = "";
         }
         var payload = buildNativeGpsPayload();
-        if (!payload || (!payload.enabled && !nativeGpsWasActive)) return false;
+        // Repeat the disabled state too: a dropped cancellation or a restored
+        // empty tab must not leave an old DLL-owned route behind. The relay
+        // ignores idle clears when the driver owns ordinary game navigation.
+        if (!payload) return false;
         var key = JSON.stringify(payload), now = Date.now();
         if (!force && key === nativeGpsLastKey && now - nativeGpsLastSentAt < 1000) return false;
         try { telemetryWs.send(key); } catch (_) { return false; }
