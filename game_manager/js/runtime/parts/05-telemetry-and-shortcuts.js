@@ -3833,6 +3833,7 @@
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
           if (raw && raw.type === "nativeServiceAction") { receiveNativeServiceAction(raw); return; }
+          if (raw && raw.type === "nativeServiceBadgeRequest") { receiveNativeServiceBadgeRequest(raw); return; }
           if (raw && raw.type === "nativeServicePreviewRequest") { receiveNativeServicePreviewRequest(raw); return; }
           if (raw && raw.type === "nativeGameMode") { receiveNativeGameMode(raw); return; }
           if (raw && raw.type === "nativeUiPreference") { receiveNativeUiPreference(raw); return; }
