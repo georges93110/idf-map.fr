@@ -49,7 +49,7 @@ window.setInterval(function(){syncNativeUi(false);},1500);
 var nativeBusHudStatus=null,nativeBusHudStatusAt=0,nativeBusHudLastSend=0;
 var nativeBusHudLastPayload=null,nativeBusHudLastPayloadAt=0,nativeBusHudSocket=null;
 var nativeBusHudSendError="";
-var nativeBusHudDiagnostics={version:"HUD3",lastSentAt:0,enabled:false,error:"",status:null};
+var nativeBusHudDiagnostics={version:"HUD4",lastSentAt:0,enabled:false,error:"",status:null};
 window.GAME2_MANAGER.nativeBusHud=nativeBusHudDiagnostics;
 function receiveNativeBusHudStatus(m){nativeBusHudStatus=m;nativeBusHudStatusAt=Date.now();nativeBusHudDiagnostics.status=m;syncNativeUiSettings();}
 function nativeBusHudText(value,max){
@@ -70,6 +70,7 @@ function buildNativeBusHudMessage(s){
     if(board)remaining.push("Montée : "+board);
     if(alight)remaining.push("Descente : "+alight);
   }
+  if(!s.vehicleAtStop&&s.stopRequestAnnounced&&s.stopRequested)remaining.push("Arrêt demandé");
   var delay=Number(s.routeLiveDelayMinutes);
   var late=s.routeStarted&&Number.isFinite(delay)&&delay>0?Math.min(999,Math.ceil(delay)):0;
   var doors=s.busDoors||{};
@@ -77,7 +78,7 @@ function buildNativeBusHudMessage(s){
     if(!doors.available||typeof value!=="number"||!Number.isFinite(value))return 0;
     return value<=0.01?1:value>=0.99?3:2; // Unknown / closed / moving / open.
   }
-  return {type:"nativeBusHud",protocol:2,enabled:enabled,color:0,
+  return {type:"nativeBusHud",protocol:2,enabled:enabled,atStop:s.vehicleAtStop===true,color:0,
     line:nativeBusHudText("Ligne "+String(s.lineNumber||"Bus"),22),
     destination:nativeBusHudText(destination,128),
     occupancy:nativeBusHudText(count(s.passengersInBus)+"/"+cap+" passagers",26),

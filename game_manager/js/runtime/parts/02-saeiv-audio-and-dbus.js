@@ -688,6 +688,7 @@
         saeivStopRequestAudioState.segmentKey = String(segmentKey || "");
         saeivStopRequestAudioState.triggerDistanceM = Number(triggerDistanceM);
         saeivStopRequestAudioState.played = false;
+        saeivStopRequestAudioState.announced = false;
         saeivStopRequestAudioState.clipName = String(clipName || "");
         saeivStopRequestAudioState.clipUrl = String(clipUrl || "");
         saeivStopRequestAudioState.audio = null;
@@ -782,6 +783,7 @@
         ) {
           return false;
         }
+        saeivStopRequestAudioState.announced = false;
         saeivStopRequestAudioState.played = true;
         if (segmentKey) saeivStopRequestAudioPlayedSegments.add(segmentKey);
         probeSaeivSoundFileAvailability(clipUrl).then(function (exists) {
@@ -805,6 +807,11 @@
           };
           audio.onended = finish;
           audio.onerror = finish;
+          audio.onplaying = function () {
+            if (saeivStopRequestAudioState.audio !== audio) return;
+            saeivStopRequestAudioState.announced = true;
+            if (typeof syncNativeBusHud === "function") syncNativeBusHud(true, buildSaeivStatePayloadFromGame());
+          };
           var playPromise = audio.play();
           if (playPromise && typeof playPromise.catch === "function") {
             playPromise.catch(finish);
@@ -2066,6 +2073,11 @@
             payload.stopAlightingDone = externalAlightingDone;
           }
         }
+        payload.stopRequestAnnounced = saeivStopRequestAudioState.announced === true &&
+          saeivStopRequestAudioState.played === true &&
+          String(saeivStopRequestAudioState.routeKey || "") === String(saeivRouteState.selectedKey || "") &&
+          Number(saeivStopRequestAudioState.targetIndex) === displayIndex &&
+          String(saeivStopRequestAudioState.targetUid || "") === String(entries[displayIndex] && entries[displayIndex].uid || "");
         var passengerPlanTargetIndex = Math.floor(Number(saeivPassengerState && saeivPassengerState.targetIndex));
         var passengerPlanIsForDisplayedStop = Number.isFinite(passengerPlanTargetIndex) && passengerPlanTargetIndex === displayIndex;
         if (payload.vehicleAtStop === true && passengerPlanIsForDisplayedStop !== true) {
