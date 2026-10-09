@@ -1,4 +1,4 @@
-// COACH23: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
+// COACH24: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
 // Les quatre premières sections suivent les dbus-sec de map.html. Les autres
 // réseaux/autocars/scolaires sont proposés individuellement, sans liste figée.
 function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
@@ -29,6 +29,13 @@ function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
 }
 var nativeServicesSocket=null,nativeServicesGeneration='',nativeServicesLoading=false,nativeServicesSource=null,nativeServicesSentAt=0;
 var nativeServiceActions=new Map();
+function receiveNativeServicesSync(m){
+ if(!m||m.protocol!==3||m.generation!==nativeGameModeGeneration)return false;
+ if(m.full===true)nativeServicesSocket=null;
+ // WebSocket callbacks keep the catalogue alive even when hidden-page timers
+ // are throttled. Never reload the page or reset an active service here.
+ nativeServicesSentAt=0;syncNativeServices();return true;
+}
 function syncNativeServices(){
   if(!telemetryWs||telemetryWs.readyState!==1||telemetryWs.bufferedAmount>65536||!nativeGameModeApplied||!window.GAME2_MANAGER.nativeGameMode||window.GAME2_MANAGER.nativeGameMode.mode!=='bus')return;
   var ws=telemetryWs,generation=nativeGameModeGeneration;

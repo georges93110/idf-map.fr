@@ -3,11 +3,18 @@
  * Singleton, bridge widgets, etat SAEIV/passagers.
  * Charge par ../game2-main.js dans une fermeture runtime partagee.
  */
+      function isHostedGameInstance() {
+        return !!(window.chrome && window.chrome.webview);
+      }
       function shouldYieldToGameInstance(payload) {
         if (!payload || typeof payload !== "object") return false;
         if (String(payload.type || "") !== "claim") return false;
         var otherId = String(payload.id || "");
         if (!otherId || otherId === gameSingletonId) return false;
+        // The plugin owns this window. Another game.html tab must never
+        // stop its bus simulation, close its socket or navigate it to blank.
+        if (isHostedGameInstance()) return false;
+        if (payload.hosted === true) return true;
         var otherOpenedAt = Number(payload.openedAt);
         if (!Number.isFinite(otherOpenedAt)) otherOpenedAt = 0;
         if (otherOpenedAt > gameSingletonOpenedAt) return true;
@@ -15,7 +22,7 @@
         return otherId > gameSingletonId;
       }
       function closeThisGameInstanceAsDuplicate() {
-        if (gameSingletonClosing) return;
+        if (gameSingletonClosing || isHostedGameInstance()) return;
         gameSingletonClosing = true;
         try {
           if (gameSingletonChannel) {
@@ -40,7 +47,8 @@
               '<style>html,body{margin:0;width:100%;height:100%;background:#000;color:#d1d5db;font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;display:grid;place-items:center;padding:14px;text-align:center} .msg{max-width:620px;border:1px solid rgba(148,163,184,.34);border-radius:14px;background:rgba(17,24,39,.92);padding:20px} .msg h2{margin:0 0 8px;font-size:28px;color:#f3f4f6} .msg p{margin:0;color:#9ca3af;line-height:1.45}</style>' +
               '<div class="msg"><h2>Instance fermee</h2><p>Une autre fenetre game.html a pris la main.</p></div>';
           } catch (err) { }
-          try { window.location.replace("about:blank"); } catch (err) { }
+          // Leave an explicit message when a normal browser refuses close().
+          // A transparent about:blank document made recovery impossible.
         }, 50);
       }
       function handleGameSingletonClaim(payload) {
@@ -51,7 +59,8 @@
         var payload = {
           type: "claim",
           id: gameSingletonId,
-          openedAt: gameSingletonOpenedAt
+          openedAt: gameSingletonOpenedAt,
+          hosted: isHostedGameInstance()
         };
         if (gameSingletonChannel) {
           try { gameSingletonChannel.postMessage(payload); } catch (err) { }
