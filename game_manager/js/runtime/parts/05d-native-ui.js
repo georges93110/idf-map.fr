@@ -49,7 +49,7 @@ window.setInterval(function(){syncNativeUi(false);},1500);
 var nativeBusHudStatus=null,nativeBusHudStatusAt=0,nativeBusHudLastSend=0;
 var nativeBusHudLastPayload=null,nativeBusHudLastPayloadAt=0,nativeBusHudSocket=null;
 var nativeBusHudSendError="";
-var nativeBusHudDiagnostics={version:"HUD1.1",lastSentAt:0,enabled:false,error:"",status:null};
+var nativeBusHudDiagnostics={version:"HUD2",lastSentAt:0,enabled:false,error:"",status:null};
 window.GAME2_MANAGER.nativeBusHud=nativeBusHudDiagnostics;
 function receiveNativeBusHudStatus(m){nativeBusHudStatus=m;nativeBusHudStatusAt=Date.now();nativeBusHudDiagnostics.status=m;syncNativeUiSettings();}
 function nativeBusHudText(value,max){
@@ -60,26 +60,31 @@ function buildNativeBusHudMessage(s){
   var count=function(v){return Math.max(0,Math.floor(Number(v)||0));};
   var enabled=normalizeGameMode(currentGameMode)==="bus"&&!!s.selected;
   var total=count(s.routeStopCount),index=Math.min(total,count(s.audioCurrentIndex)+1);
-  var service=s.busService||{},doors=s.busDoors||{},doorLabel="";
-  // The telemetry provides two command channels; do not invent a third sensor.
-  if(doors.available)doorLabel=" · P "+(doors.entry>=0.5?"O":"F")+"/"+(doors.exit>=0.5?"O":"F");
   var cap=s.busMaxCapacityUnlimited?"∞":String(count(s.busMaxCapacity));
-  var occupancy=count(s.passengersInBus)+"/"+cap+doorLabel;
-  var detail="",color=0;
-  if(s.routeCompleted){detail="Service terminé";color=1;}
-  else if(s.vehicleAtStop){
-    var board=count(s.stopBoardingTotal),alight=count(s.stopAlightingTotal);
-    detail="Montée "+Math.min(board,count(s.stopBoardingDone))+"/"+board+" · Desc. "+Math.min(alight,count(s.stopAlightingDone))+"/"+alight;
-    color=service.ready||service.flowComplete?1:2;
-  }else{
-    var distance=Number(s.distanceToDisplayStopGpsM);
-    if(!Number.isFinite(distance)||distance<0)distance=Number(s.distanceToDisplayStopM);
-    var dist=Number.isFinite(distance)&&distance>=0?(distance<1000?Math.round(distance)+" m":(distance/1000).toFixed(1)+" km"):"";
-    detail=(s.routeStarted&&s.refTime?"Horaire "+String(s.refTime):"Départ")+(dist?" · "+dist:"");
+  var names=Array.isArray(s.audioStopNames)?s.audioStopNames:[];
+  var destination=names.length?names[names.length-1]:(s.routeName||"");
+  var remaining=[];
+  if(s.vehicleAtStop){
+    var board=Math.max(0,count(s.stopBoardingTotal)-count(s.stopBoardingDone));
+    var alight=Math.max(0,count(s.stopAlightingTotal)-count(s.stopAlightingDone));
+    if(board)remaining.push("Montée : "+board);
+    if(alight)remaining.push("Descente : "+alight);
   }
-  return {type:"nativeBusHud",protocol:1,enabled:enabled,color:color,
-    line:nativeBusHudText("Ligne "+String(s.lineNumber||"Bus"),18),occupancy:nativeBusHudText(occupancy,22),
-    progress:total?index+"/"+total:"",stop:nativeBusHudText(s.stopName||s.startStopName||"Sélectionne une ligne",34),detail:nativeBusHudText(detail,36)};
+  var delay=Number(s.routeLiveDelayMinutes);
+  var late=s.routeStarted&&Number.isFinite(delay)&&delay>0?Math.min(999,Math.ceil(delay)):0;
+  var doors=s.busDoors||{};
+  function indicator(value){
+    if(!doors.available||typeof value!=="number"||!Number.isFinite(value))return 0;
+    return value<=0.01?1:value>=0.99?3:2; // Unknown / closed / moving / open.
+  }
+  return {type:"nativeBusHud",protocol:2,enabled:enabled,color:0,
+    line:nativeBusHudText("Ligne "+String(s.lineNumber||"Bus"),22),
+    destination:nativeBusHudText(destination,38),
+    occupancy:nativeBusHudText(count(s.passengersInBus)+"/"+cap+" passagers",26),
+    progress:total?index+"/"+total+" arrêts":"",
+    stop:nativeBusHudText(s.stopName||s.startStopName||"Sélectionne une ligne",44),
+    detail:nativeBusHudText(remaining.join(" · "),64),
+    lateMinutes:late,doorFront:indicator(doors.entry),doorRear:indicator(doors.exit)};
 }
 function syncNativeBusHud(force,payload){
   var now=Date.now();
