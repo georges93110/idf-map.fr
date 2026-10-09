@@ -24,7 +24,7 @@ function nativePassengersExpected() {
   if (!mission || saeivRouteState.started !== true || normalizeGameMode(currentGameMode) !== "bus") return false;
   if (nativePassengerLockedMission === mission) return true;
   if (nativePassengerStatus && Date.now() - nativePassengerReceivedAt < 4000 && nativePassengerStatus.supported) return true;
-  return /bluebus/i.test(String(saeivVehicleName || "") + " " + String((telemetryLastSignal || {}).vehicleName || ""));
+  return /bluebus|evadys|solaris.*urbino|urbino.*solaris/i.test(String(saeivVehicleName || "") + " " + String((telemetryLastSignal || {}).vehicleName || ""));
 }
 // BUS6.4: always send the next plan, even while doors are closed. The DLL
 // arms its visuals at 450 m or on first contact with the current stop zone.

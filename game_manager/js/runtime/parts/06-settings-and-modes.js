@@ -103,9 +103,16 @@
       }
       function getSaeivActiveCapacityState(vehicleName) {
         var busName = String(vehicleName || saeivVehicleName || "").trim();
-        // The native Bluebus profile has 23 seats and 47 authored standing places.
-        if (saeivForceListedCapacityForAllBuses !== true && /bluebus/i.test(busName)) {
-          return {capacity:70,unlimited:false,display:"70",source:"native-bluebus"};
+        // Physical places authored from the installed meshes. Even a forced
+        // or unlimited HTML capacity cannot create standing places in a coach.
+        var physical = /bluebus/i.test(busName)?70:/evadys/i.test(busName)?55:/solaris.*urbino|urbino.*solaris/i.test(busName)?49:0;
+        if(physical){
+          var active=physical;
+          if(saeivForceListedCapacityForAllBuses===true&&saeivUnknownBusCapacityUnlimited!==true){
+            var requested=Math.round(Number(saeivUnknownBusCapacityInputValue));
+            if(Number.isFinite(requested)&&requested>0)active=Math.min(physical,requested);
+          }
+          return {capacity:active,unlimited:false,display:String(active),source:"native-bus-profile"};
         }
 
         // 1. Si "Forcer" est décoché, on tente d'abord de trouver le véhicule dans la liste officielle

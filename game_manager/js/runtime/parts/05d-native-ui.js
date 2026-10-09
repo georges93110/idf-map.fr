@@ -49,7 +49,7 @@ window.setInterval(function(){syncNativeUi(false);},1500);
 var nativeBusHudStatus=null,nativeBusHudStatusAt=0,nativeBusHudLastSend=0;
 var nativeBusHudLastPayload=null,nativeBusHudLastPayloadAt=0,nativeBusHudSocket=null;
 var nativeBusHudSendError="";
-var nativeBusHudDiagnostics={version:"HUD2",lastSentAt:0,enabled:false,error:"",status:null};
+var nativeBusHudDiagnostics={version:"HUD3",lastSentAt:0,enabled:false,error:"",status:null};
 window.GAME2_MANAGER.nativeBusHud=nativeBusHudDiagnostics;
 function receiveNativeBusHudStatus(m){nativeBusHudStatus=m;nativeBusHudStatusAt=Date.now();nativeBusHudDiagnostics.status=m;syncNativeUiSettings();}
 function nativeBusHudText(value,max){
@@ -79,10 +79,10 @@ function buildNativeBusHudMessage(s){
   }
   return {type:"nativeBusHud",protocol:2,enabled:enabled,color:0,
     line:nativeBusHudText("Ligne "+String(s.lineNumber||"Bus"),22),
-    destination:nativeBusHudText(destination,38),
+    destination:nativeBusHudText(destination,128),
     occupancy:nativeBusHudText(count(s.passengersInBus)+"/"+cap+" passagers",26),
     progress:total?index+"/"+total+" arrêts":"",
-    stop:nativeBusHudText(s.stopName||s.startStopName||"Sélectionne une ligne",44),
+    stop:nativeBusHudText(s.stopName||s.startStopName||"Sélectionne une ligne",128),
     detail:nativeBusHudText(remaining.join(" · "),64),
     lateMinutes:late,doorFront:indicator(doors.entry),doorRear:indicator(doors.exit)};
 }

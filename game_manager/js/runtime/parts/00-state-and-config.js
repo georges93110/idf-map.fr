@@ -512,8 +512,8 @@
       var SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT = 100;
       var SAEIV_BUS_UNLIMITED_THRESHOLD = 300;
       var SAEIV_BUS_CAPACITY_LIST = [
-        { name: "Solaris Urbino", capacity: 105 },
-        { name: "Bolloré Bluebus", capacity: 100 },
+        { name: "Solaris Urbino", capacity: 49 },
+        { name: "Bolloré Bluebus", capacity: 70 },
         { name: "Iveco Evadys", capacity: 55 },
         { name: "Karosa B", capacity: 100 },
         { name: "Karosa C", capacity: 90 }

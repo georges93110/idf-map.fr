@@ -9,7 +9,7 @@
         if (normalizeGameMode(currentGameMode) !== "bus" || !saeivRouteState ||
             !saeivRouteState.selectedKey || !Array.isArray(saeivRouteState.stops) ||
             !saeivRouteState.stops.length) {
-          return { type: "nativeGpsDestination", version: 1, enabled: false };
+          return { type: "nativeGpsDestination", version: 2, enabled: false };
         }
         // Pause and brief telemetry loss hold the existing destination.
         if (telemetryPaused || !hasRecentTelemetryPositionSignal()) return null;
@@ -17,17 +17,20 @@
         var reached = clampReachedStopIndex(saeivRouteState.reachedIndex, stops.length - 1);
         var target = clampRouteStopIndex(saeivRouteState.targetIndex, stops.length - 1);
         if (saeivRouteState.started && (reached >= stops.length - 1 || target <= reached)) {
-          return { type: "nativeGpsDestination", version: 1, enabled: false };
+          return { type: "nativeGpsDestination", version: 2, enabled: false };
         }
         var index = saeivRouteState.started ? clampRouteStopIndex(saeivRouteState.targetIndex, stops.length - 1) : 0;
-        var stop = stops[index];
-        var point = getSaeivStopRouteEntryWorldPoint(stop);
-        if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y) || !Number.isFinite(point.h)) return null;
-        return {
-          type: "nativeGpsDestination", version: 1, enabled: true,
-          stopKey: String(saeivRouteState.selectedKey) + ":" + index + ":" + String(stop.uid || ""),
-          world: { x: point.x, y: point.h, z: point.y }
-        };
+        var points=[];
+        for(var i=index;i<stops.length;i++){
+          var point=getSaeivStopRouteEntryWorldPoint(stops[i]);
+          if(!point||!Number.isFinite(point.x)||!Number.isFinite(point.y)||!Number.isFinite(point.h)){
+            nativeGpsStatus={status:"missing_stop_coordinates",index:i};return null;
+          }
+          points.push({x:point.x,y:point.h,z:point.y});
+        }
+        if(points.length>128){nativeGpsStatus={status:"too_many_stops",count:points.length};return null;}
+        return {type:"nativeGpsDestination",version:2,enabled:true,
+          stopKey:String(saeivRouteState.selectedKey)+":"+index+":"+String(stops[index].uid||""),points:points};
       }
       function syncNativeGpsDestination(force) {
         if (!telemetryWs || telemetryWs.readyState !== 1) return false;
