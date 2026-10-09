@@ -155,10 +155,11 @@ function receiveNativeServicePreviewRequest(m){
   if(rule)routePoints=applyNavBridgeRuleToRouteWorldPoints(routePoints,entries,rule,options);
   var points=(routePoints||[]).map(function(p){var v=parseWorldPoint3D(p);return v?[v.x,Number.isFinite(v.h)?v.h:0,v.y]:null;}).filter(function(p){return p&&p.every(Number.isFinite);});
   var tolerance=.8;while(points.length>4096){points=simplifyNativeServiceRoute(points,tolerance);tolerance*=2;}
-  return points.length>=2?points:null;
+  var stops=entries.map(function(e){return [Number(e.X),Number(e.Y)||0,Number(e.Z)];}).filter(function(p){return p.every(Number.isFinite);}).slice(0,512);
+  return points.length>=2?{points:points,stops:stops}:null;
  }).catch(function(err){console.warn('[Service ETS2] Aperçu du trajet indisponible',err);return null;});nativeServicePreviews.set(key,promise);
  if(nativeServicePreviews.size>8)nativeServicePreviews.delete(nativeServicePreviews.keys().next().value);}
- promise.then(function(points){if(points&&key===nativeServiceLatestPreview&&m.generation===nativeGameModeGeneration&&telemetryWs&&telemetryWs.readyState===1)telemetryWs.send(JSON.stringify({type:'nativeServicePreview',protocol:3,generation:m.generation,session:m.session,catalog:m.catalog,query:m.query,row:m.row,points:points}));});
+ promise.then(function(preview){if(preview&&key===nativeServiceLatestPreview&&m.generation===nativeGameModeGeneration&&telemetryWs&&telemetryWs.readyState===1)telemetryWs.send(JSON.stringify({type:'nativeServicePreview',protocol:3,generation:m.generation,session:m.session,catalog:m.catalog,query:m.query,row:m.row,points:preview.points,stops:preview.stops}));});
  return true;
 }
 
