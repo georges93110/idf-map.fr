@@ -2274,6 +2274,7 @@
     </section>
   </div>
 
+  <script src="../js/runtime/parts/01a-bus-spatial-audio.js?v=bus-coach-2"></script>
   <script>
     (() => {
       // Local IDF bridge: automatic endpoint discovery.
@@ -4563,7 +4564,7 @@
 
       function applyDiffusionAudioVolumeFromPayload(payload) {
         if (!diffusionAudioEl) return;
-        diffusionAudioEl.volume = resolveGlobalAudioVolumeMultiplier(payload);
+        setBusAudioVolume(diffusionAudioEl, resolveGlobalAudioVolumeMultiplier(payload));
       }
 
       function resolveDiffusionAudioUrl(url) {
@@ -4582,7 +4583,7 @@
           : [];
         list.slice(0, 40).forEach((url) => {
           if (diffusionAudioPreloadCache.has(url)) return;
-          const audio = new Audio(url);
+          const audio = createBusSpatialAudio(url, "announcement");
           audio.preload = "auto";
           try { audio.load(); } catch {}
           diffusionAudioPreloadCache.set(url, audio);
@@ -4607,8 +4608,7 @@
           try { cached.currentTime = 0; } catch {}
           return cached;
         }
-        const audio = new Audio();
-        audio.src = playableUrl;
+        const audio = createBusSpatialAudio(playableUrl, "announcement");
         return audio;
       }
 
@@ -4817,7 +4817,7 @@
               playPromise.catch(failOrRetry);
             }
           };
-          audio.volume = resolveGlobalAudioVolumeMultiplier(state);
+          setBusAudioVolume(audio, resolveGlobalAudioVolumeMultiplier(state));
           audio.preload = "auto";
           if (!String(audio.currentSrc || audio.src || "").trim()) {
             audio.src = playableUrl;
@@ -5002,6 +5002,7 @@
       }
 
       function renderState(payload) {
+        if (payload && payload.busAudioTelemetry) updateBusSpatialAudioTelemetry(payload.busAudioTelemetry);
         const data = withDevGlobalAudioFallback(payload);
         latestStatePayload = data;
         syncCallRegAvailability();

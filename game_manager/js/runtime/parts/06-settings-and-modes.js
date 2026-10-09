@@ -105,7 +105,7 @@
         var busName = String(vehicleName || saeivVehicleName || "").trim();
         // Physical places authored from the installed meshes. Even a forced
         // or unlimited HTML capacity cannot create standing places in a coach.
-        var physical = /bluebus/i.test(busName)?70:/evadys/i.test(busName)?55:/solaris.*urbino|urbino.*solaris/i.test(busName)?49:0;
+        var physical = /bluebus/i.test(busName)?70:/evadys/i.test(busName)?55:/solaris.*urbino|urbino.*solaris/i.test(busName)?53:0;
         if(physical){
           var active=physical;
           if(saeivForceListedCapacityForAllBuses===true&&saeivUnknownBusCapacityUnlimited!==true){

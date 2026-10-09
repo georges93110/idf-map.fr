@@ -3848,6 +3848,7 @@
           } catch (errIdentity) { }
           updateTelemetryConvoyState(raw, null);
           updateSaeivGameClockFromTelemetry(raw);
+          updateBusSpatialAudioTelemetry(raw);
           // The host sends both keyEvent and overlayMode. Only the latter owns
           // manager visibility; toggling on both can leave the page hidden.
           var nextUiMode = raw && raw.type === "overlayMode" && (raw.mode === 1 || raw.mode === 2)
