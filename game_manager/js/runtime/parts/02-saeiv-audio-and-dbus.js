@@ -2381,7 +2381,10 @@
         if (passengerTick && passengerTick.changed) saeivLastStateKey = "";
 
         if (targetDistance > reachDistance) {
-          var completedOnDeparture = !!(passengerTick && passengerTick.completed === true);
+          // A zero-work stop is complete immediately, but must still be approached
+          // and announced. Never skip a future empty stop from hundreds of metres away.
+          var completedOnDeparture = !!(passengerTick && passengerTick.completed === true &&
+            Number(saeivPassengerState && saeivPassengerState.targetMinDistanceM) <= reachDistance);
           var stopNecessaryFar = !!(saeivPassengerState && saeivPassengerState.stopNecessary === true);
           var minSeenDistance = Number(saeivPassengerState && saeivPassengerState.targetMinDistanceM);
           var missedAdvanceMultiplier = Number(SAEIV_STOP_MISSED_ADVANCE_DISTANCE_MULTIPLIER);

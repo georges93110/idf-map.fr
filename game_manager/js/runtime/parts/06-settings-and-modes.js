@@ -103,6 +103,10 @@
       }
       function getSaeivActiveCapacityState(vehicleName) {
         var busName = String(vehicleName || saeivVehicleName || "").trim();
+        // The native Bluebus profile has 23 seats and 47 authored standing places.
+        if (saeivForceListedCapacityForAllBuses !== true && /bluebus/i.test(busName)) {
+          return {capacity:70,unlimited:false,display:"70",source:"native-bluebus"};
+        }
 
         // 1. Si "Forcer" est décoché, on tente d'abord de trouver le véhicule dans la liste officielle
         if (saeivForceListedCapacityForAllBuses !== true) {

@@ -115,10 +115,10 @@ var IDFBusService = (function () {
 })();
 var saeivBusService = new IDFBusService.Service();
 var saeivBoardingValidationAudio = null;
-function playSaeivBoardingValidationSound(boarded, everyPassenger) {
+function playSaeivBoardingValidationSound(boarded) {
   if (boarded <= 0 || typeof Audio !== "function" || saeivPassengerValidationSoundsEnabled !== true) return;
   if (getActiveSaeivLineAudioConfig().validationSoundsAllowed === false) return;
-  var roll = everyPassenger ? 0.5 : Math.random();
+  var roll = Math.random(); // 20% no validation, 1% rejected, 79% accepted.
   if (roll >= 0.8) return;
   if (saeivBoardingValidationAudio) saeivBoardingValidationAudio.pause();
   saeivBoardingValidationAudio = new Audio("sounds/bus/" + (roll < 0.01 ? "navigo_ratp_error.mp3" : "navigo_ratp_pass.mp3"));

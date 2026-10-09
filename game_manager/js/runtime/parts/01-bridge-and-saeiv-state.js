@@ -1396,6 +1396,8 @@
         var uid = String(entry && entry.uid || "");
         var sameTarget = Number(saeivPassengerState.targetIndex) === idx && String(saeivPassengerState.targetUid || "") === uid;
         if (sameTarget) return false;
+        var preloadedPlan = saeivPassengerState.nextNativePlan;
+        saeivPassengerState.nextNativePlan = null;
         saeivPassengerState.targetIndex = idx;
         saeivPassengerState.targetUid = uid;
         saeivPassengerState.targetMinDistanceM = Number.POSITIVE_INFINITY;
@@ -1419,11 +1421,10 @@
         saeivPassengerState.stopOptionalByConfig = isSaeivStopOptionalByConfig(stopConfig);
         var currentInBusForPlan = Math.max(0, Math.round(Number(saeivPassengerState.passengersInBus) || 0));
         var isTerminusTarget = idx >= lastIndex;
-        var counts = ensureSaeivPassengerWorkForConfiguredStop(
-          computeSaeivPassengersAtStopValue(stopConfig, idx, lastIndex, entry),
-          stopConfig,
-          currentInBusForPlan
-        );
+        var counts = preloadedPlan && preloadedPlan.index === idx && preloadedPlan.uid === uid
+          ? preloadedPlan.counts
+          : ensureSaeivPassengerWorkForConfiguredStop(
+              computeSaeivPassengersAtStopValue(stopConfig, idx, lastIndex, entry), stopConfig, currentInBusForPlan);
         var plannedBoard = Math.max(0, Math.round(Number(counts.board) || 0));
         var plannedAlight = Math.min(
           currentInBusForPlan,

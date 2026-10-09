@@ -26,11 +26,36 @@ function nativePassengersExpected() {
   if (nativePassengerStatus && Date.now() - nativePassengerReceivedAt < 4000 && nativePassengerStatus.supported) return true;
   return /bluebus/i.test(String(saeivVehicleName || "") + " " + String((telemetryLastSignal || {}).vehicleName || ""));
 }
+// BUS6.4: always send the next plan, even while doors are closed. The DLL
+// arms its visuals at 450 m or on first contact with the current stop zone.
+// Freeze the next stop's demand once; promotion reuses these exact counts.
+function nativePassengerNextPlan(stops,index,mission) {
+  if(index+1>=stops.length)return null;
+  var nextIndex=index+1,stop=stops[nextIndex],uid=String(stop.uid||""),state=saeivPassengerState;
+  var cached=state.nextNativePlan;
+  if(!cached||cached.index!==nextIndex||cached.uid!==uid){
+    var config=resolveSaeivPassengerConfigForStop(state,stop);
+    var capacity=getSaeivActiveCapacityState(saeivVehicleName);
+    var projected=Math.max(0,Number(state.passengersInBus)-Math.max(0,state.plannedStopAlightingTotal-state.stopAlightingDone))+
+      Math.max(0,state.plannedStopBoardingTotal-state.stopBoardingDone);
+    if(!capacity.unlimited)projected=Math.min(projected,capacity.capacity);
+    var counts=ensureSaeivPassengerWorkForConfiguredStop(
+      computeSaeivPassengersAtStopValue(config,nextIndex,stops.length-1,stop),config,projected);
+    if(nextIndex===stops.length-1)counts={board:0,alight:0};
+    cached=state.nextNativePlan={index:nextIndex,uid:uid,counts:{board:counts.board,alight:counts.alight}};
+  }
+  var point=getSaeivStopExactWorldPoint(stop),yaw=Number(stop.stopHeading);
+  if(!point||!Number.isFinite(point.h)||!Number.isFinite(yaw))return null;
+  return {stopKey:[mission,nextIndex,uid].join(":"),board:Math.min(500,cached.counts.board),
+    world:{x:point.x,y:point.h,z:point.y,yawDegrees:((yaw%360)+540)%360-180},
+    radiusM:Math.max(SAEIV_STOP_REACH_DISTANCE,SAEIV_STOP_DWELL_REACH_DISTANCE)};
+}
 function buildNativePassengerPayload() {
   var off = {type:"nativePassengers",version:2,enabled:false};
   var key=nativePassengerStopKey(),mission=nativePassengerMissionKey();
   if (!mission || !key || normalizeGameMode(currentGameMode)!=="bus" || !saeivPassengerState) return off;
-  var stops=saeivRouteState.stops,index=saeivRouteState.targetIndex;
+  // Coordinates, counts and identity must belong to the same stop snapshot.
+  var stops=saeivRouteState.stops,index=saeivPassengerState.targetIndex;
   if (!Array.isArray(stops)||!stops[index]) return off;
   var stop=stops[index],point=getSaeivStopExactWorldPoint(stop),yaw=Number(stop.stopHeading);
   if (!point || !Number.isFinite(point.h) || !Number.isFinite(yaw)) return off;
@@ -38,6 +63,7 @@ function buildNativePassengerPayload() {
   var count=function(v){return Math.max(0,Math.min(500,Math.floor(Number(v)||0)));};
   return {type:"nativePassengers",version:2,enabled:true,missionKey:mission,stopKey:key,
     preview:saeivRouteState.started!==true,
+    nextStop:nativePassengerNextPlan(stops,index,mission),
     running:!telemetryPaused && hasRecentTelemetryPositionSignal(),
     world:{x:point.x,y:point.h,z:point.y,yawDegrees:((yaw%360)+540)%360-180},
     radiusM:Math.max(SAEIV_STOP_REACH_DISTANCE,SAEIV_STOP_DWELL_REACH_DISTANCE),
@@ -67,7 +93,7 @@ function receiveNativePassengerStatus(message) {
   }
   var delta=Math.max(0,s.validations-nativePassengerValidationCount);
   nativePassengerValidationCount=Math.max(nativePassengerValidationCount,s.validations);
-  if(delta>0&&message.ready&&s.lease)playSaeivBoardingValidationSound(delta,true);
+  if(delta>0&&message.ready&&s.lease)playSaeivBoardingValidationSound(delta);
 }
 function nativePassengerServiceView(key) {
   if(!nativePassengersExpected())return null;
