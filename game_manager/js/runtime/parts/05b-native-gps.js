@@ -21,9 +21,10 @@
         }
         var index = saeivRouteState.started ? clampRouteStopIndex(saeivRouteState.targetIndex, stops.length - 1) : 0;
         var points=[];
-        // Native map owns a fixed ten-node local array. Slide this window after
-        // every served stop; the full mission remains in saeivRouteState.
-        for(var i=index;i<Math.min(stops.length,index+10);i++){
+        // COACH1 owns native map storage for the complete remaining route.
+        // Reject oversize missions explicitly rather than silently truncating.
+        if(stops.length-index>128){nativeGpsStatus={status:"too_many_stops",count:stops.length-index};return null;}
+        for(var i=index;i<stops.length;i++){
           var point=getSaeivStopRouteEntryWorldPoint(stops[i]);
           if(!point||!Number.isFinite(point.x)||!Number.isFinite(point.y)||!Number.isFinite(point.h)){
             nativeGpsStatus={status:"missing_stop_coordinates",index:i};return null;

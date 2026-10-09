@@ -24,7 +24,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "bus-hud-4";
+  runtime.version = "bus-coach-1";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
@@ -72,7 +72,7 @@
         reject(new Error("Network error while loading " + url));
       };
       xhr.timeout = 15000;
-      xhr.ontimeout = function () { reject(new Error("Délai de chargement dépassé : " + url)); };
+      xhr.ontimeout = function () { reject(new Error("DÃ©lai de chargement dÃ©passÃ© : " + url)); };
       xhr.send(null);
     });
   }
@@ -102,14 +102,14 @@
       document.body.classList.add("is-loading-visible");
       if (!document.getElementById("idfRuntimeRetry")) {
         var retry=document.createElement("button");retry.id="idfRuntimeRetry";
-        retry.className="manager-action-btn";retry.textContent="Réessayer le chargement";
+        retry.className="manager-action-btn";retry.textContent="RÃ©essayer le chargement";
         retry.onclick=function(){window.location.reload();};
         (screen.querySelector(".global-loading-content")||screen).appendChild(retry);
       }
     }
     var message = document.getElementById("globalLoadingSubtext");
     if (message) {
-      message.textContent = "Chargement interrompu : " + (error.message || error) + ". Rechargez la page après publication complète des fichiers.";
+      message.textContent = "Chargement interrompu : " + (error.message || error) + ". Rechargez la page aprÃ¨s publication complÃ¨te des fichiers.";
       message.setAttribute("role", "alert");
     }
     console.error("[Game2] Impossible de charger le runtime decoupe.", error);
@@ -118,7 +118,7 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "bus-hud-4");
+    partUrl.searchParams.set("v", "bus-coach-1");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
       if (part === "parts/05d-native-ui.js" && text.indexOf("function syncNativeBusHud(") < 0) {
