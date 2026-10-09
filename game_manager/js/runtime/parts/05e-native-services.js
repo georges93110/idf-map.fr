@@ -1,4 +1,4 @@
-// COACH19: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
+// COACH20: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
 // Les quatre premières sections suivent les dbus-sec de map.html. Les autres
 // réseaux/autocars/scolaires sont proposés individuellement, sans liste figée.
 function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
@@ -33,20 +33,20 @@ function syncNativeServices(){
   if(!telemetryWs||telemetryWs.readyState!==1||telemetryWs.bufferedAmount>65536||!nativeGameModeApplied||!window.GAME2_MANAGER.nativeGameMode||window.GAME2_MANAGER.nativeGameMode.mode!=='bus')return;
   var ws=telemetryWs,generation=nativeGameModeGeneration;
   if(nativeServicesSocket===ws&&nativeServicesGeneration===generation&&nativeServicesSource===dbusLines){
-    if(Date.now()-nativeServicesSentAt>=1500){ws.send(JSON.stringify({type:'nativeServicesCatalog',protocol:2,generation:generation,heartbeat:true}));nativeServicesSentAt=Date.now();}
+    if(Date.now()-nativeServicesSentAt>=1500){ws.send(JSON.stringify({type:'nativeServicesCatalog',protocol:3,generation:generation,heartbeat:true}));nativeServicesSentAt=Date.now();}
     return;
   }
   if(nativeServicesLoading)return;nativeServicesLoading=true;
   Promise.resolve(ensureDbusDataLoaded()).then(function(){
     if(ws!==telemetryWs||ws.readyState!==1||generation!==nativeGameModeGeneration||!window.GAME2_MANAGER.nativeGameMode||window.GAME2_MANAGER.nativeGameMode.mode!=='bus')return;
     var catalog=buildNativeServiceCatalog(dbusLines,getRouteStopEntries,getLineNumber);
-    ws.send(JSON.stringify(Object.assign({type:'nativeServicesCatalog',protocol:2,generation:generation},catalog)));
+    ws.send(JSON.stringify(Object.assign({type:'nativeServicesCatalog',protocol:3,generation:generation},catalog)));
     nativeServicesSocket=ws;nativeServicesGeneration=generation;nativeServicesSource=dbusLines;nativeServicesSentAt=Date.now();
     syncNativeServiceBadges(catalog,ws,generation);
   }).catch(function(err){console.warn('[Service ETS2] Catalogue indisponible',err);}).finally(function(){nativeServicesLoading=false;});
 }
 function receiveNativeServiceAction(m){
-  if(!m||m.protocol!==2||m.generation!==nativeGameModeGeneration||!nativeGameModeApplied||normalizeGameMode(currentGameMode)!=='bus'||!Number.isInteger(m.id)||m.id<1||!Number.isInteger(m.session)||!Number.isInteger(m.catalog)||typeof m.lineUid!=='string'||typeof m.routeUid!=='string')return false;
+  if(!m||m.protocol!==3||m.generation!==nativeGameModeGeneration||!nativeGameModeApplied||normalizeGameMode(currentGameMode)!=='bus'||!Number.isInteger(m.id)||m.id<1||!Number.isInteger(m.session)||!Number.isInteger(m.catalog)||typeof m.lineUid!=='string'||typeof m.routeUid!=='string')return false;
   var key=[m.generation,m.session,m.catalog,m.id].join(':'),promise=nativeServiceActions.get(key);
   if(!promise){
     // Store the promise before touching the service. Duplicate UDP/WS delivery
@@ -60,13 +60,13 @@ function receiveNativeServiceAction(m){
       if(!route)throw new Error('Ce service ne figure plus dans le catalogue.');
       var result=activateSaeivRouteSelection(line,route,{});
       if(!result||!result.ok)throw new Error(result&&result.error||'Service indisponible.');
-      if(typeof window.gamePlaySaeivServiceAcceptSound==='function')window.gamePlaySaeivServiceAcceptSound();
+      nativeServicePendingSound={generation:m.generation,lineUid:m.lineUid,routeUid:m.routeUid,scheduledAt:Date.now(),readyAt:0};
       return {ok:true};
     }).catch(function(err){return {ok:false,error:String(err&&err.message||err)};});
     nativeServiceActions.set(key,promise);
     if(nativeServiceActions.size>128)nativeServiceActions.delete(nativeServiceActions.keys().next().value);
   }
-  promise.then(function(result){if(telemetryWs&&telemetryWs.readyState===1&&m.generation===nativeGameModeGeneration)telemetryWs.send(JSON.stringify(Object.assign({type:'nativeServiceResult',protocol:2,generation:m.generation,session:m.session,catalog:m.catalog,id:m.id},result)));});
+  promise.then(function(result){if(telemetryWs&&telemetryWs.readyState===1&&m.generation===nativeGameModeGeneration)telemetryWs.send(JSON.stringify(Object.assign({type:'nativeServiceResult',protocol:3,generation:m.generation,session:m.session,catalog:m.catalog,id:m.id},result)));});
   return true;
 }
 
@@ -84,20 +84,43 @@ function nativeServiceStyle(line,route,number){
  var badgeKey=/navette\s+(?:de\s+)?nogent/i.test(all)?'navette_nogent.png':/^scolaire\b/i.test(n)?'bus_school.png':'';
  // Additional explicit image badges may be supplied by future DBus adapters.
  if(typeof line.badgeImage==='string'&&line.badgeImage)badgeKey=line.badgeImage;
- return {label:label,background:night?'#080080':hex(entry&&entry[0],'#3a3a3a'),foreground:night?'#ffffff':hex(entry&&entry[1],'#ffffff'),badgeKey:badgeKey};
+ var bg=night?'#080080':hex(entry&&entry[0],'#3a3a3a'),fg=night?'#ffffff':hex(entry&&entry[1],'#ffffff');
+ var kind=/^M[ée]tro\b/i.test(n)?'metro':/^RER\b/i.test(n)?'rer':'bus';
+ return {label:label,background:bg,foreground:fg,badgeKey:badgeKey||'webbadge:'+JSON.stringify([label,bg,fg,kind])};
+}
+// Browser-only offscreen rasterization: same 72x32 rounded badge, bold sans
+// and measured label as map.html. Pixels go to native buttons, no visible web layer.
+function nativeServiceDrawBadge(ctx,spec){
+ var label=String(spec[0]||''),bg=spec[1],fg=spec[2],kind=spec[3];
+ var x=0,w=72,r=8;if(kind==='metro'){x=20;w=32;r=16;}else if(kind==='rer')r=5;
+ ctx.fillStyle=bg;ctx.beginPath();
+ ctx.moveTo(x+r,0);ctx.lineTo(x+w-r,0);ctx.quadraticCurveTo(x+w,0,x+w,r);
+ ctx.lineTo(x+w,32-r);ctx.quadraticCurveTo(x+w,32,x+w-r,32);
+ ctx.lineTo(x+r,32);ctx.quadraticCurveTo(x,32,x,32-r);
+ ctx.lineTo(x,r);ctx.quadraticCurveTo(x,0,x+r,0);ctx.closePath();ctx.fill();
+ var size=Math.max(8,Math.min(Math.floor(32*.62),Math.floor((w-10)/(Math.max(1,label.length)*.62))));
+ ctx.font='700 '+size+'px sans-serif';while(size>8&&ctx.measureText(label).width>w-8)ctx.font='700 '+(--size)+'px sans-serif';
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=fg;
+ ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=2;ctx.shadowOffsetY=1;
+ ctx.fillText(label,36,16);ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+}
+function nativeServiceCanvasPixels(canvas){
+ var bytes=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,72,32).data,binary='';
+ for(var i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);return btoa(binary);
 }
 var nativeServiceBadgeCache=new Map();
 function nativeServiceImagePixels(key){
  if(nativeServiceBadgeCache.has(key))return nativeServiceBadgeCache.get(key);
+ if(key.indexOf('webbadge:')===0){var generated=Promise.resolve().then(function(){var c=document.createElement('canvas');c.width=72;c.height=32;nativeServiceDrawBadge(c.getContext('2d',{willReadFrequently:true}),JSON.parse(key.slice(9)));return nativeServiceCanvasPixels(c);}).catch(function(){return null;});nativeServiceBadgeCache.set(key,generated);return generated;}
  var p=Promise.resolve(typeof loadBestNavGraphVersion==='function'?loadBestNavGraphVersion():null).then(function(version){
   var source=/\.(png|jpe?g|webp)(?:[?#]|$)/i.test(key)&&/[/:]/.test(key)?key:gameMapFilePathForVersion(version,'Overlays/'+key);
   return new Promise(function(resolve,reject){
    var image=new Image(),timer=setTimeout(function(){image.src='';reject(new Error('Image indisponible'));},6000);
    image.crossOrigin='anonymous';image.onerror=function(){clearTimeout(timer);reject(new Error('Image indisponible'));};
    image.onload=function(){clearTimeout(timer);try{
-    var canvas=document.createElement('canvas');canvas.width=64;canvas.height=24;var ctx=canvas.getContext('2d',{willReadFrequently:true});
-    var scale=Math.min(64/image.naturalWidth,24/image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;
-    ctx.drawImage(image,(64-w)/2,(24-h)/2,w,h);var bytes=ctx.getImageData(0,0,64,24).data,binary='';
+    var canvas=document.createElement('canvas');canvas.width=72;canvas.height=32;var ctx=canvas.getContext('2d',{willReadFrequently:true});
+    var scale=Math.min(72/image.naturalWidth,32/image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;
+    ctx.drawImage(image,(72-w)/2,(32-h)/2,w,h);var bytes=ctx.getImageData(0,0,72,32).data,binary='';
     for(var i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);resolve(btoa(binary));
    }catch(e){reject(e);}};image.src=new URL(source,location.href).href;
   });
@@ -106,7 +129,7 @@ function nativeServiceImagePixels(key){
 }
 function syncNativeServiceBadges(catalog,ws,generation){
  Array.from(new Set(catalog.routes.map(function(r){return r.badgeKey;}).filter(Boolean))).forEach(function(key){
-  nativeServiceImagePixels(key).then(function(pixels){if(pixels&&telemetryWs===ws&&ws.readyState===1&&generation===nativeGameModeGeneration)ws.send(JSON.stringify({type:'nativeServiceBadge',protocol:2,generation:generation,key:key,pixels:pixels}));});
+  nativeServiceImagePixels(key).then(function(pixels){if(pixels&&telemetryWs===ws&&ws.readyState===1&&generation===nativeGameModeGeneration)ws.send(JSON.stringify({type:'nativeServiceBadge',protocol:3,generation:generation,key:key,pixels:pixels}));});
  });
 }
 function simplifyNativeServiceRoute(points,tolerance){
@@ -120,7 +143,7 @@ function simplifyNativeServiceRoute(points,tolerance){
 }
 var nativeServicePreviews=new Map(),nativeServiceLatestPreview='';
 function receiveNativeServicePreviewRequest(m){
- if(!m||m.protocol!==2||m.generation!==nativeGameModeGeneration||!nativeGameModeApplied||normalizeGameMode(currentGameMode)!=='bus'||!Number.isInteger(m.row)||m.row<1||!Number.isInteger(m.query)||typeof m.lineUid!=='string'||typeof m.routeUid!=='string')return false;
+ if(!m||m.protocol!==3||m.generation!==nativeGameModeGeneration||!nativeGameModeApplied||normalizeGameMode(currentGameMode)!=='bus'||!Number.isInteger(m.row)||m.row<1||!Number.isInteger(m.query)||typeof m.lineUid!=='string'||typeof m.routeUid!=='string')return false;
  var key=[m.generation,m.session,m.catalog,m.query,m.row].join(':'),promise=nativeServicePreviews.get(key);nativeServiceLatestPreview=key;
  if(!promise){promise=Promise.all([ensureDbusDataLoaded(),ensureNavGraphLoaded(),ensureNavStopLinksLoaded(),ensureNavBridgesLoaded()]).then(function(){
   var line=(dbusLines||[]).find(function(l){return String(l.uid)===m.lineUid;}),route=line&&(line.routes||[]).find(function(r){return String(r.uid)===m.routeUid;});
@@ -135,8 +158,22 @@ function receiveNativeServicePreviewRequest(m){
   return points.length>=2?points:null;
  }).catch(function(err){console.warn('[Service ETS2] Aperçu du trajet indisponible',err);return null;});nativeServicePreviews.set(key,promise);
  if(nativeServicePreviews.size>8)nativeServicePreviews.delete(nativeServicePreviews.keys().next().value);}
- promise.then(function(points){if(points&&key===nativeServiceLatestPreview&&m.generation===nativeGameModeGeneration&&telemetryWs&&telemetryWs.readyState===1)telemetryWs.send(JSON.stringify({type:'nativeServicePreview',protocol:2,generation:m.generation,session:m.session,catalog:m.catalog,query:m.query,row:m.row,points:points}));});
+ promise.then(function(points){if(points&&key===nativeServiceLatestPreview&&m.generation===nativeGameModeGeneration&&telemetryWs&&telemetryWs.readyState===1)telemetryWs.send(JSON.stringify({type:'nativeServicePreview',protocol:3,generation:m.generation,session:m.session,catalog:m.catalog,query:m.query,row:m.row,points:points}));});
  return true;
 }
 
 window.setInterval(syncNativeServices,750);
+
+// Service ACK must be immediate so ETS2 can leave the menu. Audio is independent
+// and waits for fresh driving telemetry after the menu/loading transition.
+var nativeServicePendingSound=null;
+function flushNativeServiceSound(){
+ var p=nativeServicePendingSound;if(!p)return;
+ if(p.generation!==nativeGameModeGeneration||normalizeGameMode(currentGameMode)!=='bus'||typeof saeivRouteState==='undefined'||!saeivRouteState||String(saeivRouteState.lineUid)!==p.lineUid||String(saeivRouteState.routeUid)!==p.routeUid){nativeServicePendingSound=null;return;}
+ var now=Date.now(),ready=typeof telemetryPaused!=='undefined'&&telemetryPaused===false&&typeof telemetryConnected!=='undefined'&&telemetryConnected===true&&typeof telemetryLastPacketAt!=='undefined'&&telemetryLastPacketAt>p.scheduledAt&&now-telemetryLastPacketAt<1000&&!(typeof managerState!=='undefined'&&managerState.visible)&&(typeof busSpatialAudio==='undefined'||(busSpatialAudio.seen&&busSpatialAudio.telemetry&&busSpatialAudio.telemetry.audioCameraAvailable&&now-busSpatialAudio.stamp<1000));
+ if(!ready){p.readyAt=0;return;}
+ if(!p.readyAt){p.readyAt=now;return;}if(now-p.readyAt<750)return;
+ nativeServicePendingSound=null;
+ if(typeof window.gamePlaySaeivServiceAcceptSound==='function')window.gamePlaySaeivServiceAcceptSound();
+}
+window.setInterval(flushNativeServiceSound,200);
