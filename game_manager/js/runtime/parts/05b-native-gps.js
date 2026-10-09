@@ -32,7 +32,7 @@
           points.push({x:point.x,y:point.h,z:point.y});
         }
         if(points.length>128){nativeGpsStatus={status:"too_many_stops",count:points.length};return null;}
-        return {type:"nativeGpsDestination",version:2,enabled:true,
+        return {type:"nativeGpsDestination",version:2,enabled:true,firstStop:index+1,
           stopKey:String(saeivRouteState.selectedKey)+":"+index+":"+String(stops[index].uid||""),points:points};
       }
       function syncNativeGpsDestination(force) {
