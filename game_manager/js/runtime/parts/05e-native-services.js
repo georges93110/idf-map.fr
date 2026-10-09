@@ -1,4 +1,4 @@
-// COACH22: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
+// COACH23: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
 // Les quatre premières sections suivent les dbus-sec de map.html. Les autres
 // réseaux/autocars/scolaires sont proposés individuellement, sans liste figée.
 function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
@@ -80,12 +80,13 @@ function nativeServiceStyle(line,route,number){
  var hex=function(c,d){c=String(c||'');if(/^#[0-9a-f]{3}$/i.test(c))c='#'+c.slice(1).split('').map(function(x){return x+x;}).join('');return /^#[0-9a-f]{6}$/i.test(c)?c:d;};
  // Match map.html renderLineItem/appendRouteLogo, including network logos.
  var parsed=typeof parseRouteName==='function'?String(parseRouteName(route&&route.name).lineNumber||'').trim():'',label=n;
- var raw=String(line&&line.number||n),special=/^(RER|M[ée]tro)(?:\s*[-–—]\s*|\s+)(.+)$/i.exec(raw)||/^(RER|M[ée]tro)(?:\s*[-–—]\s*|\s+)(.+)$/i.exec(n);
+ var raw=String(line&&line.number||n),badgeNumber=parsed||n;
+ var special=/^(RER|M[ée]tro)(?:\s*[-–—]\s*|\s+)(.+)$/i.exec(badgeNumber)||/^(RER|M[ée]tro)(?:\s*[-–—]\s*|\s+)(.+)$/i.exec(raw)||/^(RER|M[ée]tro)(?:\s*[-–—]\s*|\s+)(.+)$/i.exec(n);
  var logos=[],kind='bus',stripe='';
  if(special){kind=/^rer$/i.test(special[1])?'rer':'metro';label=special[2].trim();logos=['bus_logo_idfm.png',kind==='metro'?'o_metro.png':'rer_logo_idfm.png'];
   if(typeof findLineStyleEntryForRuntimeCandidate==='function'){var exact=findLineStyleEntryForRuntimeCandidate((kind==='rer'?'RER ':'Métro ')+label);if(exact)entry=exact.entry;}}
  else if(/^express\b/i.test(parsed))label=parsed;
- else if(/^titus\s*\d+/i.test(raw)){label=raw.replace(/^titus\s*/i,'');logos=['reseau_titus.png'];}
+ else if(/^titus\s*\d+/i.test(badgeNumber)||/^titus\s*\d+/i.test(n)||/^titus\s*\d+/i.test(raw)){var titus=/^titus\s*(\d+)/i.exec(badgeNumber)||/^titus\s*(\d+)/i.exec(n)||/^titus\s*(\d+)/i.exec(raw);label=titus[1];logos=['reseau_titus.png'];}
  else if(night)stripe=hex(entry&&entry[0],'#080080');
  var badgeKey=/navette\s+(?:de\s+)?nogent/i.test(all)?'navette_nogent.png':/^scolaire\b/i.test(raw)?'bus_school.png':'';
  if(typeof line.badgeImage==='string'&&line.badgeImage)badgeKey=line.badgeImage;
@@ -117,6 +118,19 @@ function nativeServiceCanvasPixels(canvas){
  var bytes=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,72,32).data,binary='';
  for(var i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);return btoa(binary);
 }
+// Prepare pixels before Service opens. This performs no bridge send or mission
+// activation; visible-page requests later reuse the completed browser cache.
+var nativeServiceWarmSource=null,nativeServiceWarmPromise=null;
+function warmNativeServiceBadges(){
+ if(nativeServiceWarmPromise)return nativeServiceWarmPromise;
+ nativeServiceWarmPromise=Promise.resolve(ensureDbusDataLoaded()).then(function(){
+  if(nativeServiceWarmSource===dbusLines)return;
+  nativeServiceWarmSource=dbusLines;var keys=new Set();
+  (dbusLines||[]).forEach(function(line){(line.routes||[]).forEach(function(route){keys.add(nativeServiceStyle(line,route,getLineNumber(line,route)).badgeKey);});});
+  return Promise.all(Array.from(keys).map(nativeServiceImagePixels));
+ }).finally(function(){nativeServiceWarmPromise=null;});return nativeServiceWarmPromise;
+}
+if(typeof window.setTimeout==='function')window.setTimeout(function(){warmNativeServiceBadges().catch(function(){});},0);
 var nativeServiceBadgeCache=new Map(),nativeServiceLogoCache=new Map(),nativeServiceBadgeKeys=new Set(),nativeServiceBadgePending=new Set();
 function nativeServiceLoadLogo(key){
  if(nativeServiceLogoCache.has(key))return nativeServiceLogoCache.get(key);
