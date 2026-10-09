@@ -3832,6 +3832,7 @@
           }
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          if (raw && raw.type === "nativeGameMode") { receiveNativeGameMode(raw); return; }
           if (raw && raw.type === "nativeUiPreference") { receiveNativeUiPreference(raw); return; }
           if (raw && raw.type === "nativeBusHudStatus") { receiveNativeBusHudStatus(raw); return; }
           if (raw && raw.type === "nativeUiStatus") { receiveNativeUiStatus(raw); return; }

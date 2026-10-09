@@ -112,3 +112,27 @@ function syncNativeBusHud(force,payload){
   }
 }
 window.setInterval(function(){syncNativeBusHud(false);},1000);
+
+// COACH7: native desktop mode selection, separate from the disabled native
+// mission-menu experiment. No widget preference or saved layout is erased.
+var nativeGameModeGeneration="", nativeGameModeApplied=false;
+try { nativeGameModeGeneration=localStorage.getItem("idf_native_mode_generation_v1")||""; } catch(err) {}
+function receiveNativeGameMode(m){
+  if(!m||m.protocol!==1||!Number.isSafeInteger(m.epoch)||m.epoch<=0||
+     !Number.isInteger(m.revision)||m.revision<1||m.revision>0xffffffff||
+     (m.mode!=="bus"&&m.mode!=="truck"))return false;
+  var key=String(m.epoch)+":"+String(m.revision);
+  if(nativeGameModeGeneration!==key||!nativeGameModeApplied){
+    // A generation is accepted only after the clear and mode application
+    // finish. If either throws, no ACK is sent and stale bus packets stay blocked.
+    if(nativeGameModeGeneration!==key)clearSaeivRouteSelection();
+    setGameMode(m.mode==="bus"?GAME_MODES.BUS:GAME_MODES.FREE,{clearRuntimeSession:false});
+    nativeGameModeGeneration=key;nativeGameModeApplied=true;
+    try { localStorage.setItem("idf_native_mode_generation_v1",key); } catch(err) {}
+    window.GAME2_MANAGER.nativeGameMode={mode:m.mode,epoch:m.epoch,revision:m.revision};
+  }
+  if(telemetryWs&&telemetryWs.readyState===1){
+    telemetryWs.send(JSON.stringify({type:"nativeGameModeAck",protocol:1,epoch:m.epoch,revision:m.revision}));
+  }
+  return true;
+}
