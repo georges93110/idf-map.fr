@@ -24,7 +24,7 @@ function syncNativeUiSettings() {
       reason==="stock"?"Panneau ETS2 standard ; sélectionne une ligne en mode Bus.":
       "En attente de la DLL HUD1 et du jeu.";
     if(nativeBusHudSendError)label="Envoi du panneau ETS2 impossible : "+nativeBusHudSendError;
-    var message="Sélection et paramètres dans le HTML. "+label+" Les menus expérimentaux restent désactivés.";
+    var message="Paramètres dans le HTML ; sélection également dans le menu Service d’ETS2. "+label+"";
     if(status.textContent!==message)status.textContent=message;
   }
 }
