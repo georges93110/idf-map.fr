@@ -1323,6 +1323,13 @@
         document.body.classList.toggle("is-manager-mode", telemetryUiMode === 2);
         document.body.classList.toggle("is-game-mode", telemetryUiMode !== 2);
         var managerHidden = (telemetryUiMode !== 2 || !!isMenuOpen);
+        var loading = document.getElementById("globalLoadingScreen");
+        if (!managerHidden && !(loading && loading.classList.contains("is-active"))) {
+          ["display", "opacity", "visibility", "pointer-events"].forEach(function (key) {
+            el.overlayManager.style.removeProperty(key);
+          });
+          document.body.classList.remove("is-loading-blocking-ui");
+        }
         document.body.classList.toggle("is-manager-hidden", managerHidden);
 
         // 3. Gestion de l'affichage

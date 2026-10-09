@@ -24,7 +24,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "bus-hud-3";
+  runtime.version = "bus-hud-3-1";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
@@ -33,7 +33,7 @@
     return new URL("js/runtime/game2-main.js", window.location.href).href;
   }
 
-  function loadText(url) {
+  function loadTextOnce(url) {
     if (typeof fetch !== "function" || typeof AbortController !== "function") return loadTextWithXhr(url);
     var controller = new AbortController();
     var timer = setTimeout(function () { controller.abort(); }, 15000);
@@ -41,6 +41,18 @@
       if (!response.ok) throw new Error("HTTP " + response.status + " : " + url);
       return response.text();
     }).finally(function () { clearTimeout(timer); });
+  }
+
+  function loadText(url, attempt) {
+    attempt = attempt || 0;
+    return loadTextOnce(url).then(function (text) {
+      if (!text.trim() || /^\s*(?:<!doctype\s+html|<html)/i.test(text)) throw new Error("Script absent : " + url);
+      return text;
+    }).catch(function (error) {
+      if (attempt >= 2) throw error;
+      return new Promise(function (resolve) { setTimeout(resolve, 500 * (attempt + 1)); })
+        .then(function () { return loadText(url, attempt + 1); });
+    });
   }
 
   function loadTextWithXhr(url) {
@@ -84,7 +96,17 @@
   function failRuntime(error) {
     runtime.error = error;
     var screen = document.getElementById("globalLoadingScreen");
-    if (screen) { screen.style.display = "flex"; screen.style.opacity = "1"; screen.style.pointerEvents = "auto"; }
+    if (screen) {
+      screen.classList.add("is-active");
+      screen.style.cssText = "display:flex!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;z-index:2147483647!important";
+      document.body.classList.add("is-loading-visible");
+      if (!document.getElementById("idfRuntimeRetry")) {
+        var retry=document.createElement("button");retry.id="idfRuntimeRetry";
+        retry.className="manager-action-btn";retry.textContent="Réessayer le chargement";
+        retry.onclick=function(){window.location.reload();};
+        (screen.querySelector(".global-loading-content")||screen).appendChild(retry);
+      }
+    }
     var message = document.getElementById("globalLoadingSubtext");
     if (message) {
       message.textContent = "Chargement interrompu : " + (error.message || error) + ". Rechargez la page après publication complète des fichiers.";
@@ -96,7 +118,7 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "bus-hud-3");
+    partUrl.searchParams.set("v", "bus-hud-3-1");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
       if (part === "parts/05d-native-ui.js" && text.indexOf("function syncNativeBusHud(") < 0) {

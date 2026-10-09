@@ -484,6 +484,7 @@
         TYPES.ws_dev = { label: "WebSocket DEV", url: new URL("widgets/ws_dev.html", location.href).href };
       }
       var telemetryUiMode = 1;
+      var nativeOverlayModeKnown = false;
       var isFirstVisitEver = !localStorage.getItem("idf_game2_visited_v7");
       if (isFirstVisitEver) {
         localStorage.setItem("idf_game2_visited_v7", "true");

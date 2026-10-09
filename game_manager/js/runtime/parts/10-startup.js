@@ -77,14 +77,14 @@
       window.addEventListener("message", handleGameWindowMessage);
 
       var elInfo = document.getElementById("mainMenuInfoText");
-      if (!elInfo) return;
+      // Optional guide content must not abort the rest of startup.
 
       var text = "En cours de rédaction..."; // ...
       var name = (typeof readSystemName === "function")
         ? readSystemName()
         : (typeof systemName !== "undefined" ? String(systemName) : "Systeme");
 
-      elInfo.innerHTML = text.replace(/\[systemName\]/g, name);
+      if (elInfo) elInfo.innerHTML = text.replace(/\[systemName\]/g, name);
 
       if (FORCE_DEV_UI) {
         if (!windowsByType["ws_dev"]) {

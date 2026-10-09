@@ -821,7 +821,7 @@
             return;
           }
           if (scope === OVERLAY_SHORTCUT_SCOPE_OVERLAY) {
-            applyTelemetryUiMode(telemetryUiMode === 2 ? 1 : 2);
+            if (!nativeOverlayModeKnown) applyTelemetryUiMode(telemetryUiMode === 2 ? 1 : 2);
             return;
           }
           if (scope === OVERLAY_SHORTCUT_SCOPE_HIDE_UI) {
@@ -1370,7 +1370,7 @@
             triggerSaeivDestinationAnnouncementFromShortcut();
           }
 
-          if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_OVERLAY, keyName, raw)) {
+          if (!nativeOverlayModeKnown && shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_OVERLAY, keyName, raw)) {
             var nextMode = telemetryUiMode === 2 ? "Fermé" : "Ouvert";
             applyTelemetryUiMode(telemetryUiMode === 2 ? 1 : 2);
           }
@@ -1628,7 +1628,7 @@
         var mainMenu = document.getElementById("mainMenuModal");
         var isMenuOpen = mainMenu && mainMenu.classList.contains("is-open");
 
-        if (nextMode === telemetryUiMode && !isMenuOpen) return false;
+        if (nextMode === telemetryUiMode && !isMenuOpen) { renderManager(); syncGlobalLoadingVisibility(); return false; }
 
         // On ne ferme pas les panneaux si le menu est ouvert (l'utilisateur est en train d'interagir)
         if (!isMenuOpen) closeManagerTransientPanels();
@@ -3848,8 +3848,11 @@
           } catch (errIdentity) { }
           updateTelemetryConvoyState(raw, null);
           updateSaeivGameClockFromTelemetry(raw);
-          var nextUiMode = extractTelemetryUiMode(raw);
-          if (nextUiMode !== null) applyTelemetryUiMode(nextUiMode);
+          // The host sends both keyEvent and overlayMode. Only the latter owns
+          // manager visibility; toggling on both can leave the page hidden.
+          var nextUiMode = raw && raw.type === "overlayMode" && (raw.mode === 1 || raw.mode === 2)
+            ? raw.mode : null;
+          if (nextUiMode !== null) { nativeOverlayModeKnown = true; applyTelemetryUiMode(nextUiMode); }
           handleTelemetryGameContext(raw);
 
           var pausedVal = extractTelemetryPaused(raw);
