@@ -24,6 +24,7 @@
   ];
 
   runtime.parts = PARTS.slice();
+  runtime.version = "bus-hud-1-1";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
@@ -36,7 +37,7 @@
     if (typeof fetch !== "function" || typeof AbortController !== "function") return loadTextWithXhr(url);
     var controller = new AbortController();
     var timer = setTimeout(function () { controller.abort(); }, 15000);
-    return fetch(url, { cache: "default", signal: controller.signal }).then(function (response) {
+    return fetch(url, { cache: "no-cache", signal: controller.signal }).then(function (response) {
       if (!response.ok) throw new Error("HTTP " + response.status + " : " + url);
       return response.text();
     }).finally(function () { clearTimeout(timer); });
@@ -46,6 +47,7 @@
     return new Promise(function (resolve, reject) {
       var xhr = new XMLHttpRequest();
       xhr.open("GET", url, true);
+      xhr.setRequestHeader("Cache-Control", "no-cache");
       xhr.onreadystatechange = function () {
         if (xhr.readyState !== 4) return;
         if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 0) {
@@ -94,9 +96,12 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "bus-hud-1");
+    partUrl.searchParams.set("v", "bus-hud-1-1");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
+      if (part === "parts/05d-native-ui.js" && text.indexOf("function syncNativeBusHud(") < 0) {
+        throw new Error("Publication incomplete : le script du panneau bus ETS2 est encore ancien");
+      }
       return sourceForPart(part, text);
     });
   })).then(function (sources) {

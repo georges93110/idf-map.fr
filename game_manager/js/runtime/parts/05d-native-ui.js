@@ -1,4 +1,4 @@
-﻿// Experimental native menus remain paused. HUD1 reuses only the stock driving job_info panel.
+// Experimental native menus remain paused. HUD1 reuses only the stock driving job_info panel.
 // Keep the wire-off command for installations still running an older DLL.
 var nativeUiMode = "widgets";
 var nativeUiStatus = null, nativeUiStatusAt = 0;
@@ -23,6 +23,7 @@ function syncNativeUiSettings() {
       reason==="waiting_for_driving_hud"?"En attente du panneau de livraison en conduite.":
       reason==="stock"?"Panneau ETS2 standard ; sélectionne une ligne en mode Bus.":
       "En attente de la DLL HUD1 et du jeu.";
+    if(nativeBusHudSendError)label="Envoi du panneau ETS2 impossible : "+nativeBusHudSendError;
     var message="Sélection et paramètres dans le HTML. "+label+" Les menus expérimentaux restent désactivés.";
     if(status.textContent!==message)status.textContent=message;
   }
@@ -47,7 +48,10 @@ window.setInterval(function(){syncNativeUi(false);},1500);
 // No window or new on-screen widget is created by this channel.
 var nativeBusHudStatus=null,nativeBusHudStatusAt=0,nativeBusHudLastSend=0;
 var nativeBusHudLastPayload=null,nativeBusHudLastPayloadAt=0,nativeBusHudSocket=null;
-function receiveNativeBusHudStatus(m){nativeBusHudStatus=m;nativeBusHudStatusAt=Date.now();syncNativeUiSettings();}
+var nativeBusHudSendError="";
+var nativeBusHudDiagnostics={version:"HUD1.1",lastSentAt:0,enabled:false,error:"",status:null};
+window.GAME2_MANAGER.nativeBusHud=nativeBusHudDiagnostics;
+function receiveNativeBusHudStatus(m){nativeBusHudStatus=m;nativeBusHudStatusAt=Date.now();nativeBusHudDiagnostics.status=m;syncNativeUiSettings();}
 function nativeBusHudText(value,max){
   var chars=Array.from(String(value==null?"":value).replace(/[\x00-\x1f|@<>]/g," ").replace(/\s+/g," ").trim());
   return chars.length<=max?chars.join(""):chars.slice(0,max-1).join("")+"…";
@@ -83,11 +87,22 @@ function syncNativeBusHud(force,payload){
   if(!telemetryWs||telemetryWs.readyState!==1||telemetryWs.bufferedAmount>32768)return false;
   if(nativeBusHudSocket!==telemetryWs){nativeBusHudSocket=telemetryWs;force=true;}
   if(!force&&now-nativeBusHudLastSend<250)return false;
-  var state=payload||nativeBusHudLastPayload;
-  if(!state||now-nativeBusHudLastPayloadAt>2000){
-    state=buildSaeivStatePayloadFromGame();nativeBusHudLastPayload=state;nativeBusHudLastPayloadAt=now;
+  try{
+    var state=payload||nativeBusHudLastPayload;
+    if(!state||now-nativeBusHudLastPayloadAt>2000){
+      state=buildSaeivStatePayloadFromGame();nativeBusHudLastPayload=state;nativeBusHudLastPayloadAt=now;
+    }
+    var message=buildNativeBusHudMessage(state);
+    telemetryWs.send(JSON.stringify(message));nativeBusHudLastSend=now;
+    nativeBusHudDiagnostics.lastSentAt=now;nativeBusHudDiagnostics.enabled=message.enabled;
+    nativeBusHudDiagnostics.error="";
+    if(nativeBusHudSendError){nativeBusHudSendError="";syncNativeUiSettings();}
+    return true;
+  }catch(err){
+    var reason=String(err&&err.message||err);
+    if(nativeBusHudSendError!==reason)console.error("[NativeBusHUD] Envoi impossible",err);
+    nativeBusHudSendError=reason;nativeBusHudDiagnostics.error=reason;
+    syncNativeUiSettings();return false;
   }
-  try{telemetryWs.send(JSON.stringify(buildNativeBusHudMessage(state)));nativeBusHudLastSend=now;return true;}
-  catch(err){return false;}
 }
 window.setInterval(function(){syncNativeBusHud(false);},1000);

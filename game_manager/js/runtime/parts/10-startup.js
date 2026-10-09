@@ -4,7 +4,8 @@
  * Charge par ../game2-main.js dans une fermeture runtime partagee.
  */
       currentGameMode = GAME_MODES.FREE;
-      setGameMode(currentGameMode, { apply: false });
+      // No outgoing layout exists yet: restore before allowing any save.
+      setGameMode(currentGameMode, { apply: false, swapLayout: false });
       startGameSingletonGuard();
       syncManagerScaleUi();
       applyTelemetryOverlayAlphaPercent(telemetryOverlayAlphaPercent, { syncUi: true });

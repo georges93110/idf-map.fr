@@ -715,7 +715,10 @@
         lanes = { inline: nextInline, tab: [], pip: [] };
       }
 
+      var widgetLayoutReady = false;
+      var widgetLayoutRestoring = false;
       function saveWidgetLayoutState() {
+        if (!widgetLayoutReady || widgetLayoutRestoring) return false;
         sanitize();
         var key = getWidgetLayoutStorageKey(currentGameMode);
         var state = {
@@ -799,6 +802,18 @@
       }
 
       function restoreWidgetLayoutState() {
+        if (widgetLayoutRestoring) return false;
+        widgetLayoutRestoring = true;
+        try {
+          var restored = restoreWidgetLayoutStateFromStorage();
+          widgetLayoutReady = true;
+          return restored;
+        } finally {
+          widgetLayoutRestoring = false;
+        }
+      }
+
+      function restoreWidgetLayoutStateFromStorage() {
         var modeKey = getWidgetLayoutStorageKey(currentGameMode);
         var raw = "";
         try {
@@ -832,8 +847,19 @@
         nextId = 1;
 
         var parsedVersion = Number(parsed && parsed.version);
-        if (!parsed || typeof parsed !== "object" || (parsedVersion !== 3 && parsedVersion !== 4)) {
-          return false;
+        var hasStoredLayout = !!parsed && typeof parsed === "object" &&
+          (parsedVersion === 3 || parsedVersion === 4);
+        if (!hasStoredLayout) {
+          parsed = { version: 4, activeTypes: [], windowsByType: {} };
+          parsedVersion = 4;
+        }
+        // Settings are shared; mode snapshots can be older than the last edit.
+        // Restore them even when this mode has no saved widget layout yet.
+        var sharedManager = null;
+        try { sharedManager = JSON.parse(localStorage.getItem(OVERLAY_MANAGER_STORAGE_KEY) || "null"); }
+        catch (errManagerRead) { console.warn("[Game2] Lecture des reglages impossible", errManagerRead); }
+        if (sharedManager && typeof sharedManager === "object" && !Array.isArray(sharedManager)) {
+          parsed.manager = Object.assign({}, parsed.manager || {}, sharedManager);
         }
 
         var activeTypes = Array.isArray(parsed.activeTypes) ? parsed.activeTypes : [];
@@ -941,6 +967,9 @@
               storedPassengerValidationSounds = parsedPassengerValidationSounds;
             }
           }
+          if (Object.prototype.hasOwnProperty.call(parsed.manager, "notificationSoundsEnabled")) {
+            notificationSoundsEnabled = normalizeNotificationSoundsEnabled(parsed.manager.notificationSoundsEnabled);
+          }
           if (Object.prototype.hasOwnProperty.call(parsed.manager, "pccVoiceReceptionMode")) {
             hasStoredPccVoiceReceptionMode = true;
             storedPccVoiceReceptionMode = normalizePccVoiceReceptionMode(parsed.manager.pccVoiceReceptionMode);
@@ -977,100 +1006,6 @@
             hasStoredForceListedBusCapacity = true;
             storedForceListedBusCapacity = parsed.manager.forceListedBusCapacityForAll === true;
           }
-        } else {
-          var managerRaw = "";
-          try { managerRaw = String(localStorage.getItem(OVERLAY_MANAGER_STORAGE_KEY) || ""); } catch (err2) { managerRaw = ""; }
-          if (managerRaw) {
-            var managerParsed = null;
-            try { managerParsed = JSON.parse(managerRaw); } catch (err3) { managerParsed = null; }
-            if (managerParsed && typeof managerParsed === "object") {
-              managerState.x = Number(managerParsed.x);
-              managerState.y = Number(managerParsed.y);
-              managerState.width = Number(managerParsed.width);
-              managerState.height = Number(managerParsed.height);
-              managerState.z = Number(managerParsed.z);
-              managerState.visible = managerParsed.visible !== false;
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "scale")) {
-                managerScalePercent = clampManagerScalePercent(managerParsed.scale);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "overlayAlpha")) {
-                telemetryOverlayAlphaPercent = clampTelemetryOverlayAlphaPercent(managerParsed.overlayAlpha);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "notificationScale")) {
-                notificationScalePercent = clampNotificationScalePercent(managerParsed.notificationScale);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "globalAudioVolume")) {
-                hasStoredGlobalAudioVolume = true;
-                storedGlobalAudioVolume = clampGlobalAudioVolumePercent(managerParsed.globalAudioVolume);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "timeSystem")) {
-                applySaeivTimeSystem(managerParsed.timeSystem, { syncUi: true });
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "showExperimentalWidgets")) {
-                hasStoredShowExperimentalWidgets = true;
-                storedShowExperimentalWidgets = normalizeShowExperimentalWidgets(managerParsed.showExperimentalWidgets);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "showUnavailablePlayModes")) {
-                hasStoredShowUnavailablePlayModes = true;
-                storedShowUnavailablePlayModes = normalizeShowUnavailablePlayModes(managerParsed.showUnavailablePlayModes);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "stopAnnouncementSoundsEnabled")) {
-                hasStoredStopAnnouncementSounds = true;
-                storedStopAnnouncementSounds = normalizeStopAnnouncementSoundsEnabled(managerParsed.stopAnnouncementSoundsEnabled);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "passengerValidationSoundsEnabled")) {
-                var fallbackPassengerValidationSounds = normalizePassengerValidationSoundsEnabled(managerParsed.passengerValidationSoundsEnabled);
-                var fallbackPassengerValidationSoundsVersion = Number(managerParsed.passengerValidationSoundsVersion);
-                if (
-                  fallbackPassengerValidationSounds === true ||
-                  (Number.isFinite(fallbackPassengerValidationSoundsVersion) &&
-                    fallbackPassengerValidationSoundsVersion >= PASSENGER_VALIDATION_SOUNDS_SETTING_VERSION)
-                ) {
-                  hasStoredPassengerValidationSounds = true;
-                  storedPassengerValidationSounds = fallbackPassengerValidationSounds;
-                }
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "notificationSoundsEnabled")) {
-                notificationSoundsEnabled = normalizeNotificationSoundsEnabled(managerParsed.notificationSoundsEnabled);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "pccVoiceReceptionMode")) {
-                hasStoredPccVoiceReceptionMode = true;
-                storedPccVoiceReceptionMode = normalizePccVoiceReceptionMode(managerParsed.pccVoiceReceptionMode);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "discordPresenceEnabled")) {
-                hasStoredDiscordPresenceEnabled = true;
-                storedDiscordPresenceEnabled = normalizeDiscordPresenceEnabled(managerParsed.discordPresenceEnabled);
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "hideUiWhenManagerHidden")) {
-                hasStoredHideUiWhenManagerHidden = true;
-                storedHideUiWhenManagerHidden = managerParsed.hideUiWhenManagerHidden === true;
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "defaultStartupMode")) {
-                hasStoredDefaultStartupMode = true;
-                storedDefaultStartupMode = normalizeDefaultStartupMode(managerParsed.defaultStartupMode);
-              } else if (Object.prototype.hasOwnProperty.call(managerParsed, "showMenuOnStartup")) {
-                hasStoredDefaultStartupMode = true;
-                storedDefaultStartupMode = managerParsed.showMenuOnStartup === true
-                  ? DEFAULT_STARTUP_MODE_MENU
-                  : GAME_MODES.FREE;
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "unknownBusCapacityValue")) {
-                var fallbackCapacityRaw = parseStrictPositiveInteger(managerParsed.unknownBusCapacityValue);
-                if (fallbackCapacityRaw !== null) {
-                  hasStoredUnknownBusCapacityValue = true;
-                  storedUnknownBusCapacityValue = fallbackCapacityRaw;
-                }
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "unknownBusCapacityUnlimited")) {
-                hasStoredUnknownBusCapacityUnlimited = true;
-                storedUnknownBusCapacityUnlimited = managerParsed.unknownBusCapacityUnlimited === true;
-              }
-              if (Object.prototype.hasOwnProperty.call(managerParsed, "forceListedBusCapacityForAll")) {
-                hasStoredForceListedBusCapacity = true;
-                storedForceListedBusCapacity = managerParsed.forceListedBusCapacityForAll === true;
-              }
-            }
-          }
         }
 
         applyStopAnnouncementSoundsEnabled(
@@ -1085,46 +1020,6 @@
           hasStoredHideUiWhenManagerHidden ? storedHideUiWhenManagerHidden : false,
           { syncUi: true, render: false }
         );
-        var globalManagerRaw = "";
-        try {
-          globalManagerRaw = String(localStorage.getItem(OVERLAY_MANAGER_STORAGE_KEY) || "");
-        } catch (errGlobalManagerRaw) {
-          globalManagerRaw = "";
-        }
-
-        if (globalManagerRaw) {
-          var globalManagerParsed = null;
-
-          try {
-            globalManagerParsed = JSON.parse(globalManagerRaw);
-          } catch (errGlobalManagerParse) {
-            globalManagerParsed = null;
-          }
-
-          if (globalManagerParsed && typeof globalManagerParsed === "object") {
-            if (Object.prototype.hasOwnProperty.call(globalManagerParsed, "defaultStartupMode")) {
-              hasStoredDefaultStartupMode = true;
-              storedDefaultStartupMode = normalizeDefaultStartupMode(globalManagerParsed.defaultStartupMode);
-            } else if (Object.prototype.hasOwnProperty.call(globalManagerParsed, "showMenuOnStartup")) {
-              hasStoredDefaultStartupMode = true;
-              storedDefaultStartupMode = globalManagerParsed.showMenuOnStartup === true
-                ? DEFAULT_STARTUP_MODE_MENU
-                : GAME_MODES.FREE;
-            }
-            if (Object.prototype.hasOwnProperty.call(globalManagerParsed, "pccVoiceReceptionMode")) {
-              hasStoredPccVoiceReceptionMode = true;
-              storedPccVoiceReceptionMode = normalizePccVoiceReceptionMode(globalManagerParsed.pccVoiceReceptionMode);
-            }
-            if (Object.prototype.hasOwnProperty.call(globalManagerParsed, "discordPresenceEnabled")) {
-              hasStoredDiscordPresenceEnabled = true;
-              storedDiscordPresenceEnabled = normalizeDiscordPresenceEnabled(globalManagerParsed.discordPresenceEnabled);
-            }
-            if (Object.prototype.hasOwnProperty.call(globalManagerParsed, "showUnavailablePlayModes")) {
-              hasStoredShowUnavailablePlayModes = true;
-              storedShowUnavailablePlayModes = normalizeShowUnavailablePlayModes(globalManagerParsed.showUnavailablePlayModes);
-            }
-          }
-        }
         applyDiscordPresenceEnabled(
           hasStoredDiscordPresenceEnabled ? storedDiscordPresenceEnabled : true,
           { syncUi: true, syncState: false }
@@ -1188,7 +1083,7 @@
         syncShowUnavailablePlayModesUi();
         if (!Number.isFinite(Number(managerState.z))) managerState.z = 1200;
         sanitize();
-        return true;
+        return hasStoredLayout;
       }
 
       function createOverlayWindowNode(type) {
