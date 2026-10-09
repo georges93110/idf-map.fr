@@ -128,6 +128,22 @@ function nativeModeActiveServiceToken(){
   }
   return nativeModeServiceToken;
 }
+var nativeModeStartupRetryAt=0;
+function nativeModeRuntimeReady(){
+  var runtime=window.GAME2_MANAGER&&window.GAME2_MANAGER.runtime;
+  var ready=!!(runtime&&runtime.loadedAt&&!runtime.error&&
+    typeof dbusLines!=='undefined'&&Array.isArray(dbusLines)&&dbusLines.length&&
+    typeof dbusStopsById!=='undefined'&&dbusStopsById&&dbusStopsById.size&&
+    typeof navGraph!=='undefined'&&navGraph);
+  // Retry failed startup data loads even while Mode Camion is selected.
+  // Existing loaders deduplicate their pending requests.
+  if(!ready&&runtime&&runtime.loadedAt&&!runtime.error&&Date.now()-nativeModeStartupRetryAt>5000){
+    nativeModeStartupRetryAt=Date.now();
+    if(typeof ensureDbusDataLoaded==='function')ensureDbusDataLoaded().catch(function(){});
+    if(typeof ensureNavGraphLoaded==='function')ensureNavGraphLoaded().catch(function(){});
+  }
+  return ready;
+}
 function receiveNativeGameMode(m){
   if(!m||m.protocol!==1||!Number.isSafeInteger(m.epoch)||m.epoch<=0||
      !Number.isInteger(m.revision)||m.revision<1||m.revision>0xffffffff||
@@ -143,7 +159,7 @@ function receiveNativeGameMode(m){
     window.GAME2_MANAGER.nativeGameMode={mode:m.mode,epoch:m.epoch,revision:m.revision};
   }
   if(telemetryWs&&telemetryWs.readyState===1){
-    telemetryWs.send(JSON.stringify({type:"nativeGameModeAck",protocol:1,epoch:m.epoch,revision:m.revision,serviceToken:m.mode==="bus"?nativeModeActiveServiceToken():0}));
+    telemetryWs.send(JSON.stringify({type:"nativeGameModeAck",protocol:1,epoch:m.epoch,revision:m.revision,uiReady:nativeModeRuntimeReady(),serviceToken:m.mode==="bus"?nativeModeActiveServiceToken():0}));
   }
   return true;
 }
