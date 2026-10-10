@@ -3895,6 +3895,9 @@
           telemetryLastPacketAt = Date.now();
           updateWazeBridgePoseFromTelemetry(signal);
           handleSaeivTelemetrySignal(signal);
+          // The page can be hidden while driving. Socket callbacks continue
+          // independently of background timer throttling.
+          syncNativeGpsDestination(false);
           publishTelemetryToWazeBridge(signal);
           sendTelemetryToRemotePanel(raw, signal);
           telemetryValidBurstCount += 1;

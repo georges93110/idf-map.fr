@@ -160,6 +160,9 @@ function receiveNativeGameMode(m){
   }
   if(telemetryWs&&telemetryWs.readyState===1){
     telemetryWs.send(JSON.stringify({type:"nativeGameModeAck",protocol:1,epoch:m.epoch,revision:m.revision,uiReady:nativeModeRuntimeReady(),serviceToken:m.mode==="bus"?nativeModeActiveServiceToken():0}));
+    // ACK precedes GPS on the same socket, so generation authorization is
+    // established before a restored/paused service submits its destination.
+    syncNativeGpsDestination(false);
   }
   return true;
 }

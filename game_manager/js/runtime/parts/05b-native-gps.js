@@ -11,8 +11,9 @@
             !saeivRouteState.stops.length) {
           return { type: "nativeGpsDestination", version: 2, enabled: false };
         }
-        // Pause and brief telemetry loss hold the existing destination.
-        if (telemetryPaused || !hasRecentTelemetryPositionSignal()) return null;
+        // Queue from the native Service menu too, even while paused. These
+        // are fixed stop coordinates; the DLL owns the world/actor/pause gate.
+        // Hidden browser timers are only a fallback, never the sole trigger.
         var stops = saeivRouteState.stops;
         var reached = clampReachedStopIndex(saeivRouteState.reachedIndex, stops.length - 1);
         var target = clampRouteStopIndex(saeivRouteState.targetIndex, stops.length - 1);

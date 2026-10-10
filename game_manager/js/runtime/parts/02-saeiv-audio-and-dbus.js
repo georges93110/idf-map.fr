@@ -2771,6 +2771,7 @@
         ensureNavStopLinksLoaded().catch(function () { });
         ensureNavBridgesLoaded().catch(function () { });
         ensureSaeivRouteDestinationSynced(true);
+        if (typeof syncNativeGpsDestination === "function") syncNativeGpsDestination(true);
         var autoAnnounceOnSelection = shouldAutoPlaySaeivDestinationOnSelection();
         var audioPreparePromise = prepareSaeivRouteAudio(line, route, entries).catch(function () { return false; });
         saeivRouteAudio.preparePromise = audioPreparePromise;
