@@ -27,7 +27,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "police-4";
+  runtime.version = "police-5";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {

@@ -155,7 +155,7 @@
         return tryCandidate(0);
       }
       var TYPES = {
-        police_demo: { label: "Police — Démo", url: buildWidgetUrl("widgets/police_demo.html?v=police-4&host=game") },
+        police_demo: { label: "Police — Démo", url: buildWidgetUrl("widgets/police_demo.html?v=police-5&host=game") },
         saeiv: { label: "SAEIV", url: buildWidgetUrl("widgets/saeiv.html?v=bus-coach-2&dev=1&host=game&source=game") },
         saeiv_mini: { label: "HUD Ligne Simple", url: buildWidgetUrl("widgets/saeiv_mini.html?host=game&source=game&asset=" + SAEIV_MINI_WIDGET_CACHE_BUSTER) },
         bus_status: { label: "Statut Embarquement", url: buildWidgetUrl("widgets/bus_status.html?host=game&source=game") },

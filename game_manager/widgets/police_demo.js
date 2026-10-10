@@ -11,7 +11,8 @@
  var host=window.parent;
  try{if(host.opener&&host.opener!==window)host=host.opener;}catch(e){}
  var origin=location.origin, $=function(id){return document.getElementById(id);};
- var labels={disabled:'Désactivé',unavailable:'Diagnostic activé — poursuite indisponible',ready:'Prêt',pursuing:'Poursuite',approaching:'Agent en approche',returning:'Retour au véhicule',paid:'Contrôle terminé',escaped:'Interception abandonnée',fault:'Erreur — intervention arrêtée'};
+ var labels={disabled:'Désactivé',unavailable:'Démo activée',ready:'Prêt',pursuing:'Poursuite',approaching:'Agent en approche',returning:'Retour au véhicule',paid:'Contrôle terminé',escaped:'Interception abandonnée',fault:'Erreur — intervention arrêtée'};
+ var pursuitLabels={preparing:'Préparation de la poursuite',pursuing:'Poursuite de test',parked:'Police arrêtée derrière toi',blocked:'Police arrêtée : passage ou sol indisponible',native_collision:'Collision : physique native en cours',invalid_scene:'Contrôleur indisponible dans cette scène',vehicle_lost:'Le moteur a retiré la Mégane'};
  var offences={speeding:'Excès de vitesse',red_signal:'Feu rouge',wrong_way:'Contresens',speeding_camera:'Radar',crash:'Collision',no_lights:'Éclairage',avoid_sleeping:'Fatigue'};
  var reasons={accepted:'Commande reçue. Le résultat de création est affiché ci-dessous.',unsupported:'Opération verrouillée : les accès moteur nécessaires ne sont pas encore validés.',no_scene:'Reprends une partie chargée pour agir sur la scène.',disabled:'Active d’abord le module.',stale:'Le contexte de partie a changé. Renouvelle la commande.',invalid:'Commande non valide.',timeout:'Aucune confirmation reçue. L’état de la DLL fait foi.',busy:'Une commande est déjà en attente.',id_conflict:'Identifiant de commande déjà utilisé.',clients_full:'Trop de clients dans cette partie.'};
  function send(m){host.postMessage(m,origin==='null'?'*':origin);}
@@ -22,10 +23,10 @@
   send({type:'policeCommand',protocol:1,epoch:state.epoch,context:state.context,client:client,sequence:seq,action:action,offence:Number($('kind').value)});paint();}
  function paint(){var live=state&&Date.now()-last<3000;
   $('toggle').disabled=!live||!!pending;$('toggle').textContent=state&&state.enabled?'Désactiver':'Activer';
-  $('status').textContent=live?(labels[state.phase]||state.phase):'Connexion à la DLL…';$('status').className=live&&state.enabled?'on':'off';
-  document.querySelectorAll('[data-action]').forEach(function(b){b.disabled=!live||!!pending||(b.dataset.action==='spawn'?!state.spawnAvailable:(b.dataset.action!=='reset'&&!state.sceneCommands));});
+  $('status').textContent=live?((state.pursuitActive&&pursuitLabels[state.pursuitState])||labels[state.phase]||state.phase):'Connexion à la DLL…';$('status').className=live&&state.enabled?'on':'off';
+  document.querySelectorAll('[data-action]').forEach(function(b){var a=b.dataset.action;b.disabled=!live||!!pending||(a==='spawn'?!state.spawnAvailable:(a!=='reset'&&!state.pursuitAvailable));});
   if(!live)return;
-  $('notice').textContent=state.operational?'Module opérationnel.':'Création de la Mégane disponible en partie solo. Poursuite indisponible ; les amendes habituelles restent actives.';
+  $('notice').textContent=state.operational?'Module opérationnel.':'Activer → Faire apparaître la Mégane → Poursuite de test. Conduite native limitée à 30 km/h avec vérification locale du passage. Les amendes du jeu restent actives ; agent et contrôle différé non raccordés.';
   $('offence').textContent=offences[state.nativeOffence]||state.nativeOffence||'—';
   $('amount').textContent=state.nativeFineCount?state.nativeFineAmount+' €':'—';$('deferred').textContent=state.deferredFine==null?'—':state.deferredFine+' €';
   $('distance').textContent=state.policeDistance==null?'—':Math.round(state.policeDistance)+' m';
@@ -36,7 +37,10 @@
   $('caps').textContent=(state.build||'Police')+' — '+(state.cleanupPending?'Nettoyage en attente de reprise du jeu…':vehicle)+
    '. Collision de diagnostic : '+(queryNames[state.collisionProbeSweep]||'—')+' ; gabarit entier : '+(queryNames[state.bodyProbeSweep]||'—')+'. '+
    (state.nativePhaseThreadChanged?'Changement de thread détecté : commandes bloquées. ':'')+
-   'Un clic lance la recherche ; Arrêter / nettoyer permet de l’annuler. La voiture reste pilotée par le trafic normal.';
+   'Physique : '+(state.physicsTicks||0)+' appels, '+(state.pathSamples||0)+' déplacements, '+(state.stalePathFrames||0)+' plans expirés. '+
+   (state.pursuitFault?'Diagnostic contrôleur : '+state.pursuitFault+'. ':'')+
+   (state.sirenRequested?'Sirène native demandée. ':'')+
+   'Arrêter / nettoyer retire la voiture de démonstration. Le suivi complet des voies et le contrôle par un agent restent indisponibles. La simulation d’infraction lance cette poursuite sans débit.';
  }
  window.addEventListener('message',function(e){if(e.source!==host||e.origin!==origin||!e.data||e.data.protocol!==1)return;var m=e.data;
   if(m.type==='policeOffline'){last=0;paint();return;}
