@@ -3832,6 +3832,7 @@
           }
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          if (raw && (raw.type === "policeState" || raw.type === "policeCommandResult")) { receivePoliceState(raw); return; }
           if (raw && raw.type === "nativeServicesSync") { receiveNativeServicesSync(raw); return; }
           if (raw && raw.type === "nativeServiceAction") { receiveNativeServiceAction(raw); return; }
           if (raw && raw.type === "nativeServiceBadgeRequest") { receiveNativeServiceBadgeRequest(raw); return; }

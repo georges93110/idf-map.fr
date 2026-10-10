@@ -18,6 +18,7 @@
     "parts/05c-native-passengers.js",
     "parts/05d-native-ui.js",
     "parts/05e-native-services.js",
+    "parts/05f-police.js",
     "parts/06-settings-and-modes.js",
     "parts/07-widgets-output.js",
     "parts/08-overlay-ui-state.js",
@@ -26,7 +27,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "bus-coach-27";
+  runtime.version = "police-1";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {

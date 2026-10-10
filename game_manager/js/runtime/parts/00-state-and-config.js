@@ -155,6 +155,7 @@
         return tryCandidate(0);
       }
       var TYPES = {
+        police_demo: { label: "Police — Démo", url: buildWidgetUrl("widgets/police_demo.html?v=police-1&host=game") },
         saeiv: { label: "SAEIV", url: buildWidgetUrl("widgets/saeiv.html?v=bus-coach-2&dev=1&host=game&source=game") },
         saeiv_mini: { label: "HUD Ligne Simple", url: buildWidgetUrl("widgets/saeiv_mini.html?host=game&source=game&asset=" + SAEIV_MINI_WIDGET_CACHE_BUSTER) },
         bus_status: { label: "Statut Embarquement", url: buildWidgetUrl("widgets/bus_status.html?host=game&source=game") },
@@ -173,27 +174,28 @@
         gps_mini: 1.2 / 1,
         gps_ets2_old: 1.15 / 1,
         iphone_simulator: 320 / 640,
+        police_demo: 1.1,
         ws_dev: 1 / 1
       };
       var MODE_CONFIGS = {};
       MODE_CONFIGS[GAME_MODES.BUS] = {
         gpsTypes: ["gps_mini", "gps_ets2_old"],
         hudTypes: ["saeiv", "saeiv_mini", "bus_status"],
-        widgetTypes: ["iphone_simulator"],
+        widgetTypes: ["iphone_simulator", "police_demo"],
         defaultGpsType: "",
         forceDefaultGps: false
       };
       MODE_CONFIGS[GAME_MODES.FREE] = {
         gpsTypes: ["gps_mini", "gps_ets2_old"],
         hudTypes: [],
-        widgetTypes: ["iphone_simulator"],
+        widgetTypes: ["iphone_simulator", "police_demo"],
         defaultGpsType: "",
         forceDefaultGps: false
       };
       MODE_CONFIGS[GAME_MODES.UBER_EATS] = {
         gpsTypes: ["gps_mini", "gps_ets2_old"],
         hudTypes: [],
-        widgetTypes: ["iphone_simulator"],
+        widgetTypes: ["iphone_simulator", "police_demo"],
         defaultGpsType: "",
         forceDefaultGps: false
       };
