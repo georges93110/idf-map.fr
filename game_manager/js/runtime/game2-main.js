@@ -18,7 +18,6 @@
     "parts/05c-native-passengers.js",
     "parts/05d-native-ui.js",
     "parts/05e-native-services.js",
-    "parts/05f-police.js",
     "parts/06-settings-and-modes.js",
     "parts/07-widgets-output.js",
     "parts/08-overlay-ui-state.js",
@@ -27,7 +26,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "police-5.1";
+  runtime.version = "bus-coach-28";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
@@ -124,7 +123,7 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "bus-coach-27");
+    partUrl.searchParams.set("v", "bus-coach-28");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
       if (part === "parts/05d-native-ui.js" && text.indexOf("function syncNativeBusHud(") < 0) {
