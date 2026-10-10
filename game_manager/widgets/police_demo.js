@@ -23,14 +23,19 @@
  function paint(){var live=state&&Date.now()-last<3000;
   $('toggle').disabled=!live||!!pending;$('toggle').textContent=state&&state.enabled?'DÃ©sactiver':'Activer';
   $('status').textContent=live?(labels[state.phase]||state.phase):'Connexion Ã  la DLLâ€¦';$('status').className=live&&state.enabled?'on':'off';
-  document.querySelectorAll('[data-action]').forEach(function(b){b.disabled=!live||!!pending||(b.dataset.action!=='reset'&&!state.sceneCommands);});
+  document.querySelectorAll('[data-action]').forEach(function(b){b.disabled=!live||!!pending||(b.dataset.action==='spawn'?!state.spawnAvailable:(b.dataset.action!=='reset'&&!state.sceneCommands));});
   if(!live)return;
   $('notice').textContent=state.operational?'Module opÃ©rationnel.':'PrÃ©paration technique : la poursuite physique et le spawn natif sont indisponibles dans cette version. Toutes les amendes du jeu restent actives.';
   $('offence').textContent=offences[state.nativeOffence]||state.nativeOffence||'â€”';
   $('amount').textContent=state.nativeFineCount?state.nativeFineAmount+' â‚¬':'â€”';$('deferred').textContent=state.deferredFine==null?'â€”':state.deferredFine+' â‚¬';
   $('distance').textContent=state.policeDistance==null?'â€”':Math.round(state.policeDistance)+' m';
   $('patrols').textContent=state.policeRegistryAvailable?String(state.registeredPolice):'â€”';
-  $('caps').textContent='POLICE1 Â· Diagnostic player.fined '+(state.fineDiagnosticsAvailable?'connectÃ©':'indisponible')+'. Ã€ vÃ©rifier : vÃ©hicule natif, contrÃ´leur de poursuite, obstacles/hors route, marche de lâ€™agent, dÃ©bit diffÃ©rÃ©, identification du tÃ©moin, cycle de vie et confirmation du mode solo. Fuite prÃ©vue : '+state.escapeDistance+' m / '+state.escapeSeconds+' s hors pause.';
+  var vehicleStates={idle:'aucune voiture créée',spawned:'Mégane créée dans le trafic natif',already_present:'Mégane déjà présente',native_rejected:'emplacement refusé par le moteur (place libre, visibilité ou ressource)',no_lane:'aucune voie compatible près du point demandé',no_model:'Mégane absente du catalogue',invalid_registry:'création non confirmée — consulter le journal',removed:'voiture de démonstration retirée',lost:'voiture retirée par le moteur',no_scene:'scène indisponible'};
+  var queryNames=['pas encore exécuté','indisponible','libre','bloqué'];
+  $('caps').textContent=(state.build||'Police')+' · '+(state.spawnPending?'Création en attente…':state.cleanupPending?'Nettoyage en attente de reprise du jeu…':vehicleStates[state.demoVehicleState]||'Diagnostic')+
+   '. Collision de diagnostic : '+(queryNames[state.collisionProbeSweep]||'—')+' ; gabarit entier : '+(queryNames[state.bodyProbeSweep]||'—')+'. '+
+   (state.nativePhaseThreadChanged?'Changement de thread détecté : commandes bloquées. ':'')+
+   'Ce bouton crée une voiture gérée par le trafic normal ; il ne déclenche pas encore une poursuite.';
  }
  window.addEventListener('message',function(e){if(e.source!==host||e.origin!==origin||!e.data||e.data.protocol!==1)return;var m=e.data;
   if(m.type==='policeOffline'){last=0;paint();return;}
