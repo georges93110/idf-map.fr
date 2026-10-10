@@ -13,7 +13,7 @@
  var origin=location.origin, $=function(id){return document.getElementById(id);};
  var labels={disabled:'Désactivé',unavailable:'Diagnostic activé — poursuite indisponible',ready:'Prêt',pursuing:'Poursuite',approaching:'Agent en approche',returning:'Retour au véhicule',paid:'Contrôle terminé',escaped:'Interception abandonnée',fault:'Erreur — intervention arrêtée'};
  var offences={speeding:'Excès de vitesse',red_signal:'Feu rouge',wrong_way:'Contresens',speeding_camera:'Radar',crash:'Collision',no_lights:'Éclairage',avoid_sleeping:'Fatigue'};
- var reasons={accepted:'Commande exécutée.',unsupported:'Opération verrouillée : les accès moteur nécessaires ne sont pas encore validés.',no_scene:'Reprends une partie chargée pour agir sur la scène.',disabled:'Active d’abord le module.',stale:'Le contexte de partie a changé. Renouvelle la commande.',invalid:'Commande non valide.',timeout:'Aucune confirmation reçue. L’état de la DLL fait foi.',busy:'Une commande est déjà en attente.',id_conflict:'Identifiant de commande déjà utilisé.',clients_full:'Trop de clients dans cette partie.'};
+ var reasons={accepted:'Commande reçue. Le résultat de création est affiché ci-dessous.',unsupported:'Opération verrouillée : les accès moteur nécessaires ne sont pas encore validés.',no_scene:'Reprends une partie chargée pour agir sur la scène.',disabled:'Active d’abord le module.',stale:'Le contexte de partie a changé. Renouvelle la commande.',invalid:'Commande non valide.',timeout:'Aucune confirmation reçue. L’état de la DLL fait foi.',busy:'Une commande est déjà en attente.',id_conflict:'Identifiant de commande déjà utilisé.',clients_full:'Trop de clients dans cette partie.'};
  function send(m){host.postMessage(m,origin==='null'?'*':origin);}
  function command(action){if(!state||Date.now()-last>=3000||pending)return;
   try{seq=Math.max(seq,Number(sessionStorage.getItem('idf.police.sequence'))||0);}catch(e){}
@@ -25,17 +25,18 @@
   $('status').textContent=live?(labels[state.phase]||state.phase):'Connexion à la DLL…';$('status').className=live&&state.enabled?'on':'off';
   document.querySelectorAll('[data-action]').forEach(function(b){b.disabled=!live||!!pending||(b.dataset.action==='spawn'?!state.spawnAvailable:(b.dataset.action!=='reset'&&!state.sceneCommands));});
   if(!live)return;
-  $('notice').textContent=state.operational?'Module opérationnel.':'Préparation technique : la poursuite physique et le spawn natif sont indisponibles dans cette version. Toutes les amendes du jeu restent actives.';
+  $('notice').textContent=state.operational?'Module opérationnel.':'Création de la Mégane disponible en partie solo. Poursuite indisponible ; les amendes habituelles restent actives.';
   $('offence').textContent=offences[state.nativeOffence]||state.nativeOffence||'—';
   $('amount').textContent=state.nativeFineCount?state.nativeFineAmount+' €':'—';$('deferred').textContent=state.deferredFine==null?'—':state.deferredFine+' €';
   $('distance').textContent=state.policeDistance==null?'—':Math.round(state.policeDistance)+' m';
   $('patrols').textContent=state.policeRegistryAvailable?String(state.registeredPolice):'—';
-  var vehicleStates={idle:'aucune voiture cr��e',spawned:'M�gane cr��e dans le trafic natif',already_present:'M�gane d�j� pr�sente',native_rejected:'emplacement refus� par le moteur (place libre, visibilit� ou ressource)',no_lane:'aucune voie compatible pr�s du point demand�',no_model:'M�gane absente du catalogue',invalid_registry:'cr�ation non confirm�e � consulter le journal',removed:'voiture de d�monstration retir�e',lost:'voiture retir�e par le moteur',no_scene:'sc�ne indisponible'};
-  var queryNames=['pas encore ex�cut�','indisponible','libre','bloqu�'];
-  $('caps').textContent=(state.build||'Police')+' � '+(state.spawnPending?'Cr�ation en attente�':state.cleanupPending?'Nettoyage en attente de reprise du jeu�':vehicleStates[state.demoVehicleState]||'Diagnostic')+
-   '. Collision de diagnostic : '+(queryNames[state.collisionProbeSweep]||'�')+' ; gabarit entier : '+(queryNames[state.bodyProbeSweep]||'�')+'. '+
-   (state.nativePhaseThreadChanged?'Changement de thread d�tect� : commandes bloqu�es. ':'')+
-   'Ce bouton cr�e une voiture g�r�e par le trafic normal ; il ne d�clenche pas encore une poursuite.';
+  var vehicleStates={idle:'aucune voiture créée',spawned:'Mégane créée dans le trafic natif',already_present:'Mégane déjà présente',native_rejected:'aucun emplacement accepté ; détail natif dans game.log.txt',traffic_full:'trafic complet : aucune place disponible',no_lane:'aucune voie compatible aux points recherchés',no_model:'Mégane absente du catalogue',invalid_registry:'création non confirmée : consulter le journal',removed:'voiture de démonstration retirée',lost:'voiture retirée par le moteur',no_scene:'scène indisponible'};
+  var queryNames=['pas encore exécuté','indisponible','libre','bloqué'];
+  var vehicle=state.spawnPending?('Recherche d’un emplacement '+(state.spawnAttempts||0)+'/45'+(state.demoVehicleState==='traffic_full'?' — attente d’une place dans le trafic':'')):vehicleStates[state.demoVehicleState]||'Diagnostic';
+  $('caps').textContent=(state.build||'Police')+' — '+(state.cleanupPending?'Nettoyage en attente de reprise du jeu…':vehicle)+
+   '. Collision de diagnostic : '+(queryNames[state.collisionProbeSweep]||'—')+' ; gabarit entier : '+(queryNames[state.bodyProbeSweep]||'—')+'. '+
+   (state.nativePhaseThreadChanged?'Changement de thread détecté : commandes bloquées. ':'')+
+   'Un clic lance la recherche ; Arrêter / nettoyer permet de l’annuler. La voiture reste pilotée par le trafic normal.';
  }
  window.addEventListener('message',function(e){if(e.source!==host||e.origin!==origin||!e.data||e.data.protocol!==1)return;var m=e.data;
   if(m.type==='policeOffline'){last=0;paint();return;}
