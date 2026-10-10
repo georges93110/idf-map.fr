@@ -1,4 +1,4 @@
-// COACH29: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
+// COACH38: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
 // Les quatre premières sections suivent les dbus-sec de map.html. Les autres
 // réseaux/autocars/scolaires sont proposés individuellement, sans liste figée.
 function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
@@ -29,7 +29,8 @@ function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
         var ax=Number(a.X),az=Number(a.Z),bx=Number(b.X),bz=Number(b.Z);
         if(![ax,az,bx,bz].every(Number.isFinite))hasDistance=false;else distance+=Math.hypot(bx-ax,bz-az);
       }
-      routes.push({duration:hasDuration?duration:null,distance:hasDistance?distance:null,background:style.background,foreground:style.foreground,badgeKey:style.badgeKey,lineUid:String(line.uid),routeUid:String(route.uid),category:category,line:style.label||number||n,destination:label(last)||name,origin:label(first),stops:stops.length||Number(route.stops&&route.stops.length)||0,search:name});
+      var departure=first&&first.X!=null&&first.Z!=null&&String(first.X).trim()!==''&&String(first.Z).trim()!==''&&Number.isFinite(Number(first.X))&&Number.isFinite(Number(first.Z))?{x:Number(first.X),z:Number(first.Z)}:null;
+      routes.push({departure:departure,duration:hasDuration?duration:null,distance:hasDistance?distance:null,background:style.background,foreground:style.foreground,badgeKey:style.badgeKey,lineUid:String(line.uid),routeUid:String(route.uid),category:category,line:style.label||number||n,destination:label(last)||name,origin:label(first),stops:stops.length||Number(route.stops&&route.stops.length)||0,search:name});
     });
   });
   [['express','Express'],['noctilien','Noctilien'],['replacement_bus','Bus de remplacement']].forEach(function(p){if(present.has(p[0]))categories.push({key:p[0],label:p[1]});});
