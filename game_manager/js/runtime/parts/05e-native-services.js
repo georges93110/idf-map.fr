@@ -1,4 +1,4 @@
-// COACH24: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
+// COACH29: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
 // Les quatre premières sections suivent les dbus-sec de map.html. Les autres
 // réseaux/autocars/scolaires sont proposés individuellement, sans liste figée.
 function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
@@ -19,7 +19,17 @@ function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
       if(category.indexOf('line:')===0)extras.set(category,n||number||String(line.uid));
       present.add(category);
       var style=nativeServiceStyle(line,route,number||n);
-      routes.push({background:style.background,foreground:style.foreground,badgeKey:style.badgeKey,lineUid:String(line.uid),routeUid:String(route.uid),category:category,line:style.label||number||n,destination:label(last)||name,origin:label(first),stops:stops.length||Number(route.stops&&route.stops.length)||0,search:name});
+      // nextStopTime is minutes to the NEXT stop, as in the SAEIV schedule.
+      // Distance is explicitly an estimate between stop coordinates, not a
+      // claimed road-router distance. It is available for every catalogue row.
+      var duration=0,distance=0,hasDuration=stops.length>1,hasDistance=stops.length>1;
+      for(var si=0;si+1<stops.length;si++){
+        var a=stops[si],b=stops[si+1],minutes=Number(a.nextStopTime);
+        if(!Number.isFinite(minutes)||minutes<=0)hasDuration=false;else duration+=minutes;
+        var ax=Number(a.X),az=Number(a.Z),bx=Number(b.X),bz=Number(b.Z);
+        if(![ax,az,bx,bz].every(Number.isFinite))hasDistance=false;else distance+=Math.hypot(bx-ax,bz-az);
+      }
+      routes.push({duration:hasDuration?duration:null,distance:hasDistance?distance:null,background:style.background,foreground:style.foreground,badgeKey:style.badgeKey,lineUid:String(line.uid),routeUid:String(route.uid),category:category,line:style.label||number||n,destination:label(last)||name,origin:label(first),stops:stops.length||Number(route.stops&&route.stops.length)||0,search:name});
     });
   });
   [['express','Express'],['noctilien','Noctilien'],['replacement_bus','Bus de remplacement']].forEach(function(p){if(present.has(p[0]))categories.push({key:p[0],label:p[1]});});
