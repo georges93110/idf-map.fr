@@ -6,7 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Game Overlay</title>
   <link rel="stylesheet" href="css/game2.css" />
+  <script>
+    // Float UI remains an audio/data host; hide before its first painted frame.
+    if ((window.chrome && window.chrome.webview) || new URLSearchParams(location.search).get('idfFloatUi') === '1')
+      document.documentElement.classList.add('idf-float-ui');
+  </script>
   <style>
+    html.idf-float-ui, html.idf-float-ui body { background: transparent !important; }
+    html.idf-float-ui body { opacity: 0 !important; pointer-events: none !important; }
     #overlayNotificationPreview { display: none !important; }
     /* Hide before external CSS/runtime arrives; only explicit manager mode reveals it. */
     body:not(.is-manager-mode) #overlayManager { display: none !important; }
@@ -832,7 +839,7 @@
   <script defer src="../config/config.js"></script>
   <script defer src="config/line-config.js"></script>
   <script defer src="js/telemetry-connection.js?v=bus-coach-7"></script>
-  <script defer src="js/runtime/game2-main.js?v=bus-coach-60"></script>
+  <script defer src="js/runtime/game2-main.js?v=bus-coach-63"></script>
 <!-- Global Loading Screen -->
   <div id="globalLoadingScreen" class="global-loading-screen">
     <div class="global-loading-content">

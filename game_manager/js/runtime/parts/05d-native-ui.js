@@ -207,15 +207,17 @@ function syncNativeBusCompletion(s){
   return true;
 }
 
-// COACH60: live service -> advanced HTML atlas, rendered by the DLL's bridge.
+// COACH63: active service or "Sans voyageur", same native TOBJ targets.
 function buildNativeGirouetteMessage(s){
- var enabled=normalizeGameMode(currentGameMode)==='bus'&&!!s.selected&&!!saeivRouteState&&!!saeivRouteState.lineUid;
- var line=enabled&&(dbusLines||[]).find(function(l){return String(l.uid)===String(saeivRouteState.lineUid);});
+ var bus=normalizeGameMode(currentGameMode)==='bus';
+ var selected=bus&&!!s.selected&&!!saeivRouteState&&!!saeivRouteState.lineUid;
+ var line=selected&&(dbusLines||[]).find(function(l){return String(l.uid)===String(saeivRouteState.lineUid);});
  var route=line&&(line.routes||[]).find(function(r){return String(r.uid)===String(saeivRouteState.routeUid);});
  var stops=route?getRouteStopEntries(route):[],last=stops[stops.length-1];
- var number=route?getLineNumber(line,route):String(s.lineNumber||'');
+ var number=route?getLineNumber(line,route):'';
  var style=route?nativeServiceStyle(line,route,number):{};
- return {type:'nativeGirouette',protocol:1,generation:nativeGameModeGeneration,enabled:!!(enabled&&route),
-   line:style.label||number,destination:last?String(last.name||last.stop&&last.stop.name||''):String(s.routeName||''),
+ return {type:'nativeGirouette',protocol:1,generation:nativeGameModeGeneration,enabled:bus,
+   line:route?(style.label||number):'',destination:route?(last?String(last.name||last.stop&&last.stop.name||''):String(s.routeName||'')):'Sans voyageur',
+   badge:!!route&&line.badge!==false,partial:!!route&&route.partiel===true,stripe:style.stripe||'',
    background:style.background||'#000000',foreground:style.foreground||'#ffffff'};
 }

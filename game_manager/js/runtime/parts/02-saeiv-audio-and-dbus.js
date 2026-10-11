@@ -522,7 +522,9 @@
         });
         return out;
       }
+      var saeivPendingStopArrivals = new Map();
       function stopSaeivRouteAudioPlayback() {
+        saeivPendingStopArrivals.clear();
         saeivRouteAudio.playbackToken += 1;
         saeivRouteAudio.destinationRequest = null;
         saeivRouteAudio.queue = [];
@@ -1353,6 +1355,7 @@
             if (terminusClip) {
               primeSaeivTerminusAudio(terminusClip);
             }
+            flushPendingSaeivStopArrivals();
             saeivLastStateKey = "";
             syncSaeivExternalState(true);
             return true;
@@ -1360,6 +1363,17 @@
           .catch(function () {
             return false;
           });
+      }
+      function parseDbusXmlText(txt) {
+        // Accept the two legacy boolean flags without quotes, only in tag
+        // attributes. Preserve quoted names, comments and CDATA verbatim.
+        var source=String(txt).replace(/<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<[^>"']*(?:(?:"[^"]*"|'[^']*')[^>"']*)*>/g,function(tag){
+          if(tag.slice(0,2)==='<!')return tag;
+          return tag.replace(/"[^"]*"|'[^']*'|\b(badge|partiel)\s*=\s*(true|false)(?=\s|\/?>)/gi,function(full,key,value){return key?key+'="'+value.toLowerCase()+'"':full;});
+        });
+        var xml=new DOMParser().parseFromString(source,'text/xml');
+        if(xml.querySelector('parsererror'))throw new Error('XML invalide');
+        return xml;
       }
       function fetchXmlDoc(path, version) {
         var loader = version
@@ -1371,7 +1385,7 @@
             return res.text();
           })
           .then(function (txt) {
-            return new DOMParser().parseFromString(txt, "text/xml");
+            return parseDbusXmlText(txt);
           });
       }
       function parseDbusStopsXml(xml) {
@@ -1440,6 +1454,7 @@
             return {
               uid: routeUid,
               name: routeName,
+              partiel: /^(?:true|1)$/i.test(String(routeNode.getAttribute("partiel") || "").trim()),
               stops: stops,
               totalMinutes: totalMinutes
             };
@@ -1448,6 +1463,7 @@
             uid: lineUid,
             uidRaw: rawUid,
             number: number,
+            badge: !/^(?:false|0)$/i.test(String(lineNode.getAttribute("badge") || "").trim()),
             reseau: String(lineNode.getAttribute("reseau") || "").trim(),
             type: String(lineNode.getAttribute("type") || "").trim(),
             routes: routes
@@ -1690,9 +1706,12 @@
         if (!allowRepeat && saeivAnnouncedStopUids.has(stopUid)) return false;
         var clipName = findSaeivStopClipName(entry);
         if (!clipName) {
-          if (!allowRepeat) saeivAnnouncedStopUids.add(stopUid);
+          // A zero-passenger stop can advance before its audio pack finishes
+          // loading. Keep the arrival; absence of a loaded clip is not playback.
+          if (!saeivRouteAudio.available) saeivPendingStopArrivals.set(stopUid, {entry:entry, options:opts, routeKey:saeivRouteAudio.routeKey});
           return false;
         }
+        saeivPendingStopArrivals.delete(stopUid);
         var prefixClipName = isSaeivTransdevAutoVoiceActive() ? findSaeivNextStopPrefixClipName() : "";
         var terminusClipName = opts.appendTerminus === true ? findSaeivTerminusClipName() : "";
         var onPlayed = typeof opts.onPlayed === "function" ? opts.onPlayed : null;
@@ -1715,6 +1734,12 @@
         }
         if (queued && opts.markAnnounced !== false) saeivAnnouncedStopUids.add(stopUid);
         return queued;
+      }
+      function flushPendingSaeivStopArrivals() {
+        if (!saeivRouteAudio.available) return;
+        var pending=Array.from(saeivPendingStopArrivals.values());saeivPendingStopArrivals.clear();
+        if (saeivStopAnnouncementSoundsEnabled !== true) return;
+        pending.forEach(function(item){if(item.routeKey===saeivRouteAudio.routeKey)announceStopArrivalOnce(item.entry,item.options);});
       }
       function maybeAnnounceSaeivTransdevNextStopOnDeparture(previousStoppedIndex, nextStoppedIndex, currentIndex, targetIndex, lastIndex, entries, options) {
         if (saeivStopAnnouncementSoundsEnabled !== true) return false;
@@ -2404,9 +2429,9 @@
               }
             }
           } else {
-            if (!isSaeivTransdevAutoVoiceActive() || outsideAnyStopAreaForAnnouncement) {
-              announceStopArrivalOnce(targetEntry);
-            }
+            // Arrival is independent of boarding/alighting and still runs if
+            // the first telemetry sample is already inside the stop zone.
+            announceStopArrivalOnce(targetEntry);
           }
         }
         var reachedTerminusNow = targetIndex >= lastIndex;
