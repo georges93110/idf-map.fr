@@ -501,6 +501,7 @@
       }
       function stopSaeivRouteAudioPlayback() {
         saeivRouteAudio.playbackToken += 1;
+        saeivRouteAudio.destinationRequest = null;
         saeivRouteAudio.queue = [];
         saeivRouteAudio.playing = false;
         saeivRouteAudio.preparePromise = null;
@@ -532,61 +533,69 @@
         saeivRouteAudio.terminusAudio = audio;
         return true;
       }
+      // A menu/loading transition is not the end of an announcement. Keep both
+      // the current clip and its sequence until actual media completion.
+      function canPlaySaeivRouteAudio() {
+        if (managerState.visible || telemetryPaused || !telemetryConnected) return false;
+        if (typeof nativeServicePendingSound !== "undefined" && nativeServicePendingSound) return false;
+        if (isSaeivServiceAcceptAudioDelayActive()) return false;
+        return busAudioReady({ followMaster: true });
+      }
       function processSaeivRouteAudioQueue() {
-        if (saeivRouteAudio.playing) return;
-        if (!saeivRouteAudio.available) return;
+        if (saeivRouteAudio.playing || !saeivRouteAudio.available || !canPlaySaeivRouteAudio()) return;
         var nextEntry = saeivRouteAudio.queue.shift();
         if (!nextEntry) return;
-        var next = (typeof nextEntry === "string")
-          ? { clipName: nextEntry, onEnded: null }
-          : nextEntry;
-        var nextClip = String(next && next.clipName || "").trim();
-        if (!nextClip) {
-          processSaeivRouteAudioQueue();
-          return;
-        }
-        nextClip = findSaeivAudioClipName(nextClip);
-        if (!nextClip) {
-          processSaeivRouteAudioQueue();
-          return;
-        }
-        var onEnded = typeof (next && next.onEnded) === "function" ? next.onEnded : null;
-        var url = linePreviewAudioClipUrl(saeivRouteAudio.folderPath, nextClip);
-        var token = saeivRouteAudio.playbackToken + 1;
-        saeivRouteAudio.playbackToken = token;
-        var audio = createBusSpatialAudio(url, "announcement");
+        var next = typeof nextEntry === "string" ? { clipName: nextEntry } : nextEntry;
+        var nextClip = findSaeivAudioClipName(String(next.clipName || "").trim());
+        if (!nextClip) { saeivRouteAudio.queue = []; return; }
+        var token = ++saeivRouteAudio.playbackToken;
+        var audio = createBusSpatialAudio(linePreviewAudioClipUrl(saeivRouteAudio.folderPath, nextClip), "announcement");
         setBusAudioLevel(audio, 1);
         saeivRouteAudio.audio = audio;
         saeivRouteAudio.playing = true;
         saeivRouteAudio.currentClipName = nextClip;
         saeivRouteAudio.currentClipEndedHooks = [];
-        var finished = false;
-        var finish = function () {
-          if (finished) return;
+        var finished = false, pending = false, retryAt = 0, mediaRetries = 0;
+        function current() { return !finished && token === saeivRouteAudio.playbackToken && saeivRouteAudio.audio === audio; }
+        function failed(error) {
+          if (!current()) return;
+          pending = false;
+          var name = String(error && error.name || "");
+          if (name === "AbortError" || name === "AudioDataTimeout" || name === "NotAllowedError") {
+            retryAt = Date.now() + 500; return;
+          }
+          if (audio.error && (audio.error.code === 1 || audio.error.code === 2) && mediaRetries++ < 2) {
+            retryAt = Date.now() + 1000;
+            try { audio.load(); } catch (_) {}
+            return;
+          }
+          // A missing/undecodable first clip must not turn into a successful
+          // partial announcement or trigger its onEnded callbacks.
+          console.warn("[Bus audio] Announcement cancelled after media failure", name || (audio.error && audio.error.code));
+          stopSaeivRouteAudioPlayback();
+        }
+        audio.saeivResume = function () {
+          if (!current() || pending || audio.ended || !audio.paused || Date.now() < retryAt || !canPlaySaeivRouteAudio()) return;
+          pending = true;
+          try { Promise.resolve(audio.play()).then(function () { pending = false; }, failed); }
+          catch (error) { failed(error); }
+        };
+        audio.onended = function () {
+          if (!current()) return;
           finished = true;
-          if (token !== saeivRouteAudio.playbackToken) return;
           saeivRouteAudio.playing = false;
           saeivRouteAudio.audio = null;
-          var hooks = Array.isArray(saeivRouteAudio.currentClipEndedHooks)
-            ? saeivRouteAudio.currentClipEndedHooks.slice()
-            : [];
+          var hooks = (saeivRouteAudio.currentClipEndedHooks || []).slice();
           saeivRouteAudio.currentClipEndedHooks = [];
           saeivRouteAudio.currentClipName = "";
-          if (onEnded) {
-            try { onEnded(); } catch (errOnEnded) { }
-          }
-          hooks.forEach(function (hook) {
-            if (typeof hook !== "function") return;
-            try { hook(); } catch (errHook) { }
-          });
+          if (typeof next.onEnded === "function") { try { next.onEnded(); } catch (_) {} }
+          hooks.forEach(function (hook) { try { hook(); } catch (_) {} });
           processSaeivRouteAudioQueue();
           saeivLastStateKey = "";
           syncSaeivExternalState(true);
         };
-        audio.onended = finish;
-        audio.onerror = finish;
-        // audio.onpause = finish; // Removed to allow resume after pause/menu
-        audio.play().catch(finish);
+        audio.onerror = function () { failed(audio.error); };
+        audio.saeivResume();
       }
       function resolveSaeivServiceAcceptAudioWaiters() {
         var resolve = saeivServiceAcceptAudioReleaseResolve;
@@ -851,20 +860,15 @@
         return playSaeivStopRequestAudioForCurrentTarget();
       }
       function syncSaeivAudioPauseState() {
-        var shouldMute = (typeof managerState !== "undefined" && managerState.visible) || (typeof telemetryPaused !== "undefined" && telemetryPaused);
         var audio = saeivRouteAudio.audio;
-        if (!audio) return;
-        if (shouldMute) {
-          if (!audio.paused) {
-            try { audio.pause(); } catch (err) { }
-          }
-        } else {
-          if (audio.paused && saeivRouteAudio.playing) {
-            audio.play().catch(function (err) { });
-          }
+        if (!audio) { processSaeivRouteAudioQueue(); return; }
+        if (!canPlaySaeivRouteAudio()) {
+          if (!audio.paused) { try { audio.pause(); } catch (_) {} }
+        } else if (audio.paused && saeivRouteAudio.playing) {
+          if (audio.saeivResume) audio.saeivResume();
+          else audio.play().catch(function () {});
         }
       }
-
       function syncWidgetsPauseState() {
         var isManagerVisible = (typeof managerState !== "undefined" && managerState.visible);
         var isTelemetryPaused = (typeof telemetryPaused !== "undefined" && telemetryPaused);
@@ -1068,29 +1072,26 @@
         return isSaeivHudWidgetTypeActive("saeiv_mini") && !isSaeivHudWidgetTypeActive("saeiv");
       }
       function scheduleSaeivDestinationAnnouncementWhenAudioReady(routeKey) {
-        var expectedKey = String(routeKey || (saeivRouteState && saeivRouteState.selectedKey) || "").trim();
-        if (!expectedKey) return false;
-        var playWhenCurrent = function () {
-          if (!saeivRouteState || typeof saeivRouteState !== "object") return false;
-          if (String(saeivRouteState.selectedKey || "").trim() !== expectedKey) return false;
-          return playSaeivDestinationAnnouncementIfAvailable({
-            action: "game-destination-announcement-auto",
-            expectedRouteKey: expectedKey,
-            requireShortcutContext: false
-          });
-        };
-        var preparePromise = saeivRouteAudio && saeivRouteAudio.preparePromise;
-        if (preparePromise && typeof preparePromise.then === "function") {
-          preparePromise
-            .then(function () {
-              setTimeout(playWhenCurrent, 0);
-            })
-            .catch(function () { });
-          return true;
-        }
-        setTimeout(playWhenCurrent, 0);
+        var key = String(routeKey || (saeivRouteState && saeivRouteState.selectedKey) || "").trim();
+        if (!key) return false;
+        var request = { key: key, ready: false };
+        saeivRouteAudio.destinationRequest = request;
+        Promise.resolve(saeivRouteAudio.preparePromise).then(function () {
+          if (saeivRouteAudio.destinationRequest === request) request.ready = true;
+        }).catch(function () { if (saeivRouteAudio.destinationRequest === request) saeivRouteAudio.destinationRequest = null; });
         return true;
       }
+      function tickSaeivRouteAudio() {
+        var request = saeivRouteAudio.destinationRequest;
+        if (request && request.key !== String(saeivRouteState && saeivRouteState.selectedKey || "")) {
+          saeivRouteAudio.destinationRequest = null;
+        } else if (request && request.ready && canPlaySaeivRouteAudio() && !isSaeivManualAnnouncementBusy()) {
+          saeivRouteAudio.destinationRequest = null;
+          playSaeivDestinationAnnouncementIfAvailable({ action: "game-destination-announcement-auto", expectedRouteKey: request.key, requireShortcutContext: false });
+        }
+        syncSaeivAudioPauseState();
+      }
+      window.setInterval(tickSaeivRouteAudio, 200);
       function chainSaeivAudioEndCallback(existing, appended) {
         if (typeof appended !== "function") return existing;
         if (typeof existing !== "function") return appended;
@@ -1201,9 +1202,8 @@
         var clips = [];
         clips.push(departureClip);
         clips.push(destinationClip);
-        for (var i = 0; i < clips.length; i += 1) {
-          if (!enqueueSaeivRouteAudioClip(clips[i])) return false;
-        }
+        clips.forEach(function (clip) { saeivRouteAudio.queue.push({ clipName: clip, onEnded: null }); });
+        processSaeivRouteAudioQueue();
         saeivLastAction = String(opts.action || "game-destination-announcement-shortcut");
         syncSaeivExternalState(true);
         return true;

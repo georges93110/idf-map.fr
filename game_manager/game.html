@@ -7,13 +7,15 @@
   <title>Game Overlay</title>
   <link rel="stylesheet" href="css/game2.css" />
   <style>
+    /* Hide before external CSS/runtime arrives; only explicit manager mode reveals it. */
+    body:not(.is-manager-mode) #overlayManager { display: none !important; }
     body.is-native-bus-ui #mainMenuModal,
     body.is-native-bus-ui #overlayManager,
     body.is-native-bus-ui #overlayRoot { display: none !important; }
   </style>
 </head>
 
-<body>
+<body class="is-manager-hidden is-game-mode">
   <main class="app">
     <aside class="panel control-panel">
       <h1 class="title">Selection de jeu</h1>
@@ -829,7 +831,7 @@
   <script defer src="../config/config.js"></script>
   <script defer src="config/line-config.js"></script>
   <script defer src="js/telemetry-connection.js?v=bus-coach-7"></script>
-  <script defer src="js/runtime/game2-main.js?v=bus-coach-47"></script>
+  <script defer src="js/runtime/game2-main.js?v=bus-coach-48"></script>
 <!-- Global Loading Screen -->
   <div id="globalLoadingScreen" class="global-loading-screen">
     <div class="global-loading-content">
