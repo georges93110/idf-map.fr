@@ -147,7 +147,8 @@
         return n;
       }
       function getGlobalAudioVolumeFactor() {
-        return clampGlobalAudioVolumePercent(globalAudioVolumePercent) / 100;
+        if (nativeGameAudio.seen) return nativeGameAudio.available && !nativeGameAudio.muted && Date.now()-nativeGameAudio.stamp < 2000 ? nativeGameAudio.volume : 0;
+        return 0; // Native master volume is authoritative; no HTML gain override.
       }
       function updateSliderFill(slider) {
         if (!slider) return;
@@ -259,7 +260,7 @@
           var AudioContextClass = window.AudioContext || window.webkitAudioContext;
           if (!AudioContextClass) return;
           var ctx = new AudioContextClass();
-          var volume = (clampGlobalAudioVolumePercent(globalAudioVolumePercent) / 100) * 0.3;
+          var volume = getGlobalAudioVolumeFactor() * 0.3;
 
           var playTone = function (freq, start, duration) {
             var osc = ctx.createOscillator();
@@ -497,28 +498,6 @@
         var safeName = String(name || "Systeme");
         return safeName + (isReloaded ? " recharg\u00E9e" : " charg\u00E9");
       }
-      function showSystemLoadedNotification() {
-        var systemName = readSystemName();
-        var isReloaded = consumeReloadNoticeIntent();
-        showOverlayNotification(buildSystemLoadedTitle(systemName, isReloaded), 3200);
-      }
-      function showSystemLoadedNotificationWhenReady() {
-        var tries = 0;
-        var maxTries = 20;
-        var isReloaded = consumeReloadNoticeIntent();
-        function attempt() {
-          tries += 1;
-          var detected = readSystemNameValue();
-          if (detected || tries >= maxTries) {
-            var finalName = detected || "Systeme";
-            showOverlayNotification(buildSystemLoadedTitle(finalName, isReloaded), 3200);
-            return;
-          }
-          setTimeout(attempt, 150);
-        }
-        attempt();
-      }
-
       function clampWidgetRect(state, type) {
         var safeType = normalizeWidgetType(type);
         if (!state || !isType(safeType)) return;

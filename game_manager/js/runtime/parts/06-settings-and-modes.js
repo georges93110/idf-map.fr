@@ -28,12 +28,7 @@
         }
         targetEl.appendChild(wrap);
       }
-      function normalizeShowExperimentalWidgets(value) {
-        if (value === true) return true;
-        if (value === false) return false;
-        var raw = String(value || "").trim().toLowerCase();
-        return raw === "1" || raw === "true" || raw === "yes" || raw === "on";
-      }
+      function normalizeShowExperimentalWidgets(value) { return true; }
       function normalizeShowUnavailablePlayModes(value) {
         if (value === true) return true;
         if (value === false) return false;
@@ -387,13 +382,7 @@
           discordPresenceRouteStartedAtSec = 0;
         }
       }
-      function normalizePccVoiceReceptionMode(value) {
-        var raw = String(value || "").trim().toLowerCase();
-        if (raw === PCC_VOICE_RECEPTION_SOLO || raw === "only_solo") return PCC_VOICE_RECEPTION_SOLO;
-        if (raw === PCC_VOICE_RECEPTION_CONVOY || raw === "convoi" || raw === "only_convoy") return PCC_VOICE_RECEPTION_CONVOY;
-        if (raw === PCC_VOICE_RECEPTION_NEVER || raw === "jamais" || raw === "off" || raw === "false") return PCC_VOICE_RECEPTION_NEVER;
-        return PCC_VOICE_RECEPTION_ALWAYS;
-      }
+      function normalizePccVoiceReceptionMode(value) { return PCC_VOICE_RECEPTION_CONVOY; }
       function getPccVoiceReceptionModeLabel(value) {
         var mode = normalizePccVoiceReceptionMode(value);
         if (mode === PCC_VOICE_RECEPTION_SOLO) return "Uniquement en solo";

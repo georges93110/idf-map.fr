@@ -53,6 +53,7 @@ function applyNativeBusSettings(packet) {
 function receiveNativeBusSettings(packet) {
   var state=nativeBusSettingsState;
   if(packet.protocol !== 1) return;
+  if(packet.action === "request"){ if(Date.now()-(state.requestAt||0)>1000){state.requestAt=Date.now();nativeBusSettingsConnect();} return; }
   if(packet.action === "readOnly"){state.readOnly=true;return;}
   if(packet.action !== "current" || !Number.isInteger(packet.revision) || !Array.isArray(packet.values) || packet.values.length!==16) return;
   if(state.revision === packet.revision && state.current && JSON.stringify(state.current.values)===JSON.stringify(packet.values) && JSON.stringify(state.current.keys)===JSON.stringify(packet.keys)) return;

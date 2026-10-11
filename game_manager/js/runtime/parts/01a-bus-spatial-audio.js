@@ -1,6 +1,19 @@
 /* Shared bus audio: existing announcement/validator players, no extra widget.
    Coefficients are tunable acoustics, not a claim of physical wall simulation.
    Web Audio media -> low-pass -> gain -> stereo pan -> output. */
+var nativeGameAudio = { seen:false, available:false, volume:0, muted:false, stamp:0 };
+function updateNativeGameAudio(data) {
+  if (!data || typeof data.audioMasterAvailable !== "boolean") return;
+  var before = getGlobalAudioVolumeFactor();
+  nativeGameAudio.seen=true; nativeGameAudio.stamp=Date.now();
+  nativeGameAudio.available=data.audioMasterAvailable === true && Number.isFinite(data.audioMasterVolume) && data.audioMasterVolume >= 0 && data.audioMasterVolume <= 1;
+  nativeGameAudio.volume=data.audioMasterVolume; nativeGameAudio.muted=data.audioMasterMuted === true;
+  if (getGlobalAudioVolumeFactor() !== before) {
+    if(typeof syncSaeivRuntimeAudioVolumes === "function") syncSaeivRuntimeAudioVolumes();
+    if(typeof syncPccVoiceActiveAudioVolume === "function") syncPccVoiceActiveAudioVolume();
+    if(typeof syncSaeivExternalState === "function") syncSaeivExternalState(true);
+  }
+}
 var busSpatialAudio = { context: null, records: new WeakMap(), active: new Set(), telemetry: null, stamp: 0, seen: false, timer: null };
 function resumeBusAudioContext() {
   var state = busSpatialAudio, context = state.context;
@@ -45,6 +58,7 @@ function updateBusSpatialRecord(record) {
 }
 function updateBusSpatialAudioTelemetry(raw) {
   var data = raw && raw.data && typeof raw.data === "object" ? raw.data : raw;
+  updateNativeGameAudio(data);
   if (!data || typeof data.audioCameraAvailable !== "boolean") return;
   var filtered = {};
   Object.keys(data).forEach(function (key) { if (/^audio/.test(key) || key === "paused" || key === "busEntryDoorPosition") filtered[key] = data[key]; });

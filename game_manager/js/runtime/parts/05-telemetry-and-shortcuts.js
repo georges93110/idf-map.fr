@@ -1377,10 +1377,7 @@
             triggerSaeivDestinationAnnouncementFromShortcut();
           }
 
-          if (!nativeOverlayModeKnown && shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_OVERLAY, keyName, raw)) {
-            var nextMode = telemetryUiMode === 2 ? "Fermé" : "Ouvert";
-            applyTelemetryUiMode(telemetryUiMode === 2 ? 1 : 2);
-          }
+          // HTML manager opening by a keyboard shortcut has been removed.
 
           // --- Interactions natives spécifiques ---
           // 1. Echap (0x1B) : Fermer le menu principal
@@ -3005,17 +3002,7 @@
         }
         if (gameMode !== "bus") return false;
 
-        var mode = typeof normalizePccVoiceReceptionMode === "function"
-          ? normalizePccVoiceReceptionMode(pccVoiceReceptionMode)
-          : String(pccVoiceReceptionMode || "always").trim().toLowerCase();
-        if (mode === "never") return false;
-        if (mode === "always") return true;
-        var inConvoy = typeof isLocalPlayerInConvoy === "function"
-          ? isLocalPlayerInConvoy()
-          : telemetryConvoyActive === true;
-        if (mode === "solo") return inConvoy !== true;
-        if (mode === "convoy") return inConvoy === true;
-        return true;
+        return typeof isLocalPlayerInConvoy === "function" ? isLocalPlayerInConvoy() === true : telemetryConvoyActive === true;
       }
       function getPccVoiceChunkInfo(message) {
         if (!message || typeof message !== "object") return null;

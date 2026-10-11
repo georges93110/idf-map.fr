@@ -884,11 +884,7 @@
         var fallback = String(parsed.lineNumber || "").trim();
         return fallback || "?";
       }
-      function normalizeSaeivTimeSystem(value) {
-        var raw = String(value || "").trim().toLowerCase();
-        if (raw === SAEIV_TIME_SYSTEM_IRL || raw === "irl") return SAEIV_TIME_SYSTEM_IRL;
-        return SAEIV_TIME_SYSTEM_GAME;
-      }
+      function normalizeSaeivTimeSystem(value) { return SAEIV_TIME_SYSTEM_GAME; }
       function parseClockTextToSecondsOfDay(value) {
         var text = String(value || "").trim();
         var match = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(text);

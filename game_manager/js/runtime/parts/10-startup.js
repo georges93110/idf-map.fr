@@ -108,7 +108,7 @@
         sessionStorage.removeItem("overlay_reload_tab_intent");
       } catch (err) { }
 
-      showSystemLoadedNotificationWhenReady();
+      consumeReloadNoticeIntent(); // Startup is silent; no loaded/reloaded notification.
 
       // Injection de la version dans le footer de chargement
       var versionEl = document.getElementById("globalLoadingVersionPart");

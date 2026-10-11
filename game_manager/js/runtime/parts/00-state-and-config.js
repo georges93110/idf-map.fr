@@ -497,7 +497,7 @@
       var telemetryOverlayAlphaPercent = TELEMETRY_OVERLAY_ALPHA_DEFAULT;
       var notificationScalePercent = NOTIFICATION_SCALE_DEFAULT;
       var globalAudioVolumePercent = GLOBAL_AUDIO_VOLUME_DEFAULT;
-      var showExperimentalWidgets = false;
+      var showExperimentalWidgets = true;
       var showUnavailablePlayModes = true;
       var saeivStopAnnouncementSoundsEnabled = true;
       var saeivPassengerValidationSoundsEnabled = true;
@@ -508,7 +508,7 @@
       var PCC_VOICE_RECEPTION_SOLO = "solo";
       var PCC_VOICE_RECEPTION_CONVOY = "convoy";
       var PCC_VOICE_RECEPTION_NEVER = "never";
-      var pccVoiceReceptionMode = PCC_VOICE_RECEPTION_ALWAYS;
+      var pccVoiceReceptionMode = PCC_VOICE_RECEPTION_CONVOY;
       var hideUiWhenManagerHidden = false;
       var SAEIV_BUS_UNLISTED_CAPACITY_DEFAULT = 100;
       var SAEIV_BUS_UNLIMITED_THRESHOLD = 300;
