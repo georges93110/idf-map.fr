@@ -186,8 +186,14 @@
         "Bienvenue sur cette ligne IDFM",
         "Montée par l’avant",
         "Montée par l’avant (Ancien)",
+        "Terminus",
         "Validez votre titre",
         "Validez votre titre (Ancien)"
+      ]
+    },
+    "TRANSDEV": {
+      "_files": [
+        "Terminus"
       ]
     }
   }
