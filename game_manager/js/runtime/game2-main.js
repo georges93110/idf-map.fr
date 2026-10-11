@@ -27,7 +27,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "bus-coach-50";
+  runtime.version = "bus-coach-51";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
@@ -124,7 +124,7 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "bus-coach-50");
+    partUrl.searchParams.set("v", "bus-coach-51");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
       if (part === "parts/05d-native-ui.js" && text.indexOf("function syncNativeBusHud(") < 0) {

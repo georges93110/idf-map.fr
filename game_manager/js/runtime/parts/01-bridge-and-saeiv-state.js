@@ -1613,7 +1613,9 @@
         // because the driver starts moving before both doors report fully closed.
         state.stopNecessary = !view.flowComplete;
         saeivMaxPassengersEverInBus = Math.max(saeivMaxPassengersEverInBus, view.inBus);
-        var completed = IDFBusService.completed(view, opts.isStopped === true);
+        var completed = IDFBusService.completed(view, opts.isStopped === true) ||
+          (opts.isTerminus === true && opts.inReach === true && opts.isStopped === true &&
+           view.flowComplete === true && view.inBus === 0 && view.alightingDone >= view.alightingTotal);
         if (completed) {
           saeivStopServedLog[stopIndex] = true;
           saeivCurrentStopWasServed = true;

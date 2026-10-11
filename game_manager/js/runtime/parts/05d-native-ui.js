@@ -98,6 +98,7 @@ function syncNativeBusHud(force,payload){
     if(!state||now-nativeBusHudLastPayloadAt>2000){
       state=buildSaeivStatePayloadFromGame();nativeBusHudLastPayload=state;nativeBusHudLastPayloadAt=now;
     }
+    syncNativeBusCompletion(state);
     var message=buildNativeBusHudMessage(state);
     telemetryWs.send(JSON.stringify(message));nativeBusHudLastSend=now;
     nativeBusHudDiagnostics.lastSentAt=now;nativeBusHudDiagnostics.enabled=message.enabled;
@@ -164,5 +165,32 @@ function receiveNativeGameMode(m){
     // established before a restored/paused service submits its destination.
     syncNativeGpsDestination(false);
   }
+  return true;
+}
+
+// COACH51: settlement belongs to the DLL. Repeated snapshots are idempotent.
+var nativeCompletionToken=0,nativeCompletionId=0,nativeCompletionSequence=0;
+function syncNativeBusCompletion(s){
+  var mode=window.GAME2_MANAGER.nativeGameMode;
+  if(!mode||mode.mode!=="bus"||!s||!s.selected||!telemetryWs||telemetryWs.readyState!==1)return false;
+  var token=nativeModeActiveServiceToken();if(!token)return false;
+  if(token!==nativeCompletionToken){nativeCompletionToken=token;nativeCompletionId=Math.max(Date.now(),nativeCompletionId+1);nativeCompletionSequence=0;}
+  var stops=Array.isArray(saeivRouteState&&saeivRouteState.stops)?saeivRouteState.stops:[];
+  if(stops.length<2)return false;
+  var distance=0;
+  for(var i=1;i<stops.length;i++){
+    var a=stops[i-1].point,b=stops[i].point;
+    if(a&&b&&[a.x,a.z,b.x,b.z].every(Number.isFinite))distance+=Math.hypot(b.x-a.x,b.z-a.z);
+  }
+  var limit=function(v,min,max){return Math.max(min,Math.min(max,Math.round(Number(v)||0)));};
+  var names=Array.isArray(s.audioStopNames)?s.audioStopNames:[];
+  telemetryWs.send(JSON.stringify({type:"nativeBusCompletion",protocol:1,epoch:mode.epoch,revision:mode.revision,
+    scheduled:Number.isFinite(s.routeFinalDelayMinutes),
+    token:token,service:nativeCompletionId,sequence:++nativeCompletionSequence,started:s.routeStarted===true,completed:s.routeCompleted===true,
+    stops:stops.length,served:limit(s.routeServedStopsCount,0,stops.length),passengers:limit(s.routeTransportedPassengers,0,10000),
+    elapsedSeconds:limit(Number(s.routeElapsedMs)/1000,0,172800),distanceMetres:limit(distance,0,1000000),
+    delaySeconds:limit(Number(s.routeFinalDelayMinutes)*60,-172800,172800),
+    line:nativeBusHudText(s.lineNumber||"Bus",64),origin:nativeBusHudText(names[0]||stops[0].name||"Départ",160),
+    destination:nativeBusHudText(names[names.length-1]||stops[stops.length-1].name||s.routeName||"Terminus",160)}));
   return true;
 }
