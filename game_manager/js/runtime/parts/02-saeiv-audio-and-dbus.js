@@ -525,7 +525,7 @@
         safeName = findSaeivAudioClipName(safeName);
         if (!safeName) return false;
         var url = linePreviewAudioClipUrl(saeivRouteAudio.folderPath, safeName);
-        var audio = createBusSpatialAudio(url, "announcement");
+        var audio = createBusSpatialAudio(url, "routeAnnouncement");
         setBusAudioLevel(audio, 1);
         audio.preload = "auto";
         try { audio.load(); } catch (err) { }
@@ -549,7 +549,7 @@
         var nextClip = next.globalUrl ? String(next.clipName) : findSaeivAudioClipName(String(next.clipName || "").trim());
         if (!nextClip) { saeivRouteAudio.queue = []; return; }
         var token = ++saeivRouteAudio.playbackToken;
-        var audio = createBusSpatialAudio(next.globalUrl || linePreviewAudioClipUrl(saeivRouteAudio.folderPath, nextClip), "announcement");
+        var audio = createBusSpatialAudio(next.globalUrl || linePreviewAudioClipUrl(saeivRouteAudio.folderPath, nextClip), next.globalUrl ? "shortcutAnnouncement" : "routeAnnouncement");
         setBusAudioLevel(audio, 1);
         saeivRouteAudio.audio = audio;
         saeivRouteAudio.playing = true;
@@ -945,12 +945,12 @@
         ) {
           var src = String(saeivRouteAudio.terminusAudio.currentSrc || saeivRouteAudio.terminusAudio.src || "").trim();
           if (src) {
-            audio = createBusSpatialAudio(src, "announcement");
+            audio = createBusSpatialAudio(src, "routeAnnouncement");
             setBusAudioLevel(audio, 1);
           }
         }
         if (!audio) {
-          audio = createBusSpatialAudio(linePreviewAudioClipUrl(saeivRouteAudio.folderPath, safeName), "announcement");
+          audio = createBusSpatialAudio(linePreviewAudioClipUrl(saeivRouteAudio.folderPath, safeName), "routeAnnouncement");
           setBusAudioLevel(audio, 1);
         }
         saeivRouteAudio.audio = audio;
