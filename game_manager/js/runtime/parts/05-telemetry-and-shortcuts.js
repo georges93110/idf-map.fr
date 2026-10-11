@@ -851,23 +851,8 @@
         }
       }
 
-      function triggerHideUiToggleFromShortcut() {
-        var next = !hideUiWhenManagerHidden;
-
-        applyHideUiWhenManagerHidden(next, {
-          syncUi: true,
-          render: true
-        });
-
-        saveWidgetLayoutState();
-
-        if (typeof showOverlayNotification === "function") {
-          showOverlayNotification(
-            next ? "UI en jeu masquée" : "UI en jeu affichée",
-            1200
-          );
-        }
-      }
+      // Compatibility entry point for old bridge messages: UI hiding is retired.
+      function triggerHideUiToggleFromShortcut() { return false; }
 
       function triggerGpsZoomFromShortcut(direction) {
         var zoomDirection = String(direction || "out").trim().toLowerCase() === "in" ? "in" : "out";
@@ -1371,9 +1356,6 @@
             triggerGpsZoomFromShortcut(isShiftModifierActive(raw) ? "in" : "out");
           }
 
-          if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_HIDE_UI, keyName, raw)) {
-            triggerHideUiToggleFromShortcut();
-          }
 
           if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE, keyName, raw)) {
             triggerSaeivDestinationAnnouncementFromShortcut();

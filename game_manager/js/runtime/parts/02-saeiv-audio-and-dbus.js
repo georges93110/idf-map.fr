@@ -1449,6 +1449,7 @@
             uidRaw: rawUid,
             number: number,
             reseau: String(lineNode.getAttribute("reseau") || "").trim(),
+            type: String(lineNode.getAttribute("type") || "").trim(),
             routes: routes
           };
         });

@@ -1,6 +1,6 @@
 // COACH38: catalogue dynamique DBus vers la vraie page jobs.company d'ETS2.
-// Les quatre premières sections suivent les dbus-sec de map.html. Les autres
-// réseaux/autocars/scolaires sont proposés individuellement, sans liste figée.
+// Le type XML est prioritaire ; les anciennes heuristiques ne servent que
+// pour une ligne sans attribut type. Les types personnalisés restent dynamiques.
 function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
   var categories=[{key:'all',label:'Tout'},{key:'urban',label:'Urbaines'}],extras=new Map(),routes=[],present=new Set();
   (lines||[]).forEach(function(line){
@@ -14,6 +14,14 @@ function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
       var category=night?'noctilien':replacement?'replacement_bus':/^express\b/i.test(n+' '+name)?'express':!other&&!autocar&&/^\d+$/.test(n)?'urban':'line:'+String(line.uid);
       // Express and autocar routes can be stored alongside other directions.
       if(!night&&!replacement&&/^express\b/i.test(name))category='express';
+      var xmlType=String(line.type||'').replace(/[\x00-\x1f|@<>]/g,' ').replace(/\s+/g,' ').trim();
+      if(xmlType){
+        var folded=xmlType.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+        var aliases={urbaine:'urban',urbaines:'urban',urbain:'urban',urbains:'urban',express:'express',noctilien:'noctilien',noctiliens:'noctilien','bus de remplacement':'replacement_bus',remplacement:'replacement_bus','bus remplacement':'replacement_bus'};
+        category=aliases[folded]||'xml:'+folded;
+        if(category.indexOf('xml:')===0&&!extras.has(category))extras.set(category,xmlType);
+      }
+
       var stops=stopEntries(route)||[],first=stops[0],last=stops[stops.length-1];
       function label(s){return String(s&&(s.name||s.stop&&s.stop.name)||'').trim();}
       if(category.indexOf('line:')===0)extras.set(category,n||number||String(line.uid));
