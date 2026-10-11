@@ -62,7 +62,7 @@ function buildNativePassengerPayload() {
   var state=saeivPassengerState,capacity=getSaeivActiveCapacityState(saeivVehicleName);
   var count=function(v){return Math.max(0,Math.min(500,Math.floor(Number(v)||0)));};
   return {type:"nativePassengers",version:2,enabled:true,missionKey:mission,stopKey:key,
-    preview:saeivRouteState.started!==true,
+    preview:saeivRouteState.started!==true,terminal:saeivRouteState.started===true&&index===stops.length-1,
     nextStop:nativePassengerNextPlan(stops,index,mission),
     running:!telemetryPaused && hasRecentTelemetryPositionSignal(),
     world:{x:point.x,y:point.h,z:point.y,yawDegrees:((yaw%360)+540)%360-180},
