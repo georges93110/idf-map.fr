@@ -211,7 +211,7 @@
 					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
 			</route>
 
-			<route uid="4" name="114: Le Raincy - Villemomble - Montfermeil RER > Nogent-le-Perreux RER">
+			<route uid="4" name="114: Le Raincy - Villemomble - Montfermeil RER > Nogent-le-Perreux RER" partiel=true>
 					<busstop uid="21" passengersMin="12" passengersMax="30" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
 					<busstop uid="13" passengersMin="0" passengersMax="2" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
 					<busstop uid="14" passengersMin="7" passengersMax="14" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
@@ -275,7 +275,7 @@
 					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
 			</route>
 
-			<route uid="6" name="114: Neuilly-Plaisance RER > Plateau d'Avron - Place de Stalingrad">
+			<route uid="6" name="114: Neuilly-Plaisance RER > Plateau d'Avron - Place de Stalingrad" partiel=true>
 					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75" nextStopTime="1" nextStopPrice="0"/>
 					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95" nextStopTime="2" nextStopPrice="0"/>
 					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75" nextStopTime="2" nextStopPrice="0"/>
@@ -374,7 +374,7 @@
 					<busstop uid="22" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
 			</route>
 
-			<route uid="10" name="114 (Dernier Service): Château de Vincennes - Métro > Georges Pompidou">
+			<route uid="10" name="114 (Dernier Service): Château de Vincennes - Métro > Georges Pompidou" partiel=true>
 					<busstop uid="244" passengersMin="7" passengersMax="25" coefOn="100" nextStopTime="3" nextStopPrice="0"/>
 					<busstop uid="245" passengersMin="1" passengersMax="2" coefOn="50" nextStopTime="2" nextStopPrice="0"/>
 					<busstop uid="246" passengersMin="1" passengersMax="3" coefOn="50" nextStopTime="4" nextStopPrice="0"/>
@@ -399,7 +399,7 @@
 					<busstop uid="229" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
 			</route>
 
-			<route uid="11" name="114: Château de Vincennes - Métro > Plateau d'Avron - Place de Stalingrad">
+			<route uid="11" name="114: Château de Vincennes - Métro > Plateau d'Avron - Place de Stalingrad" partiel=true>
 					<busstop uid="244" passengersMin="7" passengersMax="25" coefOn="100" nextStopTime="3" nextStopPrice="0"/>
 					<busstop uid="245" passengersMin="1" passengersMax="2" coefOn="50" nextStopTime="2" nextStopPrice="0"/>
 					<busstop uid="246" passengersMin="1" passengersMax="3" coefOn="50" nextStopTime="4" nextStopPrice="0"/>
@@ -643,7 +643,7 @@
 			</route>
 	</line>
 
-	<line uid="10001" number="Navette de Nogent" adultCoef="75" reducedRate="15" city="true" type="Urbaine">
+	<line uid="10001" number="Navette de Nogent" adultCoef="75" reducedRate="15" city="true" type="Urbaine" badge=false>
 
 			<route uid="1" name="Navette de Nogent: Gare Nogent-Le Perreux RER > Place du Général Leclerc">
 					<busstop uid="316" passengersMin="1" passengersMax="3" coefOn="100" nextStopTime="1" nextStopPrice="0"/>
@@ -728,7 +728,7 @@
 			</route>
 	</line>
 
-	<line uid="20000" number="FLIXBUS" adultCoef="75" reducedRate="15" city="false" reseau="FLIXBUS" type="Autocars">
+	<line uid="20000" number="FLIXBUS" adultCoef="75" reducedRate="15" city="false" reseau="FLIXBUS" type="Autocars" badge=false>
 
 			<route uid="1" name="FLIXBUS: Paris Bercy > Disneyland Paris">
 					<busstop uid="3" passengersMin="55" passengersMax="55" coefOn="100" nextStopTime="30" nextStopPrice="30"/>
@@ -741,7 +741,7 @@
 			</route>
 	</line>
 
-	<line uid="30000" number="Scolaire" adultCoef="75" reducedRate="15" city="true" type="Scolaire">
+	<line uid="30000" number="Scolaire" adultCoef="75" reducedRate="15" city="true" type="Scolaire" badge=false>
 
 			<route uid="1" name="Scolaire: Ecole primaire Edouard Herriot (Neuilly-Plaisance) > Ferme Pédagogique de Rosny-sous-Bois">
 					<busstop uid="101" passengersMin="35" passengersMax="35" coefOn="95" nextStopTime="5" nextStopPrice="0"/>
@@ -2024,7 +2024,7 @@
 			</route>
 	</line>
 
-	<line uid="40000" number="Fictive" adultCoef="75" reducedRate="15" city="true" type="Autocars">
+	<line uid="40000" number="Fictive" adultCoef="75" reducedRate="15" city="true" type="Autocars" badge=false>
 
 			<route uid="1" name="Autocar: Marché International de Rungis > Le Raincy - Villemomble - Montfermeil RER">
 					<busstop uid="2" passengersMin="5" passengersMax="15" coefOn="100" nextStopTime="10" nextStopPrice="0"/>
@@ -2155,7 +2155,7 @@
 			</route>
 	</line>
 
-	<line uid="50000" number="Bus de Remplacement" adultCoef="75" reducedRate="15" city="true" type="Services spéciaux">
+	<line uid="50000" number="Bus de Remplacement" adultCoef="75" reducedRate="15" city="true" type="Services spéciaux" badge=false>
 
 			<route uid="1" name="RER A: Nation > Neuilly-Plaisance">
 					<busstop uid="265" passengersMin="25" passengersMax="40" coefOn="100" nextStopTime="6" nextStopPrice="0"/>
