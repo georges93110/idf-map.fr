@@ -43,7 +43,7 @@ function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
   });
   [['express','Express'],['noctilien','Noctilien'],['replacement_bus','Bus de remplacement']].forEach(function(p){if(present.has(p[0]))categories.push({key:p[0],label:p[1]});});
   Array.from(extras).sort(function(a,b){return a[1].localeCompare(b[1],'fr',{numeric:true,sensitivity:'base'});}).forEach(function(p){categories.push({key:p[0],label:p[1]});});
-  routes.sort(function(a,b){return a.line.localeCompare(b.line,'fr',{numeric:true,sensitivity:'base'})||a.destination.localeCompare(b.destination,'fr')||a.routeUid.localeCompare(b.routeUid);});
+  routes.sort(function(a,b){return a.lineUid.localeCompare(b.lineUid,'fr',{numeric:true,sensitivity:'base'})||a.routeUid.localeCompare(b.routeUid,'fr',{numeric:true,sensitivity:'base'});});
   return {categories:categories,routes:routes};
 }
 var nativeServicesSocket=null,nativeServicesGeneration='',nativeServicesLoading=false,nativeServicesSource=null,nativeServicesSentAt=0;

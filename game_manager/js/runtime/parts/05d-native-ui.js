@@ -101,6 +101,7 @@ function syncNativeBusHud(force,payload){
     syncNativeBusCompletion(state);
     var message=buildNativeBusHudMessage(state);
     telemetryWs.send(JSON.stringify(message));nativeBusHudLastSend=now;
+    telemetryWs.send(JSON.stringify(buildNativeGirouetteMessage(state)));
     nativeBusHudDiagnostics.lastSentAt=now;nativeBusHudDiagnostics.enabled=message.enabled;
     nativeBusHudDiagnostics.error="";
     if(nativeBusHudSendError){nativeBusHudSendError="";syncNativeUiSettings();}
@@ -204,4 +205,17 @@ function syncNativeBusCompletion(s){
     line:nativeBusHudText(s.lineNumber||"Bus",64),origin:nativeBusHudText(names[0]||stops[0].name||"Départ",160),
     destination:nativeBusHudText(names[names.length-1]||stops[stops.length-1].name||s.routeName||"Terminus",160)}));
   return true;
+}
+
+// COACH60: live service -> advanced HTML atlas, rendered by the DLL's bridge.
+function buildNativeGirouetteMessage(s){
+ var enabled=normalizeGameMode(currentGameMode)==='bus'&&!!s.selected&&!!saeivRouteState&&!!saeivRouteState.lineUid;
+ var line=enabled&&(dbusLines||[]).find(function(l){return String(l.uid)===String(saeivRouteState.lineUid);});
+ var route=line&&(line.routes||[]).find(function(r){return String(r.uid)===String(saeivRouteState.routeUid);});
+ var stops=route?getRouteStopEntries(route):[],last=stops[stops.length-1];
+ var number=route?getLineNumber(line,route):String(s.lineNumber||'');
+ var style=route?nativeServiceStyle(line,route,number):{};
+ return {type:'nativeGirouette',protocol:1,generation:nativeGameModeGeneration,enabled:!!(enabled&&route),
+   line:style.label||number,destination:last?String(last.name||last.stop&&last.stop.name||''):String(s.routeName||''),
+   background:style.background||'#000000',foreground:style.foreground||'#ffffff'};
 }

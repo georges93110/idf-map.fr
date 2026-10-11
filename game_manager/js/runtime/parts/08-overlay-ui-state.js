@@ -255,138 +255,16 @@
         }
       }
       function playNotificationSound() {
-        if (!notificationSoundsEnabled) return;
-        try {
-          var AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (!AudioContextClass) return;
-          var ctx = new AudioContextClass();
-          var volume = getGlobalAudioVolumeFactor() * 0.3;
-
-          var playTone = function (freq, start, duration) {
-            var osc = ctx.createOscillator();
-            var gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, start);
-            gain.gain.setValueAtTime(volume, start);
-            gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(start);
-            osc.stop(start + duration);
-          };
-
-          // Double carillon harmonieux (Mi5 -> La5)
-          playTone(659.25, ctx.currentTime, 0.25);
-          playTone(880.00, ctx.currentTime + 0.1, 0.3);
-        } catch (err) { }
+        // Notifications HTML removed; the game owns user-facing feedback.
+        if (el.overlayNotificationPreview) el.overlayNotificationPreview.style.display = "none";
       }
-
       function showOverlayNotification(title, description, durationMs) {
-        var preview = el.overlayNotificationPreview;
-        if (!preview) return;
-
-        var effectiveDescription = description;
-        var effectiveDuration = durationMs;
-
-        // Autorise l'appel court: showOverlayNotification("Titre", 1800)
-        if (typeof description === "number" && (durationMs === undefined || durationMs === null)) {
-          effectiveDuration = description;
-          effectiveDescription = "";
-        }
-
-        if (el.overlayNotificationPreviewTitle) {
-          el.overlayNotificationPreviewTitle.textContent = String(title || "Notification");
-        }
-        var hasDescription = effectiveDescription !== null && effectiveDescription !== undefined && String(effectiveDescription).trim() !== "";
-        if (el.overlayNotificationPreviewDescription) {
-          el.overlayNotificationPreviewDescription.textContent = hasDescription ? String(effectiveDescription) : "";
-          el.overlayNotificationPreviewDescription.style.display = hasDescription ? "" : "none";
-        }
-        notificationPreviewKind = "notification";
-        preview.classList.toggle("is-title-only", !hasDescription);
-        preview.classList.add("is-visible");
-
-        // Jouer le son de notification
-        playNotificationSound();
-
-        if (notificationPreviewTimer) {
-          clearTimeout(notificationPreviewTimer);
-          notificationPreviewTimer = 0;
-        }
-        var delay = Math.max(
-          OVERLAY_NOTIFICATION_MIN_DURATION_MS,
-          Number(effectiveDuration) || OVERLAY_NOTIFICATION_MIN_DURATION_MS
-        );
-        notificationPreviewTimer = setTimeout(function () {
-          notificationPreviewTimer = 0;
-          if (!el.overlayNotificationPreview) return;
-          notificationPreviewKind = "";
-          el.overlayNotificationPreview.classList.remove("is-visible");
-        }, delay);
+        // Notifications HTML removed; the game owns user-facing feedback.
+        if (el.overlayNotificationPreview) el.overlayNotificationPreview.style.display = "none";
       }
       function renderWebsocketMode1Hint() {
-        var preview = el.overlayNotificationPreview;
-        if (!preview) return;
-        if (notificationPreviewKind === "notification" || notificationPreviewKind === "preview") return;
-        function normalizeHintKeyLabel(rawKey) {
-          var key = String(rawKey || "").trim();
-          if (!key) return "";
-          var lower = key.toLowerCase();
-          if (lower === "control" || lower === "ctrl") return "Ctrl";
-          if (lower === "meta" || lower === "win" || lower === "os" || lower === "windows") return "Windows";
-          if (lower === "delete" || lower === "del" || lower === "suppr") return "Suppr";
-          if (lower === "escape" || lower === "esc" || lower === "echap") return "Echap";
-          if (key.length === 1) return key.toUpperCase();
-          return key;
-        }
-        function buildShortcutBadges(keys) {
-          var wrap = document.createElement("span");
-          wrap.className = "overlay-shortcut-badges";
-          var list = Array.isArray(keys) ? keys : [];
-          for (var i = 0; i < list.length; i += 1) {
-            var label = normalizeHintKeyLabel(list[i]);
-            if (!label) continue;
-            if (wrap.childNodes.length > 0) {
-              var plus = document.createElement("span");
-              plus.className = "overlay-shortcut-plus";
-              plus.textContent = "+";
-              wrap.appendChild(plus);
-            }
-            var badge = document.createElement("span");
-            badge.className = "overlay-shortcut-badge";
-            badge.textContent = label;
-            wrap.appendChild(badge);
-          }
-          return wrap;
-        }
-        if (notificationPreviewTimer) {
-          clearTimeout(notificationPreviewTimer);
-          notificationPreviewTimer = 0;
-        }
-        if (el.overlayNotificationPreviewTitle) {
-          el.overlayNotificationPreviewTitle.textContent = "Bienvenue !";
-        }
-        if (el.overlayNotificationPreviewDescription) {
-          var shortcut = null;
-          try {
-            if (typeof getEffectiveShortcutForScope === "function" && typeof OVERLAY_SHORTCUT_SCOPE_OVERLAY !== "undefined") {
-              shortcut = getEffectiveShortcutForScope(OVERLAY_SHORTCUT_SCOPE_OVERLAY);
-            }
-          } catch (err0) { shortcut = null; }
-          var overlayKeys = (shortcut && Array.isArray(shortcut.keys) && shortcut.keys.length)
-            ? shortcut.keys.slice()
-            : (OVERLAY_TOGGLE_DEFAULT_SHORTCUT && Array.isArray(OVERLAY_TOGGLE_DEFAULT_SHORTCUT.keys) ? OVERLAY_TOGGLE_DEFAULT_SHORTCUT.keys.slice() : ["Suppr"]);
-
-          var descEl = el.overlayNotificationPreviewDescription;
-          descEl.innerHTML = "";
-          descEl.appendChild(document.createTextNode("Utilisez "));
-          descEl.appendChild(buildShortcutBadges(overlayKeys));
-          descEl.appendChild(document.createTextNode(" pour ouvrir le menu."));
-          descEl.style.display = "";
-        }
-        notificationPreviewKind = "hint";
-        preview.classList.remove("is-title-only");
-        preview.classList.add("is-visible");
+        // Notifications HTML removed; the game owns user-facing feedback.
+        if (el.overlayNotificationPreview) el.overlayNotificationPreview.style.display = "none";
       }
       function stopWebsocketMode1Hint() {
         if (websocketMode1HintTimer) {
@@ -400,27 +278,8 @@
         }
       }
       function syncWebsocketMode1HintVisibility() {
-        if (FORCE_DEV_UI) {
-          stopWebsocketMode1Hint();
-          return;
-        }
-        if (!firstVisitMode1HintEnabled) {
-          stopWebsocketMode1Hint();
-          return;
-        }
-        if (telemetryUiMode !== 1) {
-          stopWebsocketMode1Hint();
-          return;
-        }
-        renderWebsocketMode1Hint();
-        if (websocketMode1HintTimer) return;
-        websocketMode1HintTimer = setInterval(function () {
-          if (telemetryUiMode !== 1) {
-            stopWebsocketMode1Hint();
-            return;
-          }
-          renderWebsocketMode1Hint();
-        }, 900);
+        // Notifications HTML removed; the game owns user-facing feedback.
+        if (el.overlayNotificationPreview) el.overlayNotificationPreview.style.display = "none";
       }
       function readSystemNameValue() {
         var directName = "";
@@ -460,32 +319,8 @@
         return name || "Systeme";
       }
       function toggleNotificationScalePreview(show) {
-        if (show) {
-          var preview = el.overlayNotificationPreview;
-          if (!preview) return;
-          if (notificationPreviewTimer) {
-            clearTimeout(notificationPreviewTimer);
-            notificationPreviewTimer = 0;
-          }
-          if (el.overlayNotificationPreviewTitle) {
-            el.overlayNotificationPreviewTitle.textContent = "Aper\u00E7u d'une notification";
-          }
-          if (el.overlayNotificationPreviewDescription) {
-            el.overlayNotificationPreviewDescription.textContent = "Aper\u00E7u de la description de la notification.";
-            el.overlayNotificationPreviewDescription.style.display = "";
-          }
-          notificationPreviewKind = "preview";
-          preview.classList.remove("is-title-only");
-          preview.classList.add("is-visible");
-          document.body.classList.add("is-previewing-notification");
-        } else {
-          document.body.classList.remove("is-previewing-notification");
-          var preview = el.overlayNotificationPreview;
-          if (preview && notificationPreviewKind === "preview") {
-            notificationPreviewKind = "";
-            preview.classList.remove("is-visible");
-          }
-        }
+        // Notifications HTML removed; the game owns user-facing feedback.
+        if (el.overlayNotificationPreview) el.overlayNotificationPreview.style.display = "none";
       }
       function consumeReloadNoticeIntent() {
         var raw = "";
