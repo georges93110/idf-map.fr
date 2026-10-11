@@ -799,6 +799,7 @@
         try {
           localStorage.setItem(key, JSON.stringify(state));
         } catch (err3) { }
+        publishNativeBusSettings();
       }
 
       function restoreWidgetLayoutState() {
@@ -810,6 +811,7 @@
           return restored;
         } finally {
           widgetLayoutRestoring = false;
+          if (nativeBusSettingsState.current) applyNativeBusSettings(nativeBusSettingsState.current);
         }
       }
 

@@ -1215,7 +1215,7 @@
         return hideUiWhenManagerHidden === true && uiMode !== 2 && !menuOpen;
       }
       function triggerSaeivDestinationAnnouncementFromShortcut() {
-        if (isSaeivDestinationShortcutBlockedByHiddenUi()) return false;
+        // A hidden widget is not a disabled driving shortcut.
         return playSaeivDestinationAnnouncementIfAvailable({
           action: "game-destination-announcement-shortcut",
           requireShortcutContext: true

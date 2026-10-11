@@ -791,7 +791,9 @@
       }
       function updateShortcutUIForScope(scope, shortcut) {
         var safeScope = normalizeOverlayShortcutScope(scope);
-        setShortcutStateForScope(safeScope, shortcut);
+        // Refresh-only calls (notably after key recording) must not erase the
+        // just-recorded binding by cloning an undefined argument.
+        if (shortcut) setShortcutStateForScope(safeScope, shortcut);
         var button = getOverlayShortcutButtonByScope(safeScope);
         if (!button) return;
         var effectiveShortcut = getEffectiveShortcutForScope(safeScope);
@@ -952,6 +954,11 @@
         if (!raw || typeof raw !== "object") return false;
         var safeName = String(name || "").trim().toLowerCase();
         if (!safeName) return false;
+        // The current key snapshot overrides an older modifier-down whose
+        // key-up may have occurred while the game/host was losing focus.
+        var aliases = {ctrl:["ctrlKey","controlKey","ctrl","control"],shift:["shiftKey","shift"],alt:["altKey","alt"],win:["metaKey","winKey","meta","win"]}[safeName] || [];
+        var explicit = aliases.filter(function(k){return typeof raw[k] === "boolean";});
+        if (explicit.length) return explicit.some(function(k){return raw[k];});
         if (safeName === "ctrl" && (raw.ctrlKey === true || raw.controlKey === true || raw.ctrl === true || raw.control === true)) return true;
         if (safeName === "shift" && (raw.shiftKey === true || raw.shift === true)) return true;
         if (safeName === "alt" && (raw.altKey === true || raw.alt === true)) return true;
@@ -3764,6 +3771,8 @@
         }
         telemetryWs = ws;
         ws.onopen = function () {
+          resetRawShortcutModifierState();
+          nativeBusSettingsConnect();
           telemetryReconnectDelayMs = 500;
           telemetryOfflineLock = false;
           flushWidgetBridgeOutbox();
@@ -3832,6 +3841,7 @@
           }
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          if (raw && raw.type === "nativeBusSettings") { receiveNativeBusSettings(raw); return; }
           if (raw && raw.type === "nativeServicesSync") { receiveNativeServicesSync(raw); return; }
           if (raw && raw.type === "nativeServiceAction") { receiveNativeServiceAction(raw); return; }
           if (raw && raw.type === "nativeServiceBadgeRequest") { receiveNativeServiceBadgeRequest(raw); return; }
@@ -3915,6 +3925,7 @@
           refreshTelemetryVisibility();
         };
         ws.onclose = function () {
+          resetRawShortcutModifierState();
           telemetryValidBurstCount = 0;
           setTelemetryConnectionState(false, ws.localNetworkDenied
             ? "Accès local refusé : autorisez la connexion au PC pour ce site dans les permissions du navigateur."
