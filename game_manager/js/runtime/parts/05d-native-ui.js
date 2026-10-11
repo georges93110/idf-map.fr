@@ -210,7 +210,7 @@ function syncNativeBusCompletion(s){
 // COACH63: active service or "Sans voyageur", same native TOBJ targets.
 function buildNativeGirouetteMessage(s){
  var bus=normalizeGameMode(currentGameMode)==='bus';
- var selected=bus&&!!s.selected&&!!saeivRouteState&&!!saeivRouteState.lineUid;
+ var selected=bus&&!!s.selected&&s.routeCompleted!==true&&!!saeivRouteState&&!!saeivRouteState.lineUid;
  var line=selected&&(dbusLines||[]).find(function(l){return String(l.uid)===String(saeivRouteState.lineUid);});
  var route=line&&(line.routes||[]).find(function(r){return String(r.uid)===String(saeivRouteState.routeUid);});
  var stops=route?getRouteStopEntries(route):[],last=stops[stops.length-1];
