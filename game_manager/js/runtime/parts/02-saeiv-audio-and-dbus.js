@@ -196,14 +196,37 @@
           found = findLineStyleEntryForRuntimeCandidate(candidates[i]);
           if (found) break;
         }
+        var network = String((line && line.reseau) || (state && state.reseau) || "").trim();
+        // XML declares the sound pack, independently from badge/category styles.
+        // Pack names are one directory component, never an arbitrary asset path.
+        if (network && !/[\\/\x00-\x1f]/.test(network) && network !== "." && network !== "..") {
+          config.globalAudioFolderName = network;
+          config.autoVoiceFolderName = network;
+          // Global packs and automatic speech do not share directory names.
+          // Reuse the site's existing network -> voice mapping, including an
+          // intentionally empty automatic pack (e.g. FLIXBUS).
+          var styles = getLineStylesRuntimeConfig();
+          var networkEntries = found && Array.isArray(found.entry) ? [found.entry] : [];
+          Object.keys(styles).forEach(function (key) { if (Array.isArray(styles[key])) networkEntries.push(styles[key]); });
+          for (var n = 0; n < networkEntries.length; n += 1) {
+            var networkEntry = networkEntries[n];
+            var globalFolder = normalizeLineStyleFolderName(networkEntry[LINE_STYLE_GLOBAL_AUDIO_FOLDER_INDEX]);
+            if (globalFolder.toLocaleLowerCase("fr") !== network.toLocaleLowerCase("fr")) continue;
+            config.globalAudioFolderName = globalFolder;
+            config.autoVoiceFolderName = normalizeLineStyleFolderName(networkEntry[LINE_STYLE_AUTO_VOICE_FOLDER_INDEX]);
+            break;
+          }
+        }
         if (!found || !Array.isArray(found.entry)) return config;
         var entry = found.entry;
         config.styleKey = String(found.key || "");
         config.legacyTypes = String(entry[LINE_STYLE_LEGACY_TYPES_INDEX] == null ? "" : entry[LINE_STYLE_LEGACY_TYPES_INDEX]).trim();
         config.validationSoundsAllowed = normalizeLineStyleBoolean(entry[LINE_STYLE_VALIDATION_SOUND_INDEX], true);
         config.stopRequestSoundName = normalizeLineStyleAudioBaseName(entry[LINE_STYLE_STOP_REQUEST_SOUND_INDEX]);
-        config.globalAudioFolderName = normalizeLineStyleFolderName(entry[LINE_STYLE_GLOBAL_AUDIO_FOLDER_INDEX]);
-        config.autoVoiceFolderName = normalizeLineStyleFolderName(entry[LINE_STYLE_AUTO_VOICE_FOLDER_INDEX]);
+        if (!network || /[\\/\x00-\x1f]/.test(network) || network === "." || network === "..") {
+          config.globalAudioFolderName = normalizeLineStyleFolderName(entry[LINE_STYLE_GLOBAL_AUDIO_FOLDER_INDEX]);
+          config.autoVoiceFolderName = normalizeLineStyleFolderName(entry[LINE_STYLE_AUTO_VOICE_FOLDER_INDEX]);
+        }
         var passengerCountVariation = normalizeLineStylePassengerCountVariation(entry[LINE_STYLE_PASSENGER_COUNT_VARIATION_INDEX]);
         config.passengerCountVariationMin = passengerCountVariation.min;
         config.passengerCountVariationMax = passengerCountVariation.max;
@@ -1425,6 +1448,7 @@
             uid: lineUid,
             uidRaw: rawUid,
             number: number,
+            reseau: String(lineNode.getAttribute("reseau") || "").trim(),
             routes: routes
           };
         });

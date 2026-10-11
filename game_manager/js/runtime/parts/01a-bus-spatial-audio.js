@@ -27,6 +27,7 @@ function setBusAudioLevel(audio, level) {
 function busAudioReady(record) {
   if (!record.followMaster) return true;
   var a = nativeGameAudio, s = busSpatialAudio;
+  if (record.kind === "previewAnnouncement") return a.seen && a.available && Date.now()-a.stamp<2000;
   return a.seen && a.available && Date.now()-a.stamp < 2000 && s.seen &&
     Date.now()-s.stamp < 1500 && s.telemetry && s.telemetry.audioCameraAvailable && !s.telemetry.paused;
 }
@@ -94,10 +95,10 @@ function updateBusSpatialRecord(record) {
   var state = busSpatialAudio;
   // Keep ordinary playback for an older DLL. Once native support was seen,
   // stale/disconnected camera data must never keep sounding at full volume.
-  var mix = state.seen ? busSpatialMix(record.kind, Date.now() - state.stamp < 1500 ? state.telemetry : null) : { gain: 1, cutoff: 20000, pan: 0 };
+  var mix = record.kind === "previewAnnouncement" ? {gain:1,cutoff:20000,pan:0} : state.seen ? busSpatialMix(record.kind, Date.now() - state.stamp < 1500 ? state.telemetry : null) : { gain: 1, cutoff: 20000, pan: 0 };
   // COACH54: relative to COACH53: route speech x2, shortcut speech x0.75.
   // Stop-request chime, validator and notifications keep their own levels.
-  var boost = record.kind === "routeAnnouncement" ? 4 : record.kind === "shortcutAnnouncement" ? 1.5 : record.kind === "announcement" ? 2 : 1;
+  var boost = record.kind === "routeAnnouncement" ? 4 : (record.kind === "shortcutAnnouncement" || record.kind === "previewAnnouncement") ? 1.5 : record.kind === "announcement" ? 2 : 1;
   var volume = record.base * (record.followMaster ? getGlobalAudioVolumeFactor() : 1);
   if (record.gain) {
     record.audio.volume = Math.max(0, Math.min(1, volume));

@@ -72,6 +72,7 @@ function handleBusAnnouncementKey(raw) {
   // Immutable catalogue path, not arbitrary HTML. Preserve the ordered audio
   // queue so a manual announcement cannot cut the line/terminus introduction.
   if (!/^sounds\/bus\/voix_bus\/global\/[^.][^\\]*\.mp3$/i.test(a.path) || a.path.split("/").indexOf("..")>=0) return false;
+  stopBusAnnouncementPreview(true);
   var now=Date.now();if(now-(nativeBusSettingsState.lastSoundAt||0)<350)return true;
   nativeBusSettingsState.lastSoundAt=now;
   saeivRouteAudio.queue.push({clipName:a.label,globalUrl:a.path.split("/").map(encodeURIComponent).join("/")});
@@ -80,9 +81,42 @@ function handleBusAnnouncementKey(raw) {
 function receiveNativeBusSettings(packet) {
   var state=nativeBusSettingsState;
   if(packet.protocol !== 1) return;
+  if(packet.action === "preview"){receiveBusAnnouncementPreview(packet);return;}
   if(packet.action === "request"){ if(Date.now()-(state.requestAt||0)>1000){state.requestAt=Date.now();nativeBusSettingsConnect();} return; }
   if(packet.action === "readOnly"){state.readOnly=true;return;}
   if(packet.action !== "current" || !Number.isInteger(packet.revision) || !Array.isArray(packet.values) || packet.values.length!==16) return;
   if(state.revision === packet.revision && state.current && JSON.stringify(state.current.values)===JSON.stringify(packet.values) && JSON.stringify(state.current.keys)===JSON.stringify(packet.keys) && JSON.stringify(state.current.announcements)===JSON.stringify(packet.announcements)) return;
   state.revision=packet.revision;state.current=packet;applyNativeBusSettings(packet);
 }
+
+// Preview lease belongs to the currently open native settings page. Repeated
+// heartbeats renew it without restarting a sound. Lost connection/page => stop.
+var busAnnouncementPreview={epoch:0,command:-1,index:-1,audio:null,stamp:0,timer:null};
+function reportBusAnnouncementPreview(playing) {
+  var p=busAnnouncementPreview;
+  if(telemetryWs&&telemetryWs.readyState===1)telemetryWs.send(JSON.stringify({type:"nativeBusSettings",protocol:1,action:"previewStatus",epoch:p.epoch,command:p.command,index:p.index,playing:!!playing}));
+}
+function stopBusAnnouncementPreview(report) {
+  var p=busAnnouncementPreview,a=p.audio;p.audio=null;
+  if(p.timer){clearInterval(p.timer);p.timer=null;}
+  if(a){a.onended=a.onerror=null;a.pause();a.removeAttribute("src");}
+  if(report)reportBusAnnouncementPreview(false);
+}
+function receiveBusAnnouncementPreview(packet) {
+  var p=busAnnouncementPreview;
+  if(!Number.isSafeInteger(packet.epoch)||!Number.isInteger(packet.command)||!Number.isInteger(packet.index))return;
+  p.stamp=Date.now();
+  if(p.epoch===packet.epoch&&p.command===packet.command&&p.index===packet.index)return;
+  stopBusAnnouncementPreview(false);
+  p.epoch=packet.epoch;p.command=packet.command;p.index=packet.index;
+  var list=nativeBusSettingsState.current&&nativeBusSettingsState.current.announcements;
+  var clip=Array.isArray(list)&&list[packet.index];
+  if(!clip||!/^sounds\/bus\/voix_bus\/global\/[^.][^\\]*\.mp3$/i.test(clip.path)||clip.path.split("/").indexOf("..")>=0){reportBusAnnouncementPreview(false);return;}
+  var audio=createBusSpatialAudio(clip.path.split("/").map(encodeURIComponent).join("/"),"previewAnnouncement");
+  p.audio=audio;setBusAudioLevel(audio,1);
+  function current(){return p.audio===audio;}
+  audio.onended=audio.onerror=function(){if(current())stopBusAnnouncementPreview(true);};
+  p.timer=setInterval(function(){if(Date.now()-p.stamp>1200||!telemetryWs||telemetryWs.readyState!==1)stopBusAnnouncementPreview(true);},100);
+  Promise.resolve(audio.play()).then(function(){if(current())reportBusAnnouncementPreview(true);},function(){if(current())stopBusAnnouncementPreview(true);});
+}
+if(typeof window!=="undefined"&&window.addEventListener)window.addEventListener("pagehide",function(){stopBusAnnouncementPreview(true);});

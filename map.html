@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html data-bus-ui-temporarily-hidden="true" lang="fr">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -28,6 +28,12 @@
       visibility:hidden !important;
       overflow:hidden !important;
     }
+    /* Temporary public-map restrictions; native service data is unchanged. */
+    html[data-bus-ui-temporarily-hidden="true"] #btnDbus,
+    html[data-bus-ui-temporarily-hidden="true"] #settingsDbusCategory,
+    html[data-bus-ui-temporarily-hidden="true"] #settingsBusStopsRow,
+    html[data-bus-ui-temporarily-hidden="true"] #dbusPanel,
+    html[data-bus-ui-temporarily-hidden="true"] #dbusStopPanel { display: none !important; }
   </style>
   <script>
     (function setupAppReadyGate() {
@@ -3776,7 +3782,7 @@
             </div>
           </section>
         </div>
-        <div class="settings-category">
+        <div class="settings-category" id="settingsDbusCategory">
           <h3 class="settings-group-title" id="settingsDbusCategoryTitle">PANNEAU DE LIGNES DBUS</h3>
           <section class="settings-sec">
             <h4 class="settings-title" id="settingsCenteringTitle">General</h4>
@@ -3853,7 +3859,7 @@
               <img class="settings-legend-icon" data-overlay-src="parking_ico.png" alt="" aria-hidden="true"/>
               <span class="settings-legend-label" id="settingsLegendParkingLabel">Parking</span>
             </div>
-            <div class="settings-legend-item settings-legend-item-toggle">
+            <div class="settings-legend-item settings-legend-item-toggle" id="settingsBusStopsRow">
               <div class="settings-legend-item-main">
                 <img class="settings-legend-icon" data-overlay-src="bus_logo_idfm.png" alt="" aria-hidden="true"/>
                 <span class="settings-legend-label" id="settingsLegendBusStopsLabel">Arrêts de bus</span>
@@ -4060,6 +4066,8 @@
     return SUPPORTED.has(nav) ? nav : "fr";
   }
   let LANG = detectInitialLang();
+  const MAP_BUS_UI_ENABLED = false; // Temporary: native Services remains available.
+  const MAP_POPUP_ROUTE_ENABLED = false;
   const STOP_TYPE_TRANSLATION_KEY = "idf_translate_stop_types";
   const UI_ANIMATIONS_KEY = "idf_ui_animations";
   const LINE_PREVIEW_LAYOUT_KEY = "idf_line_preview_layout";
@@ -6383,6 +6391,7 @@
       return window.__idfMapsAppRouteAllowed !== false;
     }
     function routeButtonHtml(point){
+      if (!MAP_POPUP_ROUTE_ENABLED) return "";
       const normalized = normalizeRouteWorldPoint(point);
       if (!normalized) return "";
       const disabled = !hasMapsAppPlayerPoint() || !isMapsAppRouteAllowed();
@@ -10213,6 +10222,7 @@
     function renderDbusStopsLayer(){
       if (!dbusStopsLayer) return;
       dbusStopsLayer.clearLayers();
+      if (!MAP_BUS_UI_ENABLED) return;
       dbusStopMarkers = new Map();
       if (!DBUS_STOP_ICONS_ENABLED) return;
       dbusStopIconSizePx = getDbusStopIconSize();
@@ -15794,6 +15804,7 @@
     }
 
     function showDbusDepartures() {
+      if (!MAP_BUS_UI_ENABLED) return;
       if (!DBUS_LINES.length || !DBUS_STOPS.size) return;
       if (!dbusDepartGroups.length || dbusDepartFilterKey !== `${showSchoolLines}-${showFictiveLines}-${showSpecialLines}`) buildDbusDepartures();
       if (!map.hasLayer(dbusDepartLayers)) dbusDepartLayers.addTo(map);
@@ -16726,6 +16737,7 @@
       ACTIVE_SEARCH_CATEGORY = next;
     }
     function filterSearchList(list, raw, allowTypeFilter){
+      if (!MAP_BUS_UI_ENABLED) list = list.filter(item => !/dbus|bus|arr[êe]t/i.test(String(item.type || "")));
       const nQ = norm(raw);
       if (nQ === "") return list.slice();
       let filtered = list.slice();
