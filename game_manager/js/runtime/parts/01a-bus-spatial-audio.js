@@ -14,7 +14,51 @@ function updateNativeGameAudio(data) {
     if(typeof syncSaeivExternalState === "function") syncSaeivExternalState(true);
   }
 }
-var busSpatialAudio = { context: null, records: new WeakMap(), active: new Set(), telemetry: null, stamp: 0, seen: false, timer: null };
+var busSpatialAudio = { context: null, records: new WeakMap(), active: new Set(), telemetry: null, stamp: 0, seen: false, timer: null, pending: new Set() };
+// Relative clip levels are distinct from the native master volume. A clip
+// preloaded while mute/telemetry is unavailable must not retain a zero gain.
+function setBusAudioLevel(audio, level) {
+  if (!audio) return;
+  var record = busSpatialAudio.records.get(audio);
+  level = Math.max(0, Math.min(1, Number(level) || 0));
+  if (!record) { audio.volume = level * getGlobalAudioVolumeFactor(); return; }
+  record.followMaster = true; record.base = level; updateBusSpatialRecord(record);
+}
+function busAudioReady(record) {
+  if (!record.followMaster) return true;
+  var a = nativeGameAudio, s = busSpatialAudio;
+  return a.seen && a.available && Date.now()-a.stamp < 2000 && s.seen &&
+    Date.now()-s.stamp < 1500 && s.telemetry && s.telemetry.audioCameraAvailable && !s.telemetry.paused;
+}
+function reportBusAudio(record, event, error) {
+  var s=busSpatialAudio, a=nativeGameAudio, now=Date.now();
+  var status = error ? String(error.name || error.message || error).slice(0,80) :
+    !a.available ? 'master-unavailable' : now-a.stamp>=2000 ? 'master-stale' :
+    a.muted ? 'master-muted' : a.volume===0 ? 'master-zero' :
+    !s.telemetry || !s.telemetry.audioCameraAvailable ? 'camera-unavailable' :
+    s.telemetry.paused ? 'paused' : now-s.stamp>=1500 ? 'camera-stale' :
+    record.source && s.context.state!=='running' ? 'context-'+s.context.state : 'ready';
+  var signature=event+':'+status;
+  if(record.lastReport===signature && now-record.reportAt<10000)return;
+  // The diagnostics stay local in the existing bridge log; no clip URL or user data.
+  if(typeof telemetryWs==='undefined'||!telemetryWs||telemetryWs.readyState!==1)return;
+  record.lastReport=signature;record.reportAt=now;
+  try { telemetryWs.send(JSON.stringify({type:'busAudioDiagnostic',event:event,status:status,
+    kind:record.kind,context:s.context?s.context.state:'ordinary',
+    master:a.volume,muted:a.muted,volume:record.audio.volume,
+    time:record.audio.currentTime||0,readyState:record.audio.readyState||0})); } catch (_) {}
+}
+function tickBusAudio() {
+  resumeBusAudioContext();
+  busSpatialAudio.pending.forEach(function(r){if(r.tryPlay)r.tryPlay();});
+  busSpatialAudio.active.forEach(function(r){updateBusSpatialRecord(r);reportBusAudio(r,'playing');});
+  if (!busSpatialAudio.pending.size && !busSpatialAudio.active.size && busSpatialAudio.timer) {
+    clearInterval(busSpatialAudio.timer);busSpatialAudio.timer=null;
+  }
+}
+function ensureBusAudioTimer() {
+  if(!busSpatialAudio.timer)busSpatialAudio.timer=setInterval(tickBusAudio,100);
+}
 function resumeBusAudioContext() {
   var state = busSpatialAudio, context = state.context;
   if (!context || context.state === "running" || context.state === "closed") return;
@@ -49,12 +93,14 @@ function updateBusSpatialRecord(record) {
   // Keep ordinary playback for an older DLL. Once native support was seen,
   // stale/disconnected camera data must never keep sounding at full volume.
   var mix = state.seen ? busSpatialMix(record.kind, Date.now() - state.stamp < 1500 ? state.telemetry : null) : { gain: 1, cutoff: 20000, pan: 0 };
+  var volume = record.base * (record.followMaster ? getGlobalAudioVolumeFactor() : 1);
   if (record.gain) {
+    record.audio.volume = Math.max(0, Math.min(1, volume));
     var t = state.context.currentTime;
     record.gain.gain.setTargetAtTime(mix.gain, t, .075);
     record.filter.frequency.setTargetAtTime(mix.cutoff, t, .075);
     if (record.pan) record.pan.pan.setTargetAtTime(mix.pan, t, .075);
-  } else record.audio.volume = Math.max(0, Math.min(1, record.base * mix.gain));
+  } else record.audio.volume = Math.max(0, Math.min(1, volume * mix.gain));
 }
 function updateBusSpatialAudioTelemetry(raw) {
   var data = raw && raw.data && typeof raw.data === "object" ? raw.data : raw;
@@ -66,14 +112,14 @@ function updateBusSpatialAudioTelemetry(raw) {
   filtered.audioCameraTimestamp = busSpatialAudio.stamp;
   busSpatialAudio.telemetry = filtered; busSpatialAudio.seen = true;
   if (filtered.audioCameraAvailable && !filtered.paused) resumeBusAudioContext();
-  busSpatialAudio.active.forEach(updateBusSpatialRecord);
+  tickBusAudio();
 }
 function setBusAudioVolume(audio, volume) {
   if (!audio) return;
   volume = Math.max(0, Math.min(1, Number(volume) || 0));
   var record = busSpatialAudio.records.get(audio);
   if (!record) { audio.volume = volume; return; }
-  record.base = volume;
+  record.followMaster = false; record.base = volume;
   if (record.gain) audio.volume = volume;
   updateBusSpatialRecord(record);
 }
@@ -116,6 +162,30 @@ function createBusSpatialAudio(url, kind) {
     if (error.message !== "context_not_running") console.warn("[Bus audio] Spatial filter unavailable", error);
     record.gain = null; record.filter = null; record.pan = null;
   }
+  // A short clip must not finish silently before the first valid native sample.
+  // Preserve normal play() promises; pause()/route cancellation cancels the wait.
+  var playNative=audio.play.bind(audio), pauseNative=audio.pause.bind(audio);
+  audio.play=function(){
+    if(record.pendingPlay)return record.pendingPlay;
+    var resolvePlay,rejectPlay;
+    var result=new Promise(function(resolve,reject){resolvePlay=resolve;rejectPlay=reject;});
+    record.pendingPlay=result;record.playDeadline=Date.now()+8000;
+    function clear(){state.pending.delete(record);record.tryPlay=null;record.pendingPlay=null;record.cancelPlay=null;}
+    record.cancelPlay=function(){clear();var e=new Error('Playback cancelled');e.name='AbortError';rejectPlay(e);};
+    record.tryPlay=function(){
+      if(!busAudioReady(record)){
+        reportBusAudio(record,'waiting');
+        if(Date.now()<record.playDeadline)return;
+        clear();var e=new Error('Native audio data unavailable');e.name='AudioDataTimeout';
+        reportBusAudio(record,'failed',e);rejectPlay(e);return;
+      }
+      clear();updateBusSpatialRecord(record);resumeBusAudioContext();
+      try { Promise.resolve(playNative()).then(resolvePlay,function(e){reportBusAudio(record,'failed',e);rejectPlay(e);}); }
+      catch(e){reportBusAudio(record,'failed',e);rejectPlay(e);}
+    };
+    state.pending.add(record);ensureBusAudioTimer();record.tryPlay();return result;
+  };
+  audio.pause=function(){if(record.cancelPlay)record.cancelPlay();return pauseNative();};
   function start() {
     if (record.source && !record.connected) {
       if(record.direct) record.source.connect(state.context.destination);
@@ -126,12 +196,16 @@ function createBusSpatialAudio(url, kind) {
     }
     state.active.add(record); updateBusSpatialRecord(record);
     resumeBusAudioContext();
-    if (!state.timer) state.timer = setInterval(function () { resumeBusAudioContext(); state.active.forEach(updateBusSpatialRecord); }, 100);
+    ensureBusAudioTimer();reportBusAudio(record,"started");
   }
-  function stop() {
+  function stop(event) {
+    // Media events are queued: an old pause/emptied must not disconnect a
+    // newer play() that already resumed the same preloaded element.
+    if(event && event.type!=="error" && audio.paused===false && !audio.ended)return;
+    if(event && event.type==="error")reportBusAudio(record,"failed",audio.error||new Error("media-error"));
     state.active.delete(record);
     if(record.source && record.connected){record.source.disconnect();if(record.filter)record.filter.disconnect();if(record.gain)record.gain.disconnect();if(record.pan)record.pan.disconnect();record.connected=false;}
-    if (!state.active.size && state.timer) { clearInterval(state.timer); state.timer = null; }
+    if (!state.active.size && !state.pending.size && state.timer) { clearInterval(state.timer); state.timer = null; }
   }
   audio.addEventListener("play", start); audio.addEventListener("playing", start);
   ["pause", "ended", "error", "emptied"].forEach(function (event) { audio.addEventListener(event, stop); });

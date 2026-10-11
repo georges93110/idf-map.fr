@@ -122,7 +122,7 @@ function playSaeivBoardingValidationSound(boarded) {
   if (roll >= 0.8) return;
   if (saeivBoardingValidationAudio) saeivBoardingValidationAudio.pause();
   saeivBoardingValidationAudio = createBusSpatialAudio("sounds/bus/" + (roll < 0.01 ? "navigo_ratp_error.mp3" : "navigo_ratp_pass.mp3"), "validator");
-  setBusAudioVolume(saeivBoardingValidationAudio, getGlobalAudioVolumeFactor() / 2);
+  setBusAudioLevel(saeivBoardingValidationAudio, 0.5);
   saeivBoardingValidationAudio.play().catch(function () {});
 }
 function getSaeivBusServiceKey() {

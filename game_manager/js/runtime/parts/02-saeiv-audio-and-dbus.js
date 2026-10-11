@@ -360,10 +360,10 @@
       }
       function applyRuntimeAudioVolume(audio, volume) {
         if (!audio) return;
-        try { setBusAudioVolume(audio, clampRuntimeAudioVolume(volume)); } catch (err) { }
+        try { setBusAudioLevel(audio, clampRuntimeAudioVolume(volume)); } catch (err) { }
       }
       function syncSaeivRuntimeAudioVolumes() {
-        var volume = getGlobalAudioVolumeFactor();
+        var volume = 1; // Master gain is sampled live by each spatial record.
         if (saeivRouteAudio && saeivRouteAudio.audio) {
           applyRuntimeAudioVolume(saeivRouteAudio.audio, volume);
         }
@@ -374,7 +374,7 @@
           applyRuntimeAudioVolume(saeivStopRequestAudioState.audio, volume);
         }
         if (saeivServiceAcceptAudio) {
-          applyRuntimeAudioVolume(saeivServiceAcceptAudio, getSaeivServiceAcceptAudioVolumeFactor());
+          applyRuntimeAudioVolume(saeivServiceAcceptAudio, 1 / Math.max(1, Number(SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR) || 1));
         }
         if (saeivGlobalAudioState && typeof saeivGlobalAudioState === "object") {
           saeivGlobalAudioState.volumeMultiplier = getSaeivGlobalAudioVolumeMultiplier(saeivGlobalAudioState.folderName);
@@ -525,7 +525,7 @@
         if (!safeName) return false;
         var url = linePreviewAudioClipUrl(saeivRouteAudio.folderPath, safeName);
         var audio = createBusSpatialAudio(url, "announcement");
-        setBusAudioVolume(audio, getGlobalAudioVolumeFactor());
+        setBusAudioLevel(audio, 1);
         audio.preload = "auto";
         try { audio.load(); } catch (err) { }
         saeivRouteAudio.terminusClipName = safeName;
@@ -555,7 +555,7 @@
         var token = saeivRouteAudio.playbackToken + 1;
         saeivRouteAudio.playbackToken = token;
         var audio = createBusSpatialAudio(url, "announcement");
-        setBusAudioVolume(audio, getGlobalAudioVolumeFactor());
+        setBusAudioLevel(audio, 1);
         saeivRouteAudio.audio = audio;
         saeivRouteAudio.playing = true;
         saeivRouteAudio.currentClipName = nextClip;
@@ -655,7 +655,7 @@
         resolveSaeivServiceAcceptAudioWaiters();
         createSaeivServiceAcceptAudioWaitPromise();
         var audio = createBusSpatialAudio(SAEIV_SERVICE_ACCEPT_AUDIO_URL, "announcement");
-        setBusAudioVolume(audio, getSaeivServiceAcceptAudioVolumeFactor());
+        setBusAudioLevel(audio, 1 / Math.max(1, Number(SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR) || 1));
         try {
           audio.currentTime = Math.max(0, Number(SAEIV_SERVICE_ACCEPT_AUDIO_START_OFFSET_SEC) || 0);
         } catch (err2) { }
@@ -799,7 +799,7 @@
             return;
           }
           var audio = createBusSpatialAudio(clipUrl, "announcement");
-          setBusAudioVolume(audio, getGlobalAudioVolumeFactor());
+          setBusAudioLevel(audio, 1);
           saeivStopRequestAudioState.audio = audio;
           var finish = function () {
             if (saeivStopRequestAudioState.audio === audio) {
@@ -942,12 +942,12 @@
           var src = String(saeivRouteAudio.terminusAudio.currentSrc || saeivRouteAudio.terminusAudio.src || "").trim();
           if (src) {
             audio = createBusSpatialAudio(src, "announcement");
-            setBusAudioVolume(audio, getGlobalAudioVolumeFactor());
+            setBusAudioLevel(audio, 1);
           }
         }
         if (!audio) {
           audio = createBusSpatialAudio(linePreviewAudioClipUrl(saeivRouteAudio.folderPath, safeName), "announcement");
-          setBusAudioVolume(audio, getGlobalAudioVolumeFactor());
+          setBusAudioLevel(audio, 1);
         }
         saeivRouteAudio.audio = audio;
         saeivRouteAudio.playing = true;
