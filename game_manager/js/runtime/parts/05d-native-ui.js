@@ -62,17 +62,6 @@ function buildNativeBusHudMessage(s){
   var total=count(s.routeStopCount),index=Math.min(total,count(s.audioCurrentIndex)+1);
   var cap=s.busMaxCapacityUnlimited?"∞":String(count(s.busMaxCapacity));
   var names=Array.isArray(s.audioStopNames)?s.audioStopNames:[];
-  var onTime=0,late=0,lateUnits=0;
-  // Only served stops with an observed arrival time earn punctuality money.
-  // Early/unknown times add no row. The one-minute tolerance is unchanged.
-  if(typeof saeivStopServedLog!=="undefined"&&typeof saeivReachedStopDelayLog!=="undefined"){
-    for(var si=0;si<stops.length;si++){
-      if(saeivStopServedLog[si]!==true)continue;
-      var minutes=saeivReachedStopDelayLog[si];
-      if(typeof minutes!=="number"||!Number.isFinite(minutes)||minutes<0)continue;
-      if(minutes<=1)onTime++;else{late++;lateUnits+=Math.min(25,Math.ceil(minutes-1));}
-    }
-  }
   var destination=names.length?names[names.length-1]:(s.routeName||"");
   var remaining=[];
   if(s.vehicleAtStop){

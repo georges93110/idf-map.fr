@@ -937,7 +937,7 @@
         for (var i = 0; i < keys.length; i += 1) {
           if (String(keys[i] || "").trim().toLowerCase() === "shift") return true;
         }
-        var modifiers = raw.modifiers;
+        var modifiers = raw.mods || raw.modifiers;
         if (Array.isArray(modifiers)) {
           for (var j = 0; j < modifiers.length; j += 1) {
             if (String(modifiers[j] || "").trim().toLowerCase() === "shift") return true;
@@ -956,6 +956,7 @@
         if (!safeName) return false;
         // The current key snapshot overrides an older modifier-down whose
         // key-up may have occurred while the game/host was losing focus.
+        if(raw.mods && typeof raw.mods[safeName] === "boolean") return raw.mods[safeName];
         var aliases = {ctrl:["ctrlKey","controlKey","ctrl","control"],shift:["shiftKey","shift"],alt:["altKey","alt"],win:["metaKey","winKey","meta","win"]}[safeName] || [];
         var explicit = aliases.filter(function(k){return typeof raw[k] === "boolean";});
         if (explicit.length) return explicit.some(function(k){return raw[k];});
@@ -971,7 +972,7 @@
           if (safeName === "alt" && key === "alt") return true;
           if (safeName === "win" && key === "win") return true;
         }
-        var modifiers = raw.modifiers;
+        var modifiers = raw.mods || raw.modifiers;
         if (Array.isArray(modifiers)) {
           for (var j = 0; j < modifiers.length; j += 1) {
             if (normalizeShortcutKeyToken(modifiers[j]).toLowerCase() === safeName) return true;
@@ -1363,7 +1364,7 @@
           var vk = Number(raw.vk);
           var keyName = VK_MAP[vk] || "0x" + vk.toString(16).toUpperCase();
 
-          handleBusAnnouncementKey(raw);
+          if(handleBusAnnouncementKey(raw))return;
           // --- Support des raccourcis via le flux VK ---
           // On vérifie si la touche pressée correspond à l'un de nos raccourcis enregistrés
           if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS, keyName, raw)) {

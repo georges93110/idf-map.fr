@@ -55,6 +55,13 @@ function nativeBusAnnouncementAllowed(announcement) {
   var family=String(getSaeivGlobalAudioFolderNameForCurrentState()||"").replace(/\s*\([^)]*\)\s*$/, "").trim().toLowerCase();
   return family === String(announcement.family).toLowerCase();
 }
+function publishNativeBusAnnouncementKeys() {
+  var state=nativeBusSettingsState,now=Date.now();
+  if(now-(state.hotkeysAt||0)<250||state.readOnly||!state.revision||!telemetryWs||telemetryWs.readyState!==1)return;
+  state.hotkeysAt=now;var list=state.current&&state.current.announcements,indices=[];
+  if(Array.isArray(list))list.forEach(function(a,i){if(a.key&&nativeBusAnnouncementAllowed(a))indices.push(i);});
+  telemetryWs.send(JSON.stringify({type:"nativeBusSettings",protocol:1,action:"hotkeys",revision:state.revision,indices:indices}));
+}
 function handleBusAnnouncementKey(raw) {
   if (!raw || raw.phase!=="down" || raw.repeat) return false;
   var mods=(isRawShortcutModifierActive(raw,"ctrl")?1:0)|(isRawShortcutModifierActive(raw,"shift")?2:0)|(isRawShortcutModifierActive(raw,"alt")?4:0)|(isRawShortcutModifierActive(raw,"win")?8:0);
@@ -65,7 +72,7 @@ function handleBusAnnouncementKey(raw) {
   // Immutable catalogue path, not arbitrary HTML. Preserve the ordered audio
   // queue so a manual announcement cannot cut the line/terminus introduction.
   if (!/^sounds\/bus\/voix_bus\/global\/[^.][^\\]*\.mp3$/i.test(a.path) || a.path.split("/").indexOf("..")>=0) return false;
-  var now=Date.now();if(now-(nativeBusSettingsState.lastSoundAt||0)<350)return false;
+  var now=Date.now();if(now-(nativeBusSettingsState.lastSoundAt||0)<350)return true;
   nativeBusSettingsState.lastSoundAt=now;
   saeivRouteAudio.queue.push({clipName:a.label,globalUrl:a.path.split("/").map(encodeURIComponent).join("/")});
   processSaeivRouteAudioQueue();return true;

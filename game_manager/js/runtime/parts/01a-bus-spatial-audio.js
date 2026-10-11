@@ -95,16 +95,18 @@ function updateBusSpatialRecord(record) {
   // Keep ordinary playback for an older DLL. Once native support was seen,
   // stale/disconnected camera data must never keep sounding at full volume.
   var mix = state.seen ? busSpatialMix(record.kind, Date.now() - state.stamp < 1500 ? state.telemetry : null) : { gain: 1, cutoff: 20000, pan: 0 };
+  var boost = record.kind === "announcement" ? 2 : 1;
   var volume = record.base * (record.followMaster ? getGlobalAudioVolumeFactor() : 1);
   if (record.gain) {
     record.audio.volume = Math.max(0, Math.min(1, volume));
     var t = state.context.currentTime;
-    record.gain.gain.setTargetAtTime(mix.gain, t, .075);
+    record.gain.gain.setTargetAtTime(mix.gain * boost, t, .075);
     record.filter.frequency.setTargetAtTime(mix.cutoff, t, .075);
     if (record.pan) record.pan.pan.setTargetAtTime(mix.pan, t, .075);
-  } else record.audio.volume = Math.max(0, Math.min(1, volume * mix.gain));
+  } else record.audio.volume = Math.max(0, Math.min(1, volume * mix.gain * boost));
 }
 function updateBusSpatialAudioTelemetry(raw) {
+  if(typeof publishNativeBusAnnouncementKeys === "function")publishNativeBusAnnouncementKeys();
   var data = raw && raw.data && typeof raw.data === "object" ? raw.data : raw;
   updateNativeGameAudio(data);
   if (!data || typeof data.audioCameraAvailable !== "boolean") return;

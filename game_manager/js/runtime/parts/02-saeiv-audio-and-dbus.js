@@ -663,7 +663,7 @@
         saeivServiceAcceptAudioReleaseAtMs = 0;
         resolveSaeivServiceAcceptAudioWaiters();
         createSaeivServiceAcceptAudioWaitPromise();
-        var audio = createBusSpatialAudio(SAEIV_SERVICE_ACCEPT_AUDIO_URL, "announcement");
+        var audio = createBusSpatialAudio(SAEIV_SERVICE_ACCEPT_AUDIO_URL, "notification");
         setBusAudioLevel(audio, 1 / Math.max(1, Number(SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR) || 1));
         try {
           audio.currentTime = Math.max(0, Number(SAEIV_SERVICE_ACCEPT_AUDIO_START_OFFSET_SEC) || 0);
