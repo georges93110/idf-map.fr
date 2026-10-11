@@ -50,12 +50,32 @@ function applyNativeBusSettings(packet) {
     saveWidgetLayoutState(); syncSaeivExternalState(true);
   } finally { state.applying = false; }
 }
+function nativeBusAnnouncementAllowed(announcement) {
+  if (!announcement || !saeivRouteState || !saeivRouteState.selectedKey || !canPlaySaeivRouteAudio() || !saeivStopAnnouncementSoundsEnabled) return false;
+  var family=String(getSaeivGlobalAudioFolderNameForCurrentState()||"").replace(/\s*\([^)]*\)\s*$/, "").trim().toLowerCase();
+  return family === String(announcement.family).toLowerCase();
+}
+function handleBusAnnouncementKey(raw) {
+  if (!raw || raw.phase!=="down" || raw.repeat) return false;
+  var mods=(isRawShortcutModifierActive(raw,"ctrl")?1:0)|(isRawShortcutModifierActive(raw,"shift")?2:0)|(isRawShortcutModifierActive(raw,"alt")?4:0)|(isRawShortcutModifierActive(raw,"win")?8:0);
+  var list=nativeBusSettingsState.current && nativeBusSettingsState.current.announcements;
+  if (!Array.isArray(list)) return false;
+  var a=list.find(function(item){return item.key && item.key.vk===Number(raw.vk) && item.key.mods===mods && nativeBusAnnouncementAllowed(item);});
+  if (!a) return false;
+  // Immutable catalogue path, not arbitrary HTML. Preserve the ordered audio
+  // queue so a manual announcement cannot cut the line/terminus introduction.
+  if (!/^sounds\/bus\/voix_bus\/global\/[^.][^\\]*\.mp3$/i.test(a.path) || a.path.split("/").indexOf("..")>=0) return false;
+  var now=Date.now();if(now-(nativeBusSettingsState.lastSoundAt||0)<350)return false;
+  nativeBusSettingsState.lastSoundAt=now;
+  saeivRouteAudio.queue.push({clipName:a.label,globalUrl:a.path.split("/").map(encodeURIComponent).join("/")});
+  processSaeivRouteAudioQueue();return true;
+}
 function receiveNativeBusSettings(packet) {
   var state=nativeBusSettingsState;
   if(packet.protocol !== 1) return;
   if(packet.action === "request"){ if(Date.now()-(state.requestAt||0)>1000){state.requestAt=Date.now();nativeBusSettingsConnect();} return; }
   if(packet.action === "readOnly"){state.readOnly=true;return;}
   if(packet.action !== "current" || !Number.isInteger(packet.revision) || !Array.isArray(packet.values) || packet.values.length!==16) return;
-  if(state.revision === packet.revision && state.current && JSON.stringify(state.current.values)===JSON.stringify(packet.values) && JSON.stringify(state.current.keys)===JSON.stringify(packet.keys)) return;
+  if(state.revision === packet.revision && state.current && JSON.stringify(state.current.values)===JSON.stringify(packet.values) && JSON.stringify(state.current.keys)===JSON.stringify(packet.keys) && JSON.stringify(state.current.announcements)===JSON.stringify(packet.announcements)) return;
   state.revision=packet.revision;state.current=packet;applyNativeBusSettings(packet);
 }

@@ -1363,6 +1363,7 @@
           var vk = Number(raw.vk);
           var keyName = VK_MAP[vk] || "0x" + vk.toString(16).toUpperCase();
 
+          handleBusAnnouncementKey(raw);
           // --- Support des raccourcis via le flux VK ---
           // On vérifie si la touche pressée correspond à l'un de nos raccourcis enregistrés
           if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS, keyName, raw)) {

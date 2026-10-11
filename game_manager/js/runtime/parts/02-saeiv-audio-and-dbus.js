@@ -542,14 +542,14 @@
         return busAudioReady({ followMaster: true });
       }
       function processSaeivRouteAudioQueue() {
-        if (saeivRouteAudio.playing || !saeivRouteAudio.available || !canPlaySaeivRouteAudio()) return;
+        if (saeivRouteAudio.playing || (!saeivRouteAudio.available && !(saeivRouteAudio.queue[0] || {}).globalUrl) || !canPlaySaeivRouteAudio()) return;
         var nextEntry = saeivRouteAudio.queue.shift();
         if (!nextEntry) return;
         var next = typeof nextEntry === "string" ? { clipName: nextEntry } : nextEntry;
-        var nextClip = findSaeivAudioClipName(String(next.clipName || "").trim());
+        var nextClip = next.globalUrl ? String(next.clipName) : findSaeivAudioClipName(String(next.clipName || "").trim());
         if (!nextClip) { saeivRouteAudio.queue = []; return; }
         var token = ++saeivRouteAudio.playbackToken;
-        var audio = createBusSpatialAudio(linePreviewAudioClipUrl(saeivRouteAudio.folderPath, nextClip), "announcement");
+        var audio = createBusSpatialAudio(next.globalUrl || linePreviewAudioClipUrl(saeivRouteAudio.folderPath, nextClip), "announcement");
         setBusAudioLevel(audio, 1);
         saeivRouteAudio.audio = audio;
         saeivRouteAudio.playing = true;
