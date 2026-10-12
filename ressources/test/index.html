@@ -29,7 +29,7 @@
   </style>
 </head>
 <body>
-  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">COACH75</span></div></header>
+  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">COACH76</span></div></header>
   <main><div class="crumb">PROJETS / <span>BUS PARISIEN</span></div><h1>Éditeur de girouette</h1><p class="intro">Composez votre destination LED, ligne par ligne, et prévisualisez le rendu instantanément.</p>
     <div class="layout"><section><div class="card preview-card"><div class="section-head"><h2>Aperçu en direct</h2><span class="hint">matrice 128 × 24 · LED amber</span></div><div class="sign-wrap"><div class="sign" id="sign"><canvas class="led-canvas" id="ledCanvas"></canvas></div></div><div class="under"><span>Simulation de matrice <b>active</b></span><span id="charCount">13 / 24 caractères</span></div><div class="toolbar"><button class="btn primary" id="animateBtn">▶ Animer</button><button class="btn" id="stopBtn">■ Arrêter</button><button class="btn" id="fullscreenBtn">⛶ Plein écran</button></div></div>
       <div class="section-head" style="margin:27px 3px 13px"><h2>Modèles rapides</h2><span class="hint">cliquez pour appliquer</span></div><div class="templates"><div class="template" data-route="27" data-dest="Porte d'Ivry" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">27</b>Porte d'Ivry</div><p>Bus standard <span class="kbd">1</span></p></div><div class="template" data-route="276" data-dest="La Défense (MÉTRO)" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">276</b>La Défense (MÉTRO)</div><p>Destination longue <span class="kbd">2</span></p></div><div class="template" data-route="134" data-dest="Porte d'Orléans" data-color="yellow"><div class="mini"><b style="color:white;margin-right:13px">134</b><i style="color:#fff34b">Porte d'Orléans</i></div><p>Affichage jaune <span class="kbd">3</span></p></div></div></section>
@@ -308,9 +308,21 @@ function drawSimple(){
    }
    lines=best.lines;size=100*best.scale;m.font=size+'px "'+$('#fontChoice').value+'"';
  }
+ if(agoraLayout&&!running){
+   // Larger destination only: keep the badge's reserved 211 px even
+   // without a badge. Fit actual ink, not the font's em-box, inside
+   // 813 x 128 with 6 px margins and a 6 px gap between existing rows.
+   const requestedSize=size*1.5;
+   m.font='100px "'+$('#fontChoice').value+'"';
+   const metrics=lines.map(line=>m.measureText(line));
+   const width=Math.max(1,...metrics.map(v=>v.actualBoundingBoxLeft+v.actualBoundingBoxRight));
+   const height=metrics.reduce((sum,v)=>sum+Math.max(1,v.actualBoundingBoxAscent+v.actualBoundingBoxDescent),0);
+   const fit=100*Math.min((space-12)/width,Math.max(1,116-(lines.length-1)*6)/Math.max(1,height));
+   size=Math.min(requestedSize,fit);m.font=size+'px "'+$('#fontChoice').value+'"';
+ }
  m.save();m.beginPath();m.rect(start,0,space,128);m.clip();m.fillStyle=palette.text;
  const inkHeights=lines.map(line=>{const v=m.measureText(line);return Math.max(1,v.actualBoundingBoxAscent+v.actualBoundingBoxDescent);});
- const noBadge=!$('#routeBox').checked&&!running&&!agoraLayout;
+ const inkFit=!running&&(agoraLayout||!$('#routeBox').checked);
  const fittedHeight=inkHeights.reduce((a,b)=>a+b,0)+(lines.length-1)*6;
  let inkTop=(128-fittedHeight)/2;
  const lineHeight=Math.min(size*1.05,112/Math.max(1,lines.length));
@@ -318,8 +330,8 @@ function drawSimple(){
    const ink=m.measureText(line),inkWidth=ink.actualBoundingBoxLeft+ink.actualBoundingBoxRight;
    const scale=running?1:Math.min(1,space/Math.max(1,inkWidth));
    const left=$('#align').value==='left'?0:$('#align').value==='right'?space-inkWidth*scale:(space-inkWidth*scale)/2;
-   const y=noBadge?inkTop+ink.actualBoundingBoxAscent:64+(i-(lines.length-1)/2)*lineHeight+(ink.actualBoundingBoxAscent-ink.actualBoundingBoxDescent)/2;
-   if(noBadge)inkTop+=inkHeights[i]+6;
+   const y=inkFit?inkTop+ink.actualBoundingBoxAscent:64+(i-(lines.length-1)/2)*lineHeight+(ink.actualBoundingBoxAscent-ink.actualBoundingBoxDescent)/2;
+   if(inkFit)inkTop+=inkHeights[i]+6;
    m.save();m.translate(start+(running?0:left),0);m.scale(scale,1);
    m.fillText(line,ink.actualBoundingBoxLeft+(running?space-offset:0),y);
    m.restore();
