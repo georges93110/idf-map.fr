@@ -704,9 +704,7 @@
           return;
         }
         if (type === "saeiv:service_accept_displayed") {
-          if (typeof playSaeivServiceAcceptAudio === "function") {
-            playSaeivServiceAcceptAudio();
-          }
+          // The chime belongs to successful route selection, not this UI frame.
           return;
         }
         if (type === "saeiv:service_start_route") {
@@ -759,6 +757,21 @@
         }
         if (type === "saeiv:action") {
           saeivLastAction = String(data.action || "").trim();
+          if (/^saeiv-native-diffusion-slot-\d+$/.test(saeivLastAction)) {
+            var slot=Number(data.diffusionSlot)-1;
+            var folder=getSaeivGlobalAudioFolderNameForCurrentState();
+            var valid=Number.isInteger(slot)&&slot>=0&&saeivGlobalAudioState.key===folder&&
+              String(data.selectedLineUid||"")===String(saeivRouteState&&saeivRouteState.lineUid||"")&&
+              String(data.selectedRouteUid||"")===String(saeivRouteState&&saeivRouteState.routeUid||"")&&
+              String(data.globalAudioFolderPath||"")===saeivGlobalAudioState.folderPath;
+            var url=valid&&saeivGlobalAudioState.urls[slot];
+            if(url&&canPlaySaeivRouteAudio()&&saeivStopAnnouncementSoundsEnabled){
+              saeivRouteAudio.queue.push({clipName:saeivGlobalAudioState.labels[slot],globalUrl:url});
+              processSaeivRouteAudioQueue();
+            }
+            postSaeivBridgeMessage({type:"saeiv:action_result",action:saeivLastAction,ok:!!url});
+            syncSaeivExternalState(true);return;
+          }
           if (saeivLastAction === "saeiv-manual-destination-announcement") {
             var destinationPlayed = data.localPlayback === true
               ? true

@@ -88,7 +88,7 @@ function receiveNativeServiceAction(m){
       if(!route)throw new Error('Ce service ne figure plus dans le catalogue.');
       var result=activateSaeivRouteSelection(line,route,{});
       if(!result||!result.ok)throw new Error(result&&result.error||'Service indisponible.');
-      nativeServicePendingSound={generation:m.generation,lineUid:m.lineUid,routeUid:m.routeUid,scheduledAt:Date.now(),readyAt:0};
+      nativeServicePendingSound=null; // Selection itself owns the single chime.
       return {ok:true};
     }).catch(function(err){return {ok:false,error:String(err&&err.message||err)};});
     nativeServiceActions.set(key,promise);

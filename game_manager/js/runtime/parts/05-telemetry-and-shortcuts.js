@@ -605,8 +605,8 @@
         display: "F3"
       };
       var OVERLAY_DESTINATION_ANNOUNCE_DEFAULT_SHORTCUT = {
-        keys: ["T"],
-        display: "T"
+        keys: ["Ctrl", "T"],
+        display: "Ctrl + T"
       };
       var OVERLAY_PLAYER_LIST_DEFAULT_SHORTCUT = {
         keys: ["Tab"],
@@ -629,8 +629,8 @@
       var overlayShortcutStateByScope = {
         idf_telemetry: null,
         idf_telemetry_destination_announcement: {
-          keys: ["T"],
-          display: "T"
+          keys: ["Ctrl", "T"],
+          display: "Ctrl + T"
         },
         idf_telemetry_zoom_gps: {
           keys: ["F5"],

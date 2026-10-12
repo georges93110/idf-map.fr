@@ -418,8 +418,8 @@
         saeivGlobalAudioState.preparePromise = null;
       }
       function getSaeivGlobalAudioFolderNameForCurrentState() {
-        if (!saeivRouteState || typeof saeivRouteState !== "object") {
-          return String(SAEIV_DEFAULT_GLOBAL_AUDIO_FOLDER || "").trim();
+        if (!saeivRouteState || !saeivRouteState.selectedKey) {
+          return "RATP";
         }
         return String(getActiveSaeivLineAudioConfig().globalAudioFolderName || "").trim();
       }
@@ -688,7 +688,7 @@
         saeivServiceAcceptAudioReleaseAtMs = 0;
         resolveSaeivServiceAcceptAudioWaiters();
         createSaeivServiceAcceptAudioWaitPromise();
-        var audio = createBusSpatialAudio(SAEIV_SERVICE_ACCEPT_AUDIO_URL, "notification");
+        var audio = createBusSpatialAudio(SAEIV_SERVICE_ACCEPT_AUDIO_URL, "serviceSelection");
         setBusAudioLevel(audio, 1 / Math.max(1, Number(SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR) || 1));
         try {
           audio.currentTime = Math.max(0, Number(SAEIV_SERVICE_ACCEPT_AUDIO_START_OFFSET_SEC) || 0);
@@ -1106,7 +1106,27 @@
         }).catch(function () { if (saeivRouteAudio.destinationRequest === request) saeivRouteAudio.destinationRequest = null; });
         return true;
       }
+// One request per closed -> open door cycle. Stale telemetry and service
+// changes clear pending work; an audio queue is never interrupted.
+var saeivAutoDestination = {key:"",known:false,open:false,pending:false};
+function tickSaeivAutomaticDestination() {
+  var state=saeivAutoDestination, route=saeivRouteState;
+  var enabled=!(nativeBusSettingsState.current && nativeBusSettingsState.current.destinationAutomatic===false);
+  var key=enabled && route && route.started===true && route.completed!==true ? String(route.selectedKey||"")+":"+String(saeivRouteStartedAtMs||0) : "";
+  var doors=getSaeivDoorsState();
+  if(!key || !doors.available || !telemetryConnected || telemetryPaused){state.key=key;state.known=false;state.pending=false;return;}
+  var open=Number(doors.entry)>.001;
+  if(state.key!==key || !state.known){state.key=key;state.known=true;state.open=open;state.pending=false;return;}
+  if(open&&!state.open)state.pending=true;
+  state.open=open;
+  if(!open){state.pending=false;return;}
+  if(state.pending && canPlaySaeivRouteAudio() && !isSaeivManualAnnouncementBusy()) {
+    if(playSaeivDestinationAnnouncementIfAvailable({action:"game-destination-doors",expectedRouteKey:route.selectedKey,requireShortcutContext:false}))state.pending=false;
+  }
+}
+
       function tickSaeivRouteAudio() {
+        tickSaeivAutomaticDestination();
         var request = saeivRouteAudio.destinationRequest;
         if (request && request.key !== String(saeivRouteState && saeivRouteState.selectedKey || "")) {
           saeivRouteAudio.destinationRequest = null;
@@ -1116,7 +1136,7 @@
         }
         syncSaeivAudioPauseState();
       }
-      window.setInterval(tickSaeivRouteAudio, 200);
+      window.setInterval(tickSaeivRouteAudio, 50);
       function chainSaeivAudioEndCallback(existing, appended) {
         if (typeof appended !== "function") return existing;
         if (typeof existing !== "function") return appended;
@@ -2061,7 +2081,7 @@
         payload.stopName = currentName;
         payload.nextStopName = nextName;
         payload.thirdStopName = thirdName;
-        payload.vehicleAtStop = saeivStoppedAtStopIndex === displayIndex;
+        payload.vehicleAtStop = saeivStoppedAtStopIndex === displayIndex && telemetryLastSignal && Number.isFinite(telemetryLastSignal.speedKmh) && Math.abs(telemetryLastSignal.speedKmh) <= 0.1;
         payload.vehicleAtStopIndex = saeivStoppedAtStopIndex >= 0 ? saeivStoppedAtStopIndex : -1;
         payload.vehicleAtStopUid = String(saeivStoppedAtStopUid || "");
         payload.departMinutes = departMinutes;
@@ -2806,6 +2826,7 @@
         resetSaeivStopRequestAudioState();
         saeivStopRequestAudioPlayedSegments = new Set();
         prepareSaeivGlobalAudioFolder(lineAudioConfig.globalAudioFolderName).catch(function () { });
+        playSaeivServiceAcceptAudio();
         saeivLastAction = "game-route-selected";
         saeivLastStateKey = "";
         if (!lastBridgeArrowPoint && routeStartPoint) {
@@ -2898,6 +2919,7 @@
           (Array.isArray(line.routes) ? line.routes : []).forEach(function (route) {
             var descriptor = {
               lineUid: String(line.uid || ""),
+              lineUidRaw: String(line.uidRaw || line.uid || ""),
               lineNumber: String(getLineNumber(line, route) || "").trim(),
               routeUid: String(route.uid || ""),
               routeName: String(route.name || "").trim(),

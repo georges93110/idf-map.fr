@@ -2291,7 +2291,7 @@
       const hostParam = String(params.get("host") || "").trim().toLowerCase();
       const isHostedByGame = hostParam === "game" || hostParam === "1" || hostParam === "true";
       const isDevMapMode = params.has("devmap") || params.has("dev_map") || params.has("nextversion");
-      const SAEIV_HOST_POLL_INTERVAL_MS = 140;
+      const SAEIV_HOST_POLL_INTERVAL_MS = 50;
       const SAEIV_STATE_REQUEST_INTERVAL_MS = 1000;
       const SAEIV_REG_CALL_ENABLED = false;
       const SAEIV_REG_VOICE_ACTION = "saeiv_reg_voice";
@@ -3071,6 +3071,7 @@
         const type = String(data.type || "").trim();
         if (SAEIV_REG_CALL_ENABLED && handleCallRegPresence(data)) return;
         if (!data || data.sourceId !== sourceId) return;
+        if(type==="saeiv:catalog"){applyServiceCatalog(data.payload&&data.payload.routes);return;}
         if (type === "saeiv:action_result") {
           handleServiceStartActionResult(data);
           const action = String(data.action || "").trim();
@@ -4233,15 +4234,33 @@
           serviceAcceptValidateBtnEl.setAttribute("aria-disabled", "false");
         }
         setServiceFrameDisplay(serviceAcceptFrameEl, true);
-        notifyServiceAcceptDisplayed();
+        // Chime is emitted by successful line selection in the host.
       }
 
+      let serviceCatalogResolve=null, serviceCatalogTimer=0;
+      function applyServiceCatalog(routes) {
+        const nextSet=new Set(), routeMap=new Map(), lineInfo=new Map(), routeInfo=new Map();
+        for(const r of Array.isArray(routes)?routes:[]){
+          const uid=String(r.lineUidRaw||r.lineUid||""), route=String(r.routeUid||"");
+          if(!uid||!route)continue;
+          nextSet.add(uid);lineInfo.set(uid,{uid:String(r.lineUid),label:String(r.lineNumber||uid)});
+          if(!routeMap.has(uid)){routeMap.set(uid,new Set());routeInfo.set(uid,new Map());}
+          routeMap.get(uid).add(route);routeInfo.get(uid).set(route,{uid:route,name:String(r.routeName||""),lineNumber:String(r.lineNumber||uid)});
+        }
+        serviceLineUidSet=nextSet;serviceRouteUidMap=routeMap;serviceLineInfoMap=lineInfo;serviceRouteInfoMap=routeInfo;
+        clearTimeout(serviceCatalogTimer);const resolve=serviceCatalogResolve;serviceCatalogResolve=null;serviceLineUidLoadPromise=null;
+        updateServiceLineValidation();if(resolve)resolve(nextSet);
+      }
       function ensureServiceLineUidsLoaded() {
         if (serviceLineUidSet instanceof Set) {
           updateServiceLineValidation();
           return Promise.resolve(serviceLineUidSet);
         }
         if (serviceLineUidLoadPromise) return serviceLineUidLoadPromise;
+        if(window.parent!==window&&typeof window.parent.saeivNativePost==="function"){
+          serviceLineUidLoadPromise=new Promise(resolve=>{serviceCatalogResolve=resolve;serviceCatalogTimer=setTimeout(()=>{serviceCatalogResolve=null;serviceLineUidLoadPromise=null;resolve(new Set());},8000);});
+          post("saeiv:catalog_request");return serviceLineUidLoadPromise;
+        }
         serviceLineUidLoadPromise = getLatestDbusVersionFromManifest()
           .then((version) => {
             return fetchDbusLinesXmlForVersion(version);
@@ -4464,12 +4483,12 @@
 
         const selectResult = await invokeServiceHostFunction(
           "gameSelectLineRouteByUid",
-          serviceSelectedLineUid,
+          (serviceLineInfoMap.get(serviceSelectedLineUid)||{}).uid || serviceSelectedLineUid,
           serviceSelectedRouteUid
         );
         if (!selectResult.handled) {
           post("saeiv:select_route", {
-            lineUid: serviceSelectedLineUid,
+            lineUid: (serviceLineInfoMap.get(serviceSelectedLineUid)||{}).uid || serviceSelectedLineUid,
             routeUid: serviceSelectedRouteUid
           });
           return;
@@ -4578,6 +4597,7 @@
       }
 
       function preloadDiffusionAudioUrls(urls) {
+        if(window.parent!==window&&typeof window.parent.saeivNativePost==="function")return;
         const list = Array.isArray(urls)
           ? urls.map(resolveDiffusionAudioUrl).filter(Boolean)
           : [];
@@ -5114,7 +5134,7 @@
         const atStopIndex = hasAtStopIndex
           ? Math.max(0, Math.min(linkedLastIndex, Math.floor(rawAtStopIndex)))
           : linkedIndex;
-        const isVehicleAtStop = data.vehicleAtStop === true && linkedStops.length > 0 && hasAtStopIndex;
+        const isVehicleAtStop = data.vehicleAtStop === true && Number.isFinite(data.busSpeedKmh) && Math.abs(data.busSpeedKmh) <= 0.1 && linkedStops.length > 0 && hasAtStopIndex;
         const displayIndex = isVehicleAtStop ? atStopIndex : linkedIndex;
         const linkedPrev = displayIndex > 0 ? String(linkedStops[displayIndex - 1] || "").trim() : "";
         const linkedCurrent = String(linkedStops[displayIndex] || "").trim();
@@ -5429,7 +5449,7 @@
             } catch {
               actionUrls = [];
             }
-            const playedLocally = playDiffusionAudioSequence(actionUrls, { manualLock: true });
+            const playedLocally = !(window.parent!==window&&typeof window.parent.saeivNativePost==="function") && playDiffusionAudioSequence(actionUrls, { manualLock: true });
             if (!playedLocally) setDiffusionManualActionLocked(true, 1400);
             const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
             post("saeiv:action", {
@@ -5447,10 +5467,11 @@
           }
           const slot = Number(btn.getAttribute("data-diffusion-slot") || 0);
           if (!Number.isInteger(slot) || slot <= 0) return false;
-          playDiffusionAudioBySlot(slot, btn.getAttribute("data-diffusion-url"));
+          const nativeTexture=window.parent!==window&&typeof window.parent.saeivNativePost==="function";
+          if(!nativeTexture)playDiffusionAudioBySlot(slot, btn.getAttribute("data-diffusion-url"));
           const state = latestStatePayload && typeof latestStatePayload === "object" ? latestStatePayload : {};
           post("saeiv:action", {
-            action: `saeiv-local-diffusion-slot-${slot}`,
+            action: `saeiv-${nativeTexture?"native":"local"}-diffusion-slot-${slot}`,
             selectedLineUid: String(state.selectedLineUid || ""),
             selectedRouteUid: String(state.selectedRouteUid || ""),
             lineNumber: String(state.lineNumber || ""),
