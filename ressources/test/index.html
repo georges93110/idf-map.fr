@@ -29,7 +29,7 @@
   </style>
 </head>
 <body>
-  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">COACH70</span></div></header>
+  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">COACH75</span></div></header>
   <main><div class="crumb">PROJETS / <span>BUS PARISIEN</span></div><h1>Éditeur de girouette</h1><p class="intro">Composez votre destination LED, ligne par ligne, et prévisualisez le rendu instantanément.</p>
     <div class="layout"><section><div class="card preview-card"><div class="section-head"><h2>Aperçu en direct</h2><span class="hint">matrice 128 × 24 · LED amber</span></div><div class="sign-wrap"><div class="sign" id="sign"><canvas class="led-canvas" id="ledCanvas"></canvas></div></div><div class="under"><span>Simulation de matrice <b>active</b></span><span id="charCount">13 / 24 caractères</span></div><div class="toolbar"><button class="btn primary" id="animateBtn">▶ Animer</button><button class="btn" id="stopBtn">■ Arrêter</button><button class="btn" id="fullscreenBtn">⛶ Plein écran</button></div></div>
       <div class="section-head" style="margin:27px 3px 13px"><h2>Modèles rapides</h2><span class="hint">cliquez pour appliquer</span></div><div class="templates"><div class="template" data-route="27" data-dest="Porte d'Ivry" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">27</b>Porte d'Ivry</div><p>Bus standard <span class="kbd">1</span></p></div><div class="template" data-route="276" data-dest="La Défense (MÉTRO)" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">276</b>La Défense (MÉTRO)</div><p>Destination longue <span class="kbd">2</span></p></div><div class="template" data-route="134" data-dest="Porte d'Orléans" data-color="yellow"><div class="mini"><b style="color:white;margin-right:13px">134</b><i style="color:#fff34b">Porte d'Orléans</i></div><p>Affichage jaune <span class="kbd">3</span></p></div></div></section>
@@ -67,6 +67,7 @@ $('.section-head .hint').textContent='1024 × 128 px';
 $('.toggle:last-child').lastChild.textContent=' Points LED';
 const palette={text:'#ff9c15',number:'#ffffff',outline:'#000000',background:'#000000',inactive:'#0d100e'};
 const labels={text:'Destination',number:'Numéro',outline:'Contour du numéro',background:'Fond général',inactive:'LED éteintes',partial:'Diagonale service partiel'};
+function girouetteOutline(color){const c=String(color).replace('#','');const n=parseInt(c,16);return ((n>>16)*.2126+((n>>8)&255)*.7152+(n&255)*.0722)>127?'#000000':'#ffffff';}
 function colorField(label,value,onChange){
  const field=document.createElement('div');field.className='field';
  const title=document.createElement('label');title.textContent=label;
@@ -77,7 +78,7 @@ function colorField(label,value,onChange){
  hex.oninput=()=>{let v=hex.value.trim();if(!v.startsWith('#'))v='#'+v;if(/^#[0-9a-f]{3}$/i.test(v))v='#'+[...v.slice(1)].map(c=>c+c).join('');if(/^#[0-9a-f]{6}$/i.test(v)){picker.value=v;hex.setCustomValidity('');onChange(v);update()}else hex.setCustomValidity('Couleur hexadécimale attendue : #RRGGBB')};
  return value=>{picker.value=value;hex.value=value.toUpperCase()};
 }
-const colorControls={};for(const key of Object.keys(palette))colorControls[key]=colorField(labels[key],palette[key],v=>palette[key]=v);
+const colorControls={};for(const key of Object.keys(palette))colorControls[key]=colorField(labels[key],palette[key],v=>{palette[key]=v;if(key==='number'){palette.outline=girouetteOutline(v);colorControls.outline?.(palette.outline);}});
 const routeColor=$('#routeColor');routeColor.hidden=true;routeColor.previousElementSibling.hidden=true;
 const syncRoute=colorField('Fond du numéro',routeColor.value,v=>routeColor.value=v);
 const layoutOptions=document.createElement('div');layoutOptions.className='field';
@@ -100,6 +101,9 @@ function updateRenderOptions(){
    stripeColor=entry?.[0]||'#080080';syncStripe(stripeColor);
    routeColor.value='#080080';syncRoute(routeColor.value);
   }else if(wasNight){routeColor.value=dayBackground;syncRoute(dayBackground)}
+  const style=(window.LINE_STYLES||{})[number];
+  const foreground=active?'#ffffff':style?.[1];
+  if(/^#[0-9a-f]{6}$/i.test(foreground||'')){palette.number=foreground;palette.outline=girouetteOutline(foreground);colorControls.number(palette.number);colorControls.outline(palette.outline);}
   nightKey=key;wasNight=active;
  }
  nightStripe=active?stripeColor:'';
@@ -133,6 +137,62 @@ function agoraNumberCutout(font,sx,sy,x,y,stripeHeight){
  }
  c.putImageData(img,0,0);agoraCutoutKey=key;return agoraCutout;
 }
+// Keep the original glyph geometry and black gaps between its LED dots.
+// Only the global boundary of the existing stroke can change colour.
+// Keep one whole empty pixel column between glyphs INCLUDING the stroke.
+const numberGlyph=document.createElement('canvas'),numberLayer=document.createElement('canvas');
+numberGlyph.width=numberLayer.width=211;numberGlyph.height=numberLayer.height=128;
+const numberGlyphCtx=numberGlyph.getContext('2d',{willReadFrequently:true}),numberLayerCtx=numberLayer.getContext('2d');
+let numberLayerKey='';
+function routeNumberLayer(font,sx,sy,x,y,stripeHeight){
+ const key=JSON.stringify([route.value,font,sx,sy,x,y,stripeHeight,palette.number,palette.outline]);
+ if(key===numberLayerKey)return numberLayer;
+ const rgb=colour=>{let h=colour.replace('#','');if(h.length===3)h=[...h].map(v=>v+v).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];};
+ const foreground=rgb(palette.number),outline=rgb(palette.outline);
+ const colouredOutline=outline.some(channel=>channel!==0);
+ const c=numberGlyphCtx,glyphs=[];let prefix='',shift=0,end=-Infinity;
+ for(const character of route.value){
+  c.clearRect(0,0,211,128);c.save();c.font=font;c.textAlign='left';c.textBaseline='alphabetic';
+  const advance=c.measureText(prefix).width;prefix+=character;
+  c.translate(105.5,(128-stripeHeight)/2);c.scale(sx,sy);
+  c.strokeStyle='#000000';c.lineWidth=7/Math.min(sx,sy);c.lineJoin='round';
+  c.strokeText(character,x+advance,y);c.fillStyle='#ffffff';c.fillText(character,x+advance,y);c.restore();
+  const image=c.getImageData(0,0,211,128),pixels=image.data;let left=211,right=-1;
+  for(let yy=0;yy<128;yy++)for(let xx=0;xx<211;xx++){
+   const i=4*(yy*211+xx);if(!pixels[i+3])continue;
+   left=Math.min(left,xx);right=Math.max(right,xx);
+   // Alpha describes the connected global silhouette: the original
+   // stroke already fills gaps between neighbouring LED dots. Its edge
+   // is distinct from each dot's black surround. Recolour only this
+   // existing outer edge; leave the alpha and internal black alone.
+   const ink=pixels[i]/255;let edge=0;
+   if(colouredOutline&&ink<1){
+    let distance=4;
+    for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
+     const d=Math.hypot(dx,dy);if(d>=distance)continue;
+     const nx=xx+dx,ny=yy+dy;
+     if(nx<0||nx>=211||ny<0||ny>=128||pixels[4*(ny*211+nx)+3]===0)distance=d;
+    }
+    edge=Math.max(0,Math.min(1,4-distance));
+   }
+   for(let k=0;k<3;k++)pixels[i+k]=Math.round(foreground[k]*ink+outline[k]*(1-ink)*edge);
+  }
+  if(right<left)continue;
+  c.putImageData(image,0,0);
+  const width=right-left+1;
+  shift+=Math.max(0,end+1-(left+shift));
+  const position=left+shift;end=position+width;
+  const glyph=document.createElement('canvas');glyph.width=width;glyph.height=128;
+  glyph.getContext('2d').drawImage(numberGlyph,left,0,width,128,0,0,width,128);
+  glyphs.push({image:glyph,x:position});
+ }
+ const e=numberLayerCtx;e.clearRect(0,0,211,128);
+ if(glyphs.length){
+  const first=glyphs[0].x,width=end-first,offset=Math.floor((211-width)/2)-first;
+  for(const glyph of glyphs)e.drawImage(glyph.image,glyph.x+offset,0);
+ }
+ numberLayerKey=key;return numberLayer;
+}
 function drawRoute(){
  if(!$('#routeBox').checked)return;
  ctx.save();ctx.beginPath();ctx.rect(0,0,211,128);ctx.clip();
@@ -164,25 +224,20 @@ function drawRoute(){
  const width=ink.actualBoundingBoxLeft+ink.actualBoundingBoxRight;
  const height=ink.actualBoundingBoxAscent+ink.actualBoundingBoxDescent;
  const sx=Math.min(1,176/Math.max(1,width)),sy=Math.min(1,(94-stripeHeight)/Math.max(1,height));
- ctx.save();ctx.translate(105.5,(128-stripeHeight)/2);ctx.scale(sx,sy);
  const x=(ink.actualBoundingBoxLeft-ink.actualBoundingBoxRight)/2;
  const y=(ink.actualBoundingBoxAscent-ink.actualBoundingBoxDescent)/2;
- // Agora uses solid white ink with no outline. Other buses retain the
- // supplied dotted font and their outline.
  if(!agoraLayout){
-   ctx.strokeStyle=palette.outline;ctx.lineWidth=7/Math.min(sx,sy);ctx.lineJoin='round';
-   ctx.strokeText(route.value,x,y);
+   ctx.drawImage(routeNumberLayer(ctx.font,sx,sy,x,y,stripeHeight),0,0);
+ }else{
+   ctx.save();ctx.translate(105.5,(128-stripeHeight)/2);ctx.scale(sx,sy);
+   ctx.fillStyle=palette.number;ctx.fillText(route.value,x,y);ctx.restore();
  }
- ctx.fillStyle=palette.number;ctx.fillText(route.value,x,y);
- ctx.restore(); // Return from number coordinates to badge coordinates.
  if(partialVisible()&&agoraLayout){
    // Cut the slash around the curved digit silhouettes, with a small
    // clear gap. This mask is not drawn as an outline on the number.
    const cutout=agoraNumberCutout(ctx.font,sx,sy,x,y,stripeHeight);
-   const base=parseInt($('#routeColor').value.slice(1),16);
-   const channels=[(base>>16)&255,(base>>8)&255,base&255].map(v=>Math.round(v*.52+255*.48));
    const c=agoraSlashCtx;c.clearRect(0,0,211,128);c.save();
-   c.strokeStyle='rgb('+channels.join(',')+')';c.lineWidth=16;c.lineCap='butt';
+   c.strokeStyle=palette.number;c.lineWidth=16;c.lineCap='butt';
    c.beginPath();c.moveTo(-12,136);c.lineTo(223,-8);c.stroke();
    c.globalCompositeOperation='destination-out';c.drawImage(cutout,0,0);c.restore();
    ctx.save();ctx.beginPath();ctx.rect(0,0,211,128-stripeHeight);ctx.clip();
