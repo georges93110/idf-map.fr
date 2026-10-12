@@ -29,18 +29,19 @@
   </style>
 </head>
 <body>
-  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">v0.4.2</span></div></header>
+  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">COACH70</span></div></header>
   <main><div class="crumb">PROJETS / <span>BUS PARISIEN</span></div><h1>Éditeur de girouette</h1><p class="intro">Composez votre destination LED, ligne par ligne, et prévisualisez le rendu instantanément.</p>
     <div class="layout"><section><div class="card preview-card"><div class="section-head"><h2>Aperçu en direct</h2><span class="hint">matrice 128 × 24 · LED amber</span></div><div class="sign-wrap"><div class="sign" id="sign"><canvas class="led-canvas" id="ledCanvas"></canvas></div></div><div class="under"><span>Simulation de matrice <b>active</b></span><span id="charCount">13 / 24 caractères</span></div><div class="toolbar"><button class="btn primary" id="animateBtn">▶ Animer</button><button class="btn" id="stopBtn">■ Arrêter</button><button class="btn" id="fullscreenBtn">⛶ Plein écran</button></div></div>
       <div class="section-head" style="margin:27px 3px 13px"><h2>Modèles rapides</h2><span class="hint">cliquez pour appliquer</span></div><div class="templates"><div class="template" data-route="27" data-dest="Porte d'Ivry" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">27</b>Porte d'Ivry</div><p>Bus standard <span class="kbd">1</span></p></div><div class="template" data-route="276" data-dest="La Défense (MÉTRO)" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">276</b>La Défense (MÉTRO)</div><p>Destination longue <span class="kbd">2</span></p></div><div class="template" data-route="134" data-dest="Porte d'Orléans" data-color="yellow"><div class="mini"><b style="color:white;margin-right:13px">134</b><i style="color:#fff34b">Porte d'Orléans</i></div><p>Affichage jaune <span class="kbd">3</span></p></div></div></section>
       <aside class="card sidebar"><h2>Paramètres d'affichage</h2><div class="field"><label for="route">Numéro de ligne <output id="routeOut">27</output></label><input id="route" type="text" maxlength="4" value="27"></div><div class="field"><label for="destination">Destination <output id="destOut">13 / 24</output></label><input id="destination" type="text" maxlength="24" value="Porte d'Ivry"></div><div class="field"><label for="color">Couleur des LEDs</label><div class="swatches"><button class="swatch active" data-color="orange" style="background:#ff8c21"></button><button class="swatch" data-color="yellow" style="background:#fff34b"></button><button class="swatch" data-color="white" style="background:#f4f7f8"></button><button class="swatch" data-color="blue" style="background:#39aee8"></button></div></div><div class="field"><label for="size">Taille <output id="sizeOut">100%</output></label><input id="size" type="range" min="70" max="130" value="100"></div><div class="field"><label for="speed">Vitesse de défilement <output id="speedOut">3.0 s</output></label><input id="speed" type="range" min="1" max="8" value="3"></div><div class="divider"></div><div class="row"><label class="toggle"><input id="routeBox" type="checkbox" checked> Afficher la ligne</label><label class="toggle"><input id="scanBox" type="checkbox" checked> Scanlines</label></div><div class="layers"><h2>Calques</h2><div class="layer active"><span class="dot"></span><div><b>Destination</b><small>Texte LED · amber</small></div><span class="drag">⠿</span></div><div class="layer"><span class="dot" style="background:#fff"></span><div><b>Ligne 27</b><small>Bloc numéro · blanc</small></div><span class="drag">⠿</span></div></div></aside>
     </div>
   </main>
+  <script src="../../game_manager/config/line-config.js"></script>
   <script>
 
 const $=s=>document.querySelector(s),output=$('#ledCanvas'),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d'),route=$('#route');
 const outputCtx=output.getContext('2d');
-let renderMode='simple';
+let renderMode='simple',agoraLayout=false,nightStripe='';
 output.width=1024;output.height=128;
 const tabs=document.createElement('div');tabs.className='toolbar';tabs.style.margin='0 0 16px';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Format du rendu');
 for(const [mode,label] of [['simple','Simple · 1024 × 128'],['advanced','Avancé · 2048 × 256']]){
@@ -64,7 +65,7 @@ options.innerHTML='<label for="routeColor">Fond du numéro</label><input id="rou
 $('.sidebar').append(options);$('.layers').remove();
 $('.section-head .hint').textContent='1024 × 128 px';
 $('.toggle:last-child').lastChild.textContent=' Points LED';
-const palette={text:'#ff9c15',number:'#fffef4',outline:'#000000',background:'#000000',inactive:'#0d100e'};
+const palette={text:'#ff9c15',number:'#ffffff',outline:'#000000',background:'#000000',inactive:'#0d100e'};
 const labels={text:'Destination',number:'Numéro',outline:'Contour du numéro',background:'Fond général',inactive:'LED éteintes',partial:'Diagonale service partiel'};
 function colorField(label,value,onChange){
  const field=document.createElement('div');field.className='field';
@@ -80,41 +81,113 @@ const colorControls={};for(const key of Object.keys(palette))colorControls[key]=
 const routeColor=$('#routeColor');routeColor.hidden=true;routeColor.previousElementSibling.hidden=true;
 const syncRoute=colorField('Fond du numéro',routeColor.value,v=>routeColor.value=v);
 const layoutOptions=document.createElement('div');layoutOptions.className='field';
-layoutOptions.innerHTML='<label for="align">Alignement du texte</label><select id="align"><option value="center">Centré</option><option value="left">À gauche</option><option value="right">À droite</option></select><label class="toggle"><input type="checkbox" id="wrap" checked> Retours à la ligne automatiques</label><label class="toggle"><input type="checkbox" id="partial"> Service partiel — diagonale</label><label class="toggle"><input type="checkbox" id="blink" checked> Faire clignoter la diagonale</label><label for="blinkMs">Durée de chaque phase (ms)</label><input id="blinkMs" type="range" min="300" max="2000" step="100" value="800"><output id="blinkOut">800 ms</output>';
+layoutOptions.innerHTML='<label for="align">Alignement du texte</label><select id="align"><option value="center">Centré</option><option value="left">À gauche</option><option value="right">À droite</option></select><label class="toggle"><input type="checkbox" id="wrap" checked> Retours à la ligne automatiques</label><label class="toggle"><input type="checkbox" id="partial"> Service partiel — diagonale</label><label class="toggle"><input type="checkbox" id="blink"> Faire clignoter la diagonale</label><label for="blinkMs">Durée de chaque phase (ms)</label><input id="blinkMs" type="range" min="300" max="2000" step="100" value="800"><output id="blinkOut">800 ms</output>';
 $('.sidebar').append(layoutOptions);
+const styleOptions=document.createElement('div');styleOptions.className='field';
+styleOptions.innerHTML='<label for="busStyle">Style de girouette</label><select id="busStyle"><option value="normal">Normal — badge LED</option><option value="agora">Agora — badge plein</option></select><label for="nightMode">Badge Noctilien</label><select id="nightMode"><option value="auto">Automatique — numéro N…</option><option value="on">Activé</option><option value="off">Désactivé</option></select><p class="hint" id="styleHint"></p>';
+$('.sidebar').insertBefore(styleOptions,$('.sidebar .field'));
+let nightKey='',wasNight=false,dayBackground=routeColor.value,stripeColor='#080080';
+const syncStripe=colorField('Barre Noctilien',stripeColor,v=>stripeColor=v);
+function updateRenderOptions(){
+ agoraLayout=$('#busStyle').value==='agora';
+ const number=route.value.trim().toUpperCase(),mode=$('#nightMode').value;
+ const active=mode==='on'||(mode==='auto'&&/^N\d+$/.test(number));
+ const key=mode+':'+number;
+ if(key!==nightKey){
+  if(active){
+   if(!wasNight)dayBackground=routeColor.value;
+   const entry=(window.LINE_STYLES||{})[number];
+   stripeColor=entry?.[0]||'#080080';syncStripe(stripeColor);
+   routeColor.value='#080080';syncRoute(routeColor.value);
+  }else if(wasNight){routeColor.value=dayBackground;syncRoute(dayBackground)}
+  nightKey=key;wasNight=active;
+ }
+ nightStripe=active?stripeColor:'';
+ $('#styleHint').textContent=agoraLayout?'Numéro plein sans contour · destination limitée à 813 × 128 px.':'Numéro LED avec contour · destination élargie si le badge est masqué.';
+}
 let blinkEpoch=performance.now();
-function partialVisible(){return $('#partial').checked&&(!$('#blink').checked||Math.floor((performance.now()-blinkEpoch)/Number($('#blinkMs').value))%2===0)}
-setInterval(()=>{if($('#partial').checked&&$('#blink').checked&&!running)draw()},80);
+function partialVisible(){return $('#partial').checked&&(renderMode==='advanced'||!$('#blink').checked||Math.floor((performance.now()-blinkEpoch)/Number($('#blinkMs').value))%2===0)}
+setInterval(()=>{if(renderMode==='simple'&&$('#partial').checked&&$('#blink').checked&&!running)draw()},80);
+// Reuse the same small mask until the number's geometry changes.
+const agoraCutout=document.createElement('canvas'),agoraSlash=document.createElement('canvas');
+agoraCutout.width=agoraSlash.width=211;agoraCutout.height=agoraSlash.height=128;
+const agoraCutoutCtx=agoraCutout.getContext('2d',{willReadFrequently:true}),agoraSlashCtx=agoraSlash.getContext('2d');
+let agoraCutoutKey='';
+function agoraNumberCutout(font,sx,sy,x,y,stripeHeight){
+ const key=JSON.stringify([route.value,font,sx,sy,x,y,stripeHeight]);
+ if(key===agoraCutoutKey)return agoraCutout;
+ const c=agoraCutoutCtx;c.clearRect(0,0,211,128);c.save();
+ c.font=font;c.textAlign='left';c.textBaseline='alphabetic';
+ c.translate(105.5,(128-stripeHeight)/2);c.scale(sx,sy);
+ c.fillStyle=c.strokeStyle='#fff';c.lineJoin='round';c.lineWidth=12/Math.min(sx,sy);
+ c.strokeText(route.value,x,y);c.fillText(route.value,x,y);c.restore();
+ // Fill only the inside of the word's silhouette, row by row. This
+ // protects counters and gaps without replacing the curved outside by
+ // a bounding rectangle. Preserve antialiasing at both outer edges.
+ const img=c.getImageData(0,0,211,128),pixels=img.data;
+ for(let row=0;row<128;row++){
+  let left=0,right=210;
+  while(left<211&&pixels[4*(row*211+left)+3]===0)left++;
+  while(right>=left&&pixels[4*(row*211+right)+3]===0)right--;
+  for(let col=left+1;col<right;col++)pixels[4*(row*211+col)+3]=255;
+ }
+ c.putImageData(img,0,0);agoraCutoutKey=key;return agoraCutout;
+}
 function drawRoute(){
  if(!$('#routeBox').checked)return;
  ctx.save();ctx.beginPath();ctx.rect(0,0,211,128);ctx.clip();
  ctx.fillStyle=palette.background;ctx.fillRect(0,0,211,128);
  ctx.fillStyle=$('#routeColor').value;
- if($('#scanBox').checked){
+ if(!agoraLayout&&$('#scanBox').checked){
    for(let y=2;y<128;y+=4)for(let x=2;x<211;x+=4){
      ctx.beginPath();ctx.arc(x,y,1.55,0,Math.PI*2);ctx.fill();
    }
  }else ctx.fillRect(0,0,211,128);
- if(partialVisible()){
+ if(partialVisible()&&!agoraLayout){
    ctx.save();ctx.beginPath();ctx.moveTo(211,0);ctx.lineTo(211,128);ctx.lineTo(0,128);ctx.closePath();ctx.clip();
    ctx.fillStyle=palette.background;ctx.fillRect(0,0,211,128);
-   if($('#scanBox').checked){
+   if(!agoraLayout&&$('#scanBox').checked){
      ctx.fillStyle=palette.inactive;
      for(let y=2;y<128;y+=4)for(let x=2;x<211;x+=4){ctx.beginPath();ctx.arc(x,y,1.55,0,Math.PI*2);ctx.fill()}
    }
    ctx.restore();
  }
- ctx.font='normal 112px Girouette';ctx.textAlign='left';ctx.textBaseline='alphabetic';
+ const stripeHeight=nightStripe?12:0;
+ if(nightStripe){
+  ctx.fillStyle=palette.background;ctx.fillRect(0,128-stripeHeight,211,stripeHeight);
+  ctx.fillStyle=nightStripe;
+  if(agoraLayout)ctx.fillRect(0,128-stripeHeight,211,stripeHeight);
+  else for(let y=130-stripeHeight;y<128;y+=4)for(let x=2;x<211;x+=4){ctx.beginPath();ctx.arc(x,y,1.55,0,Math.PI*2);ctx.fill();}
+ }
+ ctx.font=agoraLayout?'bold 112px Arial, sans-serif':'normal 112px Girouette';ctx.textAlign='left';ctx.textBaseline='alphabetic';
  const ink=ctx.measureText(route.value);
  const width=ink.actualBoundingBoxLeft+ink.actualBoundingBoxRight;
  const height=ink.actualBoundingBoxAscent+ink.actualBoundingBoxDescent;
- const sx=Math.min(1,176/Math.max(1,width)),sy=Math.min(1,94/Math.max(1,height));
- ctx.translate(105.5,64);ctx.scale(sx,sy);
+ const sx=Math.min(1,176/Math.max(1,width)),sy=Math.min(1,(94-stripeHeight)/Math.max(1,height));
+ ctx.save();ctx.translate(105.5,(128-stripeHeight)/2);ctx.scale(sx,sy);
  const x=(ink.actualBoundingBoxLeft-ink.actualBoundingBoxRight)/2;
  const y=(ink.actualBoundingBoxAscent-ink.actualBoundingBoxDescent)/2;
- // Outline first, then retain all the original white dots of the supplied font.
- ctx.strokeStyle=palette.outline;ctx.lineWidth=7/Math.min(sx,sy);ctx.lineJoin='round';
- ctx.strokeText(route.value,x,y);ctx.fillStyle=palette.number;ctx.fillText(route.value,x,y);
+ // Agora uses solid white ink with no outline. Other buses retain the
+ // supplied dotted font and their outline.
+ if(!agoraLayout){
+   ctx.strokeStyle=palette.outline;ctx.lineWidth=7/Math.min(sx,sy);ctx.lineJoin='round';
+   ctx.strokeText(route.value,x,y);
+ }
+ ctx.fillStyle=palette.number;ctx.fillText(route.value,x,y);
+ ctx.restore(); // Return from number coordinates to badge coordinates.
+ if(partialVisible()&&agoraLayout){
+   // Cut the slash around the curved digit silhouettes, with a small
+   // clear gap. This mask is not drawn as an outline on the number.
+   const cutout=agoraNumberCutout(ctx.font,sx,sy,x,y,stripeHeight);
+   const base=parseInt($('#routeColor').value.slice(1),16);
+   const channels=[(base>>16)&255,(base>>8)&255,base&255].map(v=>Math.round(v*.52+255*.48));
+   const c=agoraSlashCtx;c.clearRect(0,0,211,128);c.save();
+   c.strokeStyle='rgb('+channels.join(',')+')';c.lineWidth=16;c.lineCap='butt';
+   c.beginPath();c.moveTo(-12,136);c.lineTo(223,-8);c.stroke();
+   c.globalCompositeOperation='destination-out';c.drawImage(cutout,0,0);c.restore();
+   ctx.save();ctx.beginPath();ctx.rect(0,0,211,128-stripeHeight);ctx.clip();
+   ctx.drawImage(agoraSlash,0,0);ctx.restore();
+ }
  ctx.restore();
 }
 function draw(){
@@ -122,16 +195,19 @@ function draw(){
  outputCtx.fillStyle=palette.background;outputCtx.fillRect(0,0,output.width,output.height);
  outputCtx.drawImage(canvas,0,0);
  if(renderMode==='advanced'){
+   // Static atlas: left block has the partial-service diagonal, right
+   // block stays normal. No timer/animation changes either half.
+   if($('#routeBox').checked)outputCtx.drawImage(canvas,0,0,211,128,0,128,211,128);
+   const partial=$('#partial').checked;$('#partial').checked=false;drawSimple();$('#partial').checked=partial;
    outputCtx.drawImage(canvas,1024,0);
-   outputCtx.drawImage(canvas,0,0,211,128,0,128,211,128);
-   outputCtx.drawImage(canvas,0,0,211,128,1024,128,211,128);
+   if($('#routeBox').checked)outputCtx.drawImage(canvas,0,0,211,128,1024,128,211,128);
  }
  return width;
 }
 function drawSimple(){
- const start=211;
+ const start=($('#routeBox').checked||agoraLayout)?211:0;
  m.clearRect(0,0,1024,128);m.font=(92*$('#size').value/100)+'px "'+$('#fontChoice').value+'"';
- const space=813,w=m.measureText(dest.value.replace(/\n/g,' ')).width;
+ const space=1024-start,w=m.measureText(dest.value.replace(/\n/g,' ')).width;
  const wrapWidth=space*.94;
  let size=92*$('#size').value/100,lines=[];
  function splitLines(){
@@ -162,13 +238,33 @@ function drawSimple(){
    size*=Math.min(1,space/widest);
    m.font=size+'px "'+$('#fontChoice').value+'"';
  }
+ if(!$('#routeBox').checked&&!running&&!agoraLayout){
+   const text=dest.value.replace(/\s+/g,' ').trim(),words=text.split(' ');
+   const candidates=[[text]];
+   if($('#wrap').checked)for(let cut=1;cut<words.length;cut++)candidates.push([words.slice(0,cut).join(' '),words.slice(cut).join(' ')]);
+   m.font='100px "'+$('#fontChoice').value+'"';
+   let best=null;
+   for(const candidate of candidates){
+     const metrics=candidate.map(line=>m.measureText(line));
+     const width=Math.max(1,...metrics.map(v=>v.actualBoundingBoxLeft+v.actualBoundingBoxRight));
+     const heights=metrics.map(v=>Math.max(1,v.actualBoundingBoxAscent+v.actualBoundingBoxDescent));
+     const scale=Math.min((space-12)/width,(128-12-(candidate.length-1)*6)/heights.reduce((a,b)=>a+b,0));
+     if(!best||scale>best.scale)best={lines:candidate,scale};
+   }
+   lines=best.lines;size=100*best.scale;m.font=size+'px "'+$('#fontChoice').value+'"';
+ }
  m.save();m.beginPath();m.rect(start,0,space,128);m.clip();m.fillStyle=palette.text;
+ const inkHeights=lines.map(line=>{const v=m.measureText(line);return Math.max(1,v.actualBoundingBoxAscent+v.actualBoundingBoxDescent);});
+ const noBadge=!$('#routeBox').checked&&!running&&!agoraLayout;
+ const fittedHeight=inkHeights.reduce((a,b)=>a+b,0)+(lines.length-1)*6;
+ let inkTop=(128-fittedHeight)/2;
  const lineHeight=Math.min(size*1.05,112/Math.max(1,lines.length));
  lines.forEach((line,i)=>{
    const ink=m.measureText(line),inkWidth=ink.actualBoundingBoxLeft+ink.actualBoundingBoxRight;
    const scale=running?1:Math.min(1,space/Math.max(1,inkWidth));
    const left=$('#align').value==='left'?0:$('#align').value==='right'?space-inkWidth*scale:(space-inkWidth*scale)/2;
-   const y=64+(i-(lines.length-1)/2)*lineHeight+(ink.actualBoundingBoxAscent-ink.actualBoundingBoxDescent)/2;
+   const y=noBadge?inkTop+ink.actualBoundingBoxAscent:64+(i-(lines.length-1)/2)*lineHeight+(ink.actualBoundingBoxAscent-ink.actualBoundingBoxDescent)/2;
+   if(noBadge)inkTop+=inkHeights[i]+6;
    m.save();m.translate(start+(running?0:left),0);m.scale(scale,1);
    m.fillText(line,ink.actualBoundingBoxLeft+(running?space-offset:0),y);
    m.restore();
@@ -192,18 +288,20 @@ function drawSimple(){
  ctx.beginPath();ctx.arc(x,y,1.55,0,Math.PI*2);ctx.fill();
  }drawRoute();return w;
 }
-function update(){offset=0;$('#routeOut').textContent=route.value;$('#destOut').textContent=dest.value.length+' caractères';$('#charCount').textContent='Entrée : nouvelle ligne · PNG : image fixe';$('#sizeOut').textContent=$('#size').value+'%';$('#speedOut').textContent=$('#speed').value+' / 8';$('#blinkOut').textContent=$('#blinkMs').value+' ms';draw()}
+function update(){updateRenderOptions();offset=0;$('#routeOut').textContent=route.value;$('#destOut').textContent=dest.value.length+' caractères';$('#charCount').textContent='Entrée : nouvelle ligne · PNG : image fixe';$('#sizeOut').textContent=$('#size').value+'%';$('#speedOut').textContent=$('#speed').value+' / 8';$('#blinkOut').textContent=$('#blinkMs').value+' ms';draw()}
 document.querySelectorAll('input,select,textarea').forEach(e=>e.addEventListener('input',update));
 document.querySelectorAll('.swatch').forEach(b=>{b.setAttribute('aria-label',b.dataset.color);b.onclick=()=>{currentColor=b.dataset.color;palette.text=colors[currentColor];colorControls.text(palette.text);document.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('active',x===b));update()}});
 const photoPresets=[
  {route:'114',destination:'Neuilly-Plaisance RER',color:'orange',background:'#70cf50',partial:true},
  {route:'121',destination:'Lyc. G. Clemenceau',color:'white',background:'#e32436',partial:false},
- {route:'104',destination:'Sucy - Bonneuil RER',color:'orange',background:'#e32436',partial:false}
+ {route:'104',destination:'Sucy - Bonneuil RER',color:'orange',background:'#e32436',partial:false},
+ {route:'N33',destination:'Gare de Lyon',color:'orange',background:'#080080',partial:false},
+ {route:'306',destination:'Noisy-le-Grand',color:'orange',background:'#236087',partial:true,style:'agora'}
 ];
 for(const preset of photoPresets){
  const button=document.createElement('button');button.type='button';button.className='template';button.style.textAlign='left';
  button.dataset.route=preset.route;button.dataset.dest=preset.destination;button.dataset.color=preset.color;
- button.dataset.background=preset.background;button.dataset.partial=String(preset.partial);
+ button.dataset.style=preset.style||'normal';button.dataset.background=preset.background;button.dataset.partial=String(preset.partial);
  const mini=document.createElement('div');mini.className='mini';mini.style.color=colors[preset.color];
  const number=document.createElement('b');number.textContent=preset.route;
  number.style.cssText='color:#fff;margin-right:12px;padding:2px 5px;background:'+preset.background;
@@ -212,20 +310,20 @@ for(const preset of photoPresets){
  button.append(mini,label);$('.templates').append(button);
 }
 document.querySelectorAll('.template').forEach(t=>t.onclick=()=>{
- running=false;offset=0;route.value=t.dataset.route;dest.value=t.dataset.dest;currentColor=t.dataset.color;
- Object.assign(palette,{text:colors[currentColor],number:'#fffef4',outline:'#000000',background:'#000000',inactive:'#0d100e'});
+ running=false;offset=0;nightKey='';wasNight=false;$('#nightMode').value='auto';$('#busStyle').value=t.dataset.style||'normal';route.value=t.dataset.route;dest.value=t.dataset.dest;currentColor=t.dataset.color;
+ Object.assign(palette,{text:colors[currentColor],number:'#ffffff',outline:'#000000',background:'#000000',inactive:'#0d100e'});
  for(const key of Object.keys(palette))colorControls[key](palette[key]);
  $('#routeColor').value=t.dataset.background||(currentColor==='yellow'?'#238ab4':'#dd2444');syncRoute($('#routeColor').value);
- $('#partial').checked=t.dataset.partial==='true';$('#blink').checked=true;blinkEpoch=performance.now();
+ $('#partial').checked=t.dataset.partial==='true';$('#blink').checked=false;blinkEpoch=performance.now();
  $('#fontChoice').value='Girouette';$('#align').value='center';$('#wrap').checked=true;$('#routeBox').checked=true;$('#scanBox').checked=true;$('#size').value=100;
  document.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('active',x.dataset.color===currentColor));update();
 });
-function frame(now){if(!running)return;let w=draw();const space=813;offset=(offset+Math.min(50,now-last)*$('#speed').value*.025)%(space+w+24);last=now;requestAnimationFrame(frame)}
+function frame(now){if(!running)return;let w=draw();const space=($('#routeBox').checked||agoraLayout)?813:1024;offset=(offset+Math.min(50,now-last)*$('#speed').value*.025)%(space+w+24);last=now;requestAnimationFrame(frame)}
 $('#animateBtn').onclick=()=>{if(running||!dest.value)return;offset=0;running=true;last=performance.now();requestAnimationFrame(frame)};
 $('#stopBtn').onclick=()=>{running=false;offset=0;draw()};
 $('#fullscreenBtn').onclick=()=>$('#sign').requestFullscreen?.();
 const save=document.createElement('button');save.className='btn';save.textContent='Exporter PNG';$('.toolbar').append(save);
-save.onclick=()=>{draw();const a=document.createElement('a');a.download='girouette-'+renderMode+'-'+output.width+'x'+output.height+'.png';a.href=output.toDataURL('image/png');a.click()};
+save.onclick=()=>{draw();const a=document.createElement('a');a.download='girouette-'+$('#busStyle').value+'-'+renderMode+'-'+output.width+'x'+output.height+'.png';a.href=output.toDataURL('image/png');a.click()};
 Promise.all([document.fonts.load('normal 92px Girouette'),document.fonts.load('normal 112px Girouette')]).then(update).catch(()=>{
  $('.section-head .hint').textContent='Impossible de charger Girouette.ttf';
 });
