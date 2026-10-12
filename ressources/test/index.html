@@ -29,7 +29,7 @@
   </style>
 </head>
 <body>
-  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">COACH77</span></div></header>
+  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">COACH78</span></div></header>
   <main><div class="crumb">PROJETS / <span>BUS PARISIEN</span></div><h1>Éditeur de girouette</h1><p class="intro">Composez votre destination LED, ligne par ligne, et prévisualisez le rendu instantanément.</p>
     <div class="layout"><section><div class="card preview-card"><div class="section-head"><h2>Aperçu en direct</h2><span class="hint">matrice 128 × 24 · LED amber</span></div><div class="sign-wrap"><div class="sign" id="sign"><canvas class="led-canvas" id="ledCanvas"></canvas></div></div><div class="under"><span>Simulation de matrice <b>active</b></span><span id="charCount">13 / 24 caractères</span></div><div class="toolbar"><button class="btn primary" id="animateBtn">▶ Animer</button><button class="btn" id="stopBtn">■ Arrêter</button><button class="btn" id="fullscreenBtn">⛶ Plein écran</button></div></div>
       <div class="section-head" style="margin:27px 3px 13px"><h2>Modèles rapides</h2><span class="hint">cliquez pour appliquer</span></div><div class="templates"><div class="template" data-route="27" data-dest="Porte d'Ivry" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">27</b>Porte d'Ivry</div><p>Bus standard <span class="kbd">1</span></p></div><div class="template" data-route="276" data-dest="La Défense (MÉTRO)" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">276</b>La Défense (MÉTRO)</div><p>Destination longue <span class="kbd">2</span></p></div><div class="template" data-route="134" data-dest="Porte d'Orléans" data-color="yellow"><div class="mini"><b style="color:white;margin-right:13px">134</b><i style="color:#fff34b">Porte d'Orléans</i></div><p>Affichage jaune <span class="kbd">3</span></p></div></div></section>
@@ -250,10 +250,10 @@ function draw(){
  outputCtx.fillStyle=palette.background;outputCtx.fillRect(0,0,output.width,output.height);
  outputCtx.drawImage(canvas,0,0);
  if(renderMode==='advanced'){
-   // Static atlas: left block has the partial-service diagonal, right
-   // block stays normal. No timer/animation changes either half.
+   // Agora: all four badge slots keep the partial-service slash.
+   // Other buses keep their existing partial-left / normal-right atlas.
    if($('#routeBox').checked)outputCtx.drawImage(canvas,0,0,211,128,0,128,211,128);
-   const partial=$('#partial').checked;$('#partial').checked=false;drawSimple();$('#partial').checked=partial;
+   const partial=$('#partial').checked;if(!agoraLayout)$('#partial').checked=false;drawSimple();$('#partial').checked=partial;
    outputCtx.drawImage(canvas,1024,0);
    if($('#routeBox').checked)outputCtx.drawImage(canvas,0,0,211,128,1024,128,211,128);
  }
@@ -268,7 +268,7 @@ function fitDestinationLayout(space){
  const key=JSON.stringify([text,family,space,wrap,running,occupancy,document.fonts.status]);
  if(key===destinationLayoutKey)return destinationLayoutValue;
  if(!text.trim()){destinationLayoutKey=key;return destinationLayoutValue={size:1,lines:[],height:0};}
- const availableWidth=space-12,availableHeight=116,gap=6;
+ const availableWidth=space-10,availableHeight=118,gap=6;
  const paragraphs=text.split('\n').map(line=>line.trim().split(/\s+/).filter(Boolean));
  function measure(value){
   const ink=m.measureText(value);
@@ -321,10 +321,10 @@ function drawSimple(){
  const layout=fitDestinationLayout(space);
  m.font=layout.size+'px "'+$('#fontChoice').value+'"';
  const w=m.measureText(dest.value.replace(/\n/g,' ')).width;
- m.save();m.beginPath();m.rect(start,0,space,128);m.clip();m.fillStyle=palette.text;
+ m.save();m.beginPath();m.rect(start+5,5,space-10,118);m.clip();m.fillStyle=palette.text;
  let top=(128-layout.height)/2;
  for(const line of layout.lines){
-  const left=$('#align').value==='left'?6:$('#align').value==='right'?space-6-line.width:(space-line.width)/2;
+  const left=$('#align').value==='left'?5:$('#align').value==='right'?space-5-line.width:(space-line.width)/2;
   const x=start+(running?space-offset:left)+line.ink.actualBoundingBoxLeft;
   m.fillText(line.text,x,top+line.ink.actualBoundingBoxAscent);
   top+=line.height+6;
