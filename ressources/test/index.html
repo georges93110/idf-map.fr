@@ -29,11 +29,11 @@
   </style>
 </head>
 <body>
-  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">COACH76</span></div></header>
+  <header><div class="brand"><div class="brand-mark">↗</div><div>GIROUETTE<small>destination editor</small></div></div><div class="top-actions"><span class="pill live">éditeur prêt</span><span class="pill">COACH77</span></div></header>
   <main><div class="crumb">PROJETS / <span>BUS PARISIEN</span></div><h1>Éditeur de girouette</h1><p class="intro">Composez votre destination LED, ligne par ligne, et prévisualisez le rendu instantanément.</p>
     <div class="layout"><section><div class="card preview-card"><div class="section-head"><h2>Aperçu en direct</h2><span class="hint">matrice 128 × 24 · LED amber</span></div><div class="sign-wrap"><div class="sign" id="sign"><canvas class="led-canvas" id="ledCanvas"></canvas></div></div><div class="under"><span>Simulation de matrice <b>active</b></span><span id="charCount">13 / 24 caractères</span></div><div class="toolbar"><button class="btn primary" id="animateBtn">▶ Animer</button><button class="btn" id="stopBtn">■ Arrêter</button><button class="btn" id="fullscreenBtn">⛶ Plein écran</button></div></div>
       <div class="section-head" style="margin:27px 3px 13px"><h2>Modèles rapides</h2><span class="hint">cliquez pour appliquer</span></div><div class="templates"><div class="template" data-route="27" data-dest="Porte d'Ivry" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">27</b>Porte d'Ivry</div><p>Bus standard <span class="kbd">1</span></p></div><div class="template" data-route="276" data-dest="La Défense (MÉTRO)" data-color="orange"><div class="mini"><b style="color:white;margin-right:13px">276</b>La Défense (MÉTRO)</div><p>Destination longue <span class="kbd">2</span></p></div><div class="template" data-route="134" data-dest="Porte d'Orléans" data-color="yellow"><div class="mini"><b style="color:white;margin-right:13px">134</b><i style="color:#fff34b">Porte d'Orléans</i></div><p>Affichage jaune <span class="kbd">3</span></p></div></div></section>
-      <aside class="card sidebar"><h2>Paramètres d'affichage</h2><div class="field"><label for="route">Numéro de ligne <output id="routeOut">27</output></label><input id="route" type="text" maxlength="4" value="27"></div><div class="field"><label for="destination">Destination <output id="destOut">13 / 24</output></label><input id="destination" type="text" maxlength="24" value="Porte d'Ivry"></div><div class="field"><label for="color">Couleur des LEDs</label><div class="swatches"><button class="swatch active" data-color="orange" style="background:#ff8c21"></button><button class="swatch" data-color="yellow" style="background:#fff34b"></button><button class="swatch" data-color="white" style="background:#f4f7f8"></button><button class="swatch" data-color="blue" style="background:#39aee8"></button></div></div><div class="field"><label for="size">Taille <output id="sizeOut">100%</output></label><input id="size" type="range" min="70" max="130" value="100"></div><div class="field"><label for="speed">Vitesse de défilement <output id="speedOut">3.0 s</output></label><input id="speed" type="range" min="1" max="8" value="3"></div><div class="divider"></div><div class="row"><label class="toggle"><input id="routeBox" type="checkbox" checked> Afficher la ligne</label><label class="toggle"><input id="scanBox" type="checkbox" checked> Scanlines</label></div><div class="layers"><h2>Calques</h2><div class="layer active"><span class="dot"></span><div><b>Destination</b><small>Texte LED · amber</small></div><span class="drag">⠿</span></div><div class="layer"><span class="dot" style="background:#fff"></span><div><b>Ligne 27</b><small>Bloc numéro · blanc</small></div><span class="drag">⠿</span></div></div></aside>
+      <aside class="card sidebar"><h2>Paramètres d'affichage</h2><div class="field"><label for="route">Numéro de ligne <output id="routeOut">27</output></label><input id="route" type="text" maxlength="4" value="27"></div><div class="field"><label for="destination">Destination <output id="destOut">13 / 24</output></label><input id="destination" type="text" maxlength="24" value="Porte d'Ivry"></div><div class="field"><label for="color">Couleur des LEDs</label><div class="swatches"><button class="swatch active" data-color="orange" style="background:#ff8c21"></button><button class="swatch" data-color="yellow" style="background:#fff34b"></button><button class="swatch" data-color="white" style="background:#f4f7f8"></button><button class="swatch" data-color="blue" style="background:#39aee8"></button></div></div><div class="field"><label for="size">Taille <output id="sizeOut">100%</output></label><input id="size" type="range" min="70" max="100" value="100"></div><div class="field"><label for="speed">Vitesse de défilement <output id="speedOut">3.0 s</output></label><input id="speed" type="range" min="1" max="8" value="3"></div><div class="divider"></div><div class="row"><label class="toggle"><input id="routeBox" type="checkbox" checked> Afficher la ligne</label><label class="toggle"><input id="scanBox" type="checkbox" checked> Scanlines</label></div><div class="layers"><h2>Calques</h2><div class="layer active"><span class="dot"></span><div><b>Destination</b><small>Texte LED · amber</small></div><span class="drag">⠿</span></div><div class="layer"><span class="dot" style="background:#fff"></span><div><b>Ligne 27</b><small>Bloc numéro · blanc</small></div><span class="drag">⠿</span></div></div></aside>
     </div>
   </main>
   <script src="../../game_manager/config/line-config.js"></script>
@@ -259,83 +259,77 @@ function draw(){
  }
  return width;
 }
-function drawSimple(){
- const start=($('#routeBox').checked||agoraLayout)?211:0;
- m.clearRect(0,0,1024,128);m.font=(92*$('#size').value/100)+'px "'+$('#fontChoice').value+'"';
- const space=1024-start,w=m.measureText(dest.value.replace(/\n/g,' ')).width;
- const wrapWidth=space*.94;
- let size=92*$('#size').value/100,lines=[];
- function splitLines(){
-   m.font=size+'px "'+$('#fontChoice').value+'"';const result=[];
-   for(const paragraph of dest.value.split('\n')){
-     if(!$('#wrap').checked||running){result.push(paragraph);continue}
-     const words=paragraph.trim().split(/\s+/);
-     if(m.measureText(paragraph).width<=wrapWidth||words.length<2){result.push(paragraph);continue}
-     // Balance complete words across two rows instead of wrapping at the
-     // initial font size, which strands short articles on their own row.
-     let best=null;
-     for(let cut=1;cut<words.length;cut++){
-       const first=words.slice(0,cut).join(' '),second=words.slice(cut).join(' ');
-       const a=m.measureText(first).width,b=m.measureText(second).width;
-       const score=Math.max(a,b)+Math.abs(a-b)*.2;
-       if(!best||score<best.score)best={first,second,score};
-     }
-     result.push(best.first,best.second);
-   }return result;
+// Shared maximum-size destination layout. Cache it independently of
+// colours, partial-service state and scrolling offset.
+let destinationLayoutKey='',destinationLayoutValue=null;
+function fitDestinationLayout(space){
+ const family=$('#fontChoice').value,text=running?dest.value.replace(/\s+/g,' ').trim():dest.value.replace(/\r/g,'');
+ const wrap=$('#wrap').checked&&!running,occupancy=Math.min(1,Math.max(.1,Number($('#size').value)/100));
+ const key=JSON.stringify([text,family,space,wrap,running,occupancy,document.fonts.status]);
+ if(key===destinationLayoutKey)return destinationLayoutValue;
+ if(!text.trim()){destinationLayoutKey=key;return destinationLayoutValue={size:1,lines:[],height:0};}
+ const availableWidth=space-12,availableHeight=116,gap=6;
+ const paragraphs=text.split('\n').map(line=>line.trim().split(/\s+/).filter(Boolean));
+ function measure(value){
+  const ink=m.measureText(value);
+  return {ink,width:Math.max(0,ink.actualBoundingBoxLeft+ink.actualBoundingBoxRight),height:Math.max(1,ink.actualBoundingBoxAscent+ink.actualBoundingBoxDescent)};
  }
- // Choose the line breaks at the requested size, before fitting vertically.
- // Rewrapping at a smaller size would collapse the destination back onto one line.
- lines=running?[dest.value.replace(/\n/g,' ')]:splitLines();
- if(!running)size=Math.min(size,112/(Math.max(1,lines.length)*1.05));
- m.font=size+'px "'+$('#fontChoice').value+'"';
- if(!running){
-   const widest=Math.max(1,...lines.map(line=>{const ink=m.measureText(line);return ink.actualBoundingBoxLeft+ink.actualBoundingBoxRight}));
-   size*=Math.min(1,space/widest);
-   m.font=size+'px "'+$('#fontChoice').value+'"';
- }
- if(!$('#routeBox').checked&&!running&&!agoraLayout){
-   const text=dest.value.replace(/\s+/g,' ').trim(),words=text.split(' ');
-   const candidates=[[text]];
-   if($('#wrap').checked)for(let cut=1;cut<words.length;cut++)candidates.push([words.slice(0,cut).join(' '),words.slice(cut).join(' ')]);
-   m.font='100px "'+$('#fontChoice').value+'"';
-   let best=null;
-   for(const candidate of candidates){
-     const metrics=candidate.map(line=>m.measureText(line));
-     const width=Math.max(1,...metrics.map(v=>v.actualBoundingBoxLeft+v.actualBoundingBoxRight));
-     const heights=metrics.map(v=>Math.max(1,v.actualBoundingBoxAscent+v.actualBoundingBoxDescent));
-     const scale=Math.min((space-12)/width,(128-12-(candidate.length-1)*6)/heights.reduce((a,b)=>a+b,0));
-     if(!best||scale>best.scale)best={lines:candidate,scale};
+ function atSize(size){
+  m.font=size+'px "'+family+'"';const lines=[];
+  for(const words of paragraphs){
+   if(!wrap||words.length<2){
+    const value=words.join(' '),item=measure(value);
+    if(!running&&item.width>availableWidth)return null;
+    lines.push({text:value,...item});continue;
    }
-   lines=best.lines;size=100*best.scale;m.font=size+'px "'+$('#fontChoice').value+'"';
+   // Prefer fewer rows, then balanced rows. Whole words stay together.
+   const states=[{rows:0,cost:0,previous:-1,item:null}];
+   for(let end=1;end<=words.length;end++){
+    let best=null;
+    for(let start=end-1;start>=0;start--){
+     const value=words.slice(start,end).join(' '),item=measure(value);
+     if(item.width>availableWidth)break;
+     const prior=states[start];if(!prior)continue;
+     const rows=prior.rows+1,cost=prior.cost+(availableWidth-item.width)**2;
+     if(!best||rows<best.rows||(rows===best.rows&&cost<best.cost))best={rows,cost,previous:start,item:{text:value,...item}};
+    }
+    states[end]=best;
+   }
+   if(!states[words.length])return null;
+   const paragraph=[];
+   for(let end=words.length;end>0;end=states[end].previous)paragraph.push(states[end].item);
+   lines.push(...paragraph.reverse());
+  }
+  const height=lines.reduce((sum,line)=>sum+line.height,0)+Math.max(0,lines.length-1)*gap;
+  return height<=availableHeight?{size,lines,height}:null;
  }
- if(agoraLayout&&!running){
-   // Larger destination only: keep the badge's reserved 211 px even
-   // without a badge. Fit actual ink, not the font's em-box, inside
-   // 813 x 128 with 6 px margins and a 6 px gap between existing rows.
-   const requestedSize=size*1.5;
-   m.font='100px "'+$('#fontChoice').value+'"';
-   const metrics=lines.map(line=>m.measureText(line));
-   const width=Math.max(1,...metrics.map(v=>v.actualBoundingBoxLeft+v.actualBoundingBoxRight));
-   const height=metrics.reduce((sum,v)=>sum+Math.max(1,v.actualBoundingBoxAscent+v.actualBoundingBoxDescent),0);
-   const fit=100*Math.min((space-12)/width,Math.max(1,116-(lines.length-1)*6)/Math.max(1,height));
-   size=Math.min(requestedSize,fit);m.font=size+'px "'+$('#fontChoice').value+'"';
+ m.font='100px "'+family+'"';
+ const reference=measure(text.replace(/\n/g,' '));
+ let lo=0,hi=100*availableHeight/reference.height+2,best=null;
+ for(let i=0;i<18;i++){
+  const size=(lo+hi)/2,candidate=atSize(size);
+  if(candidate){lo=size;best=candidate}else hi=size;
  }
+ // Default 100% uses the largest fitting size; the editor may opt smaller.
+ const size=Math.max(.01,Math.floor(lo*occupancy*100)/100);
+ const result=atSize(size)||best||{size:1,lines:[],height:0};
+ destinationLayoutKey=key;destinationLayoutValue=result;return result;
+}
+function drawSimple(){
+ const start=($('#routeBox').checked||agoraLayout)?211:0,space=1024-start;
+ m.clearRect(0,0,1024,128);
+ const layout=fitDestinationLayout(space);
+ m.font=layout.size+'px "'+$('#fontChoice').value+'"';
+ const w=m.measureText(dest.value.replace(/\n/g,' ')).width;
  m.save();m.beginPath();m.rect(start,0,space,128);m.clip();m.fillStyle=palette.text;
- const inkHeights=lines.map(line=>{const v=m.measureText(line);return Math.max(1,v.actualBoundingBoxAscent+v.actualBoundingBoxDescent);});
- const inkFit=!running&&(agoraLayout||!$('#routeBox').checked);
- const fittedHeight=inkHeights.reduce((a,b)=>a+b,0)+(lines.length-1)*6;
- let inkTop=(128-fittedHeight)/2;
- const lineHeight=Math.min(size*1.05,112/Math.max(1,lines.length));
- lines.forEach((line,i)=>{
-   const ink=m.measureText(line),inkWidth=ink.actualBoundingBoxLeft+ink.actualBoundingBoxRight;
-   const scale=running?1:Math.min(1,space/Math.max(1,inkWidth));
-   const left=$('#align').value==='left'?0:$('#align').value==='right'?space-inkWidth*scale:(space-inkWidth*scale)/2;
-   const y=inkFit?inkTop+ink.actualBoundingBoxAscent:64+(i-(lines.length-1)/2)*lineHeight+(ink.actualBoundingBoxAscent-ink.actualBoundingBoxDescent)/2;
-   if(inkFit)inkTop+=inkHeights[i]+6;
-   m.save();m.translate(start+(running?0:left),0);m.scale(scale,1);
-   m.fillText(line,ink.actualBoundingBoxLeft+(running?space-offset:0),y);
-   m.restore();
- });m.restore();
+ let top=(128-layout.height)/2;
+ for(const line of layout.lines){
+  const left=$('#align').value==='left'?6:$('#align').value==='right'?space-6-line.width:(space-line.width)/2;
+  const x=start+(running?space-offset:left)+line.ink.actualBoundingBoxLeft;
+  m.fillText(line.text,x,top+line.ink.actualBoundingBoxAscent);
+  top+=line.height+6;
+ }
+ m.restore();
  ctx.fillStyle=palette.background;ctx.fillRect(0,0,1024,128);
  // Girouette contains its own dots: sampling it on a second grid erases strokes.
  if($('#fontChoice').value==='Girouette'){
