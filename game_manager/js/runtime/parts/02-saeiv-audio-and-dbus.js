@@ -2467,7 +2467,8 @@ function tickSaeivAutomaticDestination() {
           var missedAdvanceMultiplier = Number(SAEIV_STOP_MISSED_ADVANCE_DISTANCE_MULTIPLIER);
           if (!Number.isFinite(missedAdvanceMultiplier) || missedAdvanceMultiplier <= 0) missedAdvanceMultiplier = 1;
           var passThroughThreshold = Math.max(reachDistance + 20, reachDistance * 1.65) * missedAdvanceMultiplier;
-          var hasPassedTarget = stopNecessaryFar &&
+          // An unfinished terminus cannot unload occupants by advancing the route.
+          var hasPassedTarget = !reachedTerminusNow && stopNecessaryFar &&
             Number.isFinite(minSeenDistance) &&
             minSeenDistance <= reachDistance &&
             targetDistance >= passThroughThreshold;
@@ -2507,7 +2508,7 @@ function tickSaeivAutomaticDestination() {
         var stopNecessary = !!(saeivPassengerState && saeivPassengerState.stopNecessary === true);
         if (stopNecessary && !isStopped) return false;
         // Do not infer completion from a zero counter or a widget heartbeat.
-        // This also keeps the native marker here until the last passenger and closed doors.
+        // Keep the native marker until all eligible transfers have finished.
         if (!(passengerTick && passengerTick.completed === true)) return false;
         var stopServed = !stopNecessary || (passengerTick && passengerTick.completed === true);
         applySaeivStopPassengerService(targetIndex, stopServed, reachedTerminusNow);

@@ -7,7 +7,7 @@ var IDFBusService = (function () {
     return position >= 0.5 ? "open" : "closed";
   }
   function completed(view, isStopped) {
-    return !!(view && (view.ready || (view.flowComplete && isStopped !== true)));
+    return !!(view && (view.ready || view.flowComplete));
   }
   function Service() { this.reset(); }
   Service.prototype.reset = function () {
@@ -88,8 +88,7 @@ var IDFBusService = (function () {
     this.leftBehind = full && !this.active.length ? this.boardTotal - this.boardDone : 0;
     this.flowComplete = !this.active.length && this.alightDone === this.alightTotal &&
       (this.boardDone === this.boardTotal || full);
-    var hadWork = this.boardTotal + this.alightTotal > 0;
-    this.ready = this.flowComplete && (!hadWork || (this.stopped && this.entry === "closed" && this.exit === "closed"));
+    this.ready = this.flowComplete;
     return this.snapshot();
   };
   Service.prototype.snapshot = function () {
