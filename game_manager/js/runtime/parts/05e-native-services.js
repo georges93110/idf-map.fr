@@ -117,7 +117,7 @@ function nativeServiceStyle(line,route,number){
  var badgeKey=/navette\s+(?:de\s+)?nogent/i.test(all)?'navette_nogent.png':/^scolaire\b/i.test(raw)?'bus_school.png':'';
  if(typeof line.badgeImage==='string'&&line.badgeImage)badgeKey=line.badgeImage;
  var bg=night?'#080080':hex(entry&&entry[0],'#3a3a3a'),fg=night?'#ffffff':hex(entry&&entry[1],'#ffffff');
- return {label:label,background:bg,foreground:fg,stripe:stripe,badgeKey:badgeKey||(kind==='bus'&&!logos.length&&!stripe?'':'webbadge:'+JSON.stringify([label,bg,fg,kind,logos,stripe]))};
+ return {label:label,background:bg,foreground:fg,stripe:stripe,badgeKey:badgeKey||('webbadge:'+JSON.stringify([label,bg,fg,kind,logos,stripe]))};
 }
 // Offscreen browser raster -> native button pixels. Logos are the site's actual
 // PNG files, alongside the same rounded/circular line chip and Noctilien stripe.

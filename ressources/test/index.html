@@ -38,11 +38,13 @@
     </div>
   </main>
   <script src="../../game_manager/config/line-config.js"></script>
+  <script src="./gif-export.js"></script>
   <script>
 
 const $=s=>document.querySelector(s),output=$('#ledCanvas'),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d'),route=$('#route');
 const outputCtx=output.getContext('2d');
 let renderMode='simple',agoraLayout=false,nightStripe='';
+let exporting=false,exportCancelled=false,exportClock=null;
 output.width=1024;output.height=128;
 const tabs=document.createElement('div');tabs.className='toolbar';tabs.style.margin='0 0 16px';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Format du rendu');
 for(const [mode,label] of [['simple','Simple · 1024 × 128'],['advanced','Avancé · 2048 × 256']]){
@@ -111,7 +113,7 @@ function updateRenderOptions(){
  $('#styleHint').textContent=agoraLayout?'Numéro plein sans contour · Paris Girouette · #e0ed61 · destination 813 × 128 px.':'Numéro LED avec contour · destination élargie si le badge est masqué.';
 }
 let blinkEpoch=performance.now();
-function partialVisible(){return $('#partial').checked&&(renderMode==='advanced'||!$('#blink').checked||Math.floor((performance.now()-blinkEpoch)/Number($('#blinkMs').value))%2===0)}
+function partialVisible(){return $('#partial').checked&&(renderMode==='advanced'||!$('#blink').checked||Math.floor(((exportClock??performance.now())-blinkEpoch)/Number($('#blinkMs').value))%2===0)}
 setInterval(()=>{if(renderMode==='simple'&&$('#partial').checked&&$('#blink').checked&&!running)draw()},80);
 // Reuse the same small mask until the number's geometry changes.
 const agoraCutout=document.createElement('canvas'),agoraSlash=document.createElement('canvas');
@@ -381,12 +383,42 @@ document.querySelectorAll('.template').forEach(t=>t.onclick=()=>{
  $('#fontChoice').value='Girouette';$('#align').value='center';$('#wrap').checked=true;$('#routeBox').checked=true;$('#scanBox').checked=true;$('#size').value=100;
  document.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('active',x.dataset.color===currentColor));update();
 });
-function frame(now){if(!running)return;let w=draw();const space=($('#routeBox').checked||agoraLayout)?813:1024;offset=(offset+Math.min(50,now-last)*$('#speed').value*.025)%(space+w+24);last=now;requestAnimationFrame(frame)}
+function frame(now){if(!running||exporting)return;let w=draw();const space=($('#routeBox').checked||agoraLayout)?813:1024;offset=(offset+Math.min(50,now-last)*$('#speed').value*.025)%(space+w+24);last=now;requestAnimationFrame(frame)}
 $('#animateBtn').onclick=()=>{if(running||!dest.value)return;offset=0;running=true;last=performance.now();requestAnimationFrame(frame)};
-$('#stopBtn').onclick=()=>{running=false;offset=0;draw()};
+$('#stopBtn').onclick=()=>{if(exporting){exportCancelled=true;return;}running=false;offset=0;draw()};
 $('#fullscreenBtn').onclick=()=>$('#sign').requestFullscreen?.();
 const save=document.createElement('button');save.className='btn';save.textContent='Exporter PNG';$('.toolbar').append(save);
 save.onclick=()=>{draw();const a=document.createElement('a');a.download='girouette-'+$('#busStyle').value+'-'+renderMode+'-'+output.width+'x'+output.height+'.png';a.href=output.toDataURL('image/png');a.click()};
+
+const gifSave=document.createElement('button');gifSave.className='btn';gifSave.id='exportGif';gifSave.textContent='Exporter GIF';$('.toolbar').append(gifSave);
+gifSave.onclick=async()=>{
+ if(exporting||!dest.value.trim())return;
+ const resume=running,beforeOffset=offset,controls=Array.from(document.querySelectorAll('input,select,textarea,button')).filter(e=>e!==$('#stopBtn'));
+ const disabled=controls.map(e=>e.disabled);controls.forEach(e=>e.disabled=true);
+ exporting=true;exportCancelled=false;running=true;
+ try{
+  await document.fonts.ready;
+  offset=0;const width=draw(),space=($('#routeBox').checked||agoraLayout)?813:1024,total=space+width+24;
+  const duration=total/(Number($('#speed').value)*25),frames=Math.max(2,Math.min(900,Math.ceil(duration*20))),delay=duration*100/frames;
+  const samples=[];
+  for(const fraction of [.25,.5,.75]){offset=total*fraction;draw();samples.push(outputCtx.getImageData(0,0,output.width,output.height).data);}
+  const encoder=new GirouetteGIF(output.width,output.height,samples);
+  for(let i=0;i<frames;i++){
+   if(exportCancelled)return;
+   offset=total*i/frames;exportClock=blinkEpoch+i*duration*1000/frames;draw();
+   encoder.frame(outputCtx.getImageData(0,0,output.width,output.height).data,Math.round((i+1)*delay)-Math.round(i*delay));
+   if(i%4===0){gifSave.textContent='Export GIF : '+Math.round(i/frames*100)+' %';await new Promise(resolve=>setTimeout(resolve,0));}
+  }
+  const url=URL.createObjectURL(encoder.finish()),link=document.createElement('a');
+  link.download='girouette-'+$('#busStyle').value+'-'+renderMode+'.gif';link.href=url;link.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+ }catch(error){alert('Export GIF impossible : '+error.message);}
+ finally{
+  exporting=false;exportClock=null;running=resume&&!exportCancelled;offset=exportCancelled?0:beforeOffset;
+  controls.forEach((e,i)=>e.disabled=disabled[i]);gifSave.textContent='Exporter GIF';draw();
+  if(running){last=performance.now();requestAnimationFrame(frame);}
+ }
+};
+
 Promise.all([document.fonts.load('normal 92px Girouette'),document.fonts.load('normal 112px Girouette'),document.fonts.load('normal 100px AgoraGirouette')]).then(update).catch(()=>{
  $('.section-head .hint').textContent='Impossible de charger Girouette.ttf';
 });
