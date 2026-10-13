@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chargement</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+      -webkit-user-select: none;
+      user-select: none;
+      -ms-user-select: none;
+    }
+    #load {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-size: 15px;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+    #modalWrap {
+      display: none;
+      position: fixed;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+    }
+    #modalWrap.fail {
+      display: flex;
+    }
+    #box {
+      background: rgba(20, 22, 30, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 14px;
+      padding: 22px 28px;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      pointer-events: auto;
+    }
+    #box h2 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+    #box p {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.85;
+      line-height: 1.45;
+    }
+  </style>
+  <script src="/compatibility-status.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      let active = true, timer;
+      async function compatibility() {
+        try {
+          const response = await fetch('/api/compatibility', { cache: 'no-store' });
+          if (active && response.ok) window.IDFRPCompatibility.receive(await response.json());
+        } catch (_) {}
+        if (active) timer = setTimeout(compatibility, 1000);
+      }
+      window.addEventListener('pagehide', function () { active = false; clearTimeout(timer); });
+      window.addEventListener('pageshow', function () { if (!active) { active = true; compatibility(); } });
+      compatibility();
+    });
+  </script>
+</head>
+<body>
+  <div id="load">Chargement&#8230;</div>
+  <div id="modalWrap" aria-hidden="true">
+    <div id="box">
+      <h2>Chargement de la page &#233;chou&#233;</h2>
+      <p>V&#233;rifiez votre connexion internet ou faites un report sur notre serveur Discord</p>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var load = document.getElementById('load');
+      var modal = document.getElementById('modalWrap');
+      var sp;
+      try {
+        sp = new URLSearchParams(window.location.search);
+      } catch (e) {
+        sp = null;
+      }
+      var raw = sp ? sp.get('target') : null;
+      if (!raw) {
+        load.textContent = 'Param\u00e8tre target manquant.';
+        return;
+      }
+      // URLSearchParams has already decoded the query parameter once.
+      // Decoding again would change escaped separators inside the target URL.
+      var TARGET = raw;
+      var failed = false;
+      var active = true;
+      var retryTimer = null;
+      var controller = null;
+      function setFailed(value) {
+        if (failed === value) return;
+        failed = value;
+        load.style.display = failed ? 'none' : '';
+        modal.classList.toggle('fail', failed);
+        modal.setAttribute('aria-hidden', failed ? 'false' : 'true');
+      }
+      async function probe() {
+        if (!active || controller) return;
+        var request = new AbortController();
+        controller = request;
+        var timeout = setTimeout(function () { request.abort(); }, 10000);
+        var retry = true;
+        try {
+          var response = await fetch(TARGET, {
+            method: 'GET', mode: 'no-cors', cache: 'no-store', signal: request.signal
+          });
+          // Only availability is needed; the navigation will fetch the document.
+          if (response.body) await response.body.cancel();
+          if (!active) return;
+          setFailed(false);
+          window.location.replace(TARGET);
+          retry = false;
+        } catch (e) {
+          if (active) setFailed(true);
+        } finally {
+          clearTimeout(timeout);
+          if (controller === request) controller = null;
+          if (active && retry) {
+            retryTimer = setTimeout(function () {
+              retryTimer = null;
+              probe();
+            }, 2000);
+          }
+        }
+      }
+      window.addEventListener('pagehide', function () {
+        active = false;
+        if (retryTimer !== null) clearTimeout(retryTimer);
+        retryTimer = null;
+        if (controller) controller.abort();
+      });
+      window.addEventListener('pageshow', function () {
+        if (active) return;
+        active = true;
+        probe();
+      });
+      probe();
+    })();
+  </script>
+</body>
+</html>

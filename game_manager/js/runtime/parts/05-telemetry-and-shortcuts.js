@@ -3813,6 +3813,10 @@
           }
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          if (raw && raw.type === "nativeCompatibilityBackend") {
+            if (window.IDFRPCompatibility) window.IDFRPCompatibility.receive(raw);
+            return;
+          }
           if (raw && raw.type === "nativeBusSettings") { receiveNativeBusSettings(raw); return; }
           if (raw && raw.type === "nativeServicesSync") { receiveNativeServicesSync(raw); return; }
           if (raw && raw.type === "nativeServiceAction") { receiveNativeServiceAction(raw); return; }
