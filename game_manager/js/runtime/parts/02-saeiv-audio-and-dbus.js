@@ -1106,6 +1106,13 @@
       }
 // One request per closed -> open door cycle. Stale telemetry and service
 // changes clear pending work; an audio queue is never interrupted.
+function isSaeivAtFinalTerminus() {
+  var route=saeivRouteState,stops=route&&route.stops;
+  if(!Array.isArray(stops)||stops.length<2)return false;
+  var last=stops.length-1;
+  return route.completed===true || Number(route.reachedIndex)>=last ||
+    (typeof saeivStoppedAtStopIndex!=="undefined" && saeivStoppedAtStopIndex===last);
+}
 var saeivAutoDestination = {key:"",known:false,open:false,pending:false};
 function tickSaeivAutomaticDestination() {
   var state=saeivAutoDestination, route=saeivRouteState;
@@ -1117,7 +1124,7 @@ function tickSaeivAutomaticDestination() {
   if(state.key!==key || !state.known){state.key=key;state.known=true;state.open=open;state.pending=false;return;}
   if(open&&!state.open)state.pending=true;
   state.open=open;
-  if(!open){state.pending=false;return;}
+  if(!open || isSaeivAtFinalTerminus()){state.pending=false;return;}
   if(state.pending && canPlaySaeivRouteAudio() && !isSaeivManualAnnouncementBusy()) {
     if(playSaeivDestinationAnnouncementIfAvailable({action:"game-destination-doors",expectedRouteKey:route.selectedKey,requireShortcutContext:false}))state.pending=false;
   }
@@ -1213,6 +1220,7 @@ function tickSaeivAutomaticDestination() {
         var opts = options && typeof options === "object" ? options : {};
         // Destination is explicitly requested by the driving shortcut or a front-door edge.
         if (opts.action !== "game-destination-announcement-shortcut" && opts.action !== "game-destination-doors") return false;
+        if (opts.action === "game-destination-doors" && isSaeivAtFinalTerminus()) return false;
         if (opts.requireShortcutContext !== false && (managerState.visible || telemetryPaused || !telemetryConnected)) return false;
         if (!saeivRouteState || typeof saeivRouteState !== "object") return false;
         var activeRouteKey = String(saeivRouteState.selectedKey || "").trim();
@@ -1835,6 +1843,37 @@ function tickSaeivAutomaticDestination() {
         var requestedDrop = payload.stopRequested === true ? 1 : 0;
         return passengersAtStop > 0 || boardingTotal > 0 || alightingTotal > 0 || requestedDrop > 0;
       }
+// Authoritative satisfaction: same damage/delay tariff as the mini SAEIV,
+// evaluated even when that widget is hidden. One score per actual service run.
+var saeivPassengerSatisfaction = null;
+function applySaeivPassengerSatisfaction(data) {
+  var key=data.routeStarted===true ? String(data.selectedKey||"")+":"+String(data.routeStartedAtMs||0) : "";
+  var state=saeivPassengerSatisfaction;
+  if(!state || state.key!==key)state=saeivPassengerSatisfaction={key:key,damage:null,damagePenalty:0,delayPenalty:0,delayAt:0,score:100,finished:false};
+  var now=Number(data.clockNowMs),damage=Number(data.truckDamagePercent);
+  if(key && !state.finished && telemetryConnected && !telemetryPaused && Number.isFinite(now) && now>0){
+    if(Number.isFinite(damage)){
+      if(state.damage!==null && damage>state.damage && Number(data.passengersInBus)>0)state.damagePenalty+=(damage-state.damage)*2;
+      state.damage=damage;
+    }
+    var routeDelay=Number(data.routeLiveDelayMinutes)||0,stopDelay=0;
+    var ref=/^(\d{1,2}):(\d{2})$/.exec(String(data.refTime||""));
+    if(ref && +ref[1]<24 && +ref[2]<60){
+      var clock=new Date(now);stopDelay=clock.getHours()*60+clock.getMinutes()-(+ref[1]*60+(+ref[2]));
+      if(stopDelay>720)stopDelay-=1440;if(stopDelay< -720)stopDelay+=1440;
+    }
+    var rate=Math.max(0,Math.round(Math.max(routeDelay,stopDelay)));
+    if(rate){
+      if(!state.delayAt || now<state.delayAt)state.delayAt=now;
+      var elapsed=now-state.delayAt;
+      if(elapsed>=60000){state.delayPenalty+=Math.floor(elapsed/60000)*rate;state.delayAt=now-(elapsed%60000);}
+    }else state.delayAt=0;
+    state.score=Math.max(0,100-state.damagePenalty-state.delayPenalty);
+    state.finished=data.routeCompleted===true;
+  }else if(!state.finished)state.delayAt=0;
+  data.passengerSatisfactionPercent=state.score;
+  return data;
+}
       function buildSaeivStatePayloadFromGame() {
         var activeLineAudioConfig = getActiveSaeivLineAudioConfig();
         var passengerValidationLineEnabled = !saeivRouteState || activeLineAudioConfig.validationSoundsAllowed !== false;
@@ -1991,11 +2030,11 @@ function tickSaeivAutomaticDestination() {
         if (Number.isFinite(gpsComputedDistanceToStop) && gpsComputedDistanceToStop >= 0) {
           payload.distanceToDisplayStopGpsM = gpsComputedDistanceToStop;
         }
-        if (!saeivRouteState || typeof saeivRouteState !== "object") return payload;
+        if (!saeivRouteState || typeof saeivRouteState !== "object") return applySaeivPassengerSatisfaction(payload);
         var entries = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
-        if (!entries.length) return payload;
+        if (!entries.length) return applySaeivPassengerSatisfaction(payload);
         var names = buildSaeivAlignedStopNames(entries);
-        if (!names.length) return payload;
+        if (!names.length) return applySaeivPassengerSatisfaction(payload);
         var lastIndex = Math.max(0, names.length - 1);
         payload.terminusStopName = String(names[lastIndex] || "").trim();
         payload.routeAudioAvailable = !!saeivRouteAudio.available;
@@ -2207,7 +2246,7 @@ function tickSaeivAutomaticDestination() {
           payload.routeCompleted = false;
           payload.routeReachedIndex = -1;
           payload.routeTargetIndex = 0;
-          return payload;
+          return applySaeivPassengerSatisfaction(payload);
         }
         var refArrivalTs = computeSaeivRefArrivalTimestampMs(
           entries,
@@ -2263,7 +2302,7 @@ function tickSaeivAutomaticDestination() {
         payload.routeFinalDelayMinutes = payload.routeCompleted
           ? (Number.isFinite(liveDelayMinutes) ? liveDelayMinutes : Number(completion.finalDelayMinutes))
           : Number.NaN;
-        return payload;
+        return applySaeivPassengerSatisfaction(payload);
       }
       function syncSaeivExternalState(force) {
         var now = Date.now();

@@ -67,7 +67,10 @@ function buildNativePassengerPayload() {
     running:!telemetryPaused && hasRecentTelemetryPositionSignal(),
     world:{x:point.x,y:point.h,z:point.y,yawDegrees:((yaw%360)+540)%360-180},
     radiusM:Math.max(SAEIV_STOP_REACH_DISTANCE,SAEIV_STOP_DWELL_REACH_DISTANCE),
-    board:count(state.plannedStopBoardingTotal),alight:count(state.plannedStopAlightingTotal),
+    // A heartbeat may run between a physical transfer and the UI service tick.
+    // Never reject the lease merely because its planned total is still stale.
+    board:Math.max(count(state.plannedStopBoardingTotal),count(state.stopBoardingDone)),
+    alight:Math.max(count(state.plannedStopAlightingTotal),count(state.stopAlightingDone)),
     onboard:count(state.passengersInBus),capacity:capacity.unlimited?500:Math.max(1,count(capacity.capacity)),
     boardDone:count(state.stopBoardingDone),alightDone:count(state.stopAlightingDone)};
 }
@@ -87,6 +90,14 @@ function receiveNativePassengerStatus(message) {
   var s=message.snapshot;
   if(message.status!=="active"||!s||message.stopKey!==nativePassengerStopKey()||message.missionKey!==nativePassengerMissionKey()||saeivRouteState.started!==true)return;
   nativePassengerLockedMission=message.missionKey;
+  // Missed exits are carried into this stop by the DLL. Adopt its totals before
+  // the next heartbeat, including when recovering an expired lease. The identity
+  // check above prevents a previous stop or mission from changing this plan.
+  if(saeivPassengerState){
+    var validTotal=function(total,done){return Number.isInteger(total)&&Number.isInteger(done)&&total>=0&&total<=500&&done>=0&&done<=total;};
+    if(validTotal(s.board,s.boardDone))saeivPassengerState.plannedStopBoardingTotal=s.board;
+    if(validTotal(s.alight,s.alightDone))saeivPassengerState.plannedStopAlightingTotal=s.alight;
+  }
   if(nativePassengerValidationKey!==message.stopKey||nativePassengerValidationEpoch!==s.epoch){
     nativePassengerValidationKey=message.stopKey;nativePassengerValidationEpoch=s.epoch;
     nativePassengerValidationCount=s.validations; // Do not replay historical beeps after refresh/restart.

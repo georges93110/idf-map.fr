@@ -60,7 +60,7 @@ function publishNativeBusAnnouncementKeys() {
   if(now-(state.hotkeysAt||0)<250||state.readOnly||!state.revision||!telemetryWs||telemetryWs.readyState!==1)return;
   state.hotkeysAt=now;var list=state.current&&state.current.announcements,indices=[];
   if(Array.isArray(list))list.forEach(function(a,i){if(a.key&&nativeBusAnnouncementAllowed(a))indices.push(i);});
-  telemetryWs.send(JSON.stringify({type:"nativeBusSettings",protocol:1,action:"hotkeys",revision:state.revision,indices:indices}));
+  telemetryWs.send(JSON.stringify({type:"nativeBusSettings",protocol:1,action:"hotkeys",revision:state.revision,indices:indices,destinationEnabled:canPlaySaeivRouteAudio() && !!(saeivRouteState && saeivRouteState.selectedKey)}));
 }
 function handleBusAnnouncementKey(raw) {
   if (!raw || raw.phase!=="down" || raw.repeat) return false;

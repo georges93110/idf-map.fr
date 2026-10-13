@@ -197,6 +197,7 @@ function syncNativeBusCompletion(s){
     }
   }
   telemetryWs.send(JSON.stringify({type:"nativeBusCompletion",protocol:1,epoch:mode.epoch,revision:mode.revision,
+    satisfactionBasisPoints:typeof s.passengerSatisfactionPercent==="number" && Number.isFinite(s.passengerSatisfactionPercent)?limit(s.passengerSatisfactionPercent*100,0,10000):10000,
     scheduled:Number.isFinite(s.routeFinalDelayMinutes),onTimeStops:onTime,lateStops:late,lateUnits:lateUnits,
     token:token,service:nativeCompletionId,sequence:++nativeCompletionSequence,started:s.routeStarted===true,completed:s.routeCompleted===true,
     stops:stops.length,served:limit(s.routeServedStopsCount,0,stops.length),passengers:limit(s.routeTransportedPassengers,0,10000),

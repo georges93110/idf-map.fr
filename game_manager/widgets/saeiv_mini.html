@@ -1517,6 +1517,10 @@
         }
       }
       function updateSatisfactionLogic(data) {
+        if(typeof data.passengerSatisfactionPercent === "number" && Number.isFinite(data.passengerSatisfactionPercent)) {
+          currentSatisfaction = Math.max(0, Math.min(100, data.passengerSatisfactionPercent));
+          return;
+        }
         var routeKey = String(data.selectedKey || "").trim();
         var routeStarted = data.routeStarted === true;
 

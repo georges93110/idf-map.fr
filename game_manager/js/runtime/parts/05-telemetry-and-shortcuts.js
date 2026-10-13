@@ -815,7 +815,8 @@
         var scope = normalizeOverlayShortcutScope(data.scope);
         if (data.action === "trigger") {
           if (scope === OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE) {
-            triggerSaeivDestinationAnnouncementFromShortcut();
+            // Legacy host trigger has no physical modifier snapshot.
+            // Destination is handled by the native bus key event below.
             return;
           }
           if (scope === OVERLAY_SHORTCUT_SCOPE_ZOOM_GPS) {
@@ -1357,7 +1358,7 @@
           }
 
 
-          if (shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE, keyName, raw)) {
+          if (raw.source === "busNative" && shortcutMatchesRawKeyEvent(OVERLAY_SHORTCUT_SCOPE_DESTINATION_ANNOUNCE, keyName, raw)) {
             triggerSaeivDestinationAnnouncementFromShortcut();
           }
 
