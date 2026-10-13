@@ -46,7 +46,7 @@
       ? 'Le plugin IDF-RP est disponible uniquement sur la map Ile-de-France.'
       : "Quelque chose s'est mal passé, veuillez nous excuser. Relancez le jeu.";
     const text = (disabled.length ? 'UPDATE REQUIRED — ' + disabled.join(', ') : blocked ? reason : '') +
-      (codes ? ' — Codes : ' + codes : '');
+      (codes ? " — Code(s) d'erreur : " + codes : '');
     if (!node && text) {
       node = root.document.createElement('div'); node.id = 'idf-compatibility-status';
       node.setAttribute('role', 'status'); node.setAttribute('aria-live', 'polite');
