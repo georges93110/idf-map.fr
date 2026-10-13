@@ -23,30 +23,23 @@
         readings.push({ id: entry.id, state: entry.state });
       }
     }
-    const errors = [];
-    if (message.errors !== undefined) {
-      if (!Array.isArray(message.errors) || message.errors.length > 256) return null;
-      const codes = new Set();
-      for (const entry of message.errors) {
-        if (!entry || !/^E[1-6][0-9]{3}$/.test(entry.code) || codes.has(entry.code) ||
-            typeof entry.blocking !== 'boolean' || typeof entry.simulated !== 'boolean' ||
-            !Number.isSafeInteger(entry.count) || entry.count < 0) return null;
-        codes.add(entry.code); errors.push({ code: entry.code, blocking: entry.blocking, simulated: entry.simulated, count: entry.count });
-      }
-    }
-    return { type: 'nativeCompatibilityBackend' , protocol: 1, status: message.status, systems, ...(readings.length ? { readings } : {}), ...(message.errors !== undefined ? { errors } : {}) };
+    const notice = message.notice === undefined ? 'none' : message.notice;
+    if (!['none', 'map', 'webview', 'other'].includes(notice)) return null;
+    // Old DLLs may still send diagnostic arrays. Never forward their codes to UI.
+    return { type: 'nativeCompatibilityBackend', protocol: 1, status: message.status,
+      systems, ...(readings.length ? { readings } : {}), notice };
   }
+
   function receive(message) {
     const state = normalize(message); if (!state) return false;
     if (!root.document) return true;
     const disabled = [...state.systems, ...(state.readings || [])].filter(s => s.state === 'update_required').map(s => labels[s.id] || readingLabels[s.id]);
-    const errors = state.errors || [], blocked = errors.some(e => e.blocking);
-    const codes = errors.map(e => e.code + (e.simulated ? ' (démo)' : '')).join(', ');
-    const reason = errors.some(e => e.code === 'E1001')
-      ? 'Le plugin IDF-RP est disponible uniquement sur la map Ile-de-France.'
-      : "Quelque chose s'est mal passé, veuillez nous excuser. Relancez le jeu.";
-    const text = (disabled.length ? 'UPDATE REQUIRED — ' + disabled.join(', ') : blocked ? reason : '') +
-      (codes ? " — Code(s) d'erreur : " + codes : '');
+    const notices = {
+      map: 'Le plugin IDF-RP est disponible uniquement sur la map Ile-de-France.',
+      webview: "Quelque chose s'est mal passé, veuillez nous excuser. Testez votre connexion internet et relancez le jeu. Si ça ne règle pas votre problème, signalez le problème sur notre discord.",
+      other: "Quelque chose s'est mal passé, veuillez nous excuser. Relancez le jeu. Si ça ne règle pas votre problème, signalez le problème sur notre discord."
+    };
+    const text = disabled.length ? 'UPDATE REQUIRED — ' + disabled.join(', ') : notices[state.notice] || '';
     if (!node && text) {
       node = root.document.createElement('div'); node.id = 'idf-compatibility-status';
       node.setAttribute('role', 'status'); node.setAttribute('aria-live', 'polite');
