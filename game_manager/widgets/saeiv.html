@@ -3197,6 +3197,7 @@
       }
 
       function connectBridgeSocket() {
+        if(window.parent!==window&&typeof window.parent.saeivNativePost==="function")return;
         if (channelStopped) return;
         closeBridgeSocket({ keepOutbox: true, stop: false });
         let socket = null;
@@ -3247,6 +3248,7 @@
       function post(type, extra = {}) {
         if (!sourceId) return;
         const envelope = buildBridgeEnvelope({ type, sourceId, ...extra });
+        if(window.parent!==window&&typeof window.parent.saeivNativePost==="function"){window.parent.saeivNativePost(envelope);return;}
         ensureBridgeSocket();
         if (!channel || channel.readyState !== WebSocket.OPEN) {
           queueBridgeEnvelope(envelope);
@@ -4252,7 +4254,7 @@
         updateServiceLineValidation();if(resolve)resolve(nextSet);
       }
       function ensureServiceLineUidsLoaded() {
-        if (serviceLineUidSet instanceof Set) {
+        if (serviceLineUidSet instanceof Set && serviceLineUidSet.size) {
           updateServiceLineValidation();
           return Promise.resolve(serviceLineUidSet);
         }

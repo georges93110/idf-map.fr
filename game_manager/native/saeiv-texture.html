@@ -3,8 +3,8 @@
 <script>
 const agora=new URLSearchParams(location.search).get("style")==="agora";
 if(agora)document.documentElement.style.background=document.body.style.background="transparent";
-window.IDFSaeivTexture={ready:false,revision:0};let snapshot=null,lastKey='',busy=false,inputSession=0;
-window.saeivNativePost=envelope=>{if(inputSession)fetch('/saeiv/action',{method:'POST',headers:{'Content-Type':'application/json','x-idf-saeiv-session':String(inputSession)},body:JSON.stringify(envelope)}).catch(()=>{});};
+window.IDFSaeivTexture={ready:false,revision:0};let snapshot=null,lastKey='',busy=false,inputSession=0,catalogWanted=false,catalogAt=0;
+window.saeivNativePost=envelope=>{if(envelope?.payload?.type==='saeiv:catalog_request'){catalogWanted=true;catalogAt=0;return;}if(inputSession)fetch('/saeiv/action',{method:'POST',headers:{'Content-Type':'application/json','x-idf-saeiv-session':String(inputSession)},body:JSON.stringify(envelope)}).catch(()=>{});};
 // Resolve hover against the same DOM used for clicks, including invisible Agora keys.
 window.IDFSaeivTexture.cursorAt=(x,y)=>{
  const frame=document.getElementById('display'),d=frame?.contentDocument;if(!d)return 0;
@@ -19,7 +19,9 @@ window.IDFSaeivTexture.cursorAt=(x,y)=>{
 };
 // A silent display only: audio is handled by the authoritative game page.
 window.saeivGetBridgeState=()=>snapshot;
-async function refresh(){if(busy)return;busy=true;try{const r=await fetch('/saeiv/state',{cache:'no-store'});if(!r.ok)return;const data=await r.json();inputSession=data.inputSession||0;for(const m of data.messages||[])document.getElementById('display')?.contentWindow?.postMessage(m,location.origin);snapshot={...data.state,payload:{...data.state.payload,busAudioTelemetry:undefined,globalAudioVolumeMultiplier:0}};const backlight=agora?1:saeivBacklight(data.gameTime);const display=document.getElementById('display');if(agora)display?.contentWindow?.IDFAgoraNative?.setPower(data.powered!==false,data.gameTime);if(display)display.style.filter='brightness('+backlight+')';const key=JSON.stringify([data.revision,data.active,backlight,Math.floor(Date.now()/1000)]);if(key!==lastKey){lastKey=key;display?.contentWindow?.postMessage({scope:'idf_game_widget_bridge_v1',channel:'saeiv',payload:snapshot},location.origin);window.IDFSaeivTexture.revision++;}}catch{}finally{busy=false;}}
+async function refresh(){if(busy)return;busy=true;try{
+ if(catalogWanted&&Date.now()-catalogAt>=500){catalogAt=Date.now();const response=await fetch('/saeiv/catalog',{cache:'no-store'});if(response.ok){const c=await response.json();if(c.ready&&document.getElementById('display')?.contentWindow){catalogWanted=false;document.getElementById('display').contentWindow.postMessage({scope:'idf_game_widget_bridge_v1',channel:'saeiv',payload:{type:'saeiv:catalog',sourceId:'game',payload:{routes:c.routes}}},location.origin);}}}
+const r=await fetch('/saeiv/state',{cache:'no-store'});if(!r.ok)return;const data=await r.json();inputSession=data.inputSession||0;for(const m of data.messages||[])document.getElementById('display')?.contentWindow?.postMessage(m,location.origin);snapshot={...data.state,payload:{...data.state.payload,busAudioTelemetry:undefined,globalAudioVolumeMultiplier:0}};const backlight=agora?1:saeivBacklight(data.gameTime);const display=document.getElementById('display');if(agora)display?.contentWindow?.IDFAgoraNative?.setPower(data.powered!==false,data.gameTime);if(display)display.style.filter='brightness('+backlight+')';const key=JSON.stringify([data.revision,data.active,backlight,Math.floor(Date.now()/1000)]);if(key!==lastKey){lastKey=key;display?.contentWindow?.postMessage({scope:'idf_game_widget_bridge_v1',channel:'saeiv',payload:snapshot},location.origin);window.IDFSaeivTexture.revision++;}}catch{}finally{busy=false;}}
 // Explicit backlight curve: unchanged from 08:00 to 18:00, gradual dawn/dusk.
 function saeivBacklight(clock){const m=/^(\d{1,2}):(\d{2})/.exec(String(clock||''));if(!m)return 1;const h=Number(m[1])+Number(m[2])/60;if(h>=8&&h<=18)return 1;const daylight=h<8?(h-6)/2:(20-h)/2;const t=Math.max(0,Math.min(1,daylight));return .16+.84*t*t*(3-2*t);}
 refresh();setInterval(refresh,50);

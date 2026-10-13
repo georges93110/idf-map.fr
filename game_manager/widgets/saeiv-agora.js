@@ -62,14 +62,14 @@ class AgoraSaeiv {
  press(k){
   if(!this.canPress(k))return;
   if(/^ics[1-4]$/.test(k)){this.post('saeiv:action',{action:'saeiv-agora-ics-'+k.slice(-1),selectedLineUid:this.state.selectedLineUid||'',selectedRouteUid:this.state.selectedRouteUid||''});return;}
-  if(k==='ps'){this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.page='line';this.post('saeiv:action',{action:'saeiv-agora-line-entry'});this.request();return;}
+  if(k==='ps'){this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.page='line';this.request();return;}
   if(this.page==='notice'){this.page=this.resume;if(k==='valid'||k==='cancel')return;}
   if(['line','vehicle','service','matricule'].includes(this.page)){
    const field=this.page;
    if(/^\d$/.test(k)){if(this[field].length<(field==='vehicle'?2:field==='matricule'?32:20))this[field]+=k;return;}
    if(k==='erase'){this[field]=this[field].slice(0,-1);return;}
    if(k==='up'||k==='down'){if(field==='line'||field==='service')this.choose(k==='up'?1:-1);return;}
-   if(k==='cancel'){this.page=({line:'home',vehicle:'line',service:'vehicle',matricule:'service'})[field];this.post('saeiv:action',{action:this.page==='line'?'saeiv-agora-line-entry':this.page==='home'?'saeiv-agora-entry-cancel':'saeiv-agora-entry-back'});return;}
+   if(k==='cancel'){this.page=({line:'home',vehicle:'line',service:'vehicle',matricule:'service'})[field];return;}
    if(k==='valid'){
     if(!this[field])return;
     if(field==='line'){

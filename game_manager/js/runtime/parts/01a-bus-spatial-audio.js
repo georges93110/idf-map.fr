@@ -109,7 +109,6 @@ function updateBusSpatialRecord(record) {
   } else record.audio.volume = Math.max(0, Math.min(1, volume * mix.gain * boost));
 }
 function updateBusSpatialAudioTelemetry(raw) {
-  if(typeof publishNativeBusAnnouncementKeys === "function")publishNativeBusAnnouncementKeys();
   var data = raw && raw.data && typeof raw.data === "object" ? raw.data : raw;
   updateNativeGameAudio(data);
   if (!data || typeof data.audioCameraAvailable !== "boolean") return;
@@ -120,6 +119,8 @@ function updateBusSpatialAudioTelemetry(raw) {
   busSpatialAudio.telemetry = filtered; busSpatialAudio.seen = true;
   if (filtered.audioCameraAvailable && !filtered.paused) resumeBusAudioContext();
   tickBusAudio();
+  if(typeof publishNativeBusAnnouncementKeys === "function")publishNativeBusAnnouncementKeys();
+  if(typeof saeivRouteAudio!=="undefined"&&saeivRouteAudio.queue.length&&typeof processSaeivRouteAudioQueue==="function")processSaeivRouteAudioQueue();
 }
 function setBusAudioVolume(audio, volume) {
   if (!audio) return;

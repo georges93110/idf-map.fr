@@ -38,7 +38,7 @@ function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
         if(![ax,az,bx,bz].every(Number.isFinite))hasDistance=false;else distance+=Math.hypot(bx-ax,bz-az);
       }
       var departure=first&&first.X!=null&&first.Z!=null&&String(first.X).trim()!==''&&String(first.Z).trim()!==''&&Number.isFinite(Number(first.X))&&Number.isFinite(Number(first.Z))?{x:Number(first.X),z:Number(first.Z)}:null;
-      routes.push({departure:departure,duration:hasDuration?duration:null,distance:hasDistance?distance:null,background:style.background,foreground:style.foreground,badgeKey:style.badgeKey,lineUid:String(line.uid),routeUid:String(route.uid),category:category,line:style.label||number||n,destination:label(last)||name,origin:label(first),stops:stops.length||Number(route.stops&&route.stops.length)||0,search:name});
+      routes.push({departure:departure,duration:hasDuration?duration:null,distance:hasDistance?distance:null,background:style.background,foreground:style.foreground,badgeKey:style.badgeKey,lineUid:String(line.uid),lineCode:String(line.uidRaw||line.uid),routeUid:String(route.uid),category:category,line:style.label||number||n,destination:label(last)||name,origin:label(first),stops:stops.length||Number(route.stops&&route.stops.length)||0,search:name});
     });
   });
   [['express','Express'],['noctilien','Noctilien'],['replacement_bus','Bus de remplacement']].forEach(function(p){if(present.has(p[0]))categories.push({key:p[0],label:p[1]});});
@@ -117,7 +117,7 @@ function nativeServiceStyle(line,route,number){
  var badgeKey=/navette\s+(?:de\s+)?nogent/i.test(all)?'navette_nogent.png':/^scolaire\b/i.test(raw)?'bus_school.png':'';
  if(typeof line.badgeImage==='string'&&line.badgeImage)badgeKey=line.badgeImage;
  var bg=night?'#080080':hex(entry&&entry[0],'#3a3a3a'),fg=night?'#ffffff':hex(entry&&entry[1],'#ffffff');
- return {label:label,background:bg,foreground:fg,stripe:stripe,badgeKey:badgeKey||'webbadge:'+JSON.stringify([label,bg,fg,kind,logos,stripe])};
+ return {label:label,background:bg,foreground:fg,stripe:stripe,badgeKey:badgeKey||(kind==='bus'&&!logos.length&&!stripe?'':'webbadge:'+JSON.stringify([label,bg,fg,kind,logos,stripe]))};
 }
 // Offscreen browser raster -> native button pixels. Logos are the site's actual
 // PNG files, alongside the same rounded/circular line chip and Noctilien stripe.
@@ -153,7 +153,7 @@ function warmNativeServiceBadges(){
   if(nativeServiceWarmSource===dbusLines)return;
   nativeServiceWarmSource=dbusLines;var keys=new Set();
   (dbusLines||[]).forEach(function(line){(line.routes||[]).forEach(function(route){keys.add(nativeServiceStyle(line,route,getLineNumber(line,route)).badgeKey);});});
-  return Promise.all(Array.from(keys).map(nativeServiceImagePixels));
+  return Promise.all(Array.from(keys).filter(Boolean).map(nativeServiceImagePixels));
  }).finally(function(){nativeServiceWarmPromise=null;});return nativeServiceWarmPromise;
 }
 if(typeof window.setTimeout==='function')window.setTimeout(function(){warmNativeServiceBadges().catch(function(){});},0);
