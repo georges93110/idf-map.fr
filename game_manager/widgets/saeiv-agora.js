@@ -7,10 +7,10 @@ const text=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUp
 const fit=(v,n)=>text(v).slice(0,n).padEnd(n,' ');
 const initials=v=>text(v).split(/[^A-Z0-9]+/).filter(Boolean).map(w=>w[0]).join('').slice(0,3);
 class AgoraSaeiv {
- constructor(send,now=Date.now){this.send=send;this.now=now;this.state={};this.catalogue=[];this.page='home';this.line='';this.service='';this.pending=null;this.notice=['',''];this.noticeAt=0;this.clock='';this.power=true;this.at=0;this.audio=0;}
+ constructor(send,now=Date.now){this.send=send;this.now=now;this.state={};this.catalogue=[];this.page='home';this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.resume='home';this.pending=null;this.notice=['',''];this.noticeAt=0;this.clock='';this.power=true;this.at=0;this.audio=0;}
  post(type,extra={}){this.send({scope:SCOPE,channel:'saeiv',clientId:'native_agora',payload:{sourceId:'game',type,...extra}});}
  request(){this.post('saeiv:request_state');this.post('saeiv:catalog_request');}
- message(lines){this.notice=lines;this.noticeAt=this.now()+3500;this.page='notice';}
+ message(lines,resume='home'){this.resume=resume;this.notice=lines;this.noticeAt=this.now()+3500;this.page='notice';}
  command(action,extra={}){if(this.pending)return;this.pending={action,at:this.now()};this.page='waiting';this.post('saeiv:'+action,extra);}
  receive(m){
   if(m?.scope!==SCOPE||m.channel!=='saeiv'||m.payload?.sourceId!=='game')return;
@@ -24,7 +24,7 @@ class AgoraSaeiv {
   }
   if(p.type==='saeiv:action_result'&&this.pending?.action===p.action){
    this.pending=null;
-   if(!p.ok){this.message(['REFUS DU JEU',String(p.error||'REESSAYER')]);this.request();return;}
+   if(!p.ok){this.message([p.action==='start_route'?'DEPART NON AUTORISE':p.action==='clear_route'?'FIN NON VALIDEE':'SERVICE INDISPONIBLE',p.action==='start_route'?'REJOINDRE LE DEPART':'REESSAYER']);this.request();return;}
    if(p.action==='select_route'){this.command('start_route');return;}
    if(p.action==='clear_route'){this.line='';this.service='';}
    this.message([p.action==='clear_route'?'SERVICE TERMINE':'SERVICE ACCEPTE','VALID : SUIVI']);this.post('saeiv:request_state');
@@ -35,20 +35,49 @@ class AgoraSaeiv {
   const list=this.page==='line'?[...new Set(this.catalogue.map(r=>String(r.lineUidRaw||r.lineUid)))]:[...new Set(this.routes().map(r=>String(r.routeUid)))];
   if(!list.length)return;const field=this.page==='line'?'line':'service';const i=list.indexOf(this[field]);this[field]=list[(i+delta+list.length)%list.length];
  }
+ matriculeDefault(){
+  const keys=['steamid','steamId','steamID','steam_id','idf_steamid','idf_steam_id'];
+  for(const source of [this.state,this.state.player,this.state.identity,this.state.telemetry,this.state.raw]){
+   for(const key of keys){const value=String(source?.[key]??'').replace(/[^0-9]/g,'').slice(0,32);if(value)return value;}
+  }
+  return String(Math.floor(Math.random()*900000)+100000);
+ }
+ validated(step){this.post('saeiv:action',{action:'prise-service-complete-'+step+'-validate',lineUid:this.line,...(step!=='line'?{vehicleNumber:this.vehicle}:{}),...(step==='route'||step==='matricule'?{routeUid:this.service}:{}),...(step==='matricule'?{matricule:this.matricule,expectedMatricule:this.expectedMatricule}:{})});}
  press(k){
   if(!this.power||this.pending)return;
-  if(k==='ps'){this.line='';this.service='';this.page='line';this.request();return;}
-  if(this.page==='line'||this.page==='service'){
-   const field=this.page==='line'?'line':'service';
-   if(/^\d$/.test(k)){if(this[field].length<20)this[field]+=k;return;}
+  if(k==='ps'){this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.page='line';this.request();return;}
+  if(this.page==='notice'){this.page=this.resume;if(k==='valid'||k==='cancel')return;}
+  if(['line','vehicle','service','matricule'].includes(this.page)){
+   const field=this.page;
+   if(/^\d$/.test(k)){if(this[field].length<(field==='vehicle'?2:field==='matricule'?32:20))this[field]+=k;return;}
    if(k==='erase'){this[field]=this[field].slice(0,-1);return;}
-   if(k==='up'||k==='down'){this.choose(k==='up'?1:-1);return;}
-   if(k==='cancel'){this.page=this.page==='service'?'line':'home';return;}
+   if(k==='up'||k==='down'){if(field==='line'||field==='service')this.choose(k==='up'?1:-1);return;}
+   if(k==='cancel'){this.page=({line:'home',vehicle:'line',service:'vehicle',matricule:'service'})[field];return;}
    if(k==='valid'){
     if(!this[field])return;
-    if(field==='line'){this.page='service';this.service='';return;}
+    if(field==='line'){
+     if(!this.routes().length){this.message(['LIGNE INCONNUE','VERIFIER LA SAISIE'],'line');return;}
+     this.validated('line');this.page='vehicle';this.vehicle=String(Math.floor(Math.random()*30)+1);return;
+    }
+    if(field==='vehicle'){
+     if(!/^\d+$/.test(this.vehicle)||Number(this.vehicle)<1||Number(this.vehicle)>30){this.message(['VOITURE INCORRECTE','SAISIR DE 1 A 30'],'vehicle');return;}
+     this.validated('vehicle');this.page='service';this.service='';return;
+    }
+    if(field==='service'){
+     const matches=this.routes().filter(r=>String(r.routeUid)===this.service);
+     if(matches.length!==1){this.message([matches.length?'LIGNE AMBIGUE':'SERVICE INCONNU','VERIFIER LA SAISIE'],'service');return;}
+     this.validated('route');this.expectedMatricule=this.matriculeDefault();this.matricule=this.expectedMatricule;this.page='matricule';return;
+    }
+    if(this.matricule!==this.expectedMatricule){this.message(['MATRICULE INCORRECT','VERIFIER LA SAISIE'],'matricule');return;}
+    this.validated('matricule');this.page='confirm';
+   }
+   return;
+  }
+  if(this.page==='confirm'){
+   if(k==='cancel'){this.page='matricule';return;}
+   if(k==='valid'){
     const matches=this.routes().filter(r=>String(r.routeUid)===this.service);
-    if(matches.length!==1){this.message([matches.length?'LIGNE AMBIGUE':'SERVICE INCONNU','PRISE SERVICE']);return;}
+    if(matches.length!==1){this.message(['SERVICE INDISPONIBLE','VERIFIER LA SAISIE'],'service');return;}
     this.command('select_route',{lineUid:matches[0].lineUid,routeUid:matches[0].routeUid});
    }
    return;
@@ -79,10 +108,11 @@ class AgoraSaeiv {
  lines(){
   if(!this.power)return ['',''];
   if(this.pending&&this.now()-this.pending.at>7000){this.pending=null;this.message(['LIAISON INTERROMPUE','REESSAYER']);}
-  if(this.page==='notice'&&this.now()>=this.noticeAt)this.page='home';
+  if(this.page==='notice'&&this.now()>=this.noticeAt)this.page=this.resume;
   if(this.page==='notice')return this.notice;
-  if(this.page==='waiting')return ['LIAISON AU JEU','PATIENTEZ...'];
-  if(this.page==='line'||this.page==='service')return [this.page==='line'?'LIGNE':'SERVICE (ROUTE)',this[this.page]+(this.now()%1000<500?'_':' ')];
+  if(this.page==='waiting')return ['TRANSMISSION SAEIV','PATIENTEZ...'];
+  if(['line','vehicle','service','matricule'].includes(this.page))return [({line:'LIGNE',vehicle:'VOITURE',service:'SERVICE',matricule:'MATRICULE'})[this.page],this[this.page].slice(-19)+(this.now()%1000<500?'_':' ')];
+  if(this.page==='confirm')return ['VALIDER LE SERVICE ?',fit(this.line,4)+' '+fit(this.service,3)+' VOITURE '+this.vehicle];
   if(this.page==='end')return ['TERMINER SERVICE ?','VALID:OUI ANNUL:NON'];
   const s=this.state;if(!this.at||this.now()-this.at>6500)return ['LIAISON SAEIV','EN ATTENTE'];
   if(this.page==='audio')return ['ANNONCES '+(this.audio+1),s.globalAudioLabels?.[this.audio]||'AUCUNE ANNONCE'];
@@ -125,7 +155,7 @@ const controller=new AgoraSaeiv(m=>{
 const ctx=document.getElementById('lcd').getContext('2d');
 function draw(){
  const lines=controller.lines().map(s=>fit(s,20));const key=lines.join('\n');if(key===last)return;last=key;
- ctx.clearRect(0,0,1280,220);ctx.fillStyle='rgba(25,35,8,.96)';
+ ctx.clearRect(0,0,1280,220);ctx.fillStyle='rgb(8,12,2)';
  for(let row=0;row<2;row++)for(let col=0;col<20;col++){
   const bits=GLYPHS[lines[row][col]]||GLYPHS['?'];
   for(let y=0;y<7;y++)for(let x=0;x<5;x++)if(bits[y]&(1<<(4-x)))ctx.fillRect(col*64+x*11+2,row*108+y*13+9,9.2,11.2);
@@ -133,7 +163,7 @@ function draw(){
  window.IDFAgoraNative.revision++;
 }
 window.IDFAgoraNative={ready:true,revision:0,receive(m){controller.receive(m);draw();},setPower(on,clock){controller.power=on;controller.clock=clock||'';draw();}};
-window.AgoraICS={trigger(k){controller.press(k);draw();},getState:()=>({page:controller.page,line:controller.line,service:controller.service,lines:controller.lines(),state:controller.state})};
+window.AgoraICS={trigger(k){controller.press(k);draw();},getState:()=>({page:controller.page,line:controller.line,service:controller.service,vehicle:controller.vehicle,matricule:controller.matricule,lines:controller.lines(),state:controller.state})};
 for(const [key,label,x,y,w,h] of KEYS){const b=document.createElement('button');b.className='hit';b.dataset.key=key;b.setAttribute('aria-label',label);b.style.cssText=`left:${x/20.48}%;top:${y/10.24}%;width:${w/20.48}%;height:${h/10.24}%`;b.addEventListener('click',()=>window.AgoraICS.trigger(key));document.getElementById('buttons').append(b);}
 window.addEventListener('message',e=>{if(e.origin===location.origin)window.IDFAgoraNative.receive(e.data);});
 window.addEventListener('keydown',e=>{let k=/^\d$/.test(e.key)?e.key:({Enter:'valid',Backspace:'erase',ArrowUp:'up',ArrowDown:'down'})[e.key];if(k){e.preventDefault();window.AgoraICS.trigger(k);}});
