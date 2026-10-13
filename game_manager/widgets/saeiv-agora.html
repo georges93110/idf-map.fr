@@ -4,5 +4,6 @@
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;color:transparent}
 .instrument{position:relative;width:100%;height:100%;background:transparent}
 .lcd{position:absolute;left:18.45%;top:18.1%;width:64%;height:22.6%;pointer-events:none}
-.hit,.hit:hover,.hit:focus,.hit:active{position:absolute;appearance:none;background:transparent;border:0;outline:0;box-shadow:none;padding:0;color:transparent;cursor:default;opacity:0}
+.hit,.hit:hover,.hit:focus,.hit:active{position:absolute;appearance:none;background:transparent;border:0;outline:0;box-shadow:none;padding:0;color:transparent;cursor:pointer;opacity:0}
+.hit:disabled{cursor:not-allowed}
 </style></head><body><main class="instrument" aria-label="SAEIV Agora"><canvas class="lcd" id="lcd" width="1280" height="220"></canvas><div id="buttons"></div></main><script src="saeiv-agora.js"></script></body></html>

@@ -43,8 +43,23 @@ class AgoraSaeiv {
   return String(Math.floor(Math.random()*900000)+100000);
  }
  validated(step){this.post('saeiv:action',{action:'prise-service-complete-'+step+'-validate',lineUid:this.line,...(step!=='line'?{vehicleNumber:this.vehicle}:{}),...(step==='route'||step==='matricule'?{routeUid:this.service}:{}),...(step==='matricule'?{matricule:this.matricule,expectedMatricule:this.expectedMatricule}:{})});}
+ canPress(k){
+  if(!this.power||this.pending)return false;
+  if(k==='ps'||k==='cancel')return true;
+  const page=this.page==='notice'?this.resume:this.page;
+  if(this.page==='notice'&&k==='valid')return true;
+  if(['line','vehicle','service','matricule'].includes(page)){
+   if(/^\d$/.test(k))return this[page].length<(page==='vehicle'?2:page==='matricule'?32:20);
+   if(k==='erase')return !!this[page];
+   if(k==='up'||k==='down')return page==='line'?this.catalogue.length>0:page==='service'&&this.routes().length>0;
+   return k==='valid'&&!!this[page];
+  }
+  if(page==='confirm'||page==='end')return k==='valid';
+  if(k==='up'||k==='down'||k==='valid')return page!=='audio'||(this.state.globalAudioLabels?.length||0)>0;
+  return ['mission','0','1','3','test'].includes(k);
+ }
  press(k){
-  if(!this.power||this.pending)return;
+  if(!this.canPress(k))return;
   if(k==='ps'){this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.page='line';this.request();return;}
   if(this.page==='notice'){this.page=this.resume;if(k==='valid'||k==='cancel')return;}
   if(['line','vehicle','service','matricule'].includes(this.page)){
@@ -154,7 +169,9 @@ const controller=new AgoraSaeiv(m=>{
 });
 const ctx=document.getElementById('lcd').getContext('2d');
 function draw(){
- const lines=controller.lines().map(s=>fit(s,20));const key=lines.join('\n');if(key===last)return;last=key;
+ const lines=controller.lines().map(s=>fit(s,20));
+ for(const button of document.querySelectorAll('.hit'))button.disabled=!controller.canPress(button.dataset.key);
+ const key=lines.join('\n');if(key===last)return;last=key;
  ctx.clearRect(0,0,1280,220);ctx.fillStyle='rgb(8,12,2)';
  for(let row=0;row<2;row++)for(let col=0;col<20;col++){
   const bits=GLYPHS[lines[row][col]]||GLYPHS['?'];
