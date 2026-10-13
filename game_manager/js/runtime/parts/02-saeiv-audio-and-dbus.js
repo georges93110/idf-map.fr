@@ -1104,22 +1104,6 @@
           return false;
         }
       }
-      function shouldAutoPlaySaeivDestinationOnSelection() {
-        return isSaeivHudWidgetTypeActive("saeiv");
-      }
-      function shouldAutoPlaySaeivDestinationOnStart() {
-        return isSaeivHudWidgetTypeActive("saeiv_mini") && !isSaeivHudWidgetTypeActive("saeiv");
-      }
-      function scheduleSaeivDestinationAnnouncementWhenAudioReady(routeKey) {
-        var key = String(routeKey || (saeivRouteState && saeivRouteState.selectedKey) || "").trim();
-        if (!key) return false;
-        var request = { key: key, ready: false };
-        saeivRouteAudio.destinationRequest = request;
-        Promise.resolve(saeivRouteAudio.preparePromise).then(function () {
-          if (saeivRouteAudio.destinationRequest === request) request.ready = true;
-        }).catch(function () { if (saeivRouteAudio.destinationRequest === request) saeivRouteAudio.destinationRequest = null; });
-        return true;
-      }
 // One request per closed -> open door cycle. Stale telemetry and service
 // changes clear pending work; an audio queue is never interrupted.
 var saeivAutoDestination = {key:"",known:false,open:false,pending:false};
@@ -1141,13 +1125,6 @@ function tickSaeivAutomaticDestination() {
 
       function tickSaeivRouteAudio() {
         tickSaeivAutomaticDestination();
-        var request = saeivRouteAudio.destinationRequest;
-        if (request && request.key !== String(saeivRouteState && saeivRouteState.selectedKey || "")) {
-          saeivRouteAudio.destinationRequest = null;
-        } else if (request && request.ready && canPlaySaeivRouteAudio() && !isSaeivManualAnnouncementBusy()) {
-          saeivRouteAudio.destinationRequest = null;
-          playSaeivDestinationAnnouncementIfAvailable({ action: "game-destination-announcement-auto", expectedRouteKey: request.key, requireShortcutContext: false });
-        }
         syncSaeivAudioPauseState();
       }
       window.setInterval(tickSaeivRouteAudio, 50);
@@ -1234,6 +1211,8 @@ function tickSaeivAutomaticDestination() {
       }
       function playSaeivDestinationAnnouncementIfAvailable(options) {
         var opts = options && typeof options === "object" ? options : {};
+        // Destination is explicitly requested by the driving shortcut or a front-door edge.
+        if (opts.action !== "game-destination-announcement-shortcut" && opts.action !== "game-destination-doors") return false;
         if (opts.requireShortcutContext !== false && (managerState.visible || telemetryPaused || !telemetryConnected)) return false;
         if (!saeivRouteState || typeof saeivRouteState !== "object") return false;
         var activeRouteKey = String(saeivRouteState.selectedKey || "").trim();
@@ -2035,7 +2014,7 @@ function tickSaeivAutomaticDestination() {
         }
         payload.routeAudioManualDestinationUrls = getSaeivRouteAudioClipUrls(manualDestinationClips);
         payload.routeAudioManualTerminusUrls = getSaeivRouteAudioClipUrls(manualTerminusClips);
-        payload.routeAudioCanManualDestination = payload.routeAudioManualDestinationUrls.length === manualDestinationClips.length && manualDestinationClips.length > 0;
+        payload.routeAudioCanManualDestination = false; // Driving shortcut / automatic front door only.
         payload.routeAudioCanManualTerminus = payload.routeAudioManualTerminusUrls.length === manualTerminusClips.length && manualTerminusClips.length > 0;
         var reachedIndex = clampReachedStopIndex(saeivRouteState.reachedIndex, lastIndex);
         var targetIndex = clampRouteStopIndex(saeivRouteState.targetIndex, lastIndex);
@@ -2715,9 +2694,6 @@ function tickSaeivAutomaticDestination() {
         saeivLastStateKey = "";
         syncSaeivExternalState(true);
         ensureSaeivRouteDestinationSynced(true);
-        if (shouldAutoPlaySaeivDestinationOnStart()) {
-          scheduleSaeivDestinationAnnouncementWhenAudioReady(String(saeivRouteState.selectedKey || ""));
-        }
         return Object.assign({ ok: true, started: true }, buildRouteRuntimeSummary());
       }
       function activateSaeivRouteSelection(line, route, options) {
@@ -2857,12 +2833,8 @@ function tickSaeivAutomaticDestination() {
         ensureNavBridgesLoaded().catch(function () { });
         ensureSaeivRouteDestinationSynced(true);
         if (typeof syncNativeGpsDestination === "function") syncNativeGpsDestination(true);
-        var autoAnnounceOnSelection = shouldAutoPlaySaeivDestinationOnSelection();
         var audioPreparePromise = prepareSaeivRouteAudio(line, route, entries).catch(function () { return false; });
         saeivRouteAudio.preparePromise = audioPreparePromise;
-        if (autoAnnounceOnSelection) {
-          scheduleSaeivDestinationAnnouncementWhenAudioReady(selectedKey);
-        }
         var autoStartInfo = getSaeivRouteStartStopInfo(telemetryLastSignal);
         if (autoStartInfo && autoStartInfo.atStartStop && saeivRouteState && saeivRouteState.started !== true) {
           startSaeivSelectedRoute();

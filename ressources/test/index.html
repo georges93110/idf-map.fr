@@ -6,6 +6,7 @@
   <title>Girouette — LED destination editor</title>
   <style>
     @font-face{font-family:Girouette;src:url('./Girouette.ttf') format('truetype');font-display:swap}
+    @font-face{font-family:AgoraGirouette;src:url('./AgoraGirouette.ttf') format('truetype');font-display:block}
     :root{--bg:#111315;--panel:#191c1f;--panel2:#202428;--line:#30363b;--muted:#8c969c;--text:#f5f7f8;--cyan:#38d7e8;--orange:#ff8c21;--yellow:#fff34b;--blue:#39aee8}
     *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 80% -20%,#263138 0,#111315 40%);color:var(--text);font:14px Inter,system-ui,sans-serif;min-height:100vh}
     header{height:74px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 34px;background:#141719cc;backdrop-filter:blur(14px)}
@@ -107,7 +108,7 @@ function updateRenderOptions(){
   nightKey=key;wasNight=active;
  }
  nightStripe=active?stripeColor:'';
- $('#styleHint').textContent=agoraLayout?'Numéro plein sans contour · destination limitée à 813 × 128 px.':'Numéro LED avec contour · destination élargie si le badge est masqué.';
+ $('#styleHint').textContent=agoraLayout?'Numéro plein sans contour · Paris Girouette · #e0ed61 · destination 813 × 128 px.':'Numéro LED avec contour · destination élargie si le badge est masqué.';
 }
 let blinkEpoch=performance.now();
 function partialVisible(){return $('#partial').checked&&(renderMode==='advanced'||!$('#blink').checked||Math.floor((performance.now()-blinkEpoch)/Number($('#blinkMs').value))%2===0)}
@@ -262,13 +263,14 @@ function draw(){
 // Shared maximum-size destination layout. Cache it independently of
 // colours, partial-service state and scrolling offset.
 let destinationLayoutKey='',destinationLayoutValue=null;
+function destinationFont(){return agoraLayout?'AgoraGirouette':$('#fontChoice').value;}
 function fitDestinationLayout(space){
- const family=$('#fontChoice').value,text=running?dest.value.replace(/\s+/g,' ').trim():dest.value.replace(/\r/g,'');
+ const family=destinationFont(),text=running?dest.value.replace(/\s+/g,' ').trim():dest.value.replace(/\r/g,'');
  const wrap=$('#wrap').checked&&!running,occupancy=Math.min(1,Math.max(.1,Number($('#size').value)/100));
  const key=JSON.stringify([text,family,space,wrap,running,occupancy,document.fonts.status]);
  if(key===destinationLayoutKey)return destinationLayoutValue;
  if(!text.trim()){destinationLayoutKey=key;return destinationLayoutValue={size:1,lines:[],height:0};}
- const availableWidth=space-60,availableHeight=98,gap=6;
+ const availableWidth=space-(running?0:60),availableHeight=98,gap=6;
  const paragraphs=text.split('\n').map(line=>line.trim().split(/\s+/).filter(Boolean));
  function measure(value){
   const ink=m.measureText(value);
@@ -319,9 +321,9 @@ function drawSimple(){
  const start=($('#routeBox').checked||agoraLayout)?211:0,space=1024-start;
  m.clearRect(0,0,1024,128);
  const layout=fitDestinationLayout(space);
- m.font=layout.size+'px "'+$('#fontChoice').value+'"';
+ m.font=layout.size+'px "'+destinationFont()+'"';
  const w=m.measureText(dest.value.replace(/\n/g,' ')).width;
- m.save();m.beginPath();m.rect(start+30,15,space-60,98);m.clip();m.fillStyle=palette.text;
+ m.save();m.beginPath();const side=running?0:30;m.rect(start+side,15,space-2*side,98);m.clip();m.fillStyle=agoraLayout?'#e0ed61':palette.text;
  let top=(128-layout.height)/2;
  for(const line of layout.lines){
   const left=$('#align').value==='left'?30:$('#align').value==='right'?space-30-line.width:(space-line.width)/2;
@@ -332,7 +334,7 @@ function drawSimple(){
  m.restore();
  ctx.fillStyle=palette.background;ctx.fillRect(0,0,1024,128);
  // Girouette contains its own dots: sampling it on a second grid erases strokes.
- if($('#fontChoice').value==='Girouette'){
+ if(agoraLayout||$('#fontChoice').value==='Girouette'){
    if($('#scanBox').checked){
      ctx.fillStyle=palette.inactive;
      for(let y=2;y<128;y+=4)for(let x=2;x<1024;x+=4){
@@ -385,7 +387,7 @@ $('#stopBtn').onclick=()=>{running=false;offset=0;draw()};
 $('#fullscreenBtn').onclick=()=>$('#sign').requestFullscreen?.();
 const save=document.createElement('button');save.className='btn';save.textContent='Exporter PNG';$('.toolbar').append(save);
 save.onclick=()=>{draw();const a=document.createElement('a');a.download='girouette-'+$('#busStyle').value+'-'+renderMode+'-'+output.width+'x'+output.height+'.png';a.href=output.toDataURL('image/png');a.click()};
-Promise.all([document.fonts.load('normal 92px Girouette'),document.fonts.load('normal 112px Girouette')]).then(update).catch(()=>{
+Promise.all([document.fonts.load('normal 92px Girouette'),document.fonts.load('normal 112px Girouette'),document.fonts.load('normal 100px AgoraGirouette')]).then(update).catch(()=>{
  $('.section-head .hint').textContent='Impossible de charger Girouette.ttf';
 });
   </script>
