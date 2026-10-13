@@ -24,8 +24,8 @@ class AgoraSaeiv {
   }
   if(p.type==='saeiv:action_result'&&this.pending?.action===p.action){
    this.pending=null;
-   if(!p.ok){this.message([p.action==='start_route'?'DEPART NON AUTORISE':p.action==='clear_route'?'FIN NON VALIDEE':'SERVICE INDISPONIBLE',p.action==='start_route'?'REJOINDRE LE DEPART':'REESSAYER']);this.request();return;}
-   if(p.action==='select_route'){this.command('start_route');return;}
+   if(!p.ok){if(p.action==='start_route'&&this.state.routeSelected&&!this.state.routeCanStart){this.message(['SERVICE ACCEPTE','REJOINDRE LE DEPART']);this.request();return;}this.message([p.action==='start_route'?'DEPART NON AUTORISE':p.action==='clear_route'?'FIN NON VALIDEE':'SERVICE INDISPONIBLE',p.action==='start_route'?'REJOINDRE LE DEPART':'REESSAYER']);this.request();return;}
+   if(p.action==='select_route'){if(p.canStart===true&&!p.started&&!p.alreadyStarted){this.command('start_route');return;}this.message(['SERVICE ACCEPTE',p.started||p.alreadyStarted?'VALID : SUIVI':'REJOINDRE LE DEPART']);this.post('saeiv:request_state');return;}
    if(p.action==='clear_route'){this.line='';this.service='';}
    this.message([p.action==='clear_route'?'SERVICE TERMINE':'SERVICE ACCEPTE','VALID : SUIVI']);this.post('saeiv:request_state');
   }
@@ -45,6 +45,7 @@ class AgoraSaeiv {
  validated(step){this.post('saeiv:action',{action:'prise-service-complete-'+step+'-validate',lineUid:this.line,...(step!=='line'?{vehicleNumber:this.vehicle}:{}),...(step==='route'||step==='matricule'?{routeUid:this.service}:{}),...(step==='matricule'?{matricule:this.matricule,expectedMatricule:this.expectedMatricule}:{})});}
  canPress(k){
   if(!this.power||this.pending)return false;
+  if(/^ics[1-4]$/.test(k))return !!this.state.icsAnnouncementLabels?.[Number(k.slice(-1))-1];
   if(k==='ps'||k==='cancel')return true;
   const page=this.page==='notice'?this.resume:this.page;
   if(this.page==='notice'&&k==='valid')return true;
@@ -60,14 +61,15 @@ class AgoraSaeiv {
  }
  press(k){
   if(!this.canPress(k))return;
-  if(k==='ps'){this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.page='line';this.request();return;}
+  if(/^ics[1-4]$/.test(k)){this.post('saeiv:action',{action:'saeiv-agora-ics-'+k.slice(-1),selectedLineUid:this.state.selectedLineUid||'',selectedRouteUid:this.state.selectedRouteUid||''});return;}
+  if(k==='ps'){this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.page='line';this.post('saeiv:action',{action:'saeiv-agora-line-entry'});this.request();return;}
   if(this.page==='notice'){this.page=this.resume;if(k==='valid'||k==='cancel')return;}
   if(['line','vehicle','service','matricule'].includes(this.page)){
    const field=this.page;
    if(/^\d$/.test(k)){if(this[field].length<(field==='vehicle'?2:field==='matricule'?32:20))this[field]+=k;return;}
    if(k==='erase'){this[field]=this[field].slice(0,-1);return;}
    if(k==='up'||k==='down'){if(field==='line'||field==='service')this.choose(k==='up'?1:-1);return;}
-   if(k==='cancel'){this.page=({line:'home',vehicle:'line',service:'vehicle',matricule:'service'})[field];return;}
+   if(k==='cancel'){this.page=({line:'home',vehicle:'line',service:'vehicle',matricule:'service'})[field];this.post('saeiv:action',{action:this.page==='line'?'saeiv-agora-line-entry':this.page==='home'?'saeiv-agora-entry-cancel':'saeiv-agora-entry-back'});return;}
    if(k==='valid'){
     if(!this[field])return;
     if(field==='line'){
@@ -116,7 +118,7 @@ class AgoraSaeiv {
     if(!this.state.globalAudioLabels?.[this.audio])return;
     this.post('saeiv:action',{action:'saeiv-native-diffusion-slot-'+(this.audio+1),diffusionSlot:this.audio+1,selectedLineUid:this.state.selectedLineUid||'',selectedRouteUid:this.state.selectedRouteUid||'',globalAudioFolderPath:this.state.globalAudioFolderPath||''});return;
    }
-   if(this.page==='home'&&this.state.routeSelected&&!this.state.routeStarted&&!this.state.routeCompleted){this.command('start_route');return;}
+   if(this.page==='home'&&this.state.routeSelected&&!this.state.routeStarted&&!this.state.routeCompleted){if(this.state.routeCanStart)this.command('start_route');else this.message(['SERVICE ACCEPTE','REJOINDRE LE DEPART']);return;}
    this.page='home';
   }
  }
@@ -148,6 +150,7 @@ root.AgoraSaeiv=AgoraSaeiv;
 if(typeof module!=='undefined')module.exports={AgoraSaeiv};
 if(typeof document==='undefined')return;
 const KEYS=[
+ ...[1,2,3,4].map((n)=>['ics'+n,'Annonce '+n,20,(n-1)*120+10,160,100]),
  ['ps','Prise service',248,556,141,139],['mission','Mission',403,556,140,139],
  ['0','0 · Localisation',556,556,139,139],['1','1 · SAE',710,557,140,139],['2','2 · AVTT',862,558,139,139],['3','3 · Sono',1017,559,137,139],['4','4 · Zone',1166,560,137,138],
  ['up','Flèche haut',1318,561,137,136],['pcl','Appel PCL',1469,561,176,137],['test','Test',1657,560,143,137],

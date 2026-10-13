@@ -757,6 +757,14 @@
         }
         if (type === "saeiv:action") {
           saeivLastAction = String(data.action || "").trim();
+          if (/^saeiv-agora-ics-[1-4]$/.test(saeivLastAction)) {
+            var icsSlot=Number(saeivLastAction.slice(-1))-1;
+            var icsClip=getSaeivIcsAnnouncements()[icsSlot];
+            var icsValid=String(data.selectedLineUid||"")===String(saeivRouteState&&saeivRouteState.lineUid||"")&&String(data.selectedRouteUid||"")===String(saeivRouteState&&saeivRouteState.routeUid||"");
+            var icsPlayed=!!icsClip&&icsValid&&canPlaySaeivRouteAudio()&&saeivStopAnnouncementSoundsEnabled;
+            if(icsPlayed){stopBusAnnouncementPreview(true);saeivRouteAudio.queue.push({clipName:icsClip.label,globalUrl:icsClip.url});processSaeivRouteAudioQueue();}
+            postSaeivBridgeMessage({type:"saeiv:action_result",action:saeivLastAction,ok:icsPlayed});return;
+          }
           if (/^saeiv-native-diffusion-slot-\d+$/.test(saeivLastAction)) {
             var slot=Number(data.diffusionSlot)-1;
             var folder=getSaeivGlobalAudioFolderNameForCurrentState();

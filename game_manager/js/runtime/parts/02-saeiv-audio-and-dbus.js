@@ -468,6 +468,19 @@
         saeivGlobalAudioState.preparePromise = promise;
         return promise;
       }
+      function getSaeivIcsAnnouncements() {
+        var folder=getSaeivGlobalAudioFolderNameForCurrentState();
+        var family=String(folder||"RATP").replace(/\s*\([^)]*\)\s*$/, "").trim().toLowerCase();
+        var list=typeof nativeBusSettingsState!=="undefined"&&nativeBusSettingsState.current&&nativeBusSettingsState.current.announcements;
+        return [1,2,3,4].map(function(number){
+          var bound=(Array.isArray(list)?list:[]).filter(function(a){return a.key&&(a.key.vk===48+number||a.key.vk===96+number)&&String(a.family).toLowerCase()===family;})
+            .sort(function(a,b){return (a.key.mods||0)-(b.key.mods||0);})[0];
+          if(bound&&/^sounds\/bus\/voix_bus\/global\/[^.][^\\]*\.mp3$/i.test(bound.path)&&bound.path.split("/").indexOf("..")<0)
+            return {label:bound.label,url:bound.path.split("/").map(encodeURIComponent).join("/")};
+          var index=number-1;
+          return saeivGlobalAudioState.key===folder&&saeivGlobalAudioState.urls[index]?{label:saeivGlobalAudioState.labels[index],url:saeivGlobalAudioState.urls[index]}:null;
+        });
+      }
       function applySaeivGlobalAudioStateToPayload(payload) {
         if (payload) payload.busAudioTelemetry = busSpatialAudio.telemetry;
         if (!payload || typeof payload !== "object") return payload;
@@ -495,6 +508,7 @@
           payload.globalAudioUrls = [];
           payload.globalAudioCount = 0;
         }
+        payload.icsAnnouncementLabels=getSaeivIcsAnnouncements().map(function(a){return a?a.label:"";});
         payload.globalAudioVolumeMultiplier = getSaeivGlobalAudioVolumeMultiplier(folderName);
         return payload;
       }
@@ -2917,10 +2931,14 @@ function tickSaeivAutomaticDestination() {
         var out = [];
         (Array.isArray(dbusLines) ? dbusLines : []).forEach(function (line) {
           (Array.isArray(line.routes) ? line.routes : []).forEach(function (route) {
+            var paperStops = getRouteStopEntries(route);
             var descriptor = {
               lineUid: String(line.uid || ""),
               lineUidRaw: String(line.uidRaw || line.uid || ""),
               lineNumber: String(getLineNumber(line, route) || "").trim(),
+              lineName: String(line.name || getLineNumber(line,route) || "").trim(),
+              departureName: String((paperStops[0]||{}).name||""),
+              destinationName: String((paperStops[paperStops.length-1]||{}).name||""),
               routeUid: String(route.uid || ""),
               routeName: String(route.name || "").trim(),
               stopCount: Array.isArray(route.stops) ? route.stops.length : 0
