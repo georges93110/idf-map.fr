@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "syntheticSpeech": true,
+  "assets": [
+    {
+      "file": "step-1.wav",
+      "duration": 0.373,
+      "rate": 44100,
+      "sha256": "74ab1c5e7bc4ab1902624719ecd32da516e2fc7eaf604ec5e5981ce3ebe4e1b9"
+    },
+    {
+      "file": "step-2.wav",
+      "duration": 0.332,
+      "rate": 44100,
+      "sha256": "6f0d35ea56b1188eb32e93355fb91dec3a4fee7df2ea51df26ad3f29440b7ad0"
+    },
+    {
+      "file": "step-3.wav",
+      "duration": 0.331,
+      "rate": 44100,
+      "sha256": "841c4cb5ad93298edc2f20bdcd3e2db86a5c247a4aa569cd8c55be8b7f783c5f"
+    },
+    {
+      "file": "step-4.wav",
+      "duration": 0.357,
+      "rate": 44100,
+      "sha256": "ebc8fd281e8657ff8fcbc1868abd6ee9c5bf28c3854c92b157fbdd861803950d"
+    },
+    {
+      "file": "step-5.wav",
+      "duration": 0.323,
+      "rate": 44100,
+      "sha256": "9e80a18360a21d686ac0abafca6c6d60a7db66e9e1635d481fe04e85609473ff"
+    },
+    {
+      "file": "step-6.wav",
+      "duration": 0.342,
+      "rate": 44100,
+      "sha256": "a050d7db89d5c5ae04dd7cfd988dd057cce59d28444a8299e803925b733d5400"
+    },
+    {
+      "file": "female-1.wav",
+      "duration": 4.282,
+      "rate": 22050,
+      "sha256": "da80f73b185faa9bab932a9574b7f99bc5e45728a265c3f3f3b58da8e2691e9d",
+      "text": "Allô ? Oui, je suis dans le bus. Je te rappelle quand je descends.",
+      "voice": "siwis"
+    },
+    {
+      "file": "female-2.wav",
+      "duration": 3.868,
+      "rate": 22050,
+      "sha256": "d336344c51b86aac7383e9bc4077b9c2a446350f62a3fe118cb67538ac9ce2a2",
+      "text": "Je pense arriver dans une dizaine de minutes. On se retrouve devant l’entrée ?",
+      "voice": "siwis"
+    },
+    {
+      "file": "female-3.wav",
+      "duration": 3.605,
+      "rate": 22050,
+      "sha256": "60681a8311dbaed81088a9ce5042d7c7387e404a57173d13bc5001057c39c95d",
+      "text": "Tu veux que je passe prendre du pain ? D’accord, je m’en occupe.",
+      "voice": "siwis"
+    },
+    {
+      "file": "female-4.wav",
+      "duration": 4.21,
+      "rate": 22050,
+      "sha256": "1ce31cf6f5e7e636ce9a2aa25bfe567e59ab2e837bfe62f75237bf8375c78404",
+      "text": "Oui, j’ai bien reçu ton message. Je regarde ça en rentrant.",
+      "voice": "siwis"
+    },
+    {
+      "file": "female-5.wav",
+      "duration": 3.999,
+      "rate": 22050,
+      "sha256": "0459f8995423ec417e3e348331d146c09379ad902953a71ff874e25cdab3b767",
+      "text": "Attends, je vérifie. Oui, c’est bien demain à neuf heures.",
+      "voice": "siwis"
+    },
+    {
+      "file": "female-6.wav",
+      "duration": 3.54,
+      "rate": 22050,
+      "sha256": "84a8f6e45d0b3f8876309614dca73a34284b39b93b6e6d8cc0e9e32c67dd1913",
+      "text": "Ça s’est bien passé aujourd’hui ? Tu me raconteras tout ça ce soir.",
+      "voice": "siwis"
+    },
+    {
+      "file": "female-7.wav",
+      "duration": 3.04,
+      "rate": 22050,
+      "sha256": "70146fa78f10f310fe75f6f16c041188555afc92249a31357079a77844675b60",
+      "text": "Non, ne t’inquiète pas. J’ai les clés avec moi.",
+      "voice": "siwis"
+    },
+    {
+      "file": "female-8.wav",
+      "duration": 3.549,
+      "rate": 22050,
+      "sha256": "56d50353d56f0e98de103419f0aa41043f0ff5c98310ed9ee4bc9aca67f91865",
+      "text": "Je descends dans quelques arrêts. À tout à l’heure, bisous.",
+      "voice": "siwis"
+    },
+    {
+      "file": "male-1.wav",
+      "duration": 4.502,
+      "rate": 22050,
+      "sha256": "a4ba6093118d410de60cc1c19eb40d70f732d6319510612cf0f8e722a758cfc9",
+      "text": "Allô ? Oui, je suis dans le bus. Je te rappelle quand je descends.",
+      "voice": "upmc"
+    },
+    {
+      "file": "male-2.wav",
+      "duration": 3.956,
+      "rate": 22050,
+      "sha256": "47af1c6676ff07e57e8013436c6fef7df18123e99f77e8348a31efb4f03f4982",
+      "text": "Je pense arriver dans une dizaine de minutes. On se retrouve devant l’entrée ?",
+      "voice": "upmc"
+    },
+    {
+      "file": "male-3.wav",
+      "duration": 3.912,
+      "rate": 22050,
+      "sha256": "17f3b78b4bb1802087ad787912590c6265d78a75bb59629c0d9311aebeadb950",
+      "text": "Tu veux que je passe prendre du pain ? D’accord, je m’en occupe.",
+      "voice": "upmc"
+    },
+    {
+      "file": "male-4.wav",
+      "duration": 3.983,
+      "rate": 22050,
+      "sha256": "d9f3bc00bdfe4760b87f0d9042e5dab48a806ab8a1b5809a8afeabed4801ad29",
+      "text": "Oui, j’ai bien reçu ton message. Je regarde ça en rentrant.",
+      "voice": "upmc"
+    },
+    {
+      "file": "male-5.wav",
+      "duration": 3.786,
+      "rate": 22050,
+      "sha256": "8d9c20063be90d90e3e308ab353e351510401e275570bb70d3ad4707adcac69d",
+      "text": "Attends, je vérifie. Oui, c’est bien demain à neuf heures.",
+      "voice": "upmc"
+    },
+    {
+      "file": "male-6.wav",
+      "duration": 3.569,
+      "rate": 22050,
+      "sha256": "6f00f5313c8c229ebf475ffe0bb23beb14ee827a8cd2be85b2ee3653a3664b5c",
+      "text": "Ça s’est bien passé aujourd’hui ? Tu me raconteras tout ça ce soir.",
+      "voice": "upmc"
+    },
+    {
+      "file": "male-7.wav",
+      "duration": 3.271,
+      "rate": 22050,
+      "sha256": "aaa8048a12add918db8f4c15075e2aa6c200039d8a897ca0cbeb5ba30b67b3f5",
+      "text": "Non, ne t’inquiète pas. J’ai les clés avec moi.",
+      "voice": "upmc"
+    },
+    {
+      "file": "male-8.wav",
+      "duration": 3.326,
+      "rate": 22050,
+      "sha256": "846495eb94b75059aa5293dc66bdd6ada5c04a3af29dea4a5b3f5c0eeb6bd254",
+      "text": "Je descends dans quelques arrêts. À tout à l’heure, bisous.",
+      "voice": "upmc"
+    }
+  ]
+}

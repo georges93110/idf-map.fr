@@ -86,6 +86,7 @@ function syncNativePassengers(force) {
 function receiveNativePassengerStatus(message) {
   if(!message||message.protocol!==2)return;
   nativePassengerStatus=message;nativePassengerReceivedAt=Date.now();
+  if(typeof receivePassengerCabinAudio==='function')receivePassengerCabinAudio(message);
   window.GAME2_MANAGER.nativePassengerStatus=message;
   var s=message.snapshot;
   if(message.status!=="active"||!s||message.stopKey!==nativePassengerStopKey()||message.missionKey!==nativePassengerMissionKey()||saeivRouteState.started!==true)return;

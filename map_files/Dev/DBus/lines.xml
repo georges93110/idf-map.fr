@@ -2173,18 +2173,20 @@
 					<busstop uid="272" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
 			</route>
 
-			<route uid="3" name="RER E: Val-de-Fontenay > Le Raincy-Villemomble-Montfermeil">
-					<busstop uid="268" passengersMin="25" passengersMax="40" coefOn="100" nextStopTime="9" nextStopPrice="0"/>
+			<route uid="3" name="RER E: Nogent-le-Perreux > Le Raincy-Villemomble-Montfermeil">
+					<busstop uid="289" passengersMin="25" passengersMax="40" coefOn="100" nextStopTime="8" nextStopPrice="0"/>
+					<busstop uid="268" passengersMin="25" passengersMax="40" coefOn="75" nextStopTime="9" nextStopPrice="0"/>
 					<busstop uid="273" passengersMin="25" passengersMax="40" coefOn="75" nextStopTime="26" nextStopPrice="0"/>
 					<busstop uid="274" passengersMin="25" passengersMax="40" coefOn="75" nextStopTime="16" nextStopPrice="0"/>
 					<busstop uid="275" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
 			</route>
 
-			<route uid="4" name="RER E: Le Raincy-Villemomble-Montfermeil > Val-de-Fontenay">
+			<route uid="4" name="RER E: Le Raincy-Villemomble-Montfermeil > Nogent-le-Perreux">
 					<busstop uid="275" passengersMin="25" passengersMax="40" coefOn="100" nextStopTime="16" nextStopPrice="0"/>
 					<busstop uid="274" passengersMin="25" passengersMax="40" coefOn="75" nextStopTime="22" nextStopPrice="0"/>
 					<busstop uid="273" passengersMin="25" passengersMax="40" coefOn="75" nextStopTime="9" nextStopPrice="0"/>
-					<busstop uid="268" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
+					<busstop uid="268" passengersMin="25" passengersMax="40" coefOn="75" nextStopTime="8" nextStopPrice="0"/>
+					<busstop uid="300" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" nextStopPrice="0"/>
 			</route>
 
 			<route uid="5" name="Métro 1: Château de Vincennes > Porte de Vincennes">

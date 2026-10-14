@@ -96,6 +96,9 @@ function updateBusSpatialRecord(record) {
   // Keep ordinary playback for an older DLL. Once native support was seen,
   // stale/disconnected camera data must never keep sounding at full volume.
   var mix = (record.kind === "previewAnnouncement" || record.kind === "serviceSelection") ? {gain:1,cutoff:20000,pan:0} : state.seen ? busSpatialMix(record.kind, Date.now() - state.stamp < 1500 ? state.telemetry : null) : { gain: 1, cutoff: 20000, pan: 0 };
+  if(record.kind==='passengerStep'||record.kind==='passengerPhone')
+    mix=typeof passengerCabinMix==='function'&&typeof passengerCabinReady==='function'&&passengerCabinReady()
+      ?passengerCabinMix(record.kind,record.passenger,state.telemetry):{gain:0,cutoff:10000,pan:0};
   // COACH54: relative to COACH53: route speech x2, shortcut speech x0.75.
   // Stop-request chime, validator and notifications keep their own levels.
   var boost = record.kind === "routeAnnouncement" ? 4 : (record.kind === "shortcutAnnouncement" || record.kind === "previewAnnouncement") ? 1.5 : record.kind === "announcement" ? 2 : 1;
@@ -119,6 +122,7 @@ function updateBusSpatialAudioTelemetry(raw) {
   busSpatialAudio.telemetry = filtered; busSpatialAudio.seen = true;
   if (filtered.audioCameraAvailable && !filtered.paused) resumeBusAudioContext();
   tickBusAudio();
+  if(typeof tickPassengerCabinAudio==='function')tickPassengerCabinAudio();
   if(typeof publishNativeBusAnnouncementKeys === "function")publishNativeBusAnnouncementKeys();
   if(typeof saeivRouteAudio!=="undefined"&&saeivRouteAudio.queue.length&&typeof processSaeivRouteAudioQueue==="function")processSaeivRouteAudioQueue();
 }

@@ -11,6 +11,7 @@
     "parts/01a-bus-spatial-audio.js",
     "parts/01b-convoy-audio.js",
     "parts/01c-convoy-audio-catalog.js",
+    "parts/01d-passenger-audio.js",
     "parts/02-saeiv-audio-and-dbus.js",
     "parts/03-navigation-routing.js",
     "parts/04-waze-bridge.js",
@@ -29,7 +30,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "service-logos-20261014";
+  runtime.version = "passenger-audio-20261014";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
