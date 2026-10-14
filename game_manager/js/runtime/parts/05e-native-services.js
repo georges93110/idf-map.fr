@@ -41,9 +41,12 @@ function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
       routes.push({departure:departure,duration:hasDuration?duration:null,distance:hasDistance?distance:null,background:style.background,foreground:style.foreground,badgeKey:style.badgeKey,lineUid:String(line.uid),lineCode:String(line.uidRaw||line.uid),routeUid:String(route.uid),category:category,line:style.label||number||n,destination:label(last)||name,origin:label(first),stops:stops.length||Number(route.stops&&route.stops.length)||0,search:name});
     });
   });
-  [['express','Express'],['noctilien','Noctilien'],['replacement_bus','Bus de remplacement']].forEach(function(p){if(present.has(p[0]))categories.push({key:p[0],label:p[1]});});
-  Array.from(extras).sort(function(a,b){return a[1].localeCompare(b[1],'fr',{numeric:true,sensitivity:'base'});}).forEach(function(p){categories.push({key:p[0],label:p[1]});});
-  routes.sort(function(a,b){return a.lineUid.localeCompare(b.lineUid,'fr',{numeric:true,sensitivity:'base'})||a.routeUid.localeCompare(b.routeUid,'fr',{numeric:true,sensitivity:'base'});});
+  // Keep the types in their XML appearance order. Do not interleave them
+  // again by globally sorting line IDs (e.g. low-ID school/coach services).
+  var labels={express:'Express',noctilien:'Noctilien',replacement_bus:'Bus de remplacement'};
+  present.forEach(function(key){if(key!=='urban')categories.push({key:key,label:extras.get(key)||labels[key]||key});});
+  var ranks=new Map(categories.map(function(c,i){return [c.key,i];}));
+  routes.sort(function(a,b){return ranks.get(a.category)-ranks.get(b.category)||a.lineUid.localeCompare(b.lineUid,'fr',{numeric:true,sensitivity:'base'})||a.routeUid.localeCompare(b.routeUid,'fr',{numeric:true,sensitivity:'base'});});
   return {categories:categories,routes:routes};
 }
 var nativeServicesSocket=null,nativeServicesGeneration='',nativeServicesLoading=false,nativeServicesSource=null,nativeServicesSentAt=0;
