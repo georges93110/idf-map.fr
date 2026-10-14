@@ -3,7 +3,7 @@ var passengerCabinAudio = { actors:new Map(),voices:new Set(),identity:'',stamp:
   timer:null,nextStep:0,step:0,onboard:0,ambience:null,retryAt:0 };
 function passengerCrowdLevel(count) {
   if(!Number.isInteger(count)||count<=15)return 0;
-  return .34*Math.pow(Math.min(1,(count-15)/60),.65);
+  return .68*Math.pow(Math.min(1,(count-15)/60),.65);
 }
 function passengerCabinMix(kind, actor, data) {
   if(!actor||!data||!data.audioCameraAvailable||!data.audioCameraInside||data.paused)
