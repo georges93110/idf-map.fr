@@ -163,8 +163,12 @@ if(typeof window.setTimeout==='function')window.setTimeout(function(){warmNative
 var nativeServiceBadgeCache=new Map(),nativeServiceLogoCache=new Map(),nativeServiceBadgeKeys=new Set(),nativeServiceBadgePending=new Set();
 function nativeServiceLoadLogo(key){
  if(nativeServiceLogoCache.has(key))return nativeServiceLogoCache.get(key);
- var p=Promise.resolve(typeof loadBestNavGraphVersion==='function'?loadBestNavGraphVersion():null).then(function(version){
-  var source=/\.(png|jpe?g|webp)(?:[?#]|$)/i.test(key)&&/[/:]/.test(key)?key:gameMapFilePathForVersion(version,'Overlays/'+key);
+ // Network logos are shared artwork, independent of the Dev route data.
+ // Custom badge URLs and map-specific overlays retain their normal lookup.
+ var shared=['reseau_titus.png','navette_nogent.png','bus_school.png','bus_logo_idfm.png','o_metro.png','rer_logo_idfm.png'];
+ var p=Promise.resolve().then(function(){
+  var source=shared.indexOf(key)>=0?'images/service-badges/'+key:
+   /\.(png|jpe?g|webp)(?:[?#]|$)/i.test(key)&&/[/:]/.test(key)?key:gameMapFilePathForVersion(GAME_DEV_MAP_LAYER_VERSION,'Overlays/'+key);
   return new Promise(function(resolve,reject){var image=new Image(),timer=setTimeout(function(){image.src='';reject(new Error('Image indisponible'));},6000);
    image.crossOrigin='anonymous';image.onerror=function(){clearTimeout(timer);reject(new Error('Image indisponible'));};
    image.onload=function(){clearTimeout(timer);resolve(image);};image.src=new URL(source,location.href).href;
