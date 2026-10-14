@@ -1,25 +1,18 @@
-IDF-RP passenger cabin audio
+IDF-RP local cabin ambience and footsteps (CC0 1.0)
 
-FOOTSTEPS: Fantozzi, sliced/published by qubodup. CC0 1.0.
-https://opengameart.org/content/fantozzis-footsteps-grasssand-stone
+Footsteps Sneaker Linoleum - Kinoton
+https://freesound.org/people/Kinoton/sounds/546826/
+https://cdn.freesound.org/previews/546/546826_2247456-hq.mp3
+Six walking impacts extracted from the public HQ preview. Band-limited,
+normalized, faded and resampled to mono PCM16, 24 kHz.
+
+Walla Crowd Inside French - Salome Lubczanski / imakesound.art
+https://freesound.org/people/Salom%C3%A9_Lubczanski/sounds/733849/
+https://cdn.freesound.org/previews/733/733849_7796757-hq.mp3
+Indoor crowd recording, adapted as passenger murmur (not a bus engine recording).
+Extract 8-34 seconds, frequency filtering, stereo narrowing, level adjustment,
+two-second wrap crossfade, PCM16 stereo at 24 kHz, 24-second seamless loop.
+
+Both recordings are published under Creative Commons Zero 1.0:
 https://creativecommons.org/publicdomain/zero/1.0/
-Six Stone samples, downmixed to mono, trimmed, level adjusted, fades, PCM WAV.
-
-FRENCH SPEECH: original IDF-RP phone phrases, synthesized offline with Piper.
-These are synthetic voices, not recordings of passengers or private calls.
-Female: Piper fr_FR-siwis-medium, Michael Hansen / Rhasspy.
-SIWIS French Speech Synthesis Database, University of Edinburgh, CC BY 4.0.
-https://huggingface.co/rhasspy/piper-voices/blob/main/fr/fr_FR/siwis/medium/MODEL_CARD
-https://datashare.ed.ac.uk/handle/10283/2353
-https://creativecommons.org/licenses/by/4.0/
-Male: Piper fr_FR-upmc-medium, speaker pierre, Michael Hansen / Rhasspy.
-Pierre Chauvin / ISIR, Universite Pierre et Marie Curie, UPMC Pierre Voice Data.
-https://huggingface.co/rhasspy/piper-voices/blob/main/fr/fr_FR/upmc/medium/MODEL_CARD
-https://github.com/marytts/upmc-pierre-data
-https://creativecommons.org/licenses/by-sa/4.0/
-The derived male-*.wav clips are distributed under CC BY-SA 4.0.
-The female-*.wav clips are distributed under CC BY 4.0.
-Piper engine: https://github.com/OHF-Voice/piper1-gpl (GPL-3.0).
-Only resulting WAV audio is distributed, not Piper or model files.
-Speech modified: sentence pauses, trim, level adjustment and fades.
-Attribution and licenses must accompany redistribution of these assets.
+No synthesized dialogue or phone conversation assets are used.
