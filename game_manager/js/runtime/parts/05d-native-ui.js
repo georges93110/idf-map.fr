@@ -185,20 +185,20 @@ function syncNativeBusCompletion(s){
   }
   var limit=function(v,min,max){return Math.max(min,Math.min(max,Math.round(Number(v)||0)));};
   var names=Array.isArray(s.audioStopNames)?s.audioStopNames:[];
-  var onTime=0,late=0,lateUnits=0;
-  // Only served stops with an observed arrival time earn punctuality money.
-  // Early/unknown times add no row. The one-minute tolerance is unchanged.
+  var onTime=0,late=0,early=0,lateUnits=0;
+  // Count only served stops with observed arrival times. Early arrivals are
+  // displayed without reward; missing times remain unknown, never "early".
   if(typeof saeivStopServedLog!=="undefined"&&typeof saeivReachedStopDelayLog!=="undefined"){
     for(var si=0;si<stops.length;si++){
       if(saeivStopServedLog[si]!==true)continue;
       var minutes=saeivReachedStopDelayLog[si];
-      if(typeof minutes!=="number"||!Number.isFinite(minutes)||minutes<0)continue;
-      if(minutes<=1)onTime++;else{late++;lateUnits+=Math.min(25,Math.ceil(minutes-1));}
+      if(typeof minutes!=="number"||!Number.isFinite(minutes))continue;
+      if(minutes<0)early++;else if(minutes<=1)onTime++;else{late++;lateUnits+=Math.min(25,Math.ceil(minutes-1));}
     }
   }
   telemetryWs.send(JSON.stringify({type:"nativeBusCompletion",protocol:1,epoch:mode.epoch,revision:mode.revision,
-    satisfactionBasisPoints:typeof s.passengerSatisfactionPercent==="number" && Number.isFinite(s.passengerSatisfactionPercent)?limit(s.passengerSatisfactionPercent*100,0,10000):10000,
-    scheduled:Number.isFinite(s.routeFinalDelayMinutes),onTimeStops:onTime,lateStops:late,lateUnits:lateUnits,
+    satisfactionBasisPoints:typeof s.passengerSatisfactionPercent==="number" && Number.isFinite(s.passengerSatisfactionPercent)?limit(s.passengerSatisfactionPercent*100,0,10000):undefined,
+    scheduled:Number.isFinite(s.routeFinalDelayMinutes),onTimeStops:onTime,lateStops:late,earlyStops:early,lateUnits:lateUnits,
     token:token,service:nativeCompletionId,sequence:++nativeCompletionSequence,started:s.routeStarted===true,completed:s.routeCompleted===true,
     stops:stops.length,served:limit(s.routeServedStopsCount,0,stops.length),passengers:limit(s.routeTransportedPassengers,0,10000),
     elapsedSeconds:limit(Number(s.routeElapsedMs)/1000,0,172800),distanceMetres:limit(distance,0,1000000),

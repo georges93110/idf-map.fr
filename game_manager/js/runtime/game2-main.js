@@ -30,7 +30,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "map-layout-saeiv-20261014";
+  runtime.version = "service-rewards-20261014";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
