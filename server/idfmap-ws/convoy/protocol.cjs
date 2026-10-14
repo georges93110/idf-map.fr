@@ -69,15 +69,26 @@ function snapshot(v) {
     pose: at, speed: v.speed, powered: v.powered, doors: v.doors.slice(), stopRequested: v.stopRequested, occupancy: v.occupancy,
     line: v.line, service: v.service, stop: v.stop, sign: destination, passengers };
 }
+function busAudio(v) {
+  if (!object(v) || !key(v.voice) || !['play','stop'].includes(v.action)) return null;
+  if (v.action === 'stop') return { action: 'stop', voice: v.voice };
+  if (typeof v.clip !== 'string' || !/^[a-f0-9]{32}$/.test(v.clip) ||
+      !['routeAnnouncement','shortcutAnnouncement','announcement','validator'].includes(v.category) ||
+      !finite(v.offset,180) || v.offset < 0 || !finite(v.duration,180) || v.duration <= v.offset ||
+      !finite(v.level,1) || v.level < 0) return null;
+  return {action:'play',voice:v.voice,clip:v.clip,category:v.category,offset:v.offset,duration:v.duration,level:v.level};
+}
 function event(v) {
   if (!object(v) || v.type !== 'convoy.event' || v.version !== VERSION || !key(v.epoch) || !key(v.generation) || !key(v.id) ||
-      !integer(v.sequence, 1, Number.MAX_SAFE_INTEGER) || !['door_open', 'door_close', 'stop_request', 'destination_announcement'].includes(v.kind) ||
+      !integer(v.sequence, 1, Number.MAX_SAFE_INTEGER) || !['door_open', 'door_close', 'stop_request', 'destination_announcement', 'bus_audio'].includes(v.kind) ||
       !integer(v.door, 0, 2) || !integer(v.sound, 0, 65535)) return null;
-  return { type: v.type, version: VERSION, epoch: v.epoch, generation: v.generation, id: v.id, sequence: v.sequence, kind: v.kind, door: v.door, sound: v.sound };
+  const result = { type: v.type, version: VERSION, epoch: v.epoch, generation: v.generation, id: v.id, sequence: v.sequence, kind: v.kind, door: v.door, sound: v.sound };
+  if (v.kind === 'bus_audio') { const a = busAudio(v.audio); if (!a) return null; result.audio = a; }
+  return result;
 }
 function decode(data) {
   try { if (typeof data !== 'string' && !Buffer.isBuffer(data)) return null; if (Buffer.byteLength(data) > LIMITS.bytes) return null;
     const v = JSON.parse(data); return object(v) ? v : null; } catch { return null; }
 }
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z); }
-module.exports = { VERSION, LIMITS, key, steam, integer, pose, hello, member, sign, passenger, snapshot, event, decode, distance };
+module.exports = { VERSION, LIMITS, key, steam, integer, pose, hello, member, sign, passenger, snapshot, busAudio, event, decode, distance };

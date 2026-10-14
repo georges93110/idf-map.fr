@@ -13,8 +13,7 @@ function convoyDoorMix(pose, data, fresh) {
 function stopConvoyDoorVoice(key) {
   var v = convoyDoorAudio.voices.get(key); if (!v) return;
   convoyDoorAudio.voices.delete(key);
-  v.source.onended = null;
-  try { v.source.stop(); } catch (_) {}
+  if(v.source) { v.source.onended = null; try { v.source.stop(); } catch (_) {} }
   [v.source, v.filter, v.envelope, v.gain, v.pan].forEach(function (n) { if (n) n.disconnect(); });
   if (!convoyDoorAudio.voices.size && convoyDoorAudio.timer) { clearInterval(convoyDoorAudio.timer); convoyDoorAudio.timer = null; }
 }
@@ -22,9 +21,10 @@ function tickConvoyDoorAudio() {
   var state = busSpatialAudio, now = Date.now();
   convoyDoorAudio.voices.forEach(function (v, key) {
     if (now >= v.until || now - state.stamp >= 1500 || !state.telemetry || state.telemetry.paused) { stopConvoyDoorVoice(key); return; }
-    var mix = convoyDoorMix(v.pose, state.telemetry, now - state.stamp < 1500);
+    var mix = v.clip ? convoyBusClipMix(v.pose,v.doors,state.telemetry,now-state.stamp<1500) : convoyDoorMix(v.pose, state.telemetry, now - state.stamp < 1500);
     var master = nativeGameAudio.available && now - nativeGameAudio.stamp < 2000 ? getGlobalAudioVolumeFactor() : 0;
-    v.gain.gain.setTargetAtTime(mix.gain * master, state.context.currentTime, .04);
+    v.gain.gain.setTargetAtTime(mix.gain * master * (v.level === undefined ? 1 : v.level), state.context.currentTime, .04);
+    if(v.clip && v.filter)v.filter.frequency.setTargetAtTime(mix.cutoff,state.context.currentTime,.04);
     if (v.pan) v.pan.pan.setTargetAtTime(mix.pan, state.context.currentTime, .04);
   });
 }
@@ -34,7 +34,8 @@ function receiveNativeConvoyAudio(m) {
   if (m.action === 'clear') { Array.from(s.voices.keys()).forEach(stopConvoyDoorVoice); s.seen.clear(); return true; }
   if (m.action === 'remove') { s.voices.forEach(function (v, k) { if (v.player === m.player) stopConvoyDoorVoice(k); }); return true; }
   if (!m.pose || !['x', 'y', 'z'].every(function (k) { return Number.isFinite(m.pose[k]) && Math.abs(m.pose[k]) <= 16000000; })) return false;
-  if (m.action === 'position') { s.voices.forEach(function (v) { if (v.player === m.player) v.pose = m.pose; }); return true; }
+  if (m.action === 'position') { s.voices.forEach(function (v) { if (v.player === m.player) { v.pose = m.pose; v.doors=m.doors||v.doors; } }); return true; }
+  if (m.action === 'clip') return receiveConvoyBusClip(m);
   if (m.action !== 'door' || !/^\d{17,20}$/.test(m.player) || typeof m.id !== 'string' || m.id.length > 128 ||
       ![0, 1].includes(m.door) || typeof m.opening !== 'boolean') return false;
   s.seen.forEach(function (at, id) { if (now - at > 6000) s.seen.delete(id); });
@@ -74,4 +75,88 @@ function receiveNativeConvoyAudio(m) {
     if (!s.timer) s.timer = setInterval(tickConvoyDoorAudio, 100);
     return true;
   } catch (_) { stopConvoyDoorVoice(key); return false; }
+}
+
+
+// Only the approved public asset catalogue crosses the Convoy boundary.
+// Publish actual playback, not preloads, UI previews or a failed play().
+var convoyClipPaths = null;
+function convoyClipId(url) {
+  if(typeof convoyClipCatalog !== 'object')return '';
+  if(!convoyClipPaths) {
+    convoyClipPaths=new Map();
+    Object.keys(convoyClipCatalog).forEach(function(id){convoyClipPaths.set(convoyClipCatalog[id],id);});
+  }
+  try {
+    var u=new URL(url,window.location.href),base=new URL('./',window.location.href);
+    if(u.origin!==base.origin || u.search || u.hash || !u.pathname.startsWith(base.pathname))return '';
+    return convoyClipPaths.get(decodeURIComponent(u.pathname.slice(base.pathname.length)))||'';
+  }catch(_){return '';}
+}
+function attachConvoyBusAudio(audio,record) {
+  if(!['routeAnnouncement','shortcutAnnouncement','announcement','validator'].includes(record.kind))return;
+  var voice='';
+  function send(a) {
+    if(typeof telemetryWs==='undefined'||!telemetryWs||telemetryWs.readyState!==1)return false;
+    try{telemetryWs.send(JSON.stringify({type:'nativeConvoyBusAudio',audio:a}));return true;}catch(_){return false;}
+  }
+  audio.addEventListener('playing',function(){
+    if(voice || audio.paused || audio.ended)return;
+    var clip=convoyClipId(audio.currentSrc||audio.src),duration=audio.duration,offset=audio.currentTime||0;
+    if(!clip||!Number.isFinite(duration)||duration<=offset||duration>180)return;
+    var id=window.crypto.randomUUID();
+    if(send({action:'play',voice:id,clip:clip,category:record.kind,duration:duration,offset:offset,level:record.base}))voice=id;
+  });
+  ['pause','ended','error','emptied'].forEach(function(name){audio.addEventListener(name,function(){
+    if(!voice || (name!=='error' && audio.paused===false && !audio.ended))return;
+    send({action:'stop',voice:voice});voice='';
+  });});
+}
+function convoyBusClipMix(pose,doors,data,fresh) {
+  var mix=convoyDoorMix(pose,data,fresh);
+  var open=Math.max(0,Math.min(1,Number((doors||[])[0])||0));
+  mix.gain*=.035+.765*Math.sqrt(open);mix.cutoff=650+17350*open;
+  return mix;
+}
+function receiveConvoyBusClip(m) {
+  var s=convoyDoorAudio,a=m.audio,now=Date.now(),state=busSpatialAudio;
+  if(!/^\d{17,20}$/.test(m.player)||typeof m.id!=='string'||m.id.length>256||!a||
+      typeof a.voice!=='string'||!/^[a-zA-Z0-9_.:-]{1,128}$/.test(a.voice)||!['play','stop'].includes(a.action))return false;
+  var key=m.player+':clip:'+a.voice;
+  s.seen.forEach(function(at,id){if(now-at>6000)s.seen.delete(id);});
+  var id=m.player+':'+m.id;if(s.seen.has(id))return false;
+  if(s.seen.size>=256)s.seen.delete(s.seen.keys().next().value);s.seen.set(id,now);
+  if(a.action==='stop'){stopConvoyDoorVoice(key);return true;}
+  if(typeof convoyClipCatalog!=='object'||!Object.prototype.hasOwnProperty.call(convoyClipCatalog,a.clip)||
+      !['routeAnnouncement','shortcutAnnouncement','announcement','validator'].includes(a.category)||
+      !Number.isFinite(a.offset)||a.offset<0||!Number.isFinite(a.duration)||a.duration<=a.offset||a.duration>180||
+      !Number.isFinite(a.level)||a.level<0||a.level>1)return false;
+  var mix=convoyBusClipMix(m.pose,m.doors,state.telemetry,now-state.stamp<1500);
+  if(!mix.gain||!nativeGameAudio.available||now-nativeGameAudio.stamp>=2000)return false;
+  var Context=window.AudioContext||window.webkitAudioContext;if(!Context)return false;
+  stopConvoyDoorVoice(key);
+  if(s.voices.size>=16)stopConvoyDoorVoice(s.voices.keys().next().value);
+  var c;
+  try{c=state.context||(state.context=new Context());}catch(_){return false;}
+  var filter=c.createBiquadFilter(),gain=c.createGain(),pan=c.createStereoPanner?c.createStereoPanner():null;
+  filter.type='lowpass';filter.frequency.value=mix.cutoff;filter.connect(gain);
+  if(pan){gain.connect(pan);pan.connect(c.destination);}else gain.connect(c.destination);
+  var boost=a.category==='routeAnnouncement'?4:a.category==='shortcutAnnouncement'?1.5:a.category==='announcement'?2:1;
+  var v={source:null,filter:filter,gain:gain,pan:pan,pose:m.pose,doors:m.doors,player:m.player,clip:true,
+    level:a.level*boost,until:now+(a.duration-a.offset)*1000+2000};
+  s.voices.set(key,v);tickConvoyDoorAudio();
+  if(!s.timer)s.timer=setInterval(tickConvoyDoorAudio,100);
+  var url=new URL(convoyClipCatalog[a.clip].split('/').map(encodeURIComponent).join('/'),new URL('./',window.location.href)).href;
+  // Reuse bounded decoding/cache. Offset accounts for loading time; cancellation
+  // while loading cannot resurrect a departed player's sound.
+  Promise.all([fetchBusDecodedClip(url,c),c.state==='running'?Promise.resolve():c.resume()]).then(function(values){
+    if(s.voices.get(key)!==v)return;
+    var offset=a.offset+(Date.now()-now)/1000,buffer=values[0];
+    if(Date.now()-now>3000||offset>=Math.min(buffer.duration,a.duration)||c.state!=='running'||
+        !state.telemetry||state.telemetry.paused||Date.now()-state.stamp>=1500){stopConvoyDoorVoice(key);return;}
+    var source=c.createBufferSource();v.source=source;source.buffer=buffer;source.connect(filter);
+    source.onended=function(){if(s.voices.get(key)===v)stopConvoyDoorVoice(key);};
+    tickConvoyDoorAudio();source.start(0,offset);source.stop(c.currentTime+Math.min(buffer.duration,a.duration)-offset);
+  }).catch(function(){if(s.voices.get(key)===v)stopConvoyDoorVoice(key);});
+  return true;
 }

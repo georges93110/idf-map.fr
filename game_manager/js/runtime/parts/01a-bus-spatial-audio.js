@@ -347,6 +347,7 @@ function createBusSpatialAudio(url, kind) {
   audio.addEventListener("play", start); audio.addEventListener("playing", start);
   ["pause", "ended", "error", "emptied"].forEach(function (event) { audio.addEventListener(event, stop); });
   updateBusSpatialRecord(record);
+  if(typeof attachConvoyBusAudio === 'function')attachConvoyBusAudio(audio,record);
   return audio;
 }
 ["pointerdown", "keydown"].forEach(function (event) {

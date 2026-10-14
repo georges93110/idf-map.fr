@@ -10,6 +10,7 @@
     "parts/01-bridge-and-saeiv-state.js",
     "parts/01a-bus-spatial-audio.js",
     "parts/01b-convoy-audio.js",
+    "parts/01c-convoy-audio-catalog.js",
     "parts/02-saeiv-audio-and-dbus.js",
     "parts/03-navigation-routing.js",
     "parts/04-waze-bridge.js",

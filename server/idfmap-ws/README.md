@@ -13,6 +13,16 @@ Sources locales uniquement : aucun déploiement ni push n'est effectué par les 
 
 Les messages historiques de télémétrie, PCC et widgets restent relayés. Les messages `convoy.*` ne passent jamais dans ce relais global : ils sont filtrés par session, liste native des participants, compatibilité des ressources et distance.
 
+## Annonces audio (convoy.4)
+
+Mettre à jour le site (runtime et `01c-convoy-audio-catalog.js`), le relais (`convoy/protocol.cjs`) et la DLL/runtime chez les joueurs. Aucun déploiement automatique n'est effectué ici. L'ancien relais ignore les nouveaux événements d'annonces.
+
+Les annonces de destination, d'arrêts, les annonces manuelles et les sons de validation/arrêt demandé sont émis au démarrage réel du son local. Les aperçus des paramètres, le bip de prise de service et les communications PCC restent privés. Les clips sont identifiés par un catalogue d'ID stables : aucun fichier ni URL arbitraire n'est reçu d'un joueur. La lecture tient compte de la distance (60 m maximum), de l'ouverture de la porte avant, du volume natif et de la pause ; une interruption ou une déconnexion arrête le son. Les événements anciens ne sont pas rejoués lors d'une reconnexion.
+
+Le catalogue se régénère avec `telemetry/tools/convoy_audio_catalog.cjs` à chaque compilation ; publier aussi sa version du site après ajout de sons. Le catalogue contient actuellement 177 fichiers approuvés.
+
+`data/player_stats.sqlite` a été remis à zéro localement, avec sauvegarde séparée. Il contient le schéma complet et aucune statistique. Pour remplacer une base de production, arrêter le service puis sauvegarder l'ancienne base avec ses éventuels fichiers WAL/SHM avant installation ; ne pas écraser une base active.
+
 ## Ce que la version intègre
 
 - Identification du lobby ETS2 et du client natif ; reconnexions du même joueur sans doublon.
