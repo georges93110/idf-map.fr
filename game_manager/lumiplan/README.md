@@ -10,3 +10,5 @@ Adaptation du projet lumiplan-ratp de Leon-ED, licence MIT conservée dans LICEN
 
 La DLL utilise une copie visuelle privée de l'accessoire, avec les UV d'origine et le matériau de son écran isolé. La texture commune reste noire : aucune ligne locale n'est affichée sur les bus distants.
 Les profils géométriques sont générés depuis les modèles du mod par tools/lumiplan_assets.py dans les sources natives. Le catalogue actuel couvre bustec_long du Bluebus utilisant exactement /vehicle/truck/share/bus/lumiplan_screen.tobj. Ajouter un autre modèle nécessite de régénérer ce catalogue ; les géométries inconnues restent inchangées.
+
+Le champ `state.lumiplan` porte le suivi propre à l’afficheur : « en station » au démarrage réel de l’annonce d’approche, maintien pendant les échanges de passagers, puis passage au prochain arrêt au départ après leur achèvement. Un arrêt ignoré avance au moment où le système de ligne constate son passage. Ce suivi ne dépend plus de `vehicleAtStop`, `audioCurrentIndex` ou `routeCompleted` du SAEIV conducteur.
