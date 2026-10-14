@@ -30,7 +30,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "lumiplan-passenger-20261014";
+  runtime.version = "lumiplan-journey-seats-20261015";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {

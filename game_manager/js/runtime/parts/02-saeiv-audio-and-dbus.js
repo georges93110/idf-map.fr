@@ -1,3 +1,35 @@
+// Lumiplan has its own passenger-facing journey, not the driver's SAEIV cursor.
+// BEGIN LUMIPLAN JOURNEY
+function LumiplanJourney() { this.reset(0); }
+LumiplanJourney.prototype.reset = function (count) {
+  this.count = Math.max(0, Number(count) || 0); this.index = 0;
+  this.inStation = false; this.awaitDeparture = -1; this.announcedAhead = -1; this.finished = false;
+};
+LumiplanJourney.prototype.announce = function (index) {
+  if (!Number.isInteger(index) || index < this.index || index >= this.count || this.finished) return;
+  if (this.awaitDeparture >= 0 && index > this.awaitDeparture) { this.announcedAhead = index; return; }
+  this.index = index; this.inStation = true;
+};
+LumiplanJourney.prototype.passed = function (index) {
+  if (!Number.isInteger(index) || index < this.index || index >= this.count) return;
+  this.index = Math.min(index + 1, this.count - 1); this.inStation = false;
+  this.awaitDeparture = -1; this.finished = index === this.count - 1;
+  var ahead = this.announcedAhead; this.announcedAhead = -1;
+  if (ahead > index) this.announce(ahead);
+};
+LumiplanJourney.prototype.served = function (index, stopped) {
+  if (!Number.isInteger(index) || index < this.index || index >= this.count) return;
+  if (!stopped) { this.passed(index); return; }
+  this.index = index; this.awaitDeparture = index; // doors may remain open
+};
+LumiplanJourney.prototype.motion = function (speed, paused) {
+  if (!paused && Number.isFinite(speed) && Math.abs(speed) > .5 && this.awaitDeparture >= 0) this.passed(this.awaitDeparture);
+};
+LumiplanJourney.prototype.snapshot = function () {
+  return { index: this.index, inStation: this.inStation, awaitingDeparture: this.awaitDeparture >= 0, finished: this.finished };
+};
+// END LUMIPLAN JOURNEY
+var saeivLumiplanJourney = new LumiplanJourney();
 /*
  * Game2 runtime chunk: 02-saeiv-audio-and-dbus.js
  * Audio SAEIV, Mode%20Bus/FIS, selection de routes.
@@ -594,7 +626,7 @@
         saeivRouteAudio.playing = true;
         saeivRouteAudio.currentClipName = nextClip;
         saeivRouteAudio.currentClipEndedHooks = [];
-        var finished = false, pending = false, retryAt = 0, mediaRetries = 0;
+        var finished = false, pending = false, retryAt = 0, mediaRetries = 0, started = false;
         function current() { return !finished && token === saeivRouteAudio.playbackToken && saeivRouteAudio.audio === audio; }
         function failed(error) {
           if (!current()) return;
@@ -618,6 +650,11 @@
           pending = true;
           try { Promise.resolve(audio.play()).then(function () { pending = false; }, failed); }
           catch (error) { failed(error); }
+        };
+        audio.onplaying = function () {
+          if (!current() || started) return;
+          started = true;
+          if (typeof next.onStarted === "function") next.onStarted();
         };
         audio.onended = function () {
           if (!current()) return;
@@ -956,6 +993,7 @@
         var onEnded = typeof opts.onEnded === "function" ? opts.onEnded : null;
         saeivRouteAudio.queue.push({
           clipName: safeName,
+          onStarted: typeof opts.onStarted === "function" ? opts.onStarted : null,
           onEnded: onEnded
         });
         processSaeivRouteAudioQueue();
@@ -1735,7 +1773,16 @@ function tickSaeivAutomaticDestination() {
         if (prefixClipName) {
           enqueueSaeivRouteAudioClip(prefixClipName);
         }
+        var announcedRoute = saeivRouteState;
+        var announcedEntries = announcedRoute && announcedRoute.stops || [];
+        var announcedIndex = announcedEntries.indexOf(entry);
+        if (announcedIndex < 0) announcedIndex = announcedEntries.findIndex(function (e, i) { return i >= Number(announcedRoute.targetIndex || 0) && Number(e.uid) === stopUid; });
         var queued = enqueueSaeivRouteAudioClip(clipName, {
+          onStarted: function () {
+            if (saeivRouteState !== announcedRoute) return;
+            saeivLumiplanJourney.announce(announcedIndex);
+            saeivLastStateKey = ""; syncSaeivExternalState(true);
+          },
           onEnded: terminusClipName ? null : onStopAnnouncementEnded
         });
         if (queued && terminusClipName) {
@@ -1872,6 +1919,7 @@ function applySaeivPassengerSatisfaction(data) {
         if (!Number.isFinite(passengerCountVariationMin)) passengerCountVariationMin = 0;
         if (!Number.isFinite(passengerCountVariationMax)) passengerCountVariationMax = 0;
         var payload = {
+          lumiplan: saeivLumiplanJourney.snapshot(),
           lang: "fr",
           canUseFeature: true,
           selected: false,
@@ -2505,6 +2553,7 @@ function applySaeivPassengerSatisfaction(data) {
             (completedOnDeparture || hasPassedTarget) &&
             (now - saeivLastStopAdvanceAt) >= SAEIV_STOP_ADVANCE_COOLDOWN_MS
           ) {
+            saeivLumiplanJourney.passed(targetIndex);
             applySaeivStopPassengerService(targetIndex, completedOnDeparture, reachedTerminusNow);
             currentIndex = targetIndex;
             saeivRouteState.reachedIndex = currentIndex;
@@ -2540,6 +2589,7 @@ function applySaeivPassengerSatisfaction(data) {
         // Keep the native marker until all eligible transfers have finished.
         if (!(passengerTick && passengerTick.completed === true)) return false;
         var stopServed = !stopNecessary || (passengerTick && passengerTick.completed === true);
+        saeivLumiplanJourney.served(targetIndex, isStopped);
         applySaeivStopPassengerService(targetIndex, stopServed, reachedTerminusNow);
         currentIndex = targetIndex;
         saeivRouteState.reachedIndex = currentIndex;
@@ -2568,6 +2618,7 @@ function applySaeivPassengerSatisfaction(data) {
       function handleSaeivTelemetrySignal(signal) {
         if (!saeivRouteState || typeof saeivRouteState !== "object") return;
         ensureSaeivRouteDestinationSynced(false);
+        saeivLumiplanJourney.motion(Number(signal && signal.speedKmh), !!(signal && signal.paused));
         var advanced = maybeAdvanceSaeivStopFromSignal(signal);
         if (!advanced) syncSaeivExternalState(false);
       }
@@ -2620,6 +2671,7 @@ function applySaeivPassengerSatisfaction(data) {
         };
       }
       function clearSaeivRouteSelection(options) {
+        saeivLumiplanJourney.reset(0);
         saeivBusService.reset();
         var opts = options && typeof options === "object" ? options : {};
         var keepWazeDestination = opts.keepWazeDestination === true;
@@ -2696,6 +2748,7 @@ function applySaeivPassengerSatisfaction(data) {
           return { ok: false, error: "Rendez-vous à la station de départ : " + stopName };
         }
         saeivRouteState.started = true;
+        saeivLumiplanJourney.reset(saeivRouteState.stops.length);
         var entries = Array.isArray(saeivRouteState.stops) ? saeivRouteState.stops : [];
         var lastIndex = Math.max(0, entries.length - 1);
         if (entries.length) {
@@ -2748,6 +2801,7 @@ function applySaeivPassengerSatisfaction(data) {
         var targetIndex = 0;
         reachedIndex = clampReachedStopIndex(reachedIndex, lastIndex);
         targetIndex = clampRouteStopIndex(targetIndex, lastIndex);
+        saeivLumiplanJourney.reset(entries.length);
         var selectedKey = String(line.uid || "") + ":" + String(route.uid || "");
         var routeStartPoint = null;
         var bridgePointX = Number(lastBridgeArrowPoint && lastBridgeArrowPoint.x);
