@@ -982,6 +982,17 @@
       color: #bbf7d0;
     }
 
+
+    .player-filter-panel { width: 282px; max-width: calc(100vw - 46px); border-radius: 12px; background: rgba(15,23,36,.96); box-shadow: 0 8px 32px #0005; }
+    .session-field { display: block; margin: 12px 0 5px; color: #b9c9df; font-size: 12px; }
+    .session-input { box-sizing: border-box; width: 100%; padding: 9px 10px; border: 1px solid #3c4e66; border-radius: 6px; background: #192537; color: #f0f5fc; font: inherit; font-size: 13px; }
+    .session-input:focus-visible { outline: 2px solid #65baff; }
+    .session-status { font-size: 11px; color: #f4c77b; margin-top: 10px; line-height: 1.5; }
+    .session-status[data-live="true"] { color: #7fe0b0; }
+    .session-summary { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; font-size: 12px; }
+    .session-summary span { background: #26374d; border-radius: 6px; padding: 6px 8px; }
+    .session-fit { width: 100%; background: #2b5e8f; color: white; border: 0; border-radius: 6px; padding: 9px; cursor: pointer; }
+    .session-note { font-size: 11px; color: #9caec6; margin: 8px 0 0; line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -1057,7 +1068,7 @@
   </div>
   <div class="player-filter-panel" aria-label="Filtres joueurs">
     <div class="player-filter-head">
-      <span>Joueurs</span>
+      <span>Joueurs en direct</span>
       <span id="playerTotalCount" class="player-filter-total">(0)</span>
     </div>
     <label class="player-filter-row">
@@ -1070,6 +1081,14 @@
       <span>Serveur Convoi</span>
       <span id="convoyCount" class="player-filter-count">(0)</span>
     </label>
+    <label class="session-field" for="serverFilter">Serveur / session</label>
+    <select id="serverFilter" class="session-input"><option value="all">Tous les serveurs</option><option value="solo">Solo</option><option value="unknown">Convoi non identifié</option></select>
+    <label class="session-field" for="playerSearch">Rechercher</label>
+    <input id="playerSearch" class="session-input" type="search" placeholder="Joueur, ligne, destination…" autocomplete="off">
+    <div id="sessionSummary" class="session-summary" aria-live="polite"></div>
+    <button id="fitSession" class="session-fit" type="button">Centrer sur les joueurs affichés</button>
+    <div id="sessionStatus" class="session-status" role="status">Connexion au relais…</div>
+    <p class="session-note">Sélectionne un joueur pour voir sa ligne, ses portes, sa girouette et ses passagers. Sons synchronisés à proximité : 60 m.</p>
   </div>
   <div class="player-legend" aria-label="Légende joueurs">
     <div class="player-legend-title">Légende</div>
@@ -1079,12 +1098,18 @@
     <div class="player-legend-row"><span class="player-legend-dot is-anonymous"></span><span>Joueur (aucun pseudo détecté)</span></div>
   </div>
 
+  <script src="adminConvoy.js"></script>
   <script src="../config/line-config.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     (function () {
       "use strict";
 
+      const convoyView = new IDFAdminConvoy.Model();
+      const serverFilter = document.getElementById('serverFilter');
+      const playerSearch = document.getElementById('playerSearch');
+      const sessionStatus = document.getElementById('sessionStatus');
+      let sessionOptionsKey = '', sessionSummaryKey = '', sessionWasLive = false;
       const WS_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       const MAP_FILES_ROOT = "../../map_files";
       const WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
@@ -2316,7 +2341,7 @@
         name = normalizeVisiblePlayerName(name);
 
         const label = displayname || name || "";
-        const id = technicalId || steamid || displayname || name || `player-${fallbackIndex}`;
+        const id = steamid || technicalId || displayname || name || `player-${fallbackIndex}`;
         return {
           id,
           steamid,
@@ -2354,7 +2379,11 @@
       function mergePlayerCollectionContext(entry, context) {
         if (!entry || typeof entry !== "object" || Array.isArray(entry)) return entry;
         if (!context || typeof context !== "object" || Array.isArray(context)) return entry;
-        return Object.assign({}, context, entry);
+        const shared = { ...context };
+        // Collections are siblings, never identity/session context. Keeping
+        // them here made the recursive reader assign the first Convoy to solo players.
+        for (const key of ['players','player','clients','users','vehicles','data','payload']) delete shared[key];
+        return Object.assign(shared, entry);
       }
 
       function collectPlayers(payload) {
@@ -2815,6 +2844,11 @@
       }
 
       function saeivRegVoiceMatchesSelectedPccLine(message) {
+        if (serverFilter.value !== 'all') {
+          const sender = readSaeivRegVoiceString(message, ['steamid','steamId','from','sourceId','playerId','clientId']);
+          const match = [...playerMarkers.values()].find(r => [r.player.steamid,r.player.pccClientId,r.player.clientId,r.player.id].includes(sender));
+          if (!match || !convoyView.matches(match.player,serverFilter.value)) return false;
+        }
         const selectedKey = normalizePccLineKey(selectedPccLineKey);
         if (!selectedKey || isPccOutOfServiceKey(selectedKey)) return false;
         const bus = message && message.bus && typeof message.bus === "object" ? message.bus : null;
@@ -3053,6 +3087,20 @@
             playerInfoRow("Demandes arret", player.busLine && (player.busLine.stopRequested ? "Oui" : ""), "busStopRequested"),
             playerInfoRow("Arrets manques", player.busLine && formatInfoInteger(player.busLine.missedStops), "busMissedStops")
           ]),
+          playerInfoSection("Convoi · temps réel", [
+            playerInfoRow("Serveur", convoyView.values(player).convoyServer, "convoyServer"),
+            playerInfoRow("Identifiant de session", convoyView.values(player).convoyId, "convoyId"),
+            playerInfoRow("Synchronisation", convoyView.values(player).convoySync, "convoySync"),
+            playerInfoRow("Service synchronisé", convoyView.values(player).convoyLine, "convoyLine"),
+            playerInfoRow("Girouette", convoyView.values(player).convoySign, "convoySign"),
+            playerInfoRow("Portes", convoyView.values(player).convoyDoors, "convoyDoors"),
+            playerInfoRow("Moteur", convoyView.values(player).convoyPower, "convoyPower"),
+            playerInfoRow("Passagers à bord", convoyView.values(player).convoyOccupancy, "convoyOccupancy"),
+            playerInfoRow("Échanges", convoyView.values(player).convoyExchange, "convoyExchange"),
+            playerInfoRow("Arrêt", convoyView.values(player).convoyStop, "convoyStop"),
+            playerInfoRow("Joueurs proches reçus", convoyView.values(player).convoyPeers, "convoyPeers"),
+            playerInfoRow("Dernier événement sonore", convoyView.values(player).convoyEvent, "convoyEvent")
+          ]),
           playerInfoSection("Etat", [
             `<div class="player-info-row"><span class="player-info-key">Statut</span><span class="player-info-value">${statusHtml}</span></div>`,
             playerInfoRow("Dernier signal", formatPlayerLastSignal(record), "lastSignal")
@@ -3084,6 +3132,7 @@
         const player = record && record.player ? record.player : {};
         const state = record && record.state ? record.state : "live";
         return {
+          ...convoyView.values(player),
           title: playerDisplayTitle(player),
           pseudo: player.label,
           name: player.name,
@@ -3863,6 +3912,7 @@
       }
 
       function isPlayerVisibleInPccMode(player) {
+        if (!convoyView.matches(player || {}, serverFilter.value, playerSearch.value)) return false;
         if (!isPlayerInBusModeForPcc(player)) return false;
         if (isPccOutOfServiceKey(selectedPccLineKey)) return !getPlayerBusLine(player);
         const busLine = getPlayerBusLine(player);
@@ -3872,6 +3922,7 @@
       }
 
       function isPlayerVisibleByFilter(player) {
+        if (!convoyView.matches(player || {}, serverFilter.value, playerSearch.value)) return false;
         const group = normalizePlayerGroupForPlayer(player);
         if (playerFilters[group] === false) return false;
         if (adminMapMode === ADMIN_MAP_MODE_PCC) return isPlayerVisibleInPccMode(player);
@@ -4281,6 +4332,7 @@
         });
         for (const record of playerMarkers.values()) {
           const player = record && record.player ? record.player : null;
+          if (!convoyView.matches(player || {}, serverFilter.value, playerSearch.value)) continue;
           const busLine = getPlayerBusLine(player);
           if (!busLine) {
             const off = byKey.get(PCC_OUT_OF_SERVICE_KEY);
@@ -5308,12 +5360,72 @@
         syncPlayerBusRouteLayer(record);
       }
 
+      function updateSessionPanel() {
+        const live = convoyView.fresh();
+        sessionWasLive = live;
+        const sessions = live ? [...convoyView.sessions.values()].sort((a,b) => a.id.localeCompare(b.id)) : [];
+        const optionsKey = sessions.map(s => s.key + ':' + s.players.length).join('|');
+        if (optionsKey !== sessionOptionsKey) {
+          sessionOptionsKey = optionsKey; const selected = serverFilter.value;
+          serverFilter.replaceChildren(new Option('Tous les serveurs', 'all'), new Option('Solo', 'solo'), new Option('Convoi non identifié', 'unknown'));
+          for (const s of sessions) { const option = new Option(s.label + ' · ' + s.players.length + ' joueur(s)', s.key); option.title = s.id; serverFilter.add(option); }
+          // Do not silently switch to another server if the selected one closes.
+          if (selected && ![...serverFilter.options].some(o => o.value === selected)) serverFilter.add(new Option('Session terminée / indisponible', selected));
+          serverFilter.value = selected || 'all';
+        }
+        let shown = 0, passengers = 0, buses = 0;
+        for (const r of playerMarkers.values()) if (isPlayerVisibleByFilter(r.player)) {
+          ++shown; const p = convoyView.get(r.player);
+          if (p?.synchronized && p.bus) { ++buses; passengers += p.occupancy || 0; }
+        }
+        const key = [shown,buses,passengers].join('/');
+        if (key !== sessionSummaryKey) {
+          sessionSummaryKey = key;
+          const summary = document.getElementById('sessionSummary'); summary.replaceChildren();
+          for (const text of [shown + ' joueur(s)', buses + ' bus sync.', passengers + ' passager(s)']) { const chip = document.createElement('span'); chip.textContent = text; summary.append(chip); }
+        }
+        sessionStatus.dataset.live = String(live);
+        sessionStatus.textContent = live ? 'Relais actif · ' + sessions.length + ' Convoi(s) · actualisation 1 s' : 'État Convoi indisponible · télémétrie seule';
+      }
+
+      function applyConvoySnapshot(message) {
+        const old = new Map(convoyView.players);
+        if (!convoyView.receive(message)) return;
+        // Room epochs and vehicle generations invalidate previous route geometry.
+        for (const [id,r] of playerMarkers) {
+          const before = old.get(r.player.steamid), after = convoyView.get(r.player);
+          if (before && !after && r.player.inServer !== false) {
+            r.marker.closePopup(); map.removeLayer(r.marker); removePlayerBusRouteLayer(r); playerMarkers.delete(id); continue;
+          }
+          if (before && after && (before.session.key !== after.session.key || before.generation !== after.generation)) {
+            removePlayerBusRouteLayer(r); r.player.busLine = null;
+          }
+        }
+        const updates = [];
+        for (const p of convoyView.players.values()) {
+          if (!p) continue;
+          const r = playerMarkers.get(p.player);
+          if (r) { r.player.group = PLAYER_GROUP_CONVOY; r.player.inServer = true; updatePlayerPopup(r); }
+          else if (p.pose) updates.push({ id:p.player, steamid:p.player, label:'', name:'', isAnonymous:true,
+            x:p.pose.x, z:p.pose.z, heading:p.pose.yaw, headingUnit:'degrees', headingConvention:'north_ccw',
+            group:PLAYER_GROUP_CONVOY, inServer:true, vehicleName:p.vehicle, speedKmh: p.speed === null ? null : Math.abs(p.speed)*3.6,
+            _overviewOnly:true });
+          if (r?.player._overviewOnly && p.pose) updates.push({ ...r.player,
+            x:p.pose.x, z:p.pose.z, heading:p.pose.yaw, vehicleName:p.vehicle,
+            speedKmh:p.speed === null ? null : Math.abs(p.speed)*3.6 });
+        }
+        if (updates.length) updatePlayerMarkers(updates);
+        syncAllPlayerFilterUi();
+      }
+
       function updatePlayerFilterCounts() {
+        updateSessionPanel();
         const counts = {
           [PLAYER_GROUP_SOLO]: 0,
           [PLAYER_GROUP_CONVOY]: 0
         };
         for (const record of playerMarkers.values()) {
+          if (!convoyView.matches(record.player, serverFilter.value, playerSearch.value)) continue;
           const group = normalizePlayerGroupForPlayer(record.player);
           counts[group] += 1;
         }
@@ -5413,6 +5525,8 @@
         const now = Date.now();
 
         for (let player of players) {
+          const synced = convoyView.get(player);
+          if (synced) player = { ...player, group: PLAYER_GROUP_CONVOY, inServer: true };
           const latlng = toLatLng(player.x, player.z);
           if (!latlng) continue;
 
@@ -5458,7 +5572,8 @@
       }
 
       function refreshPlayerMarkerStates(now = Date.now()) {
-        let changedCount = false;
+        let changedCount = sessionWasLive !== convoyView.fresh();
+        updateSessionPanel();
         for (const [id, record] of playerMarkers.entries()) {
           const age = now - record.lastSeen;
           if (age >= PLAYER_STALE_MS) {
@@ -5538,6 +5653,7 @@
 
       function mergeEnvelopeIdentity(message) {
         if (!message || typeof message !== "object") return message;
+        if (Array.isArray(message.players)) return message;
         const payload = Object.prototype.hasOwnProperty.call(message, "data") ? message.data : message;
         const identity = readIdentity(message);
         const bonus = readGame2Bonus(message);
@@ -5567,7 +5683,6 @@
 
       function handleTelemetryPayload(payload) {
         const telemetryPayload = unwrapTelemetryEnvelope(payload);
-        showData(telemetryPayload);
         updatePlayerMarkers(collectPlayers(telemetryPayload));
         showError("");
       }
@@ -5600,6 +5715,8 @@
         socket.onopen = function () {
           output.textContent = "";
           show("Connecte au WebSocket");
+          socket.send(JSON.stringify({type:'admin.subscribe', version:1}));
+          sessionStatus.textContent = 'Connecté · attente de l’état des Convois';
           showError("");
           syncPccDispatchControls();
           syncAllPccVoiceControls();
@@ -5615,6 +5732,7 @@
             return;
           }
 
+          if (message && message.type === 'admin.convoys') { applyConvoySnapshot(message); return; }
           if (isSaeivRegPresenceMessage(message)) return;
           if (handleSaeivRegVoiceMessage(message)) return;
           if (isPccVoiceMessage(message)) return;
@@ -5631,11 +5749,12 @@
             return;
           }
 
-          show("Systeme : " + JSON.stringify(message));
+          // Non-telemetry control messages are not dumped every frame.
         };
 
         socket.onclose = function () {
           socket = null;
+          convoyView.disconnect(); syncAllPlayerFilterUi();
           show("Deconnecte, reconnexion...");
           showError("WebSocket panel deconnecte, reconnexion...");
           if (pccRecording) finishPccVoiceRecording(true);
@@ -5654,6 +5773,13 @@
       }
 
       function bindPlayerFilterEvents() {
+        serverFilter.addEventListener('change', () => syncAllPlayerFilterUi());
+        let searchTimer = 0;
+        playerSearch.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(syncAllPlayerFilterUi, 120); });
+        document.getElementById('fitSession').addEventListener('click', () => {
+          const pts = [...playerMarkers.values()].filter(r => isPlayerVisibleByFilter(r.player)).map(r => r.marker.getLatLng());
+          if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(.15), { maxZoom: maxNativeZoom, animate: true });
+        });
         if (filterSolo) {
           filterSolo.checked = true;
           filterSolo.addEventListener("change", function () {

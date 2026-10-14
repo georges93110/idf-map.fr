@@ -5,7 +5,7 @@ Sources locales uniquement : aucun déploiement ni push n'est effectué par les 
 ## Installation sur le serveur existant
 
 1. Arrêter proprement l'ancien service Node et sauvegarder son dossier `data` (SQLite, WAL et SHM éventuels).
-2. Copier le **contenu de ce dossier** à la racine de l'application Node de l'hébergeur : `server.js`, `server.cjs`, `store.cjs`, `package.json` et le dossier `convoy`. Installer leurs dépendances avec Node.js 20 ou ultérieur : `npm install`.
+2. Copier le **contenu de ce dossier** à la racine de l'application Node de l'hébergeur : `server.js`, `server.cjs`, `admin-overview.cjs`, `store.cjs`, `package.json` et le dossier `convoy`. Installer leurs dépendances avec Node.js 20 ou ultérieur : `npm install`.
 3. Conserver `data/player_stats.sqlite`, ou définir `DB_PATH` vers la base existante. La migration conserve les tables et les données de télémétrie et de lignes.
 4. Configurer le fichier de démarrage de l'hébergeur sur **`server.js`**, puis démarrer avec `npm start` ou `node server.js`. `WS_PORT` (ou `PORT`) vaut 9377 par défaut. L'écoute utilise `0.0.0.0` pour les hébergements en conteneur ; `WS_HOST=127.0.0.1` permet une écoute locale si le proxy est sur le même hôte.
 5. Le proxy de `panel.idf-map.fr` doit transmettre l'upgrade WebSocket de `/idfmap/ws/native/` au serveur. Le chemin intégral et `/` après suppression du préfixe sont acceptés.
@@ -43,3 +43,27 @@ Le module `convoy/stops.cjs` teste des réservations exclusives pour une future 
 Après installation du relais, du site et de la nouvelle DLL chez les deux joueurs, rejoindre le même Convoi sur `idf.mbd`. Un seul joueur peut prendre un bus pris en charge ; l'autre peut rester en camion. Contrôler de son côté la destination, les passagers et les sons de portes. Vérifier ensuite l'éloignement, le retour à proximité, puis une reconnexion du même joueur.
 
 Les tests locaux couvrent les paquets, WebSockets réels, l'isolation des lobbies, la distance, les reconnexions, SQLite et les mises à jour signées. Ils ne remplacent pas cette validation visuelle dans ETS2.
+
+## Carte admin : sessions et état des bus
+
+Déployer ensemble `game_manager/html_divers/admin_map.html` et son nouveau fichier
+`adminConvoy.js` sur le site, puis `server.cjs` et `admin-overview.cjs` sur le relais.
+Redémarrer le service Node après sa mise à jour. La compilation de la DLL ne
+déploie aucun de ces fichiers.
+
+La carte s'abonne avec `admin.subscribe` (version 1). Le relais produit au plus un
+résumé `admin.convoys` par seconde, uniquement lorsqu'un observateur est abonné.
+Les filtres séparent le solo, les sessions identifiées et les Convois non identifiés.
+Une session est distinguée par son identifiant natif et son époque ; son nom
+commercial n'est pas fourni par le protocole actuel. Les identités ambiguës ne
+sont jamais attribuées arbitrairement à un serveur.
+
+Le résumé contient les lignes/services, girouettes, portes, moteur, occupation,
+phases de montée/descente et dernier événement sonore. Il ne transmet ni données
+audio jouables, ni identifiants/positions individuels des passagers, ni jetons.
+Les données périmées après sept secondes sont marquées indisponibles. La
+télémétrie historique reste exploitable avec un relais plus ancien. Ce canal
+conserve le modèle d'accès du relais existant ; il n'ajoute pas d'authentification.
+
+Tests : `telemetry/tests/admin_convoy.test.cjs` couvre l'isolation, les abonnements,
+la cadence, les données périmées et les déconnexions avec des WebSockets réels.

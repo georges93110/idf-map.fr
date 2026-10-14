@@ -377,6 +377,7 @@
           if (typeof startDiscordPresenceUpdates === "function") startDiscordPresenceUpdates();
         } else {
           if (typeof stopDiscordPresenceUpdates === "function") stopDiscordPresenceUpdates();
+          if (typeof clearDiscordPresence === "function") clearDiscordPresence();
           discordPresenceLastSentAtMs = 0;
           discordPresenceRouteKey = "";
           discordPresenceRouteStartedAtSec = 0;

@@ -2353,215 +2353,139 @@
       }
       function getDiscordPresenceIntervalMs() {
         var value = Math.round(Number(DISCORD_PRESENCE_SEND_INTERVAL_MS));
-        return Number.isFinite(value) && value >= 15000 ? value : 15000;
+        return Number.isFinite(value) && value >= 5000 ? value : 5000;
       }
       function normalizeDiscordPresenceText(value) {
-        return String(value == null ? "" : value).replace(/\s+/g, " ").trim();
+        return String(value == null ? "" : value).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
       }
       function limitDiscordPresenceText(value, fallback, maxLength) {
-        var text = normalizeDiscordPresenceText(value);
-        if (!text) text = normalizeDiscordPresenceText(fallback);
-        var max = Math.max(1, Math.round(Number(maxLength) || 128));
-        if (text.length <= max) return text;
-        if (max <= 3) return text.slice(0, max);
-        return text.slice(0, max - 3).replace(/\s+$/g, "") + "...";
+        var text = normalizeDiscordPresenceText(value) || normalizeDiscordPresenceText(fallback);
+        var chars = Array.from(text), max = Math.max(1, Math.round(Number(maxLength) || 128));
+        return chars.length <= max ? text : chars.slice(0, max - 1).join("").trimEnd() + "…";
       }
-      function getDiscordPresenceProductName() {
-        var name = "";
-        var version = "";
-        try { name = String(systemName || "").trim(); } catch (err0) { name = ""; }
-        try { version = String(gameVersion || "").trim(); } catch (err1) { version = ""; }
-        if (name && version) return name + " - " + version;
-        return name || version || "IDF Map";
-      }
-      function getDiscordPresenceConvoyLabel() {
-        return telemetryConvoyActive === true ? "Convoi" : "Solo";
-      }
-      function formatDiscordPresenceEta(minutes) {
-        var n = Number(minutes);
-        if (!Number.isFinite(n) || n <= 0) return "";
-        var total = Math.max(1, Math.round(n));
-        var hours = Math.floor(total / 60);
-        var mins = total % 60;
-        if (hours > 0) return "ETA " + String(hours) + "h" + String(mins).padStart(2, "0");
-        return "ETA " + String(total) + " min";
-      }
+      function getDiscordPresenceProductName() { return "IDF-RP · Île-de-France"; }
+      function getDiscordPresenceConvoyLabel() { return telemetryConvoyActive === true ? "Convoi" : "Solo"; }
       function formatDiscordPresencePassengers(busLine) {
-        if (!busLine || typeof busLine !== "object") return "";
-        var passengers = Math.max(0, Math.round(Number(busLine.passengersInBus) || 0));
-        var capacity = Math.max(0, Math.round(Number(busLine.busMaxCapacity) || 0));
-        if (busLine.busMaxCapacityUnlimited === true || capacity <= 0) {
-          return String(passengers) + " passagers";
-        }
-        return String(passengers) + "/" + String(capacity) + " passagers";
+        var passengers = Math.max(0, Math.round(Number(busLine && busLine.passengersInBus) || 0));
+        var capacity = Math.max(0, Math.round(Number(busLine && busLine.busMaxCapacity) || 0));
+        return String(passengers) + (busLine && busLine.busMaxCapacityUnlimited !== true && capacity > 0 ? "/" + capacity : "") + " passagers";
       }
       function resolveDiscordPresenceRouteStartTimestamp(busLine, nowSec) {
-        if (busLine && busLine.started === true) {
-          var key = String(busLine.selectedKey || busLine.lineNumber || busLine.routeName || "bus").trim() || "bus";
+        if (busLine && (busLine.started === true || busLine.completed === true)) {
+          var key = String(busLine.selectedKey || busLine.lineNumber || "bus") + ":" + String(busLine.startedAtMs || "");
           if (discordPresenceRouteKey !== key || !discordPresenceRouteStartedAtSec) {
             discordPresenceRouteKey = key;
             discordPresenceRouteStartedAtSec = nowSec;
           }
           return discordPresenceRouteStartedAtSec;
         }
-        if (!busLine || busLine.completed !== true) {
-          discordPresenceRouteKey = "";
-          discordPresenceRouteStartedAtSec = 0;
-        }
+        discordPresenceRouteKey = "";
+        discordPresenceRouteStartedAtSec = 0;
         return discordPresenceSessionStartedAtSec || nowSec;
       }
-      function buildDiscordPresenceBusDetails(busLine, gameModeState) {
-        var paused = gameModeState && gameModeState.telemetryPaused === true;
-        if (!busLine || busLine.active !== true) return paused ? "Mode bus - En pause" : "Mode bus - Hors service";
-        var line = String(busLine.lineNumber || "").trim();
-        var lineText = line ? ("ligne " + line) : "ligne bus";
-        if (busLine.completed === true) return "Mode bus - Service termine " + lineText;
-        if (paused) return "Mode bus - En pause " + lineText;
-        if (busLine.started === true) return "Mode bus - Conduit un bus " + lineText;
-        if (busLine.waitingStart === true) return "Mode bus - Pret au depart " + lineText;
-        return "Mode bus - Ligne selectionnee " + lineText;
+      function buildDiscordPresenceBusDetails(busLine) {
+        if (!busLine || busLine.active !== true) return "Bus · Hors service";
+        var line = normalizeDiscordPresenceText(busLine.lineNumber);
+        var destination = normalizeDiscordPresenceText(busLine.destinationName || busLine.terminusStopName);
+        return (line ? "Ligne " + line : "Service bus") + (destination ? " → " + destination : "");
       }
-      function buildDiscordPresenceBusState(busLine) {
-        var parts = [];
-        var vehicle = String(
-          (busLine && busLine.vehicleName) ||
-          saeivVehicleName ||
-          (telemetryLastSignal && telemetryLastSignal.vehicleName) ||
-          ""
-        ).trim();
-        if (vehicle) parts.push(vehicle);
-        if (busLine && busLine.active === true) {
-          if (busLine.started === true || busLine.completed === true) {
-            parts.push(formatDiscordPresencePassengers(busLine));
-            var stopName = String(busLine.currentStopName || busLine.nextStopName || "").trim();
-            if (stopName) parts.push((busLine.vehicleAtStop === true ? "Arret " : "Vers ") + stopName);
-            var served = Math.max(0, Math.round(Number(busLine.servedStops) || 0));
-            var stopCount = Math.max(0, Math.round(Number(busLine.stopCount) || 0));
-            if (stopCount > 0) parts.push("arrets desservis " + String(served) + "/" + String(stopCount));
-            var eta = formatDiscordPresenceEta(busLine.etaRemainingMinutes);
-            if (eta) parts.push(eta);
-          } else {
-            var routeName = String(busLine.routeName || "").trim();
-            if (routeName) parts.push(routeName);
-          }
+      function buildDiscordPresenceBusState(busLine, gameModeState) {
+        var gm = gameModeState || {}, parts = [];
+        if (gm.menuOpen) parts.push("Dans les menus");
+        else if (gm.telemetryPaused) parts.push("En pause");
+        else if (!busLine || !busLine.active) parts.push("En attente de service");
+        else if (busLine.completed) parts.push("Service terminé");
+        else if (!busLine.started) parts.push("Départ à venir");
+        else parts.push(busLine.vehicleAtStop ? "À l’arrêt" : "En ligne");
+        if (busLine && busLine.active && (busLine.started || busLine.completed)) {
+          var count = Math.max(0, Math.round(Number(busLine.stopCount) || 0));
+          var served = Math.max(0, Math.min(count, Math.round(Number(busLine.servedStops) || 0)));
+          if (count) parts.push(served + "/" + count + " arrêts");
+          if (busLine.completed) parts.push(Math.max(0, Math.round(Number(busLine.transportedPassengers) || 0)) + " passagers transportés");
+          else parts.push(formatDiscordPresencePassengers(busLine));
         }
         parts.push(getDiscordPresenceConvoyLabel());
-        return parts.filter(Boolean).join(" - ");
+        return parts.join(" · ");
       }
       function buildDiscordPresencePayload() {
         var nowSec = Math.floor(Date.now() / 1000);
-        var productName = getDiscordPresenceProductName();
-        var bonus = null;
-        try { bonus = buildRemotePanelGame2BonusState(); } catch (err0) { bonus = null; }
-        var gameModeState = bonus && bonus.gameMode ? bonus.gameMode : {};
-        var busLine = bonus && bonus.busLine ? bonus.busLine : null;
-        var modeKey = String(gameModeState.key || "").trim().toLowerCase();
-        var modeLabel = String(gameModeState.label || remotePanelGameModeLabel(modeKey, false)).trim();
-        var details = "";
-        var state = "";
-        if (gameModeState.menuOpen === true) {
-          details = "Menu - " + (modeLabel || "Interface");
-          state = productName + " - " + getDiscordPresenceConvoyLabel();
-        } else if (modeKey === "bus") {
-          details = buildDiscordPresenceBusDetails(busLine, gameModeState);
-          state = buildDiscordPresenceBusState(busLine);
-        } else if (modeKey === "free") {
-          details = gameModeState.telemetryPaused === true ? "Mode libre - En pause" : "Mode libre - En conduite";
-          state = [
-            String(saeivVehicleName || (telemetryLastSignal && telemetryLastSignal.vehicleName) || "").trim(),
-            getDiscordPresenceConvoyLabel()
-          ].filter(Boolean).join(" - ");
-        } else {
-          details = modeLabel || "Interface IDF Map";
-          state = getDiscordPresenceConvoyLabel();
+        var mode = typeof normalizeGameMode === "function" ? normalizeGameMode(currentGameMode) : currentGameMode;
+        var menuOpen = telemetryUiMode === 2;
+        try { menuOpen = menuOpen || document.body.classList.contains("is-main-menu-open"); } catch (_) {}
+        var gm = {menuOpen: menuOpen, telemetryPaused: telemetryPaused === true};
+        var busLine = null, saeiv = null;
+        // Menus/pause do not end the selected service or reset its elapsed time.
+        if (mode === "bus") {
+          try {
+            saeiv = buildSaeivStatePayloadFromGame();
+            busLine = buildRemotePanelBusLineBonusState(saeiv);
+            if (busLine) busLine.startedAtMs = saeiv.routeStartedAtMs;
+          } catch (_) {}
         }
-        var timestamps = {
-          start: resolveDiscordPresenceRouteStartTimestamp(busLine, nowSec)
-        };
-        var etaMinutes = busLine && busLine.started === true && busLine.completed !== true ? Number(busLine.etaRemainingMinutes) : Number.NaN;
-        if (Number.isFinite(etaMinutes) && etaMinutes > 0) {
-          timestamps.end = nowSec + Math.max(60, Math.round(etaMinutes * 60));
+        var vehicle = normalizeDiscordPresenceText((saeiv && saeiv.vehicleName) || saeivVehicleName || (telemetryLastSignal && telemetryLastSignal.vehicleName));
+        var phase = menuOpen ? "Dans les menus" : gm.telemetryPaused ? "En pause" : "En route";
+        var details = mode === "bus" ? buildDiscordPresenceBusDetails(busLine) : (mode === "free" ? "Conduite libre" : "Mode camion") + " · Île-de-France";
+        var state = mode === "bus" ? buildDiscordPresenceBusState(busLine, gm) : [phase, limitDiscordPresenceText(vehicle, "", 64), getDiscordPresenceConvoyLabel()].filter(Boolean).join(" · ");
+        var hover = [vehicle, getDiscordPresenceConvoyLabel()];
+        if (busLine && busLine.active && !busLine.completed) {
+          var stop = normalizeDiscordPresenceText(busLine.currentStopName || busLine.nextStopName);
+          if (stop) hover.push((busLine.vehicleAtStop ? "Arrêt : " : "Prochain arrêt : ") + stop);
         }
-        return {
-          type: "discordPresence",
-          version: 1,
-          source: "html",
-          activity: {
-            type: 0,
-            name: limitDiscordPresenceText(productName, "IDF Map", 128),
-            details: limitDiscordPresenceText(details, productName, 128),
-            state: limitDiscordPresenceText(state, getDiscordPresenceConvoyLabel(), 128),
-            timestamps: timestamps,
-            assets: {
-              large_image: "idf_map",
-              large_text: limitDiscordPresenceText(productName, "IDF Map", 128),
-              small_image: "ets2",
-              small_text: "Euro Truck Simulator 2"
-            },
-            instance: false
-          }
+        var start = resolveDiscordPresenceRouteStartTimestamp(busLine, nowSec);
+        var activity = {
+          type: 0,
+          details: limitDiscordPresenceText(details, getDiscordPresenceProductName(), 128),
+          state: limitDiscordPresenceText(state, getDiscordPresenceConvoyLabel(), 128),
+          assets: {
+            large_image: "https://idf-map.fr/images/idf_logo_new.png",
+            large_text: limitDiscordPresenceText(hover.filter(Boolean).join(" · "), getDiscordPresenceProductName(), 128)
+          },
+          buttons: [{label: "Découvrir IDF-RP", url: "https://idf-map.fr/"}],
+          instance: false
         };
+        if (!busLine || !busLine.completed) activity.timestamps = {start: start};
+        return {type: "discordPresence", version: 1, source: "game", activity: activity};
       }
       function getDiscordPresenceSocket() {
         return telemetryWs && telemetryWs.readyState === WebSocket.OPEN ? telemetryWs : null;
       }
-      function isDiscordPresenceEnabled() {
-        return discordPresenceEnabled !== false;
+      function isDiscordPresenceEnabled() { return discordPresenceEnabled !== false; }
+      function clearDiscordPresence() {
+        var socket = getDiscordPresenceSocket();
+        if (socket) try { socket.send(JSON.stringify({type:"discordPresence", version:1, source:"game", action:"clear"})); } catch (_) {}
       }
       function sendDiscordPresenceUpdate() {
         if (!isDiscordPresenceEnabled()) return false;
-        var now = Date.now();
-        var intervalMs = getDiscordPresenceIntervalMs();
-        var lastSentAt = Number(discordPresenceLastSentAtMs) || 0;
-        if (lastSentAt > 0 && (now - lastSentAt) < intervalMs) return false;
+        var now = Date.now(), lastSentAt = Number(discordPresenceLastSentAtMs) || 0;
+        if (lastSentAt > 0 && now - lastSentAt < getDiscordPresenceIntervalMs()) return false;
         var socket = getDiscordPresenceSocket();
-        if (!socket) return false;
-        var payload = buildDiscordPresencePayload();
-        var body = "";
-        try { body = JSON.stringify(payload); } catch (err0) { body = ""; }
-        if (!body) return false;
+        if (!socket || socket.bufferedAmount > 65536) return false;
         try {
-          socket.send(body);
-          console.log("[DiscordPresence] Envoi", payload);
-          discordPresenceLastSentAtMs = Date.now();
+          socket.send(JSON.stringify(buildDiscordPresencePayload()));
+          discordPresenceLastSentAtMs = now;
           return true;
-        } catch (err1) {
-          return false;
-        }
+        } catch (_) { return false; }
       }
       function getNextDiscordPresenceDelayMs() {
-        var intervalMs = getDiscordPresenceIntervalMs();
         var lastSentAt = Number(discordPresenceLastSentAtMs) || 0;
-        if (lastSentAt <= 0) return 1000;
-        return Math.max(1000, intervalMs - (Date.now() - lastSentAt));
+        return lastSentAt <= 0 ? 1000 : Math.max(1000, getDiscordPresenceIntervalMs() - (Date.now() - lastSentAt));
       }
       function scheduleNextDiscordPresenceUpdate(delayMs) {
-        if (!isDiscordPresenceEnabled()) {
-          stopDiscordPresenceUpdates();
-          return;
-        }
-        if (discordPresenceTimer) {
-          clearTimeout(discordPresenceTimer);
-          discordPresenceTimer = 0;
-        }
-        var waitMs = Math.max(0, Math.round(Number(delayMs) || 0));
+        if (!isDiscordPresenceEnabled()) { stopDiscordPresenceUpdates(); return; }
+        if (discordPresenceTimer) clearTimeout(discordPresenceTimer);
         discordPresenceTimer = window.setTimeout(function () {
           discordPresenceTimer = 0;
           sendDiscordPresenceUpdate();
           scheduleNextDiscordPresenceUpdate(getNextDiscordPresenceDelayMs());
-        }, waitMs);
+        }, Math.max(0, Math.round(Number(delayMs) || 0)));
       }
       function startDiscordPresenceUpdates() {
-        if (!isDiscordPresenceEnabled()) {
-          stopDiscordPresenceUpdates();
-          return;
-        }
+        if (!isDiscordPresenceEnabled()) { stopDiscordPresenceUpdates(); clearDiscordPresence(); return; }
         sendDiscordPresenceUpdate();
         scheduleNextDiscordPresenceUpdate(getNextDiscordPresenceDelayMs());
       }
       function stopDiscordPresenceUpdates() {
-        if (!discordPresenceTimer) return;
-        clearTimeout(discordPresenceTimer);
+        if (discordPresenceTimer) clearTimeout(discordPresenceTimer);
         discordPresenceTimer = 0;
       }
       function pickRemotePanelTelemetryMapName(raw, signal) {
@@ -3797,7 +3721,9 @@
               }));
             } catch (err5) { }
           }
-          sendDiscordPresenceUpdate();
+          discordPresenceLastSentAtMs = 0;
+          if (isDiscordPresenceEnabled()) sendDiscordPresenceUpdate();
+          else clearDiscordPresence();
           scheduleNextDiscordPresenceUpdate(getNextDiscordPresenceDelayMs());
         };
         ws.onmessage = function (event) {
@@ -3882,6 +3808,8 @@
           telemetryLastPacketAt = Date.now();
           updateWazeBridgePoseFromTelemetry(signal);
           handleSaeivTelemetrySignal(signal);
+          // Discord updates must also survive Chromium background timer throttling.
+          sendDiscordPresenceUpdate();
           // The page can be hidden while driving. Socket callbacks continue
           // independently of background timer throttling.
           syncNativeGpsDestination(false);

@@ -571,7 +571,7 @@
 
       var activeOverlayDrag = null;
       // The local endpoint is discovered by window.IdfTelemetry.connect().
-      var DISCORD_PRESENCE_SEND_INTERVAL_MS = 15000;
+      var DISCORD_PRESENCE_SEND_INTERVAL_MS = 5000;
       var discordPresenceTimer = 0;
       var discordPresenceLastSentAtMs = 0;
       var discordPresenceSessionStartedAtSec = Math.floor(Date.now() / 1000);

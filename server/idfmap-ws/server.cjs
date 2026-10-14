@@ -1,4 +1,5 @@
 'use strict';
+const { AdminOverview } = require('./admin-overview.cjs');
 const http = require('node:http');
 const { PlayerStore, inner, identity, telemetry } = require('./store.cjs');
 const { ConvoyRooms } = require('./convoy/rooms.cjs');
@@ -15,6 +16,7 @@ function createServer({ WebSocketServer, store, authorizeConvoy, log = console.e
   // to each connection; deployments with authenticated sessions can supply
   // authorizeConvoy to additionally check their server-verified identity.
   const rooms = new ConvoyRooms({ send, authorize: (peer, h) => identities.get(peer) === h.player && (!authorizeConvoy || authorizeConvoy(peer, h)) });
+  const admin = new AdminOverview(rooms, send);
   const server = http.createServer((req, res) => {
     if (req.url !== '/' && req.url !== '/health') { res.writeHead(404); res.end(); return; }
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -46,6 +48,8 @@ function createServer({ WebSocketServer, store, authorizeConvoy, log = console.e
       const now = Date.now(); allowance = Math.min(200, allowance + Math.max(0, now - at) * .06); at = now;
       if (allowance < 1) { peer.close(1008, 'Rate limit'); return; } --allowance;
       const doc = P.decode(bytes); if (!doc) { peer.close(1007, 'Invalid message'); return; }
+      if (admin.receive(peer, doc)) return;
+      if (typeof doc.type === 'string' && doc.type.startsWith('admin.')) return;
       if (typeof doc.type === 'string' && doc.type.startsWith('convoy.')) {
         // Reserved messages must NEVER fall through to the global admin relay.
         if (doc.type === 'convoy.identify') {
@@ -56,6 +60,7 @@ function createServer({ WebSocketServer, store, authorizeConvoy, log = console.e
           identities.set(peer, doc.player); return;
         }
         if (!rooms.receive(peer, doc)) send(peer, { type: 'convoy.rejected', version: 1 });
+        else admin.event(peer, doc);
         return;
       }
       if (telemetry(doc)) {
@@ -66,13 +71,13 @@ function createServer({ WebSocketServer, store, authorizeConvoy, log = console.e
       try { store.record(doc); } catch (e) { report(e); }
       for (const other of clients) if (other !== peer) send(other, bytes.toString('utf8'));
     });
-    const cleanup = () => { clients.delete(peer); identities.delete(peer); rooms.leave(peer); };
+    const cleanup = () => { clients.delete(peer); identities.delete(peer); rooms.leave(peer); admin.leave(peer); };
     peer.on('close', cleanup); peer.on('error', cleanup);
   });
-  const tick = setInterval(() => rooms.tick(), 50); tick.unref();
+  const tick = setInterval(() => { rooms.tick(); admin.tick(); }, 50); tick.unref();
   const heartbeat = setInterval(() => { for (const peer of clients) { if (!peer.alive) peer.terminate(); else { peer.alive = false; peer.ping(); } } }, 15000); heartbeat.unref();
   async function close() {
-    if (closed) return; closed = true; clearInterval(tick); clearInterval(heartbeat); rooms.close();
+    if (closed) return; closed = true; clearInterval(tick); clearInterval(heartbeat); admin.close(); rooms.close();
     for (const peer of clients) peer.terminate();
     await new Promise(resolve => wss.close(resolve));
     await new Promise(resolve => server.close(resolve)); store.close();
