@@ -3,7 +3,7 @@
   const labels = Object.freeze({ shutdown: 'Fermeture native', windows: 'Portes', ui: 'Interface native',
     mode: 'Menus Bus', hud: 'HUD', gps: 'GPS', models: 'Modèles et passagers',
     textures: 'Textures et écrans HTML', saeiv: 'Interaction SAEIV', horn: 'Klaxons', audio: 'Réglages audio' });
-  const readingLabels = Object.freeze({ language: 'Langue du jeu', convoyIdentity: 'Identification du Convoi', convoyVehicles: 'Véhicules du Convoi' });
+  const readingLabels = Object.freeze({ language: 'Langue du jeu', convoyIdentity: 'Identification du Convoi', convoyVehicles: 'Véhicules du Convoi', convoyDoors: 'Portes des véhicules du Convoi' });
   let node, lastText = '', expiry;
   function normalize(message) {
     if (!message || message.type !== 'nativeCompatibilityBackend' || message.protocol !== 1 ||
