@@ -3644,7 +3644,7 @@
       </div>
       <div class="top-actions">
         <button id="btnDbus" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Lignes de bus" title="Lignes de bus">
-          <img id="btnDbusLogo" class="dbus-icon-logo" src="map_files/0.1.5a/Overlays/bus_logo_idfm.png" alt="" aria-hidden="true"/>
+          <img id="btnDbusLogo" class="dbus-icon-logo" src="map_files/website/Overlays/bus_logo_idfm.png" alt="" aria-hidden="true"/>
         </button>
         <button id="btnSettings" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Parametres" title="Parametres">
           <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -5245,12 +5245,15 @@
     const DEV_GRAPH = QS.has("dev_graph");
     const NEXT_VERSION_MODE = QS.has("nextversion");
     const UBER_EATS_MAP_EMBED_MODE = QS.has("uber_eats_app");
-    const NEXT_VERSION_BASE_VERSION = "0.1.6a";
+    const NEXT_VERSION_BASE_VERSION = "website";
     const DEV_NAV_POINTS_DEBUG = DEV_MODE || DEV_GRAPH;
     const DEV_NAV_BRIDGES_DEBUG = DEV_GRAPH || QS.has("dev_bridges");
     const MAP_FILES_ROOT = "./map_files";
     const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
     function parseVersion(value){
+        var mapName = String(value || "").trim();
+        if (/^(website|0\.1\.6a)$/i.test(mapName)) return {raw:"website",major:0,minor:1,patch:6,suffix:"a"};
+        if (/^(IDF-RP|Dev)$/i.test(mapName)) return {raw:"IDF-RP",major:1,minor:0,patch:0,suffix:""};
       const match = VERSION_PATTERN.exec(String(value || "").trim());
       if (!match) return null;
       return {
@@ -5321,13 +5324,13 @@
         history.replaceState(null, "", cleanUrl.toString());
       } catch {}
     }
-    const DATA_BASE = SELECTED_VERSION ? `${MAP_FILES_ROOT}/${SELECTED_VERSION}` : MAP_FILES_ROOT;
-    const DEV_DATA_BASE = `${MAP_FILES_ROOT}/Dev`;
-    const OVERLAY_BASE = `${DATA_BASE}/Overlays`;
-    const TILE_BASE = `${DATA_BASE}/Tiles`;
-    const DEV_TILE_BASE = `${DEV_DATA_BASE}/Tiles`;
+    const DATA_BASE = `${MAP_FILES_ROOT}/${SELECTED_VERSION || "website"}`;
+    const DEV_DATA_BASE = `${MAP_FILES_ROOT}/IDF-RP`;
+    const OVERLAY_BASE = `${MAP_FILES_ROOT}/website/Overlays`;
+    const TILE_BASE = `${MAP_FILES_ROOT}/website/Tiles`;
+    const DEV_TILE_BASE = `${MAP_FILES_ROOT}/website/Dev/Tiles`;
     const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-    const DBUS_BASE = `${DATA_BASE}/DBus`;
+    const DBUS_BASE = `${DATA_BASE}/Mode%20Bus`;
     const dataPath = (file) => `${DATA_BASE}/${file}`;
     const overlayPath = (file) => `${OVERLAY_BASE}/${file}`;
     function mapFileCandidatePaths(file){
@@ -7704,7 +7707,7 @@
     }
     async function loadCurrentLinesXmlIntoEditor(){
       if (!DEV_LOCAL_ONLY) return;
-      const targetUrl = "DBus/lines.xml";
+      const targetUrl = "Mode%20Bus/lines.xml";
       try {
         setDevLinesEditorStatus(`Chargement ${targetUrl}...`);
         const response = await fetchMapFile(targetUrl, { cache: "no-store" });
@@ -10260,7 +10263,7 @@
     map.on("zoomend", refreshDbusStopMarkerScale);
     async function loadStops(){
       await tileInfoReady;
-      const xml = await fetchMapXml("DBus/stops.xml");
+      const xml = await fetchMapXml("Mode%20Bus/stops.xml");
       const nodes = [...xml.querySelectorAll("busstops > busstop")];
       DBUS_STOPS = new Map(nodes.map(node=>{
         const id = parseInt(node.querySelector("id")?.textContent.trim()||"0",10);
@@ -10281,7 +10284,7 @@
 
     let DBUS_LINES = [];
     async function loadLines(){
-      const xml = await fetchMapXml("DBus/lines.xml");
+      const xml = await fetchMapXml("Mode%20Bus/lines.xml");
       const seenLineUids = new Map();
       DBUS_LINES = [...xml.querySelectorAll("lines > line")].map((line, lineIndex) => {
         const rawUid = String(line.getAttribute("uid") || "").trim();

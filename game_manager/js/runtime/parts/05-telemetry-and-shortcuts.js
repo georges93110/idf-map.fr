@@ -4013,7 +4013,7 @@
             if (typeof showOverlayNotification === "function") {
               showOverlayNotification(
                 next ? "Mode dev activé" : "Mode dev désactivé",
-                next ? "Carte 0.1.6a + couche Dev. Rechargement..." : "Retour au mode carte standard. Rechargement...",
+                next ? "Carte website + couche Dev. Rechargement..." : "Retour au mode carte standard. Rechargement...",
                 1800
               );
             }

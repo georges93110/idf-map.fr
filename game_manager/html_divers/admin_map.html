@@ -1387,6 +1387,9 @@
       }
 
       function parseVersion(value) {
+        var mapName = String(value || "").trim();
+        if (/^(website|0\.1\.6a)$/i.test(mapName)) return {raw:"website",major:0,minor:1,patch:6,suffix:"a"};
+        if (/^(IDF-RP|Dev)$/i.test(mapName)) return {raw:"IDF-RP",major:1,minor:0,patch:0,suffix:""};
         const match = VERSION_PATTERN.exec(String(value || "").trim());
         if (!match) return null;
         return {
@@ -1723,7 +1726,7 @@
           return Promise.resolve({ stops: dbusStopsById, lines: dbusLines });
         }
         if (dbusDataLoadPromise) return dbusDataLoadPromise;
-        const basePath = `${dataBase}/DBus`;
+        const basePath = `${MAP_FILES_ROOT}/IDF-RP/Mode%20Bus`;
         dbusDataLoadPromise = Promise.all([
           fetchXmlDoc(`${basePath}/stops.xml`),
           fetchXmlDoc(`${basePath}/lines.xml`),
@@ -5850,7 +5853,7 @@
         try {
           selectedVersion = await selectMapVersion();
           dataBase = `${MAP_FILES_ROOT}/${selectedVersion}`;
-          tileBase = `${dataBase}/Tiles`;
+          tileBase = `${MAP_FILES_ROOT}/website/Tiles`;
 
           const tileInfoResponse = await fetch(`${dataBase}/TileMapInfo.json`, { cache: "no-store" });
           if (!tileInfoResponse.ok) throw new Error("TileMapInfo introuvable");

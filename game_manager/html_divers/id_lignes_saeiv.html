@@ -69,7 +69,7 @@
 
   <script>
     (() => {
-      const DEFAULT_VERSION = "0.1.6a";
+      const DEFAULT_VERSION = "website";
       const metaEl = document.getElementById("meta");
       const statusEl = document.getElementById("status");
       const searchEl = document.getElementById("searchInput");
@@ -220,7 +220,7 @@
         try {
           const version = await getDbusVersion();
           metaEl.textContent = `Version : ${version}`;
-          const xmlPath = `../../map_files/${encodeURIComponent(version)}/DBus/lines.xml`;
+          const xmlPath = `../../map_files/${encodeURIComponent(version)}/Mode%20Bus/lines.xml`;
           const response = await fetch(xmlPath, { cache: "no-store" });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const xml = new DOMParser().parseFromString(await response.text(), "text/xml");

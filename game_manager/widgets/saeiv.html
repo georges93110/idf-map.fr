@@ -2305,7 +2305,7 @@
       const SAEIV_REG_PANEL_RECONNECT_MIN_MS = 700;
       const SAEIV_REG_PANEL_RECONNECT_MAX_MS = 8000;
       const SAEIV_REG_PANEL_OUTBOX_LIMIT = 12;
-      const DEFAULT_DBUS_VERSION = "0.1.6a";
+      const DEFAULT_DBUS_VERSION = "website";
       const SERVICE_LINE_UID_MAX_LENGTH = 6;
       const SERVICE_VEHICLE_MIN_NUMBER = 1;
       const SERVICE_VEHICLE_MAX_NUMBER = 30;
@@ -3849,6 +3849,9 @@
       }
 
       function parseDbusVersionTag(value) {
+        var mapName = String(value || "").trim();
+        if (/^(website|0\.1\.6a)$/i.test(mapName)) return {raw:"website",major:0,minor:1,patch:6,suffix:"a"};
+        if (/^(IDF-RP|Dev)$/i.test(mapName)) return {raw:"IDF-RP",major:1,minor:0,patch:0,suffix:""};
         const text = String(value || "").trim();
         const match = /^(\d+)\.(\d+)\.(\d+)([a-z]*)$/i.exec(text);
         if (!match) return null;
@@ -3895,8 +3898,8 @@
       function fetchDbusLinesXmlForVersion(version) {
         const safeVersion = String(version || DEFAULT_DBUS_VERSION).trim() || DEFAULT_DBUS_VERSION;
         const paths = isDevMapMode
-          ? ["../../map_files/Dev/DBus/lines.xml", `../../map_files/${encodeURIComponent(safeVersion)}/DBus/lines.xml`]
-          : [`../../map_files/${encodeURIComponent(safeVersion)}/DBus/lines.xml`];
+          ? ["../../map_files/IDF-RP/Mode%20Bus/lines.xml", `../../map_files/${encodeURIComponent(safeVersion)}/Mode%20Bus/lines.xml`]
+          : [`../../map_files/${encodeURIComponent(safeVersion)}/Mode%20Bus/lines.xml`];
         let index = 0;
         const tryNext = () => {
           if (index >= paths.length) return Promise.reject(new Error("lines_xml_unavailable"));

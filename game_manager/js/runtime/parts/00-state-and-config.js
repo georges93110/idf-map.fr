@@ -57,8 +57,8 @@
       var ENABLE_UBER_EATS_MODE = true;
       var GAME_MODE_STORAGE_KEY = "idf_game2_mode_v1";
       var GAME_DEV_MAP_STORAGE_KEY = "idf_game2_dev_map_mode_v1";
-      var GAME_DEV_MAP_BASE_VERSION = "0.1.6a";
-      var GAME_DEV_MAP_LAYER_VERSION = "Dev";
+      var GAME_DEV_MAP_BASE_VERSION = "website";
+      var GAME_DEV_MAP_LAYER_VERSION = "IDF-RP";
       var GAME_MODES = {
         BUS: "bus",
         FREE: "free",
@@ -117,6 +117,9 @@
         var clean = normalizeGameMapFilePath(file);
         var safeVersion = String(version || "").trim();
         if (!safeVersion) safeVersion = GAME_DEV_MAP_BASE_VERSION;
+        if (/^0\.1\.6a$/i.test(safeVersion)) safeVersion = "website";
+        if (/^dev$/i.test(safeVersion)) safeVersion = "IDF-RP";
+        if (safeVersion === GAME_DEV_MAP_LAYER_VERSION && /^Tiles\//.test(clean)) return "../map_files/website/Dev/" + clean;
         if (safeVersion === GAME_DEV_MAP_LAYER_VERSION) return "../map_files/" + GAME_DEV_MAP_LAYER_VERSION + "/" + clean;
         return "../map_files/" + safeVersion + "/" + clean;
       }

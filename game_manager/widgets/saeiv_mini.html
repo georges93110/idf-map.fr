@@ -1363,7 +1363,7 @@
       var OPTIONAL_STOP_BADGE_LATCH_DISTANCE_M = 24;
       var routeStopConfigIndex = new Map();
       var routeStopConfigLoadPromise = null;
-      var DEFAULT_DBUS_VERSION = "0.1.6a";
+      var DEFAULT_DBUS_VERSION = "website";
 
       var el = {
         root: document.querySelector(".root"),
@@ -1852,6 +1852,9 @@
         return String(lineUid || "") + "::" + String(routeUid || "");
       }
       function parseVersionTag(value) {
+        var mapName = String(value || "").trim();
+        if (/^(website|0\.1\.6a)$/i.test(mapName)) return {raw:"website",major:0,minor:1,patch:6,suffix:"a"};
+        if (/^(IDF-RP|Dev)$/i.test(mapName)) return {raw:"IDF-RP",major:1,minor:0,patch:0,suffix:""};
         var text = String(value || "").trim();
         var m = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i.exec(text);
         if (!m) return null;
@@ -1896,8 +1899,8 @@
       function fetchDbusLinesXmlForVersion(version) {
         var safeVersion = String(version || DEFAULT_DBUS_VERSION).trim() || DEFAULT_DBUS_VERSION;
         var paths = isDevMapMode
-          ? ["../../map_files/Dev/DBus/lines.xml", "../../map_files/" + safeVersion + "/DBus/lines.xml"]
-          : ["../../map_files/" + safeVersion + "/DBus/lines.xml"];
+          ? ["../../map_files/IDF-RP/Mode%20Bus/lines.xml", "../../map_files/" + safeVersion + "/Mode%20Bus/lines.xml"]
+          : ["../../map_files/" + safeVersion + "/Mode%20Bus/lines.xml"];
         function tryPath(index) {
           if (index >= paths.length) throw new Error("lines_xml_unavailable");
           return fetch(paths[index], { cache: "no-store" }).then(function (res) {
@@ -2482,7 +2485,7 @@
         var safeFile = String(file || "").trim();
         if (!safeFile) return "";
         if (version) return "../../map_files/" + version + "/Overlays/" + safeFile;
-        return "../../map_files/0.1.6a/Overlays/" + safeFile;
+        return "../../map_files/website/Overlays/" + safeFile;
       }
       function createNetworkBadgeElement(options) {
         var opts = options && typeof options === "object" ? options : {};
@@ -3193,7 +3196,7 @@
         var version = String(state && (state.dbusVersion || state.version) || DEFAULT_DBUS_VERSION || "").trim();
         var safeFile = String(file || "").trim();
         if (!safeFile) return "";
-        if (!version) version = "0.1.6a";
+        if (!version) version = "website";
         return "../../map_files/" + version + "/Overlays/" + safeFile;
       }
 

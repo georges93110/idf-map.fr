@@ -119,6 +119,9 @@
         return Object.assign({}, normalizeSaeivPassengerConfig(null, saeivPassengerDefaults));
       };
       function parseVersionTag(value) {
+        var mapName = String(value || "").trim();
+        if (/^(website|0\.1\.6a)$/i.test(mapName)) return {raw:"website",major:0,minor:1,patch:6,suffix:"a"};
+        if (/^(IDF-RP|Dev)$/i.test(mapName)) return {raw:"IDF-RP",major:1,minor:0,patch:0,suffix:""};
         var text = String(value || "").trim();
         var m = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i.exec(text);
         if (!m) return null;

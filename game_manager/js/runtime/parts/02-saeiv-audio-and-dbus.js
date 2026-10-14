@@ -1,6 +1,6 @@
 /*
  * Game2 runtime chunk: 02-saeiv-audio-and-dbus.js
- * Audio SAEIV, DBus/FIS, selection de routes.
+ * Audio SAEIV, Mode%20Bus/FIS, selection de routes.
  * Charge par ../game2-main.js dans une fermeture runtime partagee.
  */
       function ensureTrailingSlash(path) {
@@ -1496,8 +1496,8 @@ function tickSaeivAutomaticDestination() {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
         return Promise.all([
-          fetchXmlDoc("DBus/stops.xml", safeVersion, true),
-          fetchXmlDoc("DBus/lines.xml", safeVersion, true)
+          fetchXmlDoc("Mode%20Bus/stops.xml", safeVersion, true),
+          fetchXmlDoc("Mode%20Bus/lines.xml", safeVersion, true)
         ]).then(function (list) {
           return {
             version: safeVersion,
@@ -1518,7 +1518,7 @@ function tickSaeivAutomaticDestination() {
         // The bus catalogue is maintained in Dev, independently of the
         // released navigation graph and the stored map-preview preference.
         // Both XML files must come from the same version; never silently mix
-        // Dev lines/types with 0.1.6a stops after a failed HTTP request.
+        // Dev lines/types with website stops after a failed HTTP request.
         dbusLoadPromise = loadDbusDataForVersion(GAME_DEV_MAP_LAYER_VERSION)
           .then(function (loaded) {
             dbusDataVersion = String(loaded.version || "");

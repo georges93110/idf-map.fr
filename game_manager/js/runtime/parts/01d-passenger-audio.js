@@ -95,7 +95,7 @@ function playPassengerCabinVoice(a,kind,file) {
   var s=passengerCabinAudio;
   if(!passengerCabinReady())return;
   var audio=createBusSpatialAudio('sounds/passengers/'+file,kind),r=busSpatialAudio.records.get(audio);
-  r.passenger=a;setBusAudioLevel(audio,.32);
+  r.passenger=a;setBusAudioLevel(audio,.65);
   var v={audio:audio,actor:a,deadline:Date.now()+2500};s.voices.add(v);
   ['ended','error'].forEach(function(event){audio.addEventListener(event,function(){stopPassengerCabinVoice(v);});});
   audio.play().catch(function(){stopPassengerCabinVoice(v);});

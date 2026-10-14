@@ -1220,11 +1220,14 @@
       })();
       const MAP_FILES_ROOT = "../../map_files";
       const DEV_MAP_MODE = QS.has("devmap") || QS.has("dev_map") || QS.has("nextversion");
-      const DEV_MAP_BASE_VERSION = "0.1.6a";
-      const DEV_MAP_LAYER_VERSION = "Dev";
+      const DEV_MAP_BASE_VERSION = "website";
+      const DEV_MAP_LAYER_VERSION = "IDF-RP";
       const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
 
       function parseVersion(value) {
+        var mapName = String(value || "").trim();
+        if (/^(website|0\.1\.6a)$/i.test(mapName)) return {raw:"website",major:0,minor:1,patch:6,suffix:"a"};
+        if (/^(IDF-RP|Dev)$/i.test(mapName)) return {raw:"IDF-RP",major:1,minor:0,patch:0,suffix:""};
         const match = VERSION_PATTERN.exec(String(value || "").trim());
         if (!match) return null;
         return {
@@ -1292,8 +1295,8 @@
       const EFFECTIVE_VERSION = SELECTED_VERSION || DEV_MAP_BASE_VERSION;
       const DATA_BASE = `${MAP_FILES_ROOT}/${EFFECTIVE_VERSION}`;
       const DEV_DATA_BASE = `${MAP_FILES_ROOT}/${DEV_MAP_LAYER_VERSION}`;
-      const TILE_BASE = `${DATA_BASE}/Tiles`;
-      const DEV_TILE_BASE = `${DEV_DATA_BASE}/Tiles`;
+      const TILE_BASE = `${MAP_FILES_ROOT}/website/Tiles`;
+      const DEV_TILE_BASE = `${MAP_FILES_ROOT}/website/Dev/Tiles`;
       const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
       const dataPath = (file) => `${DATA_BASE}/${file}`;
       function mapFileCandidatePaths(file) {
@@ -3023,7 +3026,7 @@
             }
           } catch { }
           try {
-            const stopsRes = await fetchMapFile("DBus/stops.xml", { cache: "no-store" });
+            const stopsRes = await fetchMapFile("Mode%20Bus/stops.xml", { cache: "no-store" });
             if (stopsRes.ok) {
               const xmlRaw = await stopsRes.text();
               const xml = new DOMParser().parseFromString(xmlRaw, "text/xml");
