@@ -1,0 +1,137 @@
+@font-face {
+  font-family: "ParisineBold";
+  src: url("./assets/fonts/Parisine-Bold-Fixed.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "ParisineRegular";
+  src: url("./assets/fonts/Parisine-Regular-Fixed.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "AchemineBold";
+  src: url("./assets/fonts/achemine_bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "AchemineRegular";
+  src: url("./assets/fonts/achemine_regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "AchemineItalic";
+  src: url("./assets/fonts/achemine_italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "IDFMBold";
+  src: url("./assets/fonts/IDFVoyageur-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "IDFMRegular";
+  src: url("./assets/fonts/IDFVoyageur-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "IDFMMedium";
+  src: url("./assets/fonts/IDFVoyageur-Medium.ttf") format("truetype");
+}
+
+:root {
+  --wg-green: #00aa83;
+  --wg-blue: #e6f6f3;
+  font-family: "ParisineRegular", "AchemineRegular", "sans-serif";
+
+  --ratp-blue: #0a0086;
+  --ratp-red: #ff1400;
+--ratp-beige: #e8ded4;
+  --ratp-red-rgb: 255, 20, 0;
+
+  --ratp-bg: #bec5df;
+  --ratp-yellow: #fec107;
+  --ratp-orange: #ff8c00;
+
+  --ratp-orange-rgb: 255, 140, 0;
+--ratp-brown: #6E491E;
+  --ratp-green: #01aa01;
+  --ratp-bg2: #dee2ee;
+
+  --ratp-purple: #544dad;
+
+  --idfm-blue: rgb(100, 181, 229);
+  --idfm-black: #221f21;
+  --idfm-white: rgb(255, 255, 255);
+  --idfm-grey: rgb(217, 217, 214);
+  --idfm-brown: rgb(72, 45, 10);
+}
+img {
+  /*  no drag */
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+html,
+body,
+#app, .content {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  font-family: "ParisineRegular", "AchemineRegular", "sans-serif";
+}
+.blink{
+  animation: blink 1s infinite;
+}
+.hidden{
+  visibility: hidden;
+}
+@keyframes blink {
+  0%,
+  49% {
+    background-color: var(--ratp-yellow);
+  }
+  50%,
+  100% {
+    background-color: white;
+  }
+}
+.blink-text{
+  animation: blink-text 2s infinite;
+}
+@keyframes blink-text {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: .5;
+  }
+}
+.text-translation-fade-enter-active,
+.text-translation-fade-leave-active {
+  transition: opacity 0.5s ease-in-out;
+}
+
+.text-translation-fade-enter-from {
+  opacity: 0;
+}
+
+.text-translation-fade-leave-to {
+  opacity: 0;
+}
+.translation {
+  display: inline-block;
+}
+@media (prefers-color-scheme: dark) {
+body {
+    background-color: #121212;
+    color: white;
+  }
+
+}
+body:has( dialog[open] ) {
+  overflow: hidden;
+}

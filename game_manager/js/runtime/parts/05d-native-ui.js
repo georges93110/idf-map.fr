@@ -218,7 +218,7 @@ function buildNativeGirouetteMessage(s){
  var number=route?getLineNumber(line,route):'';
  var style=route?nativeServiceStyle(line,route,number):{};
  return {type:'nativeGirouette',protocol:1,generation:nativeGameModeGeneration,enabled:bus,
-   line:route?(style.label||number):'',destination:route?(last?String(last.name||last.stop&&last.stop.name||''):String(s.routeName||'')):'Sans voyageur',
+   line:route?String(style.label||number).replace(/\s*\(provisoire\)/gi,'').trim():'',destination:route?(last?String(last.name||last.stop&&last.stop.name||''):String(s.routeName||'')).replace(/\s*\(provisoire\)/gi,'').trim():'Sans voyageur',
    badge:!!route&&line.badge!==false,partial:!!route&&route.partiel===true,stripe:style.stripe||'',
    background:style.background||'#000000',foreground:style.foreground||'#ffffff'};
 }

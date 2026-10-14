@@ -1,0 +1,1 @@
+import {defineConfig} from 'vite';import vue from '@vitejs/plugin-vue';export default defineConfig({base:'/game_manager/lumiplan/source/dist/',publicDir:'public-idf',plugins:[vue()],build:{outDir:'dist',emptyOutDir:true}});

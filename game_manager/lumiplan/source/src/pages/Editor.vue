@@ -1,0 +1,730 @@
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import {
+  Desserte,
+  DesserteWithLine,
+  Line,
+  Mode,
+  SaveFile,
+  StopWithTime,
+  SaveInfoTrafic,
+} from "../types";
+import LineEditorModal from "../components/Editor/LineEditorModal.vue";
+import StopEditorModal from "../components/Editor/StopEditorModal.vue";
+import EditorSidebar from "../components/Editor/EditorSidebar.vue";
+import ApiImportJourneyModal from "../components/Editor/ApiImportJourneyModal.vue";
+import EditorStopList from "../components/Editor/EditorStopList.vue";
+import AutosaveRestoreModal from "../components/Editor/AutosaveRestoreModal.vue";
+import EditorTrafficInfo from "../components/Editor/EditorTrafficInfo.vue";
+import { cleanId, sortedLines } from "../utils";
+import { Api } from "../api.ts";
+import { RER_LINES, TRANSILIEN_LINES, METRO_LINES, TRAM_LINES, CABLE_LINES, BUS_LINES } from "../lines";
+
+const PRESET_LINES = [
+  ...RER_LINES,
+  ...TRANSILIEN_LINES,
+  ...METRO_LINES,
+  ...TRAM_LINES,
+  ...CABLE_LINES,
+  ...BUS_LINES,
+];
+
+const injectPresetLines = (currentLines: Line[]) => {
+  const lineIds = new Set(currentLines.map((l) => l.id));
+  for (const preset of PRESET_LINES) {
+    if (!lineIds.has(preset.id)) {
+      currentLines.push(JSON.parse(JSON.stringify(preset)));
+      lineIds.add(preset.id);
+    }
+  }
+};
+import NewsModal from "../components/NewsModal.vue";
+import { DEFAULT_BG_COLORS } from "../colors.ts";
+
+const messages = ref<SaveInfoTrafic[]>([]);
+const router = useRouter();
+const route = useRoute();
+
+const isLoading = ref(false);
+
+const defaultLine: Line = {
+  id: 'editor-made-line-' + crypto.randomUUID(),
+  mode: Mode.BUS,
+  name: "Ligne n°1",
+  color:
+    DEFAULT_BG_COLORS[Math.floor(Math.random() * DEFAULT_BG_COLORS.length)].hex,
+  textColor: "#FFFFFF",
+};
+const defaultStop: StopWithTime = {
+  stop: {
+    id: "editor-made-stop",
+    name: "",
+    landmarkName: "",
+    subtitle: "",
+    isAccessible: false,
+    hasGapWhenSteppingOff: false,
+    connectedLines: [],
+  },
+  timeOfArrival: new Date().toISOString(),
+  timeOfDeparture: new Date().toISOString(),
+  travelTime: 45,
+  isTerminus: false,
+  isFirstStop: false,
+  isStopSkipped: false,
+};
+const defaultDesserte: DesserteWithLine = {
+  line: defaultLine,
+  desserte: {
+    id: "editor-made-journey",
+    direction: "Ma direction",
+    stops: [],
+    servesAirport: false,
+    hasWheelchairAccess: false,
+    isLimitedService: false,
+  },
+};
+
+const _lines = ref<Line[]>([defaultDesserte.line]);
+injectPresetLines(_lines.value);
+const lines = computed(() => sortedLines(_lines.value));
+const desserteWithLine = ref<DesserteWithLine>(defaultDesserte);
+const saveFileName = ref<string>("Ma Desserte");
+const copySuccess = ref(false);
+const downloadSuccess = ref(false);
+const selectedLineInModal = ref<Line | null>(null);
+const selectedStopInModal = ref<StopWithTime | null>(null);
+const lineModalRef = ref<InstanceType<typeof LineEditorModal> | null>(null);
+const stopModalRef = ref<InstanceType<typeof StopEditorModal> | null>(null);
+const apiModalRef = ref<InstanceType<typeof ApiImportJourneyModal> | null>(
+  null,
+);
+const autosaveModalRef = ref<InstanceType<typeof AutosaveRestoreModal> | null>(
+  null,
+);
+
+const sortedStops = computed(() => {
+  return desserteWithLine.value.desserte.stops;
+});
+
+const normalizeStopFlags = () => {
+  const stops = desserteWithLine.value.desserte.stops;
+  if (stops.length === 0) return;
+  stops.forEach((stop, index) => {
+    stop.isFirstStop = index === 0;
+    if (index > 0) {
+      const travelTime = Math.max(stop.travelTime || 60, 20);
+      stop.travelTime = travelTime;
+
+      stop.timeOfArrival = addTimeToDate(
+        stops[index - 1].timeOfDeparture || new Date().toISOString(),
+        travelTime,
+      );
+      stop.timeOfDeparture = addTimeToDate(stop.timeOfArrival, 20);
+    }
+  });
+};
+
+watch(
+  () => desserteWithLine.value.desserte.stops,
+  () => {
+    normalizeStopFlags();
+  },
+  { deep: true, immediate: true },
+);
+
+const openLineEditorModal = (line: Line) => {
+  selectedLineInModal.value = line;
+  lineModalRef.value?.open();
+};
+const openStopEditorModal = (stop: StopWithTime) => {
+  selectedStopInModal.value = stop;
+  stopModalRef.value?.open();
+};
+
+const addLine = () => {
+  const newLine: Line = {
+    ...defaultLine,
+    name: `Ligne n°${_lines.value.filter((l) => l.id.startsWith("editor-made-line")).length + 1}`,
+    color:
+      DEFAULT_BG_COLORS[Math.floor(Math.random() * DEFAULT_BG_COLORS.length)]
+        .hex,
+    id: `editor-made-line-${crypto.randomUUID()}`,
+  };
+  lines.value.push(newLine);
+  selectedLineInModal.value = newLine;
+  lineModalRef.value?.open();
+};
+const addStop = () => {
+  const stops = desserteWithLine.value.desserte.stops;
+  const lastDate =
+    stops.length > 0
+      ? stops[stops.length - 1].timeOfDeparture
+      : new Date().toISOString();
+
+  if (stops.length > 0) {
+    stops[stops.length - 1].isTerminus = false;
+  }
+
+  stops.push({
+    ...defaultStop,
+    stop: {
+      ...defaultStop.stop,
+      isAccessible: desserteWithLine.value.desserte.hasWheelchairAccess,
+      id: `editor-made-stop-${crypto.randomUUID()}`,
+    },
+    travelTime: 60,
+    timeOfDeparture: addTimeToDate(lastDate, 60),
+    timeOfArrival: addTimeToDate(lastDate, 75),
+    isTerminus: true,
+  });
+  normalizeStopFlags();
+};
+
+const addTimeToDate = (
+  isoString: string,
+  additionalSeconds: number,
+): string => {
+  const date = new Date(isoString);
+  date.setSeconds(date.getSeconds() + additionalSeconds);
+  return date.toISOString();
+};
+
+const handleSelectBaseLine = (lineId: string) => {
+  const selectedBaseLine = lines.value.find((l) => cleanId(l.id) === cleanId(lineId));
+  if (selectedBaseLine) {
+    desserteWithLine.value.line = selectedBaseLine;
+  }
+};
+const loadData = (parsedData: SaveFile, fallbackName: string) => {
+  _lines.value = parsedData.lines;
+  injectPresetLines(_lines.value);
+  desserteWithLine.value = parsedData.journey;
+  messages.value = parsedData.messages || [];
+
+  const baseLine = _lines.value.find(
+    (l) => l.id === desserteWithLine.value.line.id,
+  );
+  if (baseLine) {
+    desserteWithLine.value.line = baseLine;
+  } else {
+    _lines.value.push(desserteWithLine.value.line);
+  }
+
+  desserteWithLine.value.desserte.stops.forEach((stop: StopWithTime) => {
+    stop.stop.connectedLines = lines.value.filter((line) =>
+      stop.stop.connectedLines.some(
+        (connectedLine) => connectedLine.id === line.id,
+      ),
+    );
+  });
+  saveFileName.value = parsedData.header.name || fallbackName;
+};
+
+const handleApiImport = (journey: Desserte) => {
+  const uniqueLines = new Map<string, Line>();
+  journey.stops.forEach((s) => {
+    s.stop.connectedLines.forEach((l) => {
+      if (!uniqueLines.has(l.id)) {
+        uniqueLines.set(l.id, l);
+      }
+    });
+  });
+  journey.stops.forEach((s) => {
+    s.stop.connectedLines = s.stop.connectedLines.map(
+      (l) => uniqueLines.get(l.id) as Line,
+    );
+  });
+
+  desserteWithLine.value.desserte = journey;
+  _lines.value = Array.from(uniqueLines.values());
+  injectPresetLines(_lines.value);
+
+  const existingBase = _lines.value.find(
+    (l) => cleanId(l.id) === cleanId(desserteWithLine.value.line.id),
+  );
+  if (existingBase) {
+    desserteWithLine.value.line = existingBase;
+  } else if (_lines.value.length > 0) {
+    desserteWithLine.value.line = _lines.value[0];
+  } else {
+    _lines.value.push(desserteWithLine.value.line);
+  }
+
+  saveFileName.value = `Import_${journey.id}`;
+};
+const applyImportedData = (jsonString: string) => {
+  try {
+    const parsedData = JSON.parse(jsonString) as SaveFile;
+    if (
+      parsedData?.header &&
+      Array.isArray(parsedData.lines) &&
+      parsedData.journey
+    ) {
+      if (
+        confirm(
+          "L'importation d'un fichier va écraser votre travail actuel. Continuer ?",
+        )
+      ) {
+        loadData(parsedData, "Import JSON");
+        alert(
+          `Importation réussie : ${parsedData.header.name || "Projet sans nom"}`,
+        );
+      }
+    } else alert("Le format du fichier JSON est invalide.");
+  } catch {
+    alert("Impossible de lire les données JSON.");
+  }
+};
+
+const getExportData = (): string => {
+  const usedLineIds = new Set<string>();
+  
+  const collectUsedIds = (line: Line) => {
+    usedLineIds.add(line.id);
+    if (line.linkedLine) {
+      collectUsedIds(line.linkedLine);
+    }
+  };
+
+  collectUsedIds(desserteWithLine.value.line);
+  sortedStops.value.forEach(stop => {
+    stop.stop.connectedLines.forEach(collectUsedIds);
+  });
+
+  const linesToSave = lines.value.filter(line => {
+    if (line.exludeInSaveFile) {
+      return usedLineIds.has(line.id);
+    }
+    return true;
+  });
+
+  return JSON.stringify(
+    {
+      header: {
+        dateTime: new Date().toISOString(),
+        version: "1.0.0",
+        name: saveFileName.value || "Sauvegarde",
+      },
+      lines: linesToSave,
+      messages: messages.value,
+      journey: {
+        ...desserteWithLine.value,
+        desserte: {
+          ...desserteWithLine.value.desserte,
+          stops: sortedStops.value,
+        },
+      },
+    },
+    null,
+    2,
+  );
+};
+
+const copyToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(getExportData());
+    copySuccess.value = true;
+    setTimeout(() => {
+      copySuccess.value = false;
+    }, 2000);
+  } catch {
+    alert("Impossible de copier.");
+  }
+};
+
+const openApiModal = () => {
+  apiModalRef.value?.open();
+};
+
+const moveUpStop = (stop: StopWithTime) => {
+  const index = desserteWithLine.value.desserte.stops.findIndex(
+    (s) => s.stop.id === stop.stop.id,
+  );
+  if (index > 0) {
+    const stops = desserteWithLine.value.desserte.stops;
+    [stops[index - 1], stops[index]] = [stops[index], stops[index - 1]];
+    normalizeStopFlags();
+  }
+};
+
+const moveDownStop = (stop: StopWithTime) => {
+  const index = desserteWithLine.value.desserte.stops.findIndex(
+    (s) => s.stop.id === stop.stop.id,
+  );
+  if (index < desserteWithLine.value.desserte.stops.length - 1) {
+    const stops = desserteWithLine.value.desserte.stops;
+    [stops[index], stops[index + 1]] = [stops[index + 1], stops[index]];
+    normalizeStopFlags();
+  }
+};
+
+const downloadJson = () => {
+  try {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(
+      new Blob([getExportData()], { type: "application/json" }),
+    );
+    link.download = `${(saveFileName.value || "desserte").replace(/[^a-z0-9]/gi, "_").toLowerCase()}.json`;
+    link.click();
+    downloadSuccess.value = true;
+    setTimeout(() => {
+      downloadSuccess.value = false;
+    }, 2000);
+  } catch {
+    alert("Impossible de télécharger.");
+  }
+};
+
+const AUTOSAVE_KEY = "lumiplan_editor_autosave_data";
+const isReadyForAutosave = ref(false);
+const isNewsModalOpen = ref(false);
+
+const handleAutosaveRestore = (parsedData: SaveFile) => {
+  loadData(parsedData, parsedData.header.name);
+};
+
+const launchScreen = () => {
+  localStorage.setItem(AUTOSAVE_KEY, getExportData());
+  const routeData = router.resolve({
+    path: "/screen",
+    query: { loadSave: "true" },
+  });
+  window.open(routeData.href, "_blank");
+};
+
+const deleteStop = (stop: StopWithTime) => {
+  desserteWithLine.value.desserte.stops =
+    desserteWithLine.value.desserte.stops.filter(
+      (s) => s.stop.id !== stop.stop.id,
+    );
+  normalizeStopFlags();
+};
+
+onMounted(async () => {
+  const lineId = route.query.line as string;
+  const tripId = route.query.trip as string;
+
+  if (lineId && tripId) {
+    isLoading.value = true;
+    try {
+      const response = await Api.getJourney(tripId,false);
+      if (!response) {
+        return;
+      }
+      handleApiImport(response);
+      handleSelectBaseLine(lineId);
+    } catch (error) {
+      console.error("Erreur réseau lors de la récupération du trip:", error);
+    } finally {
+      isLoading.value = false;
+    }
+  } else {
+    const autosaveData = localStorage.getItem(AUTOSAVE_KEY);
+    if (autosaveData) {
+      try {
+        const parsedData = JSON.parse(autosaveData) as SaveFile;
+        if (
+          parsedData?.header &&
+          Array.isArray(parsedData.lines) &&
+          parsedData.journey
+        ) {
+          autosaveModalRef.value?.open(parsedData);
+        }
+      } catch (e) {
+        console.error(
+          "Erreur lors de la lecture de la sauvegarde automatique.",
+          e,
+        );
+      }
+    }
+  }
+
+  setTimeout(() => {
+    isReadyForAutosave.value = true;
+  }, 500);
+});
+
+watch(
+  () => [
+    desserteWithLine.value,
+    _lines.value,
+    saveFileName.value,
+    messages.value,
+  ],
+  () => {
+    if (!isReadyForAutosave.value) return;
+    localStorage.setItem(AUTOSAVE_KEY, getExportData());
+  },
+  { deep: true },
+);
+
+const deleteLine = (line: Line) => {
+  _lines.value = _lines.value.filter((l) => l.id !== line.id);
+};
+</script>
+
+<template>
+  <div class="page-wrapper">
+    <LineEditorModal
+      ref="lineModalRef"
+      :line="selectedLineInModal"
+      :all-lines="lines"
+    />
+    <StopEditorModal
+      ref="stopModalRef"
+      :all-lines="lines"
+      :stop="selectedStopInModal"
+    />
+    <NewsModal v-if="isNewsModalOpen" @close="isNewsModalOpen = false" />
+    <ApiImportJourneyModal ref="apiModalRef" @import="handleApiImport" />
+    <AutosaveRestoreModal
+      ref="autosaveModalRef"
+      @restore="handleAutosaveRestore"
+    />
+
+    <!-- Écran de chargement -->
+    <div v-if="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement du service depuis l'API...</p>
+    </div>
+    <div v-else class="editor-layout">
+      <header class="page-header">
+        <div class="header-titles">
+          <h1>Éditeur de Services</h1>
+          <p>Configurez vos lignes et les arrêts de votre service.</p>
+        </div>
+        <div class="header-actions">
+          <button class="news-btn" @click="isNewsModalOpen = true">
+            <i class="bi bi-bell-fill"></i> Nouveautés !
+          </button>
+          <button class="btn-launch-screen" @click="launchScreen">
+            <span class="launch-icon">▶</span>
+            Lancer l'écran
+          </button>
+          <button class="btn-exit" @click="router.push('/')">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-box-arrow-right"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"
+              />
+              <path
+                fill-rule="evenodd"
+                d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+      <div class="editor-grid">
+        <EditorSidebar
+          :lines="lines"
+          :selected-line="desserteWithLine.line"
+          v-model:fileName="saveFileName"
+          :copySuccess="copySuccess"
+          :downloadSuccess="downloadSuccess"
+          @add-line="addLine"
+          @edit-line="openLineEditorModal"
+          @copy-export="copyToClipboard"
+          @select-base-line="handleSelectBaseLine"
+          @download-export="downloadJson"
+          @open-api="openApiModal"
+          @import-json="applyImportedData"
+          @delete-line="deleteLine"
+        />
+
+        <div class="editor-main-column">
+          <EditorStopList
+            :desserteWithLine="desserteWithLine"
+            :sortedStops="sortedStops"
+            :allLines="lines"
+            @edit-operated-line="openLineEditorModal"
+            @add-stop="addStop"
+            @edit-stop="openStopEditorModal"
+            @delete-stop="deleteStop"
+            @select-base-line="handleSelectBaseLine"
+            @move-up="moveUpStop"
+            @move-down="moveDownStop"
+          />
+          <EditorTrafficInfo
+            :messages="messages"
+            @update:messages="messages = $event"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="css">
+.page-wrapper {
+  min-height: 100vh;
+  background-color: #f4f7f8;
+  padding: 32px 16px;
+  font-family: inherit;
+  color: #333;
+}
+.editor-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.page-header {
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-titles h1 {
+  margin: 0 0 8px 0;
+  font-size: 2.2rem;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+}
+.header-titles p {
+  margin: 0;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.btn-launch-screen {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  transition: all 0.2s ease;
+}
+.btn-launch-screen:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+}
+.btn-launch-screen:active {
+  transform: translateY(0);
+}
+.btn-exit{
+  background-color: #b3b2b2;
+  color: rgb(16, 15, 15);
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-exit:hover {
+  background-color: #a1a1a1;
+  transform: translateY(-2px);
+}
+.launch-icon {
+  font-size: 1.2rem;
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.news-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  background-color: #c2185b;
+  color: white;
+  box-shadow: 0 4px 8px rgba(194, 24, 91, 0.2);
+  border: 1px solid #c2185b;
+
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 1.1rem;
+}
+
+.news-btn:hover {
+  background-color: #fff0f5;
+  color: #c2185b;
+  border: 1px solid #f8bbd0;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 850px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .btn-launch-screen {
+    width: 100%;
+    justify-content: center;
+  }
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.editor-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: #555;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid rgba(0, 123, 255, 0.15);
+  border-bottom-color: #007bff;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+</style>

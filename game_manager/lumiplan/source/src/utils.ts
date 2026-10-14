@@ -1,0 +1,159 @@
+import { useClock } from "./composables/useClock";
+import { Line, Mode, Status, VehicleJourney } from "./types";
+
+export const getSecondesFromDate = (
+  dateString: string,
+  allowNegativesValues = false,
+): number => {
+  const { now } = useClock();
+
+  const current = now.value;
+  const inputDate = new Date(dateString);
+
+  const target = new Date(current);
+  target.setHours(
+    inputDate.getHours(),
+    inputDate.getMinutes(),
+    inputDate.getSeconds(),
+    inputDate.getMilliseconds(),
+  );
+
+  const diff = Math.floor((target.getTime() - current.getTime()) / 1000);
+
+  return allowNegativesValues ? diff : Math.max(0, diff);
+};
+
+export const getMinutesFromDate = (dateString: string): number => {
+  return Math.max(0, Math.floor(getSecondesFromDate(dateString) / 60));
+};
+/**
+ * Clean and strip a stop id or a line id
+ * From STIF::Line:C01742: to C01742 or from STIF::StopPoint:SP:18455: to 18455
+ * @param id
+ * @returns  string
+ */
+export const cleanId = (id: string): string => {
+  return id
+    .toLocaleUpperCase()
+    .replace("FR-IDF", "")
+    .split(":")
+    .filter((s) => s)
+    .pop() as string;
+};
+
+// Fonction qui enlève les parenthèses et ce qu'il y a dedans
+export const cleanText = (text: string): string => {
+  return text.replace(/\(.*?\)/g, "").trim();
+};
+// Fonction qui récupère uniquement ce qu'il y a entre les parenthèses
+export const extractTextInParentheses = (text: string): string => {
+  const match = text.match(/\((.*?)\)/);
+  return match ? match[1] : "";
+};
+export const sortedLines = (lines: Line[]): Line[] => {
+  const modeOrder = [
+    Mode.RER,
+    Mode.TRANSILIEN,
+    Mode.METRO,
+    Mode.CABLE,
+    Mode.TRAM,
+    Mode.TER,
+    Mode.BUS,
+    Mode.NOCTILIEN,
+  ];
+
+  return lines.sort((a, b) => {
+    const aIsCustom = a.id.startsWith("editor-made-line");
+    const bIsCustom = b.id.startsWith("editor-made-line");
+    
+    if (aIsCustom && !bIsCustom) return -1;
+    if (!aIsCustom && bIsCustom) return 1;
+
+    const aIndex = modeOrder.indexOf(a.mode);
+    const bIndex = modeOrder.indexOf(b.mode);
+    if (aIndex === bIndex) {
+      // on essaie de parser en chiffre
+      const aNumber = parseInt(a.name, 10);
+      const bNumber = parseInt(b.name, 10);
+      if (!isNaN(aNumber) && !isNaN(bNumber)) {
+        return aNumber - bNumber;
+      }
+      return a.name.localeCompare(b.name);
+    }
+    return aIndex - bIndex;
+  });
+};
+export const sortVehicleJourneys = (
+  journeys: VehicleJourney[],
+): VehicleJourney[] => {
+  const now = Date.now();
+
+  return [...journeys].sort((a, b) => {
+    const getInfo = (journey: VehicleJourney) => {
+      const stops = journey.stopTimes ?? [];
+
+      if (stops.length === 0) {
+        return {
+          group: 3,
+          departureTime: Infinity,
+          remainingStops: 0,
+        };
+      }
+
+      const firstStop = stops[0];
+      const departureTime = new Date(firstStop.departureTime).getTime();
+
+      const remainingStops = stops.filter((stop) => {
+        const stopTime = new Date(stop.departureTime).getTime();
+
+        return (
+          stop.status !== Status.SkippedStop &&
+          stopTime >= now
+        );
+      }).length;
+
+      const notStarted = departureTime > now;
+
+      const inProgress = !notStarted && remainingStops > 2;
+
+      if (inProgress) {
+        return {
+          group: 0,
+          departureTime,
+          remainingStops,
+        };
+      }
+
+      if (notStarted) {
+        return {
+          group: 1,
+          departureTime,
+          remainingStops,
+        };
+      }
+
+      return {
+        group: 2,
+        departureTime,
+        remainingStops,
+      };
+    };
+
+    const infoA = getInfo(a);
+    const infoB = getInfo(b);
+
+    if (infoA.group !== infoB.group) {
+      return infoA.group - infoB.group;
+    }
+
+    if (infoA.group === 0) {
+      return infoB.remainingStops - infoA.remainingStops;
+    }
+
+    if (infoA.group === 1) {
+      return infoA.departureTime - infoB.departureTime;
+    }
+
+    return 0;
+  });
+};

@@ -20,7 +20,7 @@ function passengerCabinReady() {
   var s=busSpatialAudio,now=Date.now();
   return typeof currentGameMode!=='undefined'&&normalizeGameMode(currentGameMode)==='bus'&&
     now-passengerCabinAudio.stamp<750&&now-s.stamp<1000&&s.telemetry&&
-    s.telemetry.audioCameraAvailable&&s.telemetry.audioCameraInside&&!s.telemetry.paused&&
+    s.telemetry.passengerEffectsEnabled!==false&&s.telemetry.audioCameraAvailable&&s.telemetry.audioCameraInside&&!s.telemetry.paused&&
     nativeGameAudio.available&&now-nativeGameAudio.stamp<2000&&getGlobalAudioVolumeFactor()>0;
 }
 function stopPassengerAmbience() {
