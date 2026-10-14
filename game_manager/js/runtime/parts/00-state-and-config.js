@@ -121,6 +121,7 @@
         return "../map_files/" + safeVersion + "/" + clean;
       }
       function gameMapCandidateVersions(primaryVersion) {
+        if (String(primaryVersion || "").trim() === GAME_DEV_MAP_LAYER_VERSION) return [GAME_DEV_MAP_LAYER_VERSION];
         if (isGameDevMapModeEnabled()) {
           return [GAME_DEV_MAP_LAYER_VERSION, GAME_DEV_MAP_BASE_VERSION];
         }

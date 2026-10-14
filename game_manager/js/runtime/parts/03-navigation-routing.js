@@ -139,26 +139,9 @@
         return 0;
       }
       function loadBestNavGraphVersion() {
-        if (isGameDevMapModeEnabled()) return Promise.resolve(GAME_DEV_MAP_BASE_VERSION);
-        return fetch("../map_files/versions.json", { cache: "no-store" })
-          .then(function (res) {
-            if (!res || !res.ok) return null;
-            return res.json();
-          })
-          .then(function (data) {
-            var list = [];
-            if (Array.isArray(data)) list = data;
-            else if (data && Array.isArray(data.versions)) list = data.versions;
-            var parsed = [];
-            list.forEach(function (v) {
-              var p = parseVersionTag(v);
-              if (p) parsed.push(p);
-            });
-            if (!parsed.length) return null;
-            parsed.sort(compareVersionTags);
-            return parsed[parsed.length - 1].raw;
-          })
-          .catch(function () { return null; });
+        // The in-game service catalogue and its road network share Dev.
+        // Never combine current stops with a released navigation graph.
+        return Promise.resolve(GAME_DEV_MAP_LAYER_VERSION);
       }
       function loadNavBridgesForVersion(version) {
         var safeVersion = String(version || "").trim();
@@ -183,7 +166,7 @@
             var candidates = [];
             var primary = String(bestVersion || "").trim();
             if (primary) candidates.push(primary);
-            if (candidates.indexOf(DBUS_GAME_FALLBACK_VERSION) === -1) {
+            if (primary !== GAME_DEV_MAP_LAYER_VERSION && candidates.indexOf(DBUS_GAME_FALLBACK_VERSION) === -1) {
               candidates.push(DBUS_GAME_FALLBACK_VERSION);
             }
             function tryVersion(index) {
@@ -314,7 +297,7 @@
             var candidates = [];
             var primary = String(bestVersion || "").trim();
             if (primary) candidates.push(primary);
-            if (candidates.indexOf(DBUS_GAME_FALLBACK_VERSION) === -1) {
+            if (primary !== GAME_DEV_MAP_LAYER_VERSION && candidates.indexOf(DBUS_GAME_FALLBACK_VERSION) === -1) {
               candidates.push(DBUS_GAME_FALLBACK_VERSION);
             }
             function tryVersion(index) {
@@ -1475,7 +1458,7 @@
             var candidates = [];
             var primary = String(version || "").trim();
             if (primary) candidates.push(primary);
-            if (candidates.indexOf(GAME_DEV_MAP_BASE_VERSION) === -1) candidates.push(GAME_DEV_MAP_BASE_VERSION);
+            if (primary !== GAME_DEV_MAP_LAYER_VERSION && candidates.indexOf(GAME_DEV_MAP_BASE_VERSION) === -1) candidates.push(GAME_DEV_MAP_BASE_VERSION);
             function tryFetch(index) {
               if (index >= candidates.length) throw new Error("nav_graph");
               var safeVersion = candidates[index];

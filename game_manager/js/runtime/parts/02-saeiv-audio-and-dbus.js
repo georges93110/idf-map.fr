@@ -1396,9 +1396,10 @@ function tickSaeivAutomaticDestination() {
         if(xml.querySelector('parsererror'))throw new Error('XML invalide');
         return xml;
       }
-      function fetchXmlDoc(path, version) {
-        var loader = version
-          ? fetchGameMapFile(path, version, { cache: "no-store" })
+      function fetchXmlDoc(path, version, exactVersion) {
+        var loader = exactVersion
+          ? fetch(gameMapFilePathForVersion(version, path), { cache: "no-store" })
+          : version ? fetchGameMapFile(path, version, { cache: "no-store" })
           : fetch(path, { cache: "no-store" });
         return loader
           .then(function (res) {
@@ -1495,8 +1496,8 @@ function tickSaeivAutomaticDestination() {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
         return Promise.all([
-          fetchXmlDoc("DBus/stops.xml", safeVersion),
-          fetchXmlDoc("DBus/lines.xml", safeVersion)
+          fetchXmlDoc("DBus/stops.xml", safeVersion, true),
+          fetchXmlDoc("DBus/lines.xml", safeVersion, true)
         ]).then(function (list) {
           return {
             version: safeVersion,
@@ -1514,22 +1515,11 @@ function tickSaeivAutomaticDestination() {
             lines: dbusLines
           });
         }
-        dbusLoadPromise = loadBestNavGraphVersion()
-          .then(function (bestVersion) {
-            var candidates = [];
-            var primary = String(bestVersion || "").trim();
-            if (primary) candidates.push(primary);
-            if (candidates.indexOf(DBUS_GAME_FALLBACK_VERSION) === -1) {
-              candidates.push(DBUS_GAME_FALLBACK_VERSION);
-            }
-            function tryVersion(index) {
-              if (index >= candidates.length) throw new Error("dbus_data_unavailable");
-              return loadDbusDataForVersion(candidates[index]).catch(function () {
-                return tryVersion(index + 1);
-              });
-            }
-            return tryVersion(0);
-          })
+        // The bus catalogue is maintained in Dev, independently of the
+        // released navigation graph and the stored map-preview preference.
+        // Both XML files must come from the same version; never silently mix
+        // Dev lines/types with 0.1.6a stops after a failed HTTP request.
+        dbusLoadPromise = loadDbusDataForVersion(GAME_DEV_MAP_LAYER_VERSION)
           .then(function (loaded) {
             dbusDataVersion = String(loaded.version || "");
             dbusStopsById = loaded.stops instanceof Map ? loaded.stops : new Map();
