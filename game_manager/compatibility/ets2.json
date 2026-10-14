@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "resolver": 1,
-  "revision": 5,
+  "revision": 6,
   "profiles": [
     {
       "sha256": "2014bfcc850a06108f4ca3c233a5bb6d31d7d83346c5d449f94c8e0675e5199a",
@@ -1872,6 +1872,10 @@
         {
           "id": "rva_02450df8",
           "rva": 38079992
+        },
+        {
+          "id": "rva_02454218",
+          "rva": 38093336
         },
         {
           "id": "rva_02454220",

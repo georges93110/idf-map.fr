@@ -79,10 +79,12 @@ function createServer({ WebSocketServer, store, authorizeConvoy, log = console.e
   }
   return { server, close, rooms };
 }
-if (require.main === module) {
+function start() {
   const { WebSocketServer } = require('ws'), Database = require('better-sqlite3');
   const app = createServer({ WebSocketServer, store: new PlayerStore({ Database, file: process.env.DB_PATH }) });
-  app.server.listen(Number(process.env.WS_PORT || process.env.PORT || 9377), process.env.WS_HOST || '127.0.0.1');
+  app.server.listen(Number(process.env.WS_PORT || process.env.PORT || 9377), process.env.WS_HOST || '0.0.0.0');
   process.once('SIGINT', () => app.close()); process.once('SIGTERM', () => app.close());
+  return app;
 }
-module.exports = { createServer };
+if (require.main === module) start();
+module.exports = { createServer, start };

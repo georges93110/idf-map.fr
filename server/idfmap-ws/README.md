@@ -5,9 +5,9 @@ Sources locales uniquement : aucun déploiement ni push n'est effectué par les 
 ## Installation sur le serveur existant
 
 1. Arrêter proprement l'ancien service Node et sauvegarder son dossier `data` (SQLite, WAL et SHM éventuels).
-2. Installer ces sources et leurs dépendances avec Node.js 20 ou ultérieur : `npm install`.
+2. Copier le **contenu de ce dossier** à la racine de l'application Node de l'hébergeur : `server.js`, `server.cjs`, `store.cjs`, `package.json` et le dossier `convoy`. Installer leurs dépendances avec Node.js 20 ou ultérieur : `npm install`.
 3. Conserver `data/player_stats.sqlite`, ou définir `DB_PATH` vers la base existante. La migration conserve les tables et les données de télémétrie et de lignes.
-4. Démarrer avec `npm start`. `WS_PORT` (ou `PORT`) vaut 9377 par défaut ; `WS_HOST` vaut `127.0.0.1` derrière le proxy HTTPS.
+4. Configurer le fichier de démarrage de l'hébergeur sur **`server.js`**, puis démarrer avec `npm start` ou `node server.js`. `WS_PORT` (ou `PORT`) vaut 9377 par défaut. L'écoute utilise `0.0.0.0` pour les hébergements en conteneur ; `WS_HOST=127.0.0.1` permet une écoute locale si le proxy est sur le même hôte.
 5. Le proxy de `panel.idf-map.fr` doit transmettre l'upgrade WebSocket de `/idfmap/ws/native/` au serveur. Le chemin intégral et `/` après suppression du préfixe sont acceptés.
 6. Déployer aussi les fichiers modifiés du site, dont `game_manager/js/runtime/game2-main.js` et les parties de son runtime. La DLL ne publie pas le site.
 

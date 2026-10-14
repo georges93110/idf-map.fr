@@ -2,9 +2,9 @@
   "name": "idfmap-ws",
   "version": "2.0.0",
   "private": true,
-  "main": "server.cjs",
-  "scripts": { "start": "node server.cjs", "test": "node --test test/*.test.cjs" },
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "test": "node --test test/*.test.cjs" },
   "engines": { "node": ">=20" },
-  "dependencies": { "ws": "8.20.0" },
-  "peerDependencies": { "better-sqlite3": ">=11" }
+  "dependencies": { "ws": "8.20.0", "better-sqlite3": ">=11" }
 }
