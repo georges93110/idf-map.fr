@@ -9,7 +9,7 @@ import {Mode} from './types';import {setGameTime} from './composables/useClock';
 const snapshot=shallowRef<any>({powered:false,state:null});
 const data=computed(()=>snapshot.value.state||{});
 const names=computed(()=>Array.isArray(data.value.audioStopNames)?data.value.audioStopNames.slice(0,512).map(String):[]);
-const valid=computed(()=>!!data.value.lineNumber&&names.value.length>0&&!data.value.routeCompleted&&!data.value.lumiplan?.finished);
+const valid=computed(()=>!!data.value.lineNumber&&names.value.length>0&&!data.value.lumiplan?.finished);
 const direction=computed(()=>names.value.at(-1)||data.value.routeName||'');
 const line=computed(()=>({id:String(data.value.selectedLineUid||data.value.lineNumber||''),name:String(data.value.lineNumber||''),color:snapshot.value.color||'#009b7a',textColor:snapshot.value.textColor||'#ffffff',mode:/^N\d/.test(data.value.lineNumber)?Mode.NOCTILIEN:Mode.BUS}));
 const journey=computed(()=>data.value.lumiplan||{index:0,inStation:false});
