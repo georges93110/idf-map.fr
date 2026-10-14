@@ -3818,6 +3818,7 @@
             return;
           }
           if (raw && raw.type === "nativeBusSettings") { receiveNativeBusSettings(raw); return; }
+          if (raw && raw.type === "nativeConvoyAudio") { receiveNativeConvoyAudio(raw); return; }
           if (raw && raw.type === "nativeServicesSync") { receiveNativeServicesSync(raw); return; }
           if (raw && raw.type === "nativeServiceAction") { receiveNativeServiceAction(raw); return; }
           if (raw && raw.type === "nativeServiceBadgeRequest") { receiveNativeServiceBadgeRequest(raw); return; }
