@@ -12552,6 +12552,18 @@
             "end": 13,
             "sectionFlags": 536870912
           }
+        },
+        {
+          "id": "rva_007971a0",
+          "rva": 7958944,
+          "recipe": {
+            "pattern": "48 89 5c 24 08 57 48 83 ec 20 0f 10 41 40 48 8b d9 48 8b fa 0f 11 42 24 8b 41 50 89 42 34 8b 41 54 89 42 38 8b 41 58 89 42 3c 8b 41 5c 48 8b ca 89 42 40 48 8b 02 ff 50 30 8b 43 38 48 8b cf",
+            "method": "match",
+            "offset": 0,
+            "operand": 0,
+            "end": 0,
+            "sectionFlags": 536870912
+          }
         }
       ]
     }
