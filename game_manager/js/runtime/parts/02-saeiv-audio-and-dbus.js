@@ -1435,18 +1435,25 @@ function tickSaeivAutomaticDestination() {
         return xml;
       }
       function fetchXmlDoc(path, version, exactVersion) {
+        // Bound both HTTP headers and response-body loading. A hung request
+        // must release dbusLoadPromise so the next native heartbeat can retry.
+        var controller = new AbortController(), timer;
+        var options = { cache: "no-store", signal: controller.signal };
         var loader = exactVersion
-          ? fetch(gameMapFilePathForVersion(version, path), { cache: "no-store" })
-          : version ? fetchGameMapFile(path, version, { cache: "no-store" })
-          : fetch(path, { cache: "no-store" });
-        return loader
+          ? fetch(gameMapFilePathForVersion(version, path), options)
+          : version ? fetchGameMapFile(path, version, options)
+          : fetch(path, options);
+        var timeout = new Promise(function (_, reject) {
+          timer = setTimeout(function () { controller.abort(); reject(new Error("XML load timeout: " + path)); }, 10000);
+        });
+        return Promise.race([loader
           .then(function (res) {
             if (!res || !res.ok) throw new Error("XML load failed: " + path);
             return res.text();
           })
           .then(function (txt) {
             return parseDbusXmlText(txt);
-          });
+          }), timeout]).finally(function () { clearTimeout(timer); });
       }
       function parseDbusStopsXml(xml) {
         var out = new Map();

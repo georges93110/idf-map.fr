@@ -174,6 +174,9 @@ function receiveNativeGameMode(m){
     // ACK precedes GPS on the same socket, so generation authorization is
     // established before a restored/paused service submits its destination.
     syncNativeGpsDestination(false);
+    // Native events continue while hidden WebView timers can be throttled.
+    // Send the catalogue only after the generation ACK on this same socket.
+    if(m.mode==="bus"&&typeof syncNativeServices==='function')syncNativeServices();
   }
   return true;
 }
