@@ -5,13 +5,13 @@ import StopList from './components/MainPanel/StopList.vue';
 import CurrentStop from './components/MainPanel/CurrentStop.vue';
 import DataUnavailable from './components/MainPanel/DataUnavailable.vue';
 import NoData from './components/SidePanel/NoData.vue';
-import {Mode} from './types';import {setGameTime} from './composables/useClock';
+import {Mode} from './types';import {idfLinePresentation} from './idf-line';import {setGameTime} from './composables/useClock';
 const snapshot=shallowRef<any>({powered:false,state:null});
 const data=computed(()=>snapshot.value.state||{});
 const names=computed(()=>Array.isArray(data.value.audioStopNames)?data.value.audioStopNames.slice(0,512).map(String):[]);
 const valid=computed(()=>!!data.value.lineNumber&&names.value.length>0&&!data.value.lumiplan?.finished);
 const direction=computed(()=>names.value.at(-1)||data.value.routeName||'');
-const line=computed(()=>({id:String(data.value.selectedLineUid||data.value.lineNumber||''),name:String(data.value.lineNumber||''),color:snapshot.value.color||'#009b7a',textColor:snapshot.value.textColor||'#ffffff',mode:/^N\d/.test(data.value.lineNumber)?Mode.NOCTILIEN:Mode.BUS}));
+const line=computed(()=>({id:String(data.value.selectedLineUid||data.value.lineNumber||''),name:String(data.value.lineNumber||''),color:snapshot.value.color||'#009b7a',textColor:snapshot.value.textColor||'#ffffff',mode:/^N\d/.test(data.value.lineNumber)?Mode.NOCTILIEN:Mode.BUS,...idfLinePresentation(data.value)}));
 const journey=computed(()=>data.value.lumiplan||{index:0,inStation:false});
 const index=computed(()=>Math.min(Math.max(0,Number(journey.value.index)||0),Math.max(0,names.value.length-1)));
 const stops=computed(()=>names.value.map((name:string,i:number)=>({stop:{id:String(i),name,isAccessible:true,hasGapWhenSteppingOff:false,connectedLines:[]},timeOfArrival:'',timeOfDeparture:'',isTerminus:i===names.value.length-1,isFirstStop:i===0,isStopSkipped:false})).slice(index.value));
@@ -23,7 +23,7 @@ onMounted(()=>{const api={ready:true,revision:0,update:async(value:any)=>{
 onUnmounted(()=>{clearInterval(timer);delete (window as any).IDFLumiplan;});
 </script>
 <template><div class="canvas"><div v-if="snapshot.powered" class="screen" :class="{'no-data-available':!valid}">
-<ScreenHeader :line="line" :direction="valid?direction:''" :is-limited-service="false" :is-wheel-chair-accessible="true" :serves-airport="false" :is-at-stop="atStop" />
+<ScreenHeader :line="line" :direction="valid?direction:''" :is-limited-service="false" :is-wheel-chair-accessible="false" :serves-airport="false" :is-at-stop="atStop" />
 <main v-if="valid"><StopList :stops="stops" :primary-color="line.color" :text-color="line.textColor"/><Transition name="stop"><CurrentStop v-if="atStop&&stops[0]" class="current" :stop-with-time="stops[0]" :line-id="line.id"/></Transition></main>
 <main v-else class="error"><DataUnavailable/><NoData/></main></div></div></template>
 <style>

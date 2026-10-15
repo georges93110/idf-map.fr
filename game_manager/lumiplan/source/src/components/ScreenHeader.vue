@@ -1,12 +1,14 @@
 <template>
   <header class="header">
     <img
-      v-if="line"
+      v-if="line && !line.hideMode"
       :src="assetBase + 'modes/' + line.mode.toLowerCase() + '.svg'"
       class="mode-picto"
     />
+    <img v-if="line?.networkLogo" :src="line.networkLogo" class="network-logo" alt="Titus" />
+    <img v-if="line?.headerLogo" :src="line.headerLogo" class="header-logo" :alt="line.name" />
     <LineLogo
-      v-if="line"
+      v-else-if="line"
       :line="line"
       class-name="picto"
       class="line-logo"
@@ -81,6 +83,7 @@ const logoSize = computed(() => {
   width: auto;
   margin-left: 1.5cqw;
 }
+.header-logo,.network-logo { height:70%; width:auto; object-fit:contain; flex-shrink:0; }
 .line-logo {
   margin-top: auto;
   margin-bottom: auto;

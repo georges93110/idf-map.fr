@@ -150,6 +150,15 @@ function receiveNativeGameMode(m){
   if(!m||m.protocol!==1||!Number.isSafeInteger(m.epoch)||m.epoch<=0||
      !Number.isInteger(m.revision)||m.revision<1||m.revision>0xffffffff||
      (m.mode!=="bus"&&m.mode!=="truck"))return false;
+  // The mandatory introduction remains entirely owned by ETS2.
+  var suspended=m.suspended===true;
+  if(typeof document!=="undefined"&&document.documentElement&&document.head){
+    document.documentElement.classList.toggle('idf-plugin-suspended',suspended);
+    if(!document.getElementById('idf-intro-visibility')){
+      var style=document.createElement('style');style.id='idf-intro-visibility';
+      style.textContent='.idf-plugin-suspended body,.idf-plugin-suspended body *{visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(style);
+    }
+  }
   var key=String(m.epoch)+":"+String(m.revision);
   if(nativeGameModeGeneration!==key||!nativeGameModeApplied){
     // A generation is accepted only after the clear and mode application

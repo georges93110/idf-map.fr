@@ -58,6 +58,9 @@ export enum Mode {
   CABLE = "CABLE",
 }
 export interface Line {
+  headerLogo?: string;
+  networkLogo?: string;
+  hideMode?: boolean;
   id: string;
   name: string;
   color: string;

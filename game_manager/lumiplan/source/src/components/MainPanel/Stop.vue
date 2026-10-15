@@ -101,6 +101,9 @@ const isStopCurrent = (stop: StopWithTime, index: number) => {
 
 <style scoped>
 .stop {
+  /* FLIP transforms create a stacking context before the move class exists.
+     Keep every row above the route stripe for the entire animation. */
+  z-index: 2;
   display: flex;
   position: relative;
   align-items: center;
