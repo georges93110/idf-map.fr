@@ -7,9 +7,9 @@
       "high": 60
     },
     "lumiplanConvoy": {
-      "low": 15,
-      "medium": 30,
-      "high": 60
+      "low": 10,
+      "medium": 20,
+      "high": 30
     },
     "saeiv": {
       "low": 10,

@@ -1,7 +1,7 @@
 <template>
   <div>
     <span class="hours">{{ time.split(':')[0] }}</span>
-    <span class="divider">:</span>
+    <span class="divider" :style="{opacity: blink ? 1 : .3}">:</span>
     <span class="minutes">{{ time.split(':')[1] }}</span>
   </div>
 </template>
@@ -10,6 +10,8 @@
 import { computed } from "vue";
 import { useClock } from "../../composables/useClock";
 
+import { useDiscreteBlink } from "../../composables/useDiscreteBlink";
+const blink = useDiscreteBlink(1000);
 const { now } = useClock();
 
 const time = computed(() =>
@@ -21,21 +23,3 @@ const time = computed(() =>
   }).format(now.value)
 );
 </script>
-
-<style scoped>
-.divider {
-  animation: blink 2s step-start infinite;
-}
-
-@keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: .3;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-</style>

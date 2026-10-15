@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { cleanText, getSecondesFromDate } from "../../utils";
 import { StopWithTime } from "../../types";
 
+import { useDiscreteBlink } from "../../composables/useDiscreteBlink";
+
 const props = defineProps<{ stop: StopWithTime; index: number, realIndex: number }>();
 
+const blink = useDiscreteBlink(600, () => props.index === 0 && !props.stop.isStopSkipped);
 const nowTrigger = ref(Date.now());
 let timer: ReturnType<typeof setInterval>;
 
@@ -12,10 +15,12 @@ const stopRef = ref<HTMLElement | null>(null);
 const isVisible = ref(true);
 let observer: IntersectionObserver;
 
+watch(() => !!props.stop.timeOfArrival, scheduled => {
+  clearInterval(timer);
+  if (scheduled) timer = setInterval(() => { nowTrigger.value = Date.now(); }, 1000);
+}, { immediate: true });
+
 onMounted(() => {
-  timer = setInterval(() => {
-    nowTrigger.value = Date.now();
-  }, 1000);
 
   observer = new IntersectionObserver(
     ([entry]) => {
@@ -48,7 +53,7 @@ const stopNameClass = computed(() => {
 });
 
 const isStopCurrent = (stop: StopWithTime, index: number) => {
-  //@ts-ignore
+  if (!stop.timeOfArrival || !stop.timeOfDeparture) return false;
   const _ = nowTrigger.value;
 
   return (
@@ -67,11 +72,12 @@ const isStopCurrent = (stop: StopWithTime, index: number) => {
     :class="{
       'is-out-of-view': !isVisible && realIndex > 1,
       blinkable: index === 0 && !stop.isStopSkipped,
+      'blink-phase': blink,
       'is-last-stop': stop.isTerminus,
       'is-current': isStopCurrent(stop, index) && !stop.isTerminus,
       'is-skipped': stop.isStopSkipped,
     }"
-    :data-time="getSecondesFromDate(stop.timeOfArrival, true)"
+    :data-time="stop.timeOfArrival ? getSecondesFromDate(stop.timeOfArrival, true) : 0"
   >
     <div class="stop-indicator-wrapper">
       <div class="stop-indicator"></div>
@@ -189,7 +195,7 @@ const isStopCurrent = (stop: StopWithTime, index: number) => {
   transform: translateY(-450%);
 }
 
-.blinkable:not(
+.blinkable.blink-phase:not(
     .stop-transition-leave-active,
     .stop-transition-enter-active,
     .stop-transition-enter-from,
@@ -197,7 +203,7 @@ const isStopCurrent = (stop: StopWithTime, index: number) => {
     .stop-transition-move
   )
   .stop-indicator {
-  animation: blink 1.2s infinite steps(1);
+  background-color: var(--ratp-yellow);
 }
 
 .stop.is-last-stop .stop-name .text-bg {
