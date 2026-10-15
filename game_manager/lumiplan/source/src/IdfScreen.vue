@@ -18,7 +18,7 @@ const stops=computed(()=>names.value.map((name:string,i:number)=>({stop:{id:Stri
 const atStop=computed(()=>journey.value.inStation===true&&!journey.value.finished);
 let last=0,timer:any;
 onMounted(()=>{const api={ready:true,revision:0,update:async(value:any)=>{
- if(!value||typeof value!=='object')return false;last=performance.now();snapshot.value=value;setGameTime(Number(value.state?.clockNowMs)||0);await nextTick();api.revision++;return true;
+ if(!value||typeof value!=='object')return false;last=performance.now();snapshot.value=value;setGameTime(Number(value.state?.clockNowMs)||0, value.gameTimeMinutes);await nextTick();api.revision++;return true;
  }};(window as any).IDFLumiplan=api;timer=setInterval(()=>{if(snapshot.value.powered&&performance.now()-last>6000){snapshot.value={powered:false,state:null};api.revision++;}},1000);});
 onUnmounted(()=>{clearInterval(timer);delete (window as any).IDFLumiplan;});
 </script>
@@ -32,6 +32,7 @@ html,body,#app{margin:0!important;width:100%;height:100%;overflow:hidden;backgro
    Native CSS pixels, no scale/zoom: the remaining texture rows stay black. */
 .canvas{position:absolute;left:0;top:0;width:2048px;height:578px;overflow:hidden;container-type:inline-size;background:#000}
 .screen{height:100%;width:100%;display:grid;grid-template-rows:120px 1fr;container-type:inline-size;font-size:3cqw;position:relative;overflow:hidden}
-.screen>main{position:relative;overflow:hidden;background:var(--ratp-beige)}.screen>main.error{display:grid;grid-template-columns:65% 35%}.current{position:absolute;inset:0;width:100%;height:100%}
+.screen>main{position:relative;isolation:isolate;overflow:hidden;background:var(--ratp-beige)}.screen>main.error{display:grid;grid-template-columns:65% 35%}.current{position:absolute;inset:0;width:100%;height:100%;z-index:20}
+.stops-list-container{isolation:isolate;z-index:0;position:relative}
 .stops-list{width:100%!important}.stop-enter-active,.stop-leave-active{transition:transform .6s}.stop-enter-from,.stop-leave-to{transform:translateY(100%)}
 </style>

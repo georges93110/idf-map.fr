@@ -16,7 +16,8 @@ const time = computed(() =>
   new Intl.DateTimeFormat("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "Europe/Paris",
+    // clockNowMs already encodes the game clock in the local browser zone.
+    // Applying Paris a second time introduces an offset on non-Paris PCs.
   }).format(now.value)
 );
 </script>
