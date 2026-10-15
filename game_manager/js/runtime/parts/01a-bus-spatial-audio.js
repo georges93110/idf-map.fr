@@ -2,10 +2,10 @@
 function busVoiceReflections(record, context, url) {
   var pathname = ''; try { pathname = decodeURIComponent(new URL(url, window.location.href).pathname); } catch (_) {}
   if (!/(?:^|\/)sounds\/bus\/voix_bus\//i.test(pathname) || !context.createDelay) return;
-  record.reflections = [.031, .067].map(function (seconds, i) {
-    var delay = context.createDelay(.1), filter = context.createBiquadFilter(), gain = context.createGain();
-    delay.delayTime.value = seconds; filter.type = 'lowpass'; filter.frequency.value = i ? 2200 : 3500;
-    gain.gain.value = i ? .045 : .085;
+  record.reflections = [.029, .067, .113, .173].map(function (seconds, i) {
+    var delay = context.createDelay(.2), filter = context.createBiquadFilter(), gain = context.createGain();
+    delay.delayTime.value = seconds; filter.type = 'lowpass'; filter.frequency.value = [4800, 3800, 3000, 2200][i];
+    gain.gain.value = [.28, .19, .12, .07][i];
     delay.connect(filter); filter.connect(gain);
     return {delay:delay, filter:filter, gain:gain};
   });
@@ -67,7 +67,7 @@ function reportBusAudio(record, event, error) {
     master:a.volume,muted:a.muted,volume:record.audio.volume,
     time:record.audio.currentTime||0,readyState:record.audio.readyState||0,
     paused:record.audio.paused===true,networkState:record.audio.networkState||0,
-    engine:record.audio.idfSource?'decoded':'media',visibility:typeof document==='object'?document.visibilityState:'unknown'})); } catch (_) {}
+    engine:record.audio.idfSource?'decoded':'media',reflections:(record.reflections||[]).length,visibility:typeof document==='object'?document.visibilityState:'unknown'})); } catch (_) {}
 }
 function tickBusAudio() {
   resumeBusAudioContext();
