@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "html": {
+    "lumiplan": {
+      "low": 15,
+      "medium": 30,
+      "high": 60
+    },
+    "lumiplanConvoy": {
+      "low": 10,
+      "medium": 20,
+      "high": 30
+    },
+    "saeiv": {
+      "low": 10,
+      "medium": 20,
+      "high": 30
+    },
+    "saeivAgora": {
+      "low": 10,
+      "medium": 10,
+      "high": 10
+    },
+    "girouette": {
+      "low": 1,
+      "medium": 2,
+      "high": 2
+    },
+    "girouetteConvoy": {
+      "low": 1,
+      "medium": 2,
+      "high": 2
+    }
+  }
+}

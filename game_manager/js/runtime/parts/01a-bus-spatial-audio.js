@@ -1,3 +1,21 @@
+// Short, damped early reflections from the bus walls. No feedback loop.
+function busVoiceReflections(record, context, url) {
+  var pathname = ''; try { pathname = decodeURIComponent(new URL(url, window.location.href).pathname); } catch (_) {}
+  if (!/(?:^|\/)sounds\/bus\/voix_bus\//i.test(pathname) || !context.createDelay) return;
+  record.reflections = [.031, .067].map(function (seconds, i) {
+    var delay = context.createDelay(.1), filter = context.createBiquadFilter(), gain = context.createGain();
+    delay.delayTime.value = seconds; filter.type = 'lowpass'; filter.frequency.value = i ? 2200 : 3500;
+    gain.gain.value = i ? .045 : .085;
+    delay.connect(filter); filter.connect(gain);
+    return {delay:delay, filter:filter, gain:gain};
+  });
+}
+function connectBusVoiceReflections(record) {
+  (record.reflections || []).forEach(function (r) { record.gain.connect(r.delay); r.gain.connect(record.pan || busSpatialAudio.context.destination); });
+}
+function disconnectBusVoiceReflections(record) {
+  (record.reflections || []).forEach(function (r) { r.gain.disconnect(); });
+}
 /* Shared bus audio: existing announcement/validator players, no extra widget.
    Coefficients are tunable acoustics, not a claim of physical wall simulation.
    Web Audio media -> low-pass -> gain -> stereo pan -> output. */
@@ -288,7 +306,7 @@ function createBusSpatialAudio(url, kind) {
       if (record.pan) { record.gain.connect(record.pan); record.pan.connect(context.destination); }
       else record.gain.connect(context.destination);
       var source = audio.idfSource || context.createMediaElementSource(audio);record.source = source;
-      source.connect(record.filter);record.connected = true;
+      source.connect(record.filter);busVoiceReflections(record,context,url);connectBusVoiceReflections(record);record.connected = true;
     }
   } catch (error) {
     if (record.source) {
@@ -300,6 +318,7 @@ function createBusSpatialAudio(url, kind) {
     if (record.filter) record.filter.disconnect();
     if (record.gain) record.gain.disconnect();
     if (record.pan) record.pan.disconnect();
+    disconnectBusVoiceReflections(record);record.reflections=null;
     if (error.message !== "context_not_running") console.warn("[Bus audio] Spatial filter unavailable", error);
     record.gain = null; record.filter = null; record.pan = null;
   }
@@ -332,7 +351,7 @@ function createBusSpatialAudio(url, kind) {
       if(record.direct) record.source.connect(state.context.destination);
       else { record.source.connect(record.filter);record.filter.connect(record.gain);
       if(record.pan){record.gain.connect(record.pan);record.pan.connect(state.context.destination);}
-      else record.gain.connect(state.context.destination); }
+      else record.gain.connect(state.context.destination); connectBusVoiceReflections(record); }
       record.connected = true;
     }
     state.active.add(record); updateBusSpatialRecord(record);
@@ -345,7 +364,7 @@ function createBusSpatialAudio(url, kind) {
     if(event && event.type!=="error" && audio.paused===false && !audio.ended)return;
     if(event && event.type==="error")reportBusAudio(record,"failed",audio.error||new Error("media-error"));
     state.active.delete(record);
-    if(record.source && record.connected){record.source.disconnect();if(record.filter)record.filter.disconnect();if(record.gain)record.gain.disconnect();if(record.pan)record.pan.disconnect();record.connected=false;}
+    if(record.source && record.connected){record.source.disconnect();disconnectBusVoiceReflections(record);if(record.filter)record.filter.disconnect();if(record.gain)record.gain.disconnect();if(record.pan)record.pan.disconnect();record.connected=false;}
     if (!state.active.size && !state.pending.size && state.timer) { clearInterval(state.timer); state.timer = null; }
   }
   audio.addEventListener("play", start); audio.addEventListener("playing", start);

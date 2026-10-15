@@ -14,6 +14,7 @@ function stopConvoyDoorVoice(key) {
   var v = convoyDoorAudio.voices.get(key); if (!v) return;
   convoyDoorAudio.voices.delete(key);
   if(v.source) { v.source.onended = null; try { v.source.stop(); } catch (_) {} }
+  if(typeof disconnectBusVoiceReflections==='function')disconnectBusVoiceReflections(v);
   [v.source, v.filter, v.envelope, v.gain, v.pan].forEach(function (n) { if (n) n.disconnect(); });
   if (!convoyDoorAudio.voices.size && convoyDoorAudio.timer) { clearInterval(convoyDoorAudio.timer); convoyDoorAudio.timer = null; }
 }
@@ -147,6 +148,7 @@ function receiveConvoyBusClip(m) {
   s.voices.set(key,v);tickConvoyDoorAudio();
   if(!s.timer)s.timer=setInterval(tickConvoyDoorAudio,100);
   var url=new URL(convoyClipCatalog[a.clip].split('/').map(encodeURIComponent).join('/'),new URL('./',window.location.href)).href;
+  if(typeof busVoiceReflections==='function'){busVoiceReflections(v,c,url);connectBusVoiceReflections(v);}
   // Reuse bounded decoding/cache. Offset accounts for loading time; cancellation
   // while loading cannot resurrect a departed player's sound.
   Promise.all([fetchBusDecodedClip(url,c),c.state==='running'?Promise.resolve():c.resume()]).then(function(values){
