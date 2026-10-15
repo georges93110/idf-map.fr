@@ -14,12 +14,12 @@ const direction=computed(()=>names.value.at(-1)||data.value.routeName||'');
 const line=computed(()=>({id:String(data.value.selectedLineUid||data.value.lineNumber||''),name:String(data.value.lineNumber||''),color:snapshot.value.color||'#009b7a',textColor:snapshot.value.textColor||'#ffffff',mode:/^N\d/.test(data.value.lineNumber)?Mode.NOCTILIEN:Mode.BUS,...idfLinePresentation(data.value)}));
 const journey=computed(()=>data.value.lumiplan||{index:0,inStation:false});
 const index=computed(()=>Math.min(Math.max(0,Number(journey.value.index)||0),Math.max(0,names.value.length-1)));
-const stops=computed(()=>names.value.map((name:string,i:number)=>({stop:{id:String(i),name,isAccessible:true,hasGapWhenSteppingOff:false,connectedLines:[]},timeOfArrival:'',timeOfDeparture:'',isTerminus:i===names.value.length-1,isFirstStop:i===0,isStopSkipped:false})).slice(index.value));
+const stops=computed(()=>names.value.slice(index.value,index.value+6).map((name:string,j:number)=>({stop:{id:String(index.value+j),name,isAccessible:true,hasGapWhenSteppingOff:false,connectedLines:[]},timeOfArrival:'',timeOfDeparture:'',isTerminus:index.value+j===names.value.length-1,isFirstStop:index.value+j===0,isStopSkipped:false})));
 const atStop=computed(()=>journey.value.inStation===true&&!journey.value.finished);
-let last=0,timer:any;
+let last=0,timer:any,visualKey="";
 onMounted(()=>{const api={ready:true,revision:0,update:async(value:any)=>{
- if(!value||typeof value!=='object')return false;last=performance.now();snapshot.value=value;setGameTime(Number(value.state?.clockNowMs)||0, value.gameTimeMinutes);await nextTick();api.revision++;return true;
- }};(window as any).IDFLumiplan=api;timer=setInterval(()=>{if(snapshot.value.powered&&performance.now()-last>6000){snapshot.value={powered:false,state:null};api.revision++;}},1000);});
+ if(!value||typeof value!=='object')return false;last=performance.now();const state=value.state;const visual={powered:value.powered===true,color:value.color,textColor:value.textColor,state:state?{lineNumber:state.lineNumber,selectedLineUid:state.selectedLineUid,routeName:state.routeName,audioStopNames:state.audioStopNames,lumiplan:state.lumiplan}:null};const key=JSON.stringify(visual);if(key!==visualKey){snapshot.value=visual;visualKey=key;}setGameTime(Number(value.state?.clockNowMs)||0, value.gameTimeMinutes);await nextTick();api.revision++;return true;
+ }};(window as any).IDFLumiplan=api;timer=setInterval(()=>{if(snapshot.value.powered&&performance.now()-last>6000){snapshot.value={powered:false,state:null};visualKey="";api.revision++;}},1000);});
 onUnmounted(()=>{clearInterval(timer);delete (window as any).IDFLumiplan;});
 </script>
 <template><div class="canvas"><div v-if="snapshot.powered" class="screen" :class="{'no-data-available':!valid}">

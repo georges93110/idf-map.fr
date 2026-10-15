@@ -125,9 +125,9 @@ const getIndexForStop = (i: number) => {
   transform: translateX(-50%);
   width: var(--line-width);
 
-  top: -1000px;
-  bottom: 0;
-  height: 100000px;
+  top: -120px;
+  bottom: -120px;
+  height: auto;
   background-color: v-bind(primaryColor);
   z-index: 1;
 }

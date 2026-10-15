@@ -5,5 +5,6 @@
 </template>
 <script setup lang="ts">
 import { useAnimatedFavicon } from "./composables/useAnimatedFavicon";
-useAnimatedFavicon();
+// The texture has no browser tab: avoid favicon requests on every heartbeat.
+if (location.pathname.includes('/editor')) useAnimatedFavicon();
 </script>
