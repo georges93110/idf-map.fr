@@ -31,7 +31,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "pedestrian-20261015";
+  runtime.version = "pedestrian-20261015-r2";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
