@@ -12,7 +12,6 @@
     "parts/01b-convoy-audio.js",
     "parts/01c-convoy-audio-catalog.js",
     "parts/01d-passenger-audio.js",
-    "parts/01e-pedestrian.js",
     "parts/02-saeiv-audio-and-dbus.js",
     "parts/03-navigation-routing.js",
     "parts/04-waze-bridge.js",
@@ -31,7 +30,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "pedestrian-20261015-r2";
+  runtime.version = "lumiplan-journey-seats-20261015";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {

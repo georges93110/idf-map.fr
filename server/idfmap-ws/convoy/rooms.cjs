@@ -86,7 +86,7 @@ class ConvoyRooms {
     for (const viewer of room.peers.values()) for (const source of room.peers.values()) {
       if (viewer === source) continue;
       const id = source.hello.player, had = viewer.visible.has(id);
-      const d = source.state && viewer.state ? P.range(source.state, viewer.state) : Infinity;
+      const d = source.state && viewer.state ? P.distance(source.state.pose, viewer.state.pose) : Infinity;
       const show = this.permitted(viewer, source) && d <= (had ? P.LIMITS.leaveM : P.LIMITS.enterM);
       if (!show) { if (had) { viewer.visible.delete(id); viewer.sent.delete(id); this.emit(viewer.peer, { type: 'convoy.remove', version: 1, epoch: room.epoch, player: id, clientId: source.hello.clientId, instance: source.hello.instance }); } continue; }
       const lod = d <= P.LIMITS.fullM ? 'full' : 'reduced', last = viewer.sent.get(id);

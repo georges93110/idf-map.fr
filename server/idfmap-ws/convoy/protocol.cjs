@@ -51,7 +51,7 @@ function lumiplan(v) {
  return {powered:v.powered,gameTimeMinutes:v.gameTimeMinutes,color:v.color,textColor:v.textColor,state};
 }
 function passenger(v) {
-  if (!object(v) || !key(v.id) || v.id==='4294967295' || !integer(v.model, 0, 255) || !integer(v.seat, -1, 255) || !integer(v.door, 0, 2) ||
+  if (!object(v) || !key(v.id) || !integer(v.model, 0, 255) || !integer(v.seat, -1, 255) || !integer(v.door, 0, 2) ||
       !['waiting', 'approach', 'enter', 'toPlace', 'resident', 'toExit', 'leave', 'outside', 'returning'].includes(v.stage) ||
       !['bus', 'world'].includes(v.space) || !integer(v.animation, 0, 255) || !finite(v.phase, 86400)) return null;
   const at = pose(v.pose, v.space === 'bus'); if (!at) return null;
@@ -60,14 +60,6 @@ function passenger(v) {
   return { id: v.id, model: v.model, seat: v.seat, door: v.door, stage: v.stage, space: v.space, pose: at, animation: v.animation, phase: v.phase,
     variant: v.variant ?? 0, walkSpeed: v.walkSpeed ?? .85 };
 }
-function pedestrian(v) {
-  if(v===null||v===undefined)return null;
-  if(!object(v)||typeof v.paused!=='boolean'||!integer(v.motion,0,4)||!integer(v.steps,0,Number.MAX_SAFE_INTEGER))throw Error('invalid pedestrian');
-  const at=pose(v.pose);if(!at)throw Error('invalid pedestrian pose');
-  return {pose:at,motion:v.motion,steps:v.steps,paused:v.paused};
-}
-function interest(v){return v.pedestrian?.pose||v.pose;}
-function range(a,b){return Math.min(distance(a.pose,b.pose),distance(interest(a),interest(b)),distance(a.pose,interest(b)),distance(interest(a),b.pose));}
 function snapshot(v) {
   if (!object(v) || v.type !== 'convoy.state' || v.version !== VERSION || !key(v.epoch) || !integer(v.sequence, 1, Number.MAX_SAFE_INTEGER) ||
       !key(v.vehicle) || !key(v.profile) || !key(v.generation) || !finite(v.speed, 150) || typeof v.powered !== 'boolean' ||
@@ -82,10 +74,10 @@ function snapshot(v) {
     if (p.space === 'bus' && p.stage === 'resident' && p.seat >= 0) { if (seats.has(p.seat)) return null; seats.add(p.seat); }
     seen.add(p.id); passengers.push(p);
   }
-  let destination,screen,walker; try { destination = sign(v.sign); screen=lumiplan(v.lumiplan);walker=pedestrian(v.pedestrian);if(walker&&distance(walker.pose,at)>185)return null; } catch { return null; }
+  let destination,screen; try { destination = sign(v.sign); screen=lumiplan(v.lumiplan); } catch { return null; }
   return { type: v.type, version: VERSION, epoch: v.epoch, sequence: v.sequence, vehicle: v.vehicle, profile: v.profile, generation: v.generation,
     pose: at, speed: v.speed, powered: v.powered, doors: v.doors.slice(), stopRequested: v.stopRequested, occupancy: v.occupancy,
-    line: v.line, service: v.service, stop: v.stop, sign: destination, lumiplan:screen, pedestrian:walker, passengers };
+    line: v.line, service: v.service, stop: v.stop, sign: destination, lumiplan:screen, passengers };
 }
 function busAudio(v) {
   if (!object(v) || !key(v.voice) || !['play','stop'].includes(v.action)) return null;
@@ -109,4 +101,4 @@ function decode(data) {
     const v = JSON.parse(data); return object(v) ? v : null; } catch { return null; }
 }
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z); }
-module.exports = { VERSION, LIMITS, key, steam, integer, pose, hello, member, sign, lumiplan, passenger, pedestrian, interest, range, snapshot, busAudio, event, decode, distance };
+module.exports = { VERSION, LIMITS, key, steam, integer, pose, hello, member, sign, lumiplan, passenger, snapshot, busAudio, event, decode, distance };

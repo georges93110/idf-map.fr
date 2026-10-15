@@ -1,1 +1,0 @@
-Original procedural vehicle latch/panel/hinge sounds generated for IDF-RP. No external samples. Generator: telemetry/tools/pedestrian_door_sounds.py.
