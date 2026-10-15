@@ -3739,6 +3739,7 @@
           }
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          if(raw&&(raw.type==="nativePedestrian"||raw.type==="nativePedestrianPeer")){receivePedestrian(raw);return;}
           if (raw && raw.type === "nativeCompatibilityBackend") {
             if (window.IDFRPCompatibility) window.IDFRPCompatibility.receive(raw);
             return;
