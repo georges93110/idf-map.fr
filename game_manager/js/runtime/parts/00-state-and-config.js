@@ -152,11 +152,29 @@
               return tryCandidate(index + 1);
             })
             .catch(function (err) {
+              if (opts.signal && opts.signal.aborted) throw err;
               lastError = err;
               return tryCandidate(index + 1);
             });
         }
         return tryCandidate(0);
+      }
+      function fetchGameMapJson(file, version) {
+        // The deadline includes the body: a connected server can stall after headers.
+        // Only the winning promise may publish data in the navigation loaders.
+        var controller = new AbortController(), timer;
+        var request = Promise.resolve().then(function () {
+          return fetchGameMapFile(file, version, { cache: "no-store", signal: controller.signal });
+        }).then(function (res) {
+          if (!res || !res.ok) throw new Error("Map JSON load failed: " + file);
+          return res.json();
+        });
+        var timeout = new Promise(function (_, reject) {
+          timer = setTimeout(function () {
+            controller.abort(); reject(new Error("Map JSON load timeout: " + file));
+          }, 15000);
+        });
+        return Promise.race([request, timeout]).finally(function () { clearTimeout(timer); });
       }
       var TYPES = {
         saeiv: { label: "SAEIV", url: buildWidgetUrl("widgets/saeiv.html?v=bus-coach-2&dev=1&host=game&source=game") },

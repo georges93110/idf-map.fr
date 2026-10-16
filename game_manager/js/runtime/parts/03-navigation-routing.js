@@ -50,6 +50,12 @@
             };
           });
       };
+      function ensureServiceSelectionData() {
+        // Native GPS can use the stop coordinates immediately. Road snapping
+        // and the HTML preview recover independently when the network returns.
+        ensureNavStopLinksLoaded().catch(function () {});
+        return ensureDbusDataLoaded();
+      }
       window.gameSelectLineRoute = function gameSelectLineRoute(lineReference, routeReference, options) {
         var routeRef = routeReference;
         var opts = options;
@@ -57,10 +63,7 @@
           opts = routeRef;
           routeRef = "";
         }
-        return Promise.all([
-          ensureDbusDataLoaded(),
-          ensureNavStopLinksLoaded().catch(function () { return new Map(); })
-        ])
+        return ensureServiceSelectionData()
           .then(function () {
             var result = selectRouteByReferences(lineReference, routeRef, opts);
             if (!result.ok) {
@@ -149,11 +152,7 @@
       function loadNavBridgesForVersion(version) {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
-        return fetchGameMapFile("nav_bridges.json", safeVersion, { cache: "no-store" })
-          .then(function (res) {
-            if (!res || !res.ok) throw new Error("nav_bridges");
-            return res.json();
-          })
+        return fetchGameMapJson("nav_bridges.json", safeVersion)
           .then(function (raw) {
             var rules = Array.isArray(raw && raw.rules) ? raw.rules : [];
             return rules.filter(function (rule) {
@@ -249,11 +248,7 @@
       function loadNavStopLinksForVersion(version) {
         var safeVersion = String(version || "").trim();
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
-        return fetchGameMapFile("nav_stop_links.json", safeVersion, { cache: "no-store" })
-          .then(function (res) {
-            if (!res || !res.ok) throw new Error("nav_stop_links");
-            return res.json();
-          })
+        return fetchGameMapJson("nav_stop_links.json", safeVersion)
           .then(function (raw) {
             var list = [];
             if (Array.isArray(raw)) list = raw;
@@ -343,6 +338,7 @@
 
             if (saeivRouteState && Array.isArray(saeivRouteState.stops) && saeivRouteState.stops.length) {
               applyNavStopLinksToEntries(saeivRouteState.stops);
+              if (typeof syncNativeGpsDestination === 'function') syncNativeGpsDestination(true);
               clearActiveRouteCache();
               if (activeBridgeDestinationPoint && lastBridgeArrowPoint) {
                 publishActiveRouteFromState(true);
@@ -1465,11 +1461,7 @@
             function tryFetch(index) {
               if (index >= candidates.length) throw new Error("nav_graph");
               var safeVersion = candidates[index];
-              return fetchGameMapFile("nav_graph.json", safeVersion, { cache: "no-store" })
-                .then(function (res) {
-                  if (!res || !res.ok) throw new Error("nav_graph");
-                  return res.json();
-                })
+              return fetchGameMapJson("nav_graph.json", safeVersion)
                 .catch(function () {
                   return tryFetch(index + 1);
                 });

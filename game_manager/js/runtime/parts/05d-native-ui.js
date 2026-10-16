@@ -135,14 +135,15 @@ function nativeModeRuntimeReady(){
   var runtime=window.GAME2_MANAGER&&window.GAME2_MANAGER.runtime;
   var ready=!!(runtime&&runtime.loadedAt&&!runtime.error&&
     typeof dbusLines!=='undefined'&&Array.isArray(dbusLines)&&dbusLines.length&&
-    typeof dbusStopsById!=='undefined'&&dbusStopsById&&dbusStopsById.size&&
-    typeof navGraph!=='undefined'&&navGraph);
+    typeof dbusStopsById!=='undefined'&&dbusStopsById&&dbusStopsById.size);
   // Retry failed startup data loads even while Mode Camion is selected.
   // Existing loaders deduplicate their pending requests.
-  if(!ready&&runtime&&runtime.loadedAt&&!runtime.error&&Date.now()-nativeModeStartupRetryAt>5000){
+  if(runtime&&runtime.loadedAt&&!runtime.error&&Date.now()-nativeModeStartupRetryAt>5000){
     nativeModeStartupRetryAt=Date.now();
     if(typeof ensureDbusDataLoaded==='function')ensureDbusDataLoaded().catch(function(){});
     if(typeof ensureNavGraphLoaded==='function')ensureNavGraphLoaded().catch(function(){});
+    if(typeof ensureNavStopLinksLoaded==='function')ensureNavStopLinksLoaded().catch(function(){});
+    if(typeof ensureNavBridgesLoaded==='function')ensureNavBridgesLoaded().catch(function(){});
   }
   return ready;
 }

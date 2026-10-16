@@ -3025,6 +3025,10 @@
         stopStateRequestPolling();
         stateRequestTimer = window.setInterval(() => {
           post("saeiv:request_state");
+          // Retry a lost catalogue request while the keypad is open; no reload
+          // or loss of the entered mission when the controller reconnects.
+          if (overlayPageServiceCompleteEl && overlayPageServiceCompleteEl.classList.contains("is-active") &&
+              (!serviceLineUidSet || !serviceLineUidSet.size)) ensureServiceLineUidsLoaded();
         }, Math.max(600, Number(SAEIV_STATE_REQUEST_INTERVAL_MS) || 1000));
       }
 
@@ -3212,6 +3216,7 @@
           flushBridgeOutbox();
           post("saeiv:ready");
           post("saeiv:request_state");
+          if (isHostedByGame) post("saeiv:catalog_request");
         };
         socket.onmessage = (event) => {
           let msg = null;
@@ -4262,7 +4267,9 @@
           return Promise.resolve(serviceLineUidSet);
         }
         if (serviceLineUidLoadPromise) return serviceLineUidLoadPromise;
-        if(window.parent!==window&&typeof window.parent.saeivNativePost==="function"){
+        // Both web widgets and the embedded screen use the controller's
+        // catalogue, including normalized UIDs and the current IDF-RP data.
+        if(isHostedByGame||(window.parent!==window&&typeof window.parent.saeivNativePost==="function")){
           serviceLineUidLoadPromise=new Promise(resolve=>{serviceCatalogResolve=resolve;serviceCatalogTimer=setTimeout(()=>{serviceCatalogResolve=null;serviceLineUidLoadPromise=null;resolve(new Set());},8000);});
           post("saeiv:catalog_request");return serviceLineUidLoadPromise;
         }

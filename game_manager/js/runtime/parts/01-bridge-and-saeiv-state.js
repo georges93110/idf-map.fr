@@ -663,10 +663,7 @@
             });
             return;
           }
-          Promise.all([
-            ensureDbusDataLoaded(),
-            ensureNavStopLinksLoaded().catch(function () { return new Map(); })
-          ])
+          ensureServiceSelectionData()
             .then(function () {
               var result = selectRouteByReferences(lineUid, routeUid, { uidOnly: true });
               postSaeivBridgeMessage(Object.assign({
@@ -719,10 +716,7 @@
             });
             return;
           }
-          Promise.all([
-            ensureDbusDataLoaded(),
-            ensureNavStopLinksLoaded().catch(function () { return new Map(); })
-          ])
+          ensureServiceSelectionData()
             .then(function () {
               var selectResult = selectRouteByReferences(serviceLineUid, serviceRouteUid, { uidOnly: true });
               if (!selectResult || selectResult.ok !== true) {

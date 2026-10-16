@@ -84,7 +84,7 @@ function receiveNativeServiceAction(m){
     // must never restart boarding or cancel/recreate the same service.
     promise=Promise.resolve().then(function(){
       if(m.generation!==nativeGameModeGeneration)throw new Error('Le mode a changé.');
-      return Promise.all([ensureDbusDataLoaded(),ensureNavStopLinksLoaded().catch(function(){})]);
+      return ensureServiceSelectionData();
     }).then(function(){
       if(m.generation!==nativeGameModeGeneration||normalizeGameMode(currentGameMode)!=='bus')throw new Error('Le mode a changé.');
       var line=(dbusLines||[]).find(function(l){return String(l.uid)===m.lineUid;}),route=line&&(line.routes||[]).find(function(r){return String(r.uid)===m.routeUid;});
@@ -204,15 +204,24 @@ function simplifyNativeServiceRoute(points,tolerance){
  return points.filter(function(_,i){return keep[i];});
 }
 var nativeServicePreviews=new Map(),nativeServiceLatestPreview='',nativeServicePreviewData=null,nativeServicePreviewSource=null;
+var nativeServicePreviewGraph=null,nativeServicePreviewLinks=null,nativeServicePreviewRules=null;
 function prepareNativeServicePreviewData(){
- if(!nativeServicePreviewData)nativeServicePreviewData=Promise.all([ensureDbusDataLoaded(),ensureNavGraphLoaded(),ensureNavStopLinksLoaded(),ensureNavBridgesLoaded()]).catch(function(err){nativeServicePreviewData=null;throw err;});
+ if(!nativeServicePreviewData)nativeServicePreviewData=Promise.all([ensureDbusDataLoaded(),ensureNavGraphLoaded(),ensureNavStopLinksLoaded(),ensureNavBridgesLoaded()]).then(function(data){
+  // Navigation loaders return empty results on network failure. Do not cache
+  // that failure forever or draw straight segments as a completed road route.
+  if(!navGraph||!navStopLinksLoaded||!navBridgeLoaded)nativeServicePreviewData=null;
+  return data;
+ }).catch(function(err){nativeServicePreviewData=null;throw err;});
  return nativeServicePreviewData;
 }
 function receiveNativeServicePreviewRequest(m){
  if(!m||m.protocol!==3||m.generation!==nativeGameModeGeneration||!nativeGameModeApplied||normalizeGameMode(currentGameMode)!=='bus'||!Number.isInteger(m.row)||m.row<1||!Number.isInteger(m.query)||typeof m.lineUid!=='string'||typeof m.routeUid!=='string')return false;
- if(nativeServicePreviewSource!==dbusLines){nativeServicePreviews.clear();nativeServicePreviewSource=dbusLines;}
+ if(nativeServicePreviewSource!==dbusLines||nativeServicePreviewGraph!==navGraph||nativeServicePreviewLinks!==navStopLinksByUid||nativeServicePreviewRules!==navBridgeRules){
+  nativeServicePreviews.clear();nativeServicePreviewSource=dbusLines;nativeServicePreviewGraph=navGraph;nativeServicePreviewLinks=navStopLinksByUid;nativeServicePreviewRules=navBridgeRules;
+ }
  var key=[m.generation,m.session,m.catalog,m.query,m.row].join(':'),cacheKey=JSON.stringify([m.generation,m.catalog,m.lineUid,m.routeUid]),promise=nativeServicePreviews.get(cacheKey);nativeServiceLatestPreview=key;
  if(!promise){promise=prepareNativeServicePreviewData().then(function(){
+  if(!navGraph||!navStopLinksLoaded||!navBridgeLoaded)return null;
   var line=(dbusLines||[]).find(function(l){return String(l.uid)===m.lineUid;}),route=line&&(line.routes||[]).find(function(r){return String(r.uid)===m.routeUid;});
   if(!route)return null;
   var entries=getRouteStopEntries(route),state={lineNumber:getLineNumber(line,route),routeName:route.name,lineUid:line.uid,routeUid:route.uid};
