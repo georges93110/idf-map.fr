@@ -375,7 +375,7 @@ function girouetteText(value){
   .replace(/e\u0301/g,'é').replace(/E\u0301/g,'É').replace(/[\u0300-\u036f]/g,'');
 }
 function girouetteOutline(color){const c=String(color).replace('#','');const n=parseInt(c,16);return ((n>>16)*.2126+((n>>8)&255)*.7152+(n&255)*.0722)>127?'#000000':'#ffffff';}
-let textureKey='';window.IDFGirouette={revision:0,ready:false,update:refreshGirouette};
+let textureKey='';window.IDFGirouette={revision:0,ready:false,resumeVersion:1,resume:async state=>{textureKey='';return refreshGirouette(state);},update:refreshGirouette};
 // State arrives directly from the plugin's renderer, without a cross-origin localhost request.
 async function refreshGirouette(state){
  try{if(!state||typeof state.enabled!=='boolean')throw Error('Invalid girouette state');

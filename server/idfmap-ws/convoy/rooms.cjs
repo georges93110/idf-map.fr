@@ -16,7 +16,7 @@ class ConvoyRooms {
     // Rejoining the identical generation only refreshes roster/lease.
     const previous = this.peers.get(peer);
     if (previous && previous.hello.room === h.room && previous.hello.player === h.player && previous.hello.instance === h.instance && previous.hello.assets === h.assets && previous.hello.clientId === h.clientId) {
-      previous.hello = h; previous.seen = this.now(); this.reconcile(previous.room); return true;
+      previous.hello = h; previous.seen = this.now(); this.reconcile(previous.room, previous); return true;
     }
     this.leave(peer);
     if (this.peers.size >= this.maxPeers) return false;
@@ -28,7 +28,7 @@ class ConvoyRooms {
     // An active identity cannot be stolen by another connection. The old lease
     // must end or its socket close before a reconnect can replace it.
     if (room.peers.has(h.player) || room.peers.size >= P.LIMITS.peers || [...room.peers.values()].some(p => p.hello.clientId === h.clientId)) return false;
-    const p = { peer, room, hello: h, seen: this.now(), state: null, sequence: 0, eventSequence: 0, visible: new Set(), sent: new Map(), lastEvents: new Set(), retired: new Set(), tokens: 40, tokenAt: this.now() };
+    const p = { peer, room, hello: h, seen: this.now(), state: null, sequence: 0, eventSequence: 0, visible: new Set(), sent: new Map(), pending: new Set(), lastEvents: new Set(), retired: new Set(), tokens: 40, tokenAt: this.now() };
     room.peers.set(h.player, p); this.peers.set(peer, p);
     this.emit(peer, { type: 'convoy.welcome', version: P.VERSION, epoch: room.epoch, player: h.player });
     return true;
@@ -69,7 +69,7 @@ class ConvoyRooms {
         p.retired.add(p.state.generation); if (p.retired.size > 1024) { this.leave(peer); return false; }
         this.removeVisible(p); p.eventSequence = 0; p.lastEvents.clear(); this.releaseReservations(p);
       }
-      p.state = s; p.sequence = s.sequence; p.seen = this.now(); this.reconcile(p.room); return true;
+      p.state = s; p.sequence = s.sequence; p.seen = this.now(); this.reconcile(p.room, p); return true;
     }
     if (raw.type === 'convoy.event') {
       const e = P.event(raw); if (!e || !p.state || e.generation !== p.state.generation || e.sequence <= p.eventSequence || p.lastEvents.has(e.id)) return false;
@@ -81,22 +81,29 @@ class ConvoyRooms {
     }
     return false;
   }
-  reconcile(room) {
+  reconcile(room, changed) {
     const now = this.now();
-    for (const viewer of room.peers.values()) for (const source of room.peers.values()) {
-      if (viewer === source) continue;
-      const id = source.hello.player, had = viewer.visible.has(id);
-      const d = source.state && viewer.state ? P.distance(source.state.pose, viewer.state.pose) : Infinity;
-      const show = this.permitted(viewer, source) && d <= (had ? P.LIMITS.leaveM : P.LIMITS.enterM);
-      if (!show) { if (had) { viewer.visible.delete(id); viewer.sent.delete(id); this.emit(viewer.peer, { type: 'convoy.remove', version: 1, epoch: room.epoch, player: id, clientId: source.hello.clientId, instance: source.hello.instance }); } continue; }
-      const lod = d <= P.LIMITS.fullM ? 'full' : 'reduced', last = viewer.sent.get(id);
-      // Reliable transport can coalesce full snapshots. No replay of old sounds.
-      if (last && last.sequence === source.sequence && last.lod === lod) continue;
-      if (last && last.lod === lod && now - last.at < (lod === 'full' ? 50 : 250)) continue;
-      const state = lod === 'full' ? source.state : { ...source.state, passengers: source.state.passengers.filter(p => p.stage === 'resident') };
-      if (this.emit(viewer.peer, { ...state, player: id, clientId: source.hello.clientId, instance: source.hello.instance, lod, at: now })) {
-        viewer.visible.add(id); viewer.sent.set(id, { sequence: source.sequence, lod, at: now });
-      }
+    for (const peer of room.peers.values()) if (peer !== changed) {
+      this.reconcilePair(changed, peer, now);
+      this.reconcilePair(peer, changed, now);
+    }
+  }
+  reconcilePair(viewer, source, now) {
+    const room = viewer.room, id = source.hello.player, had = viewer.visible.has(id);
+    const d = source.state && viewer.state ? P.distance(source.state.pose, viewer.state.pose) : Infinity;
+    const show = this.permitted(viewer, source) && d <= (had ? P.LIMITS.leaveM : P.LIMITS.enterM);
+    if (!show) {
+      viewer.pending.delete(source);
+      if (had) { viewer.visible.delete(id); viewer.sent.delete(id); this.emit(viewer.peer, { type: 'convoy.remove', version: 1, epoch: room.epoch, player: id, clientId: source.hello.clientId, instance: source.hello.instance }); }
+      return;
+    }
+    const lod = d <= P.LIMITS.fullM ? 'full' : 'reduced', last = viewer.sent.get(id);
+    if (last && last.sequence === source.sequence && last.lod === lod) { viewer.pending.delete(source); return; }
+    viewer.pending.add(source);
+    if (last && last.lod === lod && now - last.at < (lod === 'full' ? 50 : 250)) return;
+    const state = lod === 'full' ? source.state : { ...source.state, passengers: source.state.passengers.filter(p => p.stage === 'resident') };
+    if (this.emit(viewer.peer, { ...state, player: id, clientId: source.hello.clientId, instance: source.hello.instance, lod, at: now })) {
+      viewer.visible.add(id); viewer.sent.set(id, { sequence: source.sequence, lod, at: now }); viewer.pending.delete(source);
     }
   }
   removeVisible(p) {
@@ -109,12 +116,14 @@ class ConvoyRooms {
   }
   leave(peer) {
     const p = this.peers.get(peer); if (!p) return;
-    this.removeVisible(p); this.releaseReservations(p); p.room.peers.delete(p.hello.player); this.peers.delete(peer);
+    this.removeVisible(p); this.releaseReservations(p);
+    for (const viewer of p.room.peers.values()) viewer.pending.delete(p);
+    p.pending.clear(); p.room.peers.delete(p.hello.player); this.peers.delete(peer);
     if (!p.room.peers.size) { this.rooms.delete(p.room.id); this.crowds.clear(p.room.epoch); }
   }
   tick() {
     const now = this.now(); for (const [peer, p] of this.peers) if (now - p.seen >= P.LIMITS.leaseMs) this.leave(peer);
-    for (const room of this.rooms.values()) this.reconcile(room);
+    for (const viewer of this.peers.values()) for (const source of viewer.pending) this.reconcilePair(viewer, source, now);
   }
   close() { for (const peer of [...this.peers.keys()]) this.leave(peer); }
 }

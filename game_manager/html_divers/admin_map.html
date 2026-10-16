@@ -2443,6 +2443,22 @@
         });
       }
 
+      function syncPlayerIcon(record, player, state) {
+        const heading = headingToMarkerRotationDeg(player.heading, player.headingConvention, player.headingUnit).toFixed(1);
+        const key = JSON.stringify([player.id || "", playerMarkerLabel(player), isAnonymousPlayer(player), state]);
+        if (record.iconKey !== key) {
+          record.marker.setIcon(playerIcon(player, state));
+          record.iconKey = key; record.iconHeading = heading;
+        } else if (record.iconHeading !== heading) {
+          const dot = record.marker.getElement()?.querySelector('.player-marker-dot');
+          // A filtered marker may have no DOM. Update its stored icon too so
+          // adding it back uses the latest direction immediately.
+          if (dot) dot.style.setProperty('--heading', heading + 'deg');
+          record.marker.options.icon = playerIcon(player, state);
+          record.iconHeading = heading;
+        }
+      }
+
       function escapeHtml(value) {
         return String(value == null ? "" : value)
           .replace(/&/g, "&amp;")
@@ -5551,7 +5567,7 @@
             player = preservePreviousBusRouteGeometry(player, record.player);
             record.player = player;
             setPlayerMarkerTargetLatLng(record, latlng);
-            record.marker.setIcon(playerIcon(player, markerState));
+            syncPlayerIcon(record, player, markerState);
             record.marker.options.title = playerDisplayTitle(player);
             record.lastSeen = now;
             record.state = markerState;
@@ -5565,8 +5581,18 @@
           }
         }
 
-        refreshPlayerMarkerStates(now);
-        syncAllPlayerFilterUi();
+        // Expiry is handled by the existing state timer. Network bursts only
+        // rebuild the global filters/line lists once per displayed frame.
+        schedulePlayerFilterUi();
+      }
+
+      let playerFilterFrame = 0;
+      function schedulePlayerFilterUi() {
+        if (playerFilterFrame) return;
+        playerFilterFrame = requestAnimationFrame(function () {
+          playerFilterFrame = 0;
+          syncAllPlayerFilterUi();
+        });
       }
 
       function getPlayerMarkerState(player, now, lastSeen) {
@@ -5594,7 +5620,7 @@
             continue;
           }
           record.state = state;
-          record.marker.setIcon(playerIcon(record.player || {}, state));
+          syncPlayerIcon(record, record.player || {}, state);
           updatePlayerPopup(record, { force: true });
           syncPlayerMarkerVisibility(record);
         }
@@ -5746,9 +5772,10 @@
           }
 
           const mergedMessage = mergeEnvelopeIdentity(message);
-          const directPlayers = collectPlayers(mergedMessage);
+          const directPlayers = collectPlayers(unwrapTelemetryEnvelope(mergedMessage));
           if (directPlayers.length) {
-            handleTelemetryPayload(mergedMessage);
+            updatePlayerMarkers(directPlayers);
+            showError("");
             return;
           }
 

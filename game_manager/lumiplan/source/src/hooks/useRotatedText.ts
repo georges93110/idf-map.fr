@@ -2,7 +2,8 @@ import { ref, computed, onUnmounted, type ComputedRef } from 'vue';
 
 const globalTick = ref<number>(0);
 let activeListeners = 0;
-let timerId: NodeJS.Timeout | null = null;
+let timerId: ReturnType<typeof setInterval> | null = null;
+let startId: ReturnType<typeof setTimeout> | null = null;
 
 const DURATION_MS = 5000;
 
@@ -11,20 +12,23 @@ const updateTick = () => {
 };
 
 const startGlobalTimer = () => {
-    if (timerId){
+    if (timerId || startId){
      return; 
     }
     updateTick(); 
 
     const msUntilNextTick = DURATION_MS - (Date.now() % DURATION_MS);
 
-    setTimeout(() => {
+    startId = setTimeout(() => {
+        startId = null;
         updateTick();
         timerId = setInterval(updateTick, DURATION_MS);
     }, msUntilNextTick);
 };
 
 const stopGlobalTimer = () => {
+    if (startId) clearTimeout(startId);
+    startId = null;
     if (timerId) {
         clearInterval(timerId);
         timerId = null;
@@ -36,6 +40,7 @@ const stopGlobalTimer = () => {
  * synchronisé globalement avec tous les autres textes.
  */
 export function useRotatedText(textList: string[] | readonly string[]): ComputedRef<string> {
+    updateTick();
     if (activeListeners === 0) {
         startGlobalTimer();
     }

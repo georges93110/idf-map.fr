@@ -69,7 +69,8 @@ function createServer({ WebSocketServer, store, authorizeConvoy, log = console.e
       }
       if (!legacyForward(doc)) return;
       try { store.record(doc); } catch (e) { report(e); }
-      for (const other of clients) if (other !== peer) send(other, bytes.toString('utf8'));
+      const text = bytes.toString('utf8');
+      for (const other of clients) if (other !== peer) send(other, text);
     });
     const cleanup = () => { clients.delete(peer); identities.delete(peer); rooms.leave(peer); admin.leave(peer); };
     peer.on('close', cleanup); peer.on('error', cleanup);

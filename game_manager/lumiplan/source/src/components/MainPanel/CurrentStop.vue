@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, onUnmounted } from "vue";
 import { StopWithTime } from "../../types";
 import { cleanText } from "../../utils";
 import { AudioManager } from "../../audio";
 
 const { stopWithTime, lineId } = defineProps<{ stopWithTime: StopWithTime, lineId:string }>();
+let announcement: ReturnType<typeof setTimeout> | undefined;
+onUnmounted(() => clearTimeout(announcement));
 onMounted(() => {
-  setTimeout(() => {
+  announcement = setTimeout(() => {
     AudioManager.playStopName(lineId, stopWithTime.stop.parentId ?? stopWithTime.stop.id, stopWithTime.isTerminus);
   }, 1_000);
 });
