@@ -168,7 +168,12 @@ function routeNumberLayer(font,sx,sy,x,y,stripeHeight){
  }
  numberLayerKey=key;return numberLayer;
 }
+function normalizeGirouetteDashes(value){
+ return String(value??'').replace(/[\p{Dash_Punctuation}\u00ad\u2043\u2053\u207b\u208b\u2212\u2796]/gu,'-');
+}
 function drawRoute(){
+ const normalizedRoute=normalizeGirouetteDashes(route.value);
+ if(route.value!==normalizedRoute)route.value=normalizedRoute;
  if(!$('#routeBox').checked)return;
  ctx.save();ctx.beginPath();ctx.rect(0,0,211,128);ctx.clip();
  ctx.fillStyle=palette.background;ctx.fillRect(0,0,211,128);
@@ -239,7 +244,7 @@ function draw(){
 let destinationLayoutKey='',destinationLayoutValue=null;
 function destinationFont(){return agoraLayout?'AgoraGirouette':$('#fontChoice').value;}
 function fitDestinationLayout(space){
- const family=destinationFont(),text=running?dest.value.replace(/\s+/g,' ').trim():dest.value.replace(/\r/g,'');
+ const family=destinationFont(),normalized=normalizeGirouetteDashes(dest.value),text=running?normalized.replace(/\s+/g,' ').trim():normalized.replace(/\r/g,'');
  const wrap=$('#wrap').checked&&!running,occupancy=Math.min(1,Math.max(.1,Number($('#size').value)/100));
  const key=JSON.stringify([text,family,space,wrap,running,occupancy,document.fonts.status]);
  if(key===destinationLayoutKey)return destinationLayoutValue;
@@ -296,7 +301,7 @@ function drawSimple(){
  m.clearRect(0,0,1024,128);
  const layout=fitDestinationLayout(space);
  m.font=layout.size+'px "'+destinationFont()+'"';
- const w=m.measureText(dest.value.replace(/\n/g,' ')).width;
+ const w=m.measureText(normalizeGirouetteDashes(dest.value).replace(/\n/g,' ')).width;
  m.save();m.beginPath();m.rect(start+30,15,space-60,98);m.clip();m.fillStyle=agoraLayout?'#e0ed61':palette.text;
  let top=(128-layout.height)/2;
  for(const line of layout.lines){
@@ -369,7 +374,7 @@ const textureStyle=document.createElement('style');textureStyle.textContent=
  'html,body{margin:0!important;padding:0!important;width:2048px!important;height:256px!important;overflow:hidden!important;background:#000!important}body>*{display:none!important}body>#ledCanvas{display:block!important;position:absolute!important;left:0!important;top:0!important;width:2048px!important;height:256px!important;z-index:1}';
 document.head.append(textureStyle);document.body.append(output);
 function girouetteText(value){
- return String(value||'').replace(/(^|[^\p{L}\p{N}_])(RER|Métro|Metro|Tram|Bus)(?=$|[^\p{L}\p{N}_])/giu,function(_,before,word){
+ return normalizeGirouetteDashes(value).replace(/(^|[^\p{L}\p{N}_])(RER|Métro|Metro|Tram|Bus)(?=$|[^\p{L}\p{N}_])/giu,function(_,before,word){
    return before+({rer:'¢',metro:'$',tram:'¥',bus:'£'}[word.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()]);
  }).replace(/[ŒœÆæ]/g,c=>({Œ:'OE',œ:'oe',Æ:'AE',æ:'ae'}[c])).normalize('NFD')
   .replace(/e\u0301/g,'é').replace(/E\u0301/g,'É').replace(/[\u0300-\u036f]/g,'');

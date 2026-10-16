@@ -196,7 +196,12 @@ function routeNumberLayer(font,sx,sy,x,y,stripeHeight){
  }
  numberLayerKey=key;return numberLayer;
 }
+function normalizeGirouetteDashes(value){
+ return String(value??'').replace(/[\p{Dash_Punctuation}\u00ad\u2043\u2053\u207b\u208b\u2212\u2796]/gu,'-');
+}
 function drawRoute(){
+ const normalizedRoute=normalizeGirouetteDashes(route.value);
+ if(route.value!==normalizedRoute)route.value=normalizedRoute;
  if(!$('#routeBox').checked)return;
  ctx.save();ctx.beginPath();ctx.rect(0,0,211,128);ctx.clip();
  ctx.fillStyle=palette.background;ctx.fillRect(0,0,211,128);
@@ -267,7 +272,7 @@ function draw(){
 let destinationLayoutKey='',destinationLayoutValue=null;
 function destinationFont(){return agoraLayout?'AgoraGirouette':$('#fontChoice').value;}
 function fitDestinationLayout(space){
- const family=destinationFont(),text=running?dest.value.replace(/\s+/g,' ').trim():dest.value.replace(/\r/g,'');
+ const family=destinationFont(),normalized=normalizeGirouetteDashes(dest.value),text=running?normalized.replace(/\s+/g,' ').trim():normalized.replace(/\r/g,'');
  const wrap=$('#wrap').checked&&!running,occupancy=Math.min(1,Math.max(.1,Number($('#size').value)/100));
  const key=JSON.stringify([text,family,space,wrap,running,occupancy,document.fonts.status]);
  if(key===destinationLayoutKey)return destinationLayoutValue;
@@ -324,7 +329,7 @@ function drawSimple(){
  m.clearRect(0,0,1024,128);
  const layout=fitDestinationLayout(space);
  m.font=layout.size+'px "'+destinationFont()+'"';
- const w=m.measureText(dest.value.replace(/\n/g,' ')).width;
+ const w=m.measureText(normalizeGirouetteDashes(dest.value).replace(/\n/g,' ')).width;
  m.save();m.beginPath();const side=running?0:30;m.rect(start+side,15,space-2*side,98);m.clip();m.fillStyle=agoraLayout?'#e0ed61':palette.text;
  let top=(128-layout.height)/2;
  for(const line of layout.lines){
