@@ -1459,13 +1459,22 @@
           .filter(Boolean);
       }
 
+      function parseDbusXmlText(txt) {
+        // Accept the two legacy boolean flags without quotes, only in tag
+        // attributes. Preserve quoted names, comments and CDATA verbatim.
+        var source=String(txt).replace(/<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<[^>"']*(?:(?:"[^"]*"|'[^']*')[^>"']*)*>/g,function(tag){
+          if(tag.slice(0,2)==='<!')return tag;
+          return tag.replace(/"[^"]*"|'[^']*'|\b(badge|partiel)\s*=\s*(true|false)(?=\s|\/?>)/gi,function(full,key,value){return key?key+'="'+value.toLowerCase()+'"':full;});
+        });
+        var xml=new DOMParser().parseFromString(source,'text/xml');
+        if(xml.querySelector('parsererror'))throw new Error('XML invalide');
+        return xml;
+      }
       async function fetchXmlDoc(url) {
         const response = await fetch(url, { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const text = await response.text();
-        const xml = new DOMParser().parseFromString(text, "application/xml");
-        if (xml.querySelector("parsererror")) throw new Error("xml_parse_error");
-        return xml;
+        return parseDbusXmlText(text);
       }
 
       async function fetchJsonDoc(url) {
@@ -1730,8 +1739,8 @@
         dbusDataLoadPromise = Promise.all([
           fetchXmlDoc(`${basePath}/stops.xml`),
           fetchXmlDoc(`${basePath}/lines.xml`),
-          fetchJsonDoc(`${dataBase}/nav_graph.json`).catch(function () { return null; }),
-          fetchJsonDoc(`${dataBase}/nav_bridges.json`).catch(function () { return null; })
+          fetchJsonDoc(`${MAP_FILES_ROOT}/nav_graph.json`).catch(function () { return null; }),
+          fetchJsonDoc(`${MAP_FILES_ROOT}/nav_bridges.json`).catch(function () { return null; })
         ]).then(function (list) {
           dbusStopsById = parseDbusStopsXml(list[0]);
           dbusLines = parseDbusLinesXml(list[1]);

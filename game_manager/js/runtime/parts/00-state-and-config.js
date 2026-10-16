@@ -111,7 +111,7 @@
         return url.href;
       }
       function normalizeGameMapFilePath(file) {
-        return String(file || "").replace(/^\/+/, "");
+        return String(file || "").replace(/^\/+/, "").replace(/^(?:DBus|Mode(?:%20| )Bus)\//i, "Mode%20Bus/");
       }
       function gameMapFilePathForVersion(version, file) {
         var clean = normalizeGameMapFilePath(file);
@@ -119,6 +119,11 @@
         if (!safeVersion) safeVersion = GAME_DEV_MAP_BASE_VERSION;
         if (/^0\.1\.6a$/i.test(safeVersion)) safeVersion = "website";
         if (/^dev$/i.test(safeVersion)) safeVersion = "IDF-RP";
+        // Shared files moved out of the two map folders. Do not probe deleted copies.
+        if (/^(?:nav_graph|nav_bridges|nav_stop_links|traffic_areas)\.json$/.test(clean)) return "../map_files/" + clean;
+        if (/^Mode%20Bus\//.test(clean)) return "../map_files/IDF-RP/" + clean;
+        if (/^(?:CentreCommerciaux|Monuments|Countries)\.json$/.test(clean)) return "../map_files/website/" + clean;
+        if (clean === "uber_eats_restaurants.json" && safeVersion !== GAME_DEV_MAP_LAYER_VERSION) return "../map_files/" + clean;
         if (safeVersion === GAME_DEV_MAP_LAYER_VERSION && /^Tiles\//.test(clean)) return "../map_files/website/Dev/" + clean;
         if (safeVersion === GAME_DEV_MAP_LAYER_VERSION) return "../map_files/" + GAME_DEV_MAP_LAYER_VERSION + "/" + clean;
         return "../map_files/" + safeVersion + "/" + clean;
@@ -135,7 +140,9 @@
         return out;
       }
       function fetchGameMapFile(file, primaryVersion, options) {
-        var candidates = gameMapCandidateVersions(primaryVersion);
+        var candidates = gameMapCandidateVersions(primaryVersion).map(function (version) {
+          return gameMapFilePathForVersion(version, file);
+        }).filter(function (url, index, urls) { return urls.indexOf(url) === index; });
         var opts = options && typeof options === "object" ? options : { cache: "no-store" };
         var lastResponse = null;
         var lastError = null;
@@ -144,7 +151,7 @@
             if (lastResponse) return Promise.resolve(lastResponse);
             return Promise.reject(lastError || new Error("Map file load failed: " + normalizeGameMapFilePath(file)));
           }
-          var url = gameMapFilePathForVersion(candidates[index], file);
+          var url = candidates[index];
           return fetch(url, opts)
             .then(function (res) {
               if (res && res.ok) return res;

@@ -1300,11 +1300,18 @@
       const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
       const dataPath = (file) => `${DATA_BASE}/${file}`;
       function mapFileCandidatePaths(file) {
-        const clean = String(file || "").replace(/^\/+/, "");
-        const paths = [];
-        if (DEV_MAP_MODE) paths.push(`${DEV_DATA_BASE}/${clean}`);
-        paths.push(`${DATA_BASE}/${clean}`);
-        return paths;
+        const clean = String(file || "").replace(/^\/+/, "").replace(/^(?:DBus|Mode(?:%20| )Bus)\//i, "Mode%20Bus/");
+        // Navigation is shared at map_files/; the single bus catalogue lives in IDF-RP.
+        if (/^(?:nav_graph|nav_bridges|nav_stop_links|traffic_areas)\.json$/.test(clean)) return [`${MAP_FILES_ROOT}/${clean}`];
+        if (clean.startsWith("Mode%20Bus/")) return [`${DEV_DATA_BASE}/${clean}`];
+        if (/^(?:CentreCommerciaux|Monuments|Countries)\.json$/.test(clean)) return [`${MAP_FILES_ROOT}/website/${clean}`];
+        const useIdfRp = DEV_MAP_MODE || EFFECTIVE_VERSION === "IDF-RP";
+        if (clean === "uber_eats_restaurants.json") {
+          return useIdfRp ? [`${DEV_DATA_BASE}/${clean}`, `${MAP_FILES_ROOT}/${clean}`] : [`${MAP_FILES_ROOT}/${clean}`];
+        }
+        const paths = useIdfRp ? [`${DEV_DATA_BASE}/${clean}`] : [`${DATA_BASE}/${clean}`];
+        paths.push(`${MAP_FILES_ROOT}/website/${clean}`);
+        return [...new Set(paths)];
       }
       async function fetchMapFile(file, options) {
         let lastResponse = null;
@@ -6021,7 +6028,7 @@
         keepBuffer: WAZE_APP_MODE ? 16 : 12
       };
       baseTileLayer = L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, baseTileLayerOptions).addTo(map);
-      if (DEV_MAP_MODE) {
+      if (DEV_MAP_MODE || EFFECTIVE_VERSION === "IDF-RP") {
         L.tileLayer(`${DEV_TILE_BASE}/{z}/{x}/{y}.png`, {
           ...baseTileLayerOptions,
           errorTileUrl: TRANSPARENT_TILE_URL

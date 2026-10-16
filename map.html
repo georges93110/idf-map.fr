@@ -5330,15 +5330,22 @@
     const TILE_BASE = `${MAP_FILES_ROOT}/website/Tiles`;
     const DEV_TILE_BASE = `${MAP_FILES_ROOT}/website/Dev/Tiles`;
     const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-    const DBUS_BASE = `${DATA_BASE}/Mode%20Bus`;
+    const DBUS_BASE = `${DEV_DATA_BASE}/Mode%20Bus`;
     const dataPath = (file) => `${DATA_BASE}/${file}`;
     const overlayPath = (file) => `${OVERLAY_BASE}/${file}`;
     function mapFileCandidatePaths(file){
-      const clean = String(file || "").replace(/^\/+/, "");
-      const paths = [];
-      if (NEXT_VERSION_MODE) paths.push(`${DEV_DATA_BASE}/${clean}`);
-      paths.push(`${DATA_BASE}/${clean}`);
-      return paths;
+      const clean = String(file || "").replace(/^\/+/, "").replace(/^(?:DBus|Mode(?:%20| )Bus)\//i, "Mode%20Bus/");
+      // Navigation is shared at map_files/; the single bus catalogue lives in IDF-RP.
+      if (/^(?:nav_graph|nav_bridges|nav_stop_links|traffic_areas)\.json$/.test(clean)) return [`${MAP_FILES_ROOT}/${clean}`];
+      if (clean.startsWith("Mode%20Bus/")) return [`${DEV_DATA_BASE}/${clean}`];
+      if (/^(?:CentreCommerciaux|Monuments|Countries)\.json$/.test(clean)) return [`${MAP_FILES_ROOT}/website/${clean}`];
+      const useIdfRp = NEXT_VERSION_MODE || (SELECTED_VERSION || "website") === "IDF-RP";
+      if (clean === "uber_eats_restaurants.json") {
+        return useIdfRp ? [`${DEV_DATA_BASE}/${clean}`, `${MAP_FILES_ROOT}/${clean}`] : [`${MAP_FILES_ROOT}/${clean}`];
+      }
+      const paths = useIdfRp ? [`${DEV_DATA_BASE}/${clean}`] : [`${DATA_BASE}/${clean}`];
+      paths.push(`${MAP_FILES_ROOT}/website/${clean}`);
+      return [...new Set(paths)];
     }
     async function fetchMapFile(file, options){
       let lastResponse = null;
@@ -5576,7 +5583,7 @@
       updateWhenIdle:false,updateWhenZooming:true,keepBuffer:3
     };
     L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, baseTileLayerOptions).addTo(map);
-    if (NEXT_VERSION_MODE) {
+    if (NEXT_VERSION_MODE || (SELECTED_VERSION || "website") === "IDF-RP") {
       L.tileLayer(`${DEV_TILE_BASE}/{z}/{x}/{y}.png`, {
         ...baseTileLayerOptions,
         errorTileUrl: TRANSPARENT_TILE_URL
@@ -7165,12 +7172,22 @@
       const parser = new DOMParser();
       return parser.parseFromString(txt, "text/xml");
     }
+    function parseDbusXmlText(txt) {
+      // Accept the two legacy boolean flags without quotes, only in tag
+      // attributes. Preserve quoted names, comments and CDATA verbatim.
+      var source=String(txt).replace(/<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<[^>"']*(?:(?:"[^"]*"|'[^']*')[^>"']*)*>/g,function(tag){
+        if(tag.slice(0,2)==='<!')return tag;
+        return tag.replace(/"[^"]*"|'[^']*'|\b(badge|partiel)\s*=\s*(true|false)(?=\s|\/?>)/gi,function(full,key,value){return key?key+'="'+value.toLowerCase()+'"':full;});
+      });
+      var xml=new DOMParser().parseFromString(source,'text/xml');
+      if(xml.querySelector('parsererror'))throw new Error('XML invalide');
+      return xml;
+    }
     async function fetchMapXml(file){
       const res = await fetchMapFile(file, { cache: "no-store" });
       if(!res.ok) throw new Error("XML load failed: "+file);
       const txt = await res.text();
-      const parser = new DOMParser();
-      return parser.parseFromString(txt, "text/xml");
+      return parseDbusXmlText(txt);
     }
     let devLinesEditorFileHandle = null;
     let devLinesEditorDoc = null;
