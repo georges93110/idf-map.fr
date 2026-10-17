@@ -64,7 +64,9 @@ function buildNativePassengerPayload() {
   return {type:"nativePassengers",version:2,enabled:true,missionKey:mission,stopKey:key,
     preview:saeivRouteState.started!==true,terminal:saeivRouteState.started===true&&index===stops.length-1,
     nextStop:nativePassengerNextPlan(stops,index,mission),
-    running:!telemetryPaused && hasRecentTelemetryPositionSignal(),
+    // A late browser callback is not an SCS pause. The DLL checks its live
+    // SDK state again before every physical transfer, in every camera.
+    running:!telemetryPaused,
     world:{x:point.x,y:point.h,z:point.y,yawDegrees:((yaw%360)+540)%360-180},
     radiusM:Math.max(SAEIV_STOP_REACH_DISTANCE,SAEIV_STOP_DWELL_REACH_DISTANCE),
     // A heartbeat may run between a physical transfer and the UI service tick.

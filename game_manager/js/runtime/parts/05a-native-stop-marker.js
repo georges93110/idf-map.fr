@@ -5,7 +5,7 @@
       function buildNativeStopMarkerPayload(saeiv) {
         var off = { type: "nativeStopMarker", version: 1, enabled: false };
         if (normalizeGameMode(currentGameMode) !== "bus" || telemetryPaused ||
-            !hasRecentTelemetryPositionSignal() || !saeiv || !saeiv.routeSelected || saeiv.routeCompleted) return off;
+            !saeiv || !saeiv.routeSelected || saeiv.routeCompleted) return off;
         var stops = saeivRouteState && saeivRouteState.stops;
         if (!Array.isArray(stops) || !stops.length) return off;
         var started = saeivRouteState.started === true;
