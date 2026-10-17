@@ -30,7 +30,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "lumiplan-journey-seats-20261015";
+  runtime.version = "hidden-heartbeat-20261017";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
@@ -127,7 +127,7 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "service-logos-20261014");
+    partUrl.searchParams.set("v", "hidden-heartbeat-20261017");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
       if (part === "parts/05d-native-ui.js" && text.indexOf("function syncNativeBusHud(") < 0) {

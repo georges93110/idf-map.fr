@@ -178,6 +178,15 @@ function receiveNativeGameMode(m){
     // Native events continue while hidden WebView timers can be throttled.
     // Send the catalogue only after the generation ACK on this same socket.
     if(m.mode==="bus"&&typeof syncNativeServices==='function')syncNativeServices();
+    // These leases must follow real socket events as well as timers: a hidden
+    // WebView may throttle intervals when switching to a stock camera.
+    // Existing senders retain their rate limits, current state and pause rules.
+    if(!suspended){
+      if(typeof syncNativePassengers==='function')syncNativePassengers(false);
+      if(typeof syncNativeStopMarker==='function')syncNativeStopMarker(false);
+      if(typeof syncNativeBusHud==='function')syncNativeBusHud(false);
+      if(typeof sendDiscordPresenceUpdate==='function')sendDiscordPresenceUpdate();
+    }
   }
   return true;
 }
