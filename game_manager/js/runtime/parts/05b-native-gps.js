@@ -21,7 +21,8 @@
           return { type: "nativeGpsDestination", version: 2, enabled: false };
         }
         var index = saeivRouteState.started ? clampRouteStopIndex(saeivRouteState.targetIndex, stops.length - 1) : 0;
-        var points=[];
+        var points=[],stopPoints=[];
+        var usePassages=stops.slice(index).some(function(stop){return typeof getSaeivStopGpsOverrideWorldPoint==='function'&&getSaeivStopGpsOverrideWorldPoint(stop);});
         // COACH1 owns native map storage for the complete remaining route.
         // Reject oversize missions explicitly rather than silently truncating.
         if(stops.length-index>128){nativeGpsStatus={status:"too_many_stops",count:stops.length-index};return null;}
@@ -31,10 +32,17 @@
             nativeGpsStatus={status:"missing_stop_coordinates",index:i};return null;
           }
           points.push({x:point.x,y:point.h,z:point.y});
+          if(usePassages){
+            var physical=getSaeivStopExactWorldPoint(stops[i]);
+            if(!physical||![physical.x,physical.y,physical.h].every(Number.isFinite))return null;
+            stopPoints.push({x:physical.x,y:physical.h,z:physical.y});
+          }
         }
         if(points.length>128){nativeGpsStatus={status:"too_many_stops",count:points.length};return null;}
-        return {type:"nativeGpsDestination",version:2,enabled:true,firstStop:index+1,
+        var payload={type:"nativeGpsDestination",version:usePassages?3:2,enabled:true,firstStop:index+1,
           stopKey:String(saeivRouteState.selectedKey)+":"+index+":"+String(stops[index].uid||""),points:points};
+        if(usePassages)payload.stopPoints=stopPoints;
+        return payload;
       }
       function syncNativeGpsDestination(force) {
         if (!telemetryWs || telemetryWs.readyState !== 1) return false;

@@ -235,6 +235,7 @@
               var routeTargetIndex = clampRouteStopIndex(saeivRouteState.targetIndex, lastIndex);
               if (!routeStarted) {
                 var firstTarget =
+                  (typeof getSaeivStopGpsOverrideWorldPoint === "function" ? getSaeivStopGpsOverrideWorldPoint(entries[0]) : null) ||
                   (typeof getSaeivStopExactWorldPoint === "function" ? getSaeivStopExactWorldPoint(entries[0]) : null) ||
                   (typeof getSaeivStopNavWorldPoint === "function" ? getSaeivStopNavWorldPoint(entries[0]) : null) ||
                   parseWorldPoint3D(entries[0] && entries[0].point);

@@ -142,12 +142,12 @@
       "enabled": true,
       "scope": {
         "line": "114",
-        "route_uid": "1"
+        "direction": "Villemomble - Les Coquetiers >"
       },
       "insert_control_points": [
         {
           "position": "before_stop",
-          "stop_number": 11,
+          "stop_uid": "7",
           "points": [
             {
               "X": 5284.1,
@@ -164,19 +164,19 @@
           ]
         }
       ],
-      "notes": "114 route uid 1: avant arret 11 ajouter 10024,10038,10040."
+      "notes": "114 depuis Villemomble : correction avant Plateau d'Avron (arret uid 7), y compris les services prolonges."
     },
     {
       "id": "l114_le_raincy_to_neuilly_rer_ctrl_01",
       "enabled": true,
       "scope": {
         "line": "114",
-        "route_uid": "2"
+        "direction": "Le Raincy - Villemomble - Montfermeil RER >"
       },
       "insert_control_points": [
         {
           "position": "before_stop",
-          "stop_number": 7,
+          "stop_uid": "7",
           "points": [
             {
               "X": 5284.1,
@@ -193,14 +193,14 @@
           ]
         }
       ],
-      "notes": "114 route uid 2: avant arret 7 ajouter 10024,10038,10040."
+      "notes": "114 depuis Le Raincy : correction avant Plateau d'Avron (arret uid 7), independante de la numerotation des parcours."
     },
     {
       "id": "l114_neuilly_to_plateau_stalingrad_redirect_stop15_01",
       "enabled": true,
       "scope": {
         "line": "114",
-        "route_uid": "4"
+        "direction": "Neuilly-Plaisance RER > Plateau d'Avron - Place de Stalingrad"
       },
       "replace_between_points": {
         "from": {
@@ -243,14 +243,14 @@
         }
       ],
       "force_point_chain_exact": true,
-      "notes": "114 route uid 4: supprimer tous les points intermediaires entre le point 2290 et l'arret 15 via un segment direct."
+      "notes": "114 Neuilly vers Plateau d'Avron : correction locale de l'approche du terminus."
     },
     {
       "id": "l114_neuilly_to_raincy_montfermeil_redirect_stop15_01",
       "enabled": true,
       "scope": {
         "line": "114",
-        "route_uid": "5"
+        "direction": "Neuilly-Plaisance RER > Le Raincy - Villemomble - Montfermeil RER"
       },
       "replace_between_points": {
         "from": {
@@ -296,7 +296,7 @@
       "insert_control_points": [
         {
           "position": "after_stop",
-          "stop_number": 15,
+          "stop_uid": "84",
           "ignore_points": [
             {
               "X": 5291.871,
@@ -339,14 +339,14 @@
           ]
         }
       ],
-      "notes": "114 route uid 5: supprimer tous les points intermediaires entre le point 2290 et l'arret 15 via un segment direct."
+      "notes": "114 Neuilly vers Le Raincy : correction locale a Plateau d'Avron (arret uid 84)."
     },
     {
       "id": "l114_neuilly_to_coquetiers_redirect_stop15_01",
       "enabled": true,
       "scope": {
         "line": "114",
-        "route_uid": "6"
+        "direction": "Neuilly-Plaisance RER > Villemomble - Les Coquetiers"
       },
       "replace_between_points": {
         "from": {
@@ -392,7 +392,7 @@
       "insert_control_points": [
         {
           "position": "after_stop",
-          "stop_number": 15,
+          "stop_uid": "84",
           "ignore_points": [
             {
               "X": 5291.871,
@@ -435,14 +435,14 @@
           ]
         }
       ],
-      "notes": "114 route uid 6: supprimer tous les points intermediaires entre le point 2290 et l'arret 15 via un segment direct."
+      "notes": "114 Neuilly vers Villemomble : correction locale a Plateau d'Avron (arret uid 84)."
     },
     {
       "id": "l114_nogent_pierre_semard_to_chateau_ctrl_01",
       "enabled": true,
       "scope": {
         "line": "114",
-        "route_uid": "258"
+        "direction": "Nogent-sur-Marne RER - Pierre Semard > Chateau de Vincennes"
       },
       "insert_control_points": [
         {

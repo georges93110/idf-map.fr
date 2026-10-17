@@ -1480,6 +1480,27 @@ function tickSaeivAutomaticDestination() {
         });
         return out;
       }
+      // Route-only overrides. Never replace stops.xml coordinates or stop.point:
+      // they belong to passenger handling, arrival zones and visible stop markers.
+      var dbusGpsPointsById = new Map();
+      function parseDbusGpsPointsXml(xml) {
+        var out = new Map();
+        var nodes = Array.from(xml && xml.querySelectorAll ? xml.querySelectorAll("pointdepassage") : []);
+        nodes.forEach(function (node) {
+          var children = Array.from(node.children || []);
+          var idNode = children.find(function (child) { return child.localName === "id"; });
+          var locationNode = children.find(function (child) { return child.localName === "location"; });
+          if (!idNode || !locationNode) return;
+          var idText = idNode.textContent.trim(), parts = locationNode.textContent.trim().split(";");
+          var id = Number(idText);
+          if (!/^\d+$/.test(idText) || !Number.isSafeInteger(id) || parts.length < 3) return;
+          var xyz = parts.slice(0, 3).map(function (part) { return part.trim() === "" ? NaN : Number(part); });
+          if (!xyz.every(Number.isFinite)) return;
+          // XML uses game X;Y(height);Z; optional heading fields are ignored.
+          out.set(id, { x: xyz[0], y: xyz[2], h: xyz[1] });
+        });
+        return out;
+      }
       function parseDbusLinesXml(xml) {
         var seenLineUids = new Map();
         var lineNodes = Array.prototype.slice.call((xml && xml.querySelectorAll) ? xml.querySelectorAll("lines > line") : []);
@@ -1542,12 +1563,14 @@ function tickSaeivAutomaticDestination() {
         if (!safeVersion) return Promise.reject(new Error("version_missing"));
         return Promise.all([
           fetchXmlDoc("Mode%20Bus/stops.xml", safeVersion, true),
-          fetchXmlDoc("Mode%20Bus/lines.xml", safeVersion, true)
+          fetchXmlDoc("Mode%20Bus/lines.xml", safeVersion, true),
+          fetchXmlDoc("Mode%20Bus/points_de_passages.xml", safeVersion, true).catch(function () { return null; })
         ]).then(function (list) {
           return {
             version: safeVersion,
             stops: parseDbusStopsXml(list[0]),
-            lines: parseDbusLinesXml(list[1])
+            lines: parseDbusLinesXml(list[1]),
+            gpsPoints: parseDbusGpsPointsXml(list[2])
           };
         });
       }
@@ -1569,6 +1592,7 @@ function tickSaeivAutomaticDestination() {
             dbusDataVersion = String(loaded.version || "");
             dbusStopsById = loaded.stops instanceof Map ? loaded.stops : new Map();
             dbusLines = Array.isArray(loaded.lines) ? loaded.lines : [];
+            dbusGpsPointsById = loaded.gpsPoints instanceof Map ? loaded.gpsPoints : new Map();
             return {
               version: dbusDataVersion,
               stops: dbusStopsById,

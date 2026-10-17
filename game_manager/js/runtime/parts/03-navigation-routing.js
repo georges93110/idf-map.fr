@@ -622,8 +622,15 @@
         if (Number.isFinite(h)) out.h = h;
         return out;
       }
+      function getSaeivStopGpsOverrideWorldPoint(stop) {
+        if (!stop || typeof dbusGpsPointsById === "undefined") return null;
+        var point = dbusGpsPointsById.get(Number(stop.uid ?? stop.id));
+        return point ? { x: point.x, y: point.y, h: point.h } : null;
+      }
       function getSaeivStopNavWorldPoint(stop) {
         if (!stop || typeof stop !== "object") return null;
+        var override = getSaeivStopGpsOverrideWorldPoint(stop);
+        if (override) return override;
         var exact = getSaeivStopExactWorldPoint(stop);
         var point = parseWorldPoint3D(stop.navLinkedPoint) || parseWorldPoint3D(stop.point) || exact;
         if (point && !Number.isFinite(point.h) && exact && Number.isFinite(exact.h)) {
@@ -633,6 +640,8 @@
       }
       function getSaeivStopNavLinkPoints(stop) {
         if (!stop || typeof stop !== "object") return [];
+        var override = getSaeivStopGpsOverrideWorldPoint(stop);
+        if (override) return [override];
         var exact = getSaeivStopExactWorldPoint(stop);
         var source = Array.isArray(stop.navLinkedPoints) ? stop.navLinkedPoints : [];
         var points = source.map(function (point) { return parseWorldPoint3D(point); }).filter(Boolean);
@@ -737,7 +746,7 @@
         if (start > end) return [];
         var worldPoints = [];
         if (start === end) {
-          appendUniqueWorldPoint(worldPoints, getSaeivStopExactWorldPoint(stops[start]));
+          appendUniqueWorldPoint(worldPoints, getSaeivStopGpsOverrideWorldPoint(stops[start]) || getSaeivStopExactWorldPoint(stops[start]));
           return worldPoints;
         }
         for (var i = start; i < end; i += 1) {
@@ -1134,13 +1143,14 @@
         if (!base.length) return null;
         var refPoint = parseWorldPoint3D(worldPoint);
         if (!refPoint) return null;
-        var match = findNearestWorldPointMatch(base, refPoint, SAEIV_NAV_STOP_SNAP_DISTANCE * 10);
+        var match = findNearestWorldPointMatch(base, refPoint, SAEIV_NAV_STOP_SNAP_DISTANCE);
         if (!(match.index >= 0)) return null;
-        var points = buildNavBridgeControlPoints(controlPointsEntry, navOptions, {
-          anchorStart: String(mode || "").toLowerCase() === "after" ? base[match.index] : null,
-          anchorEnd: String(mode || "").toLowerCase() === "before" ? base[match.index] : null
-        });
+        var points = buildNavBridgeControlPoints(controlPointsEntry, navOptions);
         if (!points.length) return null;
+        // A local correction must reconnect near its anchor. A reused route ID
+        // or stop ordinal must never introduce a cross-map straight segment.
+        if (worldPointDistance(refPoint, points[0]) > SAEIV_NAV_STOP_SNAP_DISTANCE ||
+            worldPointDistance(refPoint, points[points.length - 1]) > SAEIV_NAV_STOP_SNAP_DISTANCE) return null;
         var inserted = insertNavBridgeControlPointsAtIndexDetailed(base, match.index, points, mode);
         if (!inserted) return null;
         inserted.matchIndex = match.index;
@@ -1159,8 +1169,12 @@
         var stops = Array.isArray(routeStops) ? routeStops : [];
         if (!stops.length) return null;
         var stopIndex = Math.floor(Number(stopNumber)) - 1;
+        if (controlPointsEntry && controlPointsEntry.stop_uid != null) {
+          var stopUid = String(controlPointsEntry.stop_uid);
+          stopIndex = stops.findIndex(function (stop) { return String(stop && stop.uid) === stopUid; });
+        }
         if (!(stopIndex >= 0 && stopIndex < stops.length)) return null;
-        var stopPoint = getSaeivStopExactWorldPoint(stops[stopIndex]);
+        var stopPoint = (getSaeivStopGpsOverrideWorldPoint(stops[stopIndex]) || getSaeivStopExactWorldPoint(stops[stopIndex]));
         if (!stopPoint) return null;
         var inserted = insertNavBridgeControlPointsRelativeToPointDetailed(worldPoints, stopPoint, controlPointsEntry, mode, navOptions);
         if (!inserted) return null;
@@ -1227,7 +1241,7 @@
         var bestIndex = -1;
         var bestDistance = Number.POSITIVE_INFINITY;
         for (var i = 0; i < stops.length; i += 1) {
-          var stopPoint = getSaeivStopExactWorldPoint(stops[i]);
+          var stopPoint = (getSaeivStopGpsOverrideWorldPoint(stops[i]) || getSaeivStopExactWorldPoint(stops[i]));
           if (!stopPoint) continue;
           var dist = worldPointDistance(stopPoint, ref);
           if (dist < bestDistance) {
@@ -1264,8 +1278,8 @@
           if (mappedNodeIds.length === forcedPointChain.length) forcedNodeChain = mappedNodeIds;
         }
         if (forcedNodeChain.length >= 2 || forcedPointChain.length >= 2) {
-          var fromNodeId = Number(replaceBetweenNodes && replaceBetweenNodes.from);
-          var toNodeId = Number(replaceBetweenNodes && replaceBetweenNodes.to);
+          var fromNodeId = replaceBetweenNodes ? Number(replaceBetweenNodes.from) : NaN;
+          var toNodeId = replaceBetweenNodes ? Number(replaceBetweenNodes.to) : NaN;
           var effectiveFromNodeId = Number.isFinite(fromNodeId) ? fromNodeId : forcedNodeChain[0];
           var effectiveToNodeId = Number.isFinite(toNodeId) ? toNodeId : forcedNodeChain[forcedNodeChain.length - 1];
           var fromNodePoint =
@@ -1282,8 +1296,8 @@
             ? buildNavBridgeForcedNodeChainWorldPoints(forcedNodeChain, effectiveNavOptions)
             : anchorNavBridgePointChain(forcedPointChain);
           if (forcedRawNodes && forcedRawNodes.length >= 2 && fromNodePoint && toNodePoint) {
-            var startMatch = findNearestWorldPointMatch(out, fromNodePoint);
-            var endMatch = findNearestWorldPointMatch(out, toNodePoint);
+            var startMatch = findNearestWorldPointMatch(out, fromNodePoint, SAEIV_NAV_STOP_SNAP_DISTANCE);
+            var endMatch = findNearestWorldPointMatch(out, toNodePoint, SAEIV_NAV_STOP_SNAP_DISTANCE);
             var startIdx = startMatch.index;
             var endIdx = endMatch.index;
             if (startIdx >= 0 && endIdx > startIdx) {
@@ -1304,21 +1318,9 @@
                 out = merged;
                 forcedNodeChainApplied = true;
               }
-            } else if (stops.length >= 2) {
-              var forcedFullRoute = (forcedNodeChain.length >= 2
-                ? buildNavBridgeForcedNodeChainWorldPoints(forcedNodeChain, effectiveNavOptions, {
-                    anchorStart: getSaeivStopExactWorldPoint(stops[0]),
-                    anchorEnd: getSaeivStopExactWorldPoint(stops[stops.length - 1])
-                  })
-                : anchorNavBridgePointChain(forcedPointChain, {
-                    anchorStart: getSaeivStopExactWorldPoint(stops[0]),
-                    anchorEnd: getSaeivStopExactWorldPoint(stops[stops.length - 1])
-                  })) || forcedRawNodes;
-              if (forcedFullRoute && forcedFullRoute.length >= 2) {
-                out = forcedFullRoute;
-                forcedNodeChainApplied = true;
-              }
             }
+            // Missing/reversed anchors mean this local correction is not on
+            // the route. Keep its geometry instead of replacing the full trip.
           }
         }
 
@@ -1345,8 +1347,8 @@
             }
             if (startStopIdx >= 0 && endStopIdx > startStopIdx) {
               var forcedAnchoredChain = buildNavBridgeForcedChainWorldPoints(chainToUse, {
-                anchorStart: getSaeivStopExactWorldPoint(stops[startStopIdx]),
-                anchorEnd: getSaeivStopExactWorldPoint(stops[endStopIdx])
+                anchorStart: (getSaeivStopGpsOverrideWorldPoint(stops[startStopIdx]) || getSaeivStopExactWorldPoint(stops[startStopIdx])),
+                anchorEnd: (getSaeivStopGpsOverrideWorldPoint(stops[endStopIdx]) || getSaeivStopExactWorldPoint(stops[endStopIdx]))
               }) || chainRawToUse;
               var routeMerged = [];
               var prefixWorld = buildSaeivWorldPolylineFromStops(stops, 0, startStopIdx, effectiveNavOptions);
@@ -1355,12 +1357,6 @@
               forcedAnchoredChain.forEach(function (point) { appendUniqueWorldPoint(routeMerged, point); });
               suffixWorld.forEach(function (point) { appendUniqueWorldPoint(routeMerged, point); });
               if (routeMerged.length >= 2) out = routeMerged;
-            } else if (stops.length >= 2) {
-              var forcedFullChain = buildNavBridgeForcedChainWorldPoints(chainToUse, {
-                anchorStart: getSaeivStopExactWorldPoint(stops[0]),
-                anchorEnd: getSaeivStopExactWorldPoint(stops[stops.length - 1])
-              }) || chainRawToUse;
-              if (forcedFullChain && forcedFullChain.length >= 2) out = forcedFullChain;
             }
           }
         }
@@ -1384,6 +1380,16 @@
           var injected = applyNavBridgeInsertionOperationDetailed(out, stops, operation, effectiveNavOptions);
           if (injected && Array.isArray(injected.points) && injected.points.length >= 2) out = injected.points;
         });
+        // A legacy forced bridge must not cut out an explicit passage point.
+        // Keep the graph route if that older rule conflicts with the XML.
+        var passageIndex = 0;
+        for (var stop of stops) {
+          var passage = getSaeivStopGpsOverrideWorldPoint(stop);
+          if (!passage) continue;
+          var match = findNearestWorldPointMatch(out.slice(passageIndex), passage, 0.01);
+          if (match.index < 0) return base;
+          passageIndex += match.index;
+        }
         return out.length >= 2 ? out : base;
       }
       function buildNavGraph(raw) {
@@ -1745,14 +1751,14 @@
           return saeivRouteSuffixCache.get(key) || [];
         }
         var out = [];
-        var targetPoint = parseWorldPoint3D(list[idx] && list[idx].point);
+        var targetPoint = getSaeivStopGpsOverrideWorldPoint(list[idx]) || parseWorldPoint3D(list[idx] && list[idx].point);
         if (!targetPoint) {
           saeivRouteSuffixCache.set(key, out);
           return out;
         }
         appendUniqueWorldPoint(out, targetPoint);
         for (var i = idx + 1; i < list.length; i += 1) {
-          var nextPoint = parseWorldPoint3D(list[i] && list[i].point);
+          var nextPoint = getSaeivStopGpsOverrideWorldPoint(list[i]) || parseWorldPoint3D(list[i] && list[i].point);
           if (!nextPoint) continue;
           var seg = buildShortestRoutePoints(out[out.length - 1], nextPoint, {
             forceNav: forceNavRoute
@@ -2186,7 +2192,7 @@
               return Number.isFinite(stop.x) && Number.isFinite(stop.y) && Number.isFinite(stop.z);
             });
             if (!routeStarted) {
-              var firstTarget = getSaeivStopExactWorldPoint(entries[0]) || getSaeivStopNavWorldPoint(entries[0]);
+              var firstTarget = getSaeivStopGpsOverrideWorldPoint(entries[0]) || getSaeivStopExactWorldPoint(entries[0]) || getSaeivStopNavWorldPoint(entries[0]);
               if (firstTarget) {
                 var hasCachedStartRoute =
                   Array.isArray(activeBridgeRoutePoints) &&
@@ -2216,6 +2222,7 @@
                 skipGenericFallbackRoute = true;
                 var lightweightEntry = entries[routeTargetIndex] || displayEntry || entries[0] || null;
                 var lightweightTarget =
+                  getSaeivStopGpsOverrideWorldPoint(lightweightEntry) ||
                   getSaeivStopExactWorldPoint(lightweightEntry) ||
                   getSaeivStopNavWorldPoint(lightweightEntry) ||
                   displayPoint;
@@ -2228,7 +2235,7 @@
                   activeBridgeRouteEndPoint = parseWorldPoint3D(lightweightTarget);
                   activeBridgeRouteComputedAt = Date.now();
                   activeBridgeRouteForceNavMode = false;
-                  routeEndPoint = lightweightTarget;
+                  // Keep routeEndPoint at the physical stop for map markers.
                 } else {
                   routePoints = [];
                 }
@@ -2279,6 +2286,7 @@
             : [];
           var waitingFirstEntry = waitingEntries[0] || null;
           var waitingFirstTarget =
+            getSaeivStopGpsOverrideWorldPoint(waitingFirstEntry) ||
             getSaeivStopExactWorldPoint(waitingFirstEntry) ||
             getSaeivStopNavWorldPoint(waitingFirstEntry);
           var waitingDirectRoute = [];
@@ -2287,7 +2295,7 @@
           if (waitingDirectRoute.length >= 2 && worldPointDistance(waitingDirectRoute[0], waitingDirectRoute[waitingDirectRoute.length - 1]) > 0.5) {
             routePoints = waitingDirectRoute;
             routePointsChanged = true;
-            routeEndPoint = waitingFirstTarget;
+            // Keep routeEndPoint at the physical departure stop.
             activeBridgeRoutePoints = routePoints;
             activeBridgeRouteStartPoint = parseWorldPoint3D(lastBridgeArrowPoint);
             activeBridgeRouteEndPoint = parseWorldPoint3D(waitingFirstTarget);
