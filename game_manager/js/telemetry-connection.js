@@ -90,7 +90,15 @@
         winner = socket; clearTimeout(p.timer); pending.delete(p); stopProbes();
         connection.url = socket.url; connection.readyState = 1;
         try { root.localStorage.setItem(KEY, String(port)); } catch (_) {}
-        socket.onmessage = function (message) { emit("message", message); };
+        // Bound the renderer's task queue too, not merely TCP buffering. ACK
+        // only after the app processed a snapshot; control messages stay live.
+        if(hello.telemetryFlow===1)socket.send(JSON.stringify({type:"telemetryFlow",protocol:1}));
+        socket.onmessage = function (message) {
+          var match=hello.telemetryFlow===1&&typeof message.data==="string"&&/^\{"_idfTelemetrySeq":(\d+),/.exec(message.data);
+          var start=Date.now();
+          try { emit("message", message); }
+          finally { if(match&&socket.readyState===1)socket.send(JSON.stringify({type:"telemetryConsumed",protocol:1,seq:Number(match[1]),durationMs:Date.now()-start})); }
+        };
         socket.onerror = function (error) { emit("error", error); };
         socket.onclose = function (event) { stopped = true; connection.readyState = 3; emit("close", event); };
         emit("open");
