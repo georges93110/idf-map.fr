@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "resolver": 1,
-  "revision": 24,
+  "revision": 25,
   "profiles": [
     {
       "sha256": "2014bfcc850a06108f4ca3c233a5bb6d31d7d83346c5d449f94c8e0675e5199a",
@@ -6215,7 +6215,7 @@
       "sha256": "b70c2357cc56eb5834ee47fea3c60b2f2d4591383ff2ac479cfd3cd254301b8c",
       "version": "1.61.1.9s.*",
       "abi": "ets2-win64-1.61.1.9-v1",
-      "layoutHash": "e4f1858c3d27926c996e423ecf5a25e74f8c3ee6c615954f1d4156e7c56bb151",
+      "layoutHash": "221b7888f56c238090d142861e0120f665764d399c9a60a621d49f00281adae2",
       "symbols": [
         {
           "id": "rva_000115a0",
@@ -9594,6 +9594,18 @@
           "rva": 16542928,
           "recipe": {
             "pattern": "48 81 fa 3a e0 11 00 0f 94 c0 c3 cc cc cc cc cc 40 55 57 48 8b ec 48 83 ec 58 80 b9 95 01 00 00 00 48 8b f9 0f 85 ?? ?? ?? ?? 48 8b 41 58 c6 81 95 01 00 00 01 80 b8 f0 00 00 00 00 74 ?? 48 8b 0d ?? ?? ?? ?? 45 33 c0 48 8b d0 48 83 c4 58 5f 5d e9 ?? ?? ?? ?? 48 89 5c 24 50",
+            "method": "match",
+            "offset": 0,
+            "operand": 0,
+            "end": 0,
+            "sectionFlags": 536870912
+          }
+        },
+        {
+          "id": "rva_00fc6ce0",
+          "rva": 16542944,
+          "recipe": {
+            "pattern": "40 55 57 48 8b ec 48 83 ec 58 80 b9 95 01 00 00 00 48 8b f9 0f 85 ?? ?? ?? ?? 48 8b 41 58 c6 81 95 01 00 00 01 80 b8 f0 00 00 00 00 74 ?? 48 8b 0d ?? ?? ?? ?? 45 33 c0 48 8b d0 48 83 c4 58 5f 5d e9 ?? ?? ?? ?? 48 89 5c 24 50 48 8d 98 a8 02 00 00 48 8b 03 48 89 74 24 48 80 38 00",
             "method": "match",
             "offset": 0,
             "operand": 0,
