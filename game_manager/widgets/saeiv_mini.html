@@ -2065,7 +2065,7 @@
         var completedAt = Number(data && (data.routeCompletedAtMs || data.routeActualTerminusAtMs || data.routeTerminusReachedAtMs));
         var startedAt = Number(data && (data.routeStartedAtMs || data.routeSelectedAtMs));
         if (Number.isFinite(completedAt) && completedAt > 0 && Number.isFinite(startedAt) && startedAt > 0) {
-          return Math.max(0, completedAt - startedAt);
+          return Math.max(0, completedAt - startedAt - (Number(data.routeClockShiftMs) || 0));
         }
         return 0;
       }

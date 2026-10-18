@@ -569,6 +569,9 @@
       var saeivGameClockNowMs = Number.NaN;
       var saeivGameClockLastWallNowMs = 0;
       var saeivGameClockLastSourceTsMs = Number.NaN;
+      var saeivNativeGameClock = null;
+      var saeivRouteClockShiftKey = "";
+      var saeivRouteClockShiftMs = 0;
       var notificationPreviewTimer = 0;
       var websocketMode1HintTimer = 0;
       var notificationPreviewKind = "";

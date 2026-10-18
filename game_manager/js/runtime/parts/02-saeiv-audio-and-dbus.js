@@ -2346,6 +2346,8 @@ function applySaeivPassengerSatisfaction(data) {
         payload.routePlannedTerminusAtMs = Number(completion.plannedTerminusAtMs);
         payload.routeActualTerminusAtMs = payload.routeCompleted ? (Number(saeivRouteCompletedAtMs) || payload.routeTerminusReachedAtMs || Number(payload.clockNowMs) || 0) : 0;
         var elapsedBase = Number(payload.routeStartedAtMs) > 0 ? Number(payload.routeStartedAtMs) : Number(payload.routeSelectedAtMs);
+        payload.routeClockShiftMs = getSaeivRouteClockShiftMs();
+        elapsedBase += payload.routeClockShiftMs;
         var elapsedNow = payload.routeCompleted
           ? Number(payload.routeActualTerminusAtMs)
           : (Number(payload.clockNowMs) || getSaeivNowTimestampMs());

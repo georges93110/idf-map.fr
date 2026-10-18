@@ -977,7 +977,53 @@
         }
         return candidate;
       }
+      function getSaeivRouteClockShiftMs() {
+        // These timestamps are also service/passenger/payout identities. Never
+        // rewrite them when the clock changes: keep a separate scheduling shift.
+        var key = saeivRouteState && Number(saeivRouteSelectedAtMs) > 0
+          ? String(saeivRouteState.selectedKey || "") + ":" + saeivRouteSelectedAtMs + ":" + saeivRouteStartedAtMs : "";
+        if (key !== saeivRouteClockShiftKey) {
+          saeivRouteClockShiftKey = key;
+          saeivRouteClockShiftMs = 0;
+        }
+        return key ? saeivRouteClockShiftMs : 0;
+      }
+      function rebaseSaeivServiceClock(deltaMs) {
+        getSaeivRouteClockShiftMs();
+        if (!saeivRouteClockShiftKey || !Number.isFinite(deltaMs) || !deltaMs) return;
+        saeivRouteClockShiftMs += deltaMs;
+        if (saeivTerminusReachedAtMs > 0) saeivTerminusReachedAtMs += deltaMs;
+        if (saeivRouteCompletedAtMs > 0) saeivRouteCompletedAtMs += deltaMs;
+        if (typeof saeivPassengerSatisfaction !== "undefined" && saeivPassengerSatisfaction && saeivPassengerSatisfaction.delayAt > 0) {
+          saeivPassengerSatisfaction.delayAt += deltaMs;
+        }
+        // Reached-stop delays and satisfaction penalties are durations, not
+        // clock timestamps: retain all previously earned results unchanged.
+      }
       function updateSaeivGameClockFromTelemetry(raw) {
+        var pools = raw && typeof raw === "object" ? [raw, raw.data, raw.payload] : [];
+        for (var i = 0; i < pools.length; i += 1) {
+          var src = pools[i];
+          if (!src || typeof src.gameTimeAbsoluteMinutes !== "number" || !Number.isFinite(src.gameTimeAbsoluteMinutes) ||
+              typeof src.gameTimeClockCorrectionMinutes !== "number" || !Number.isFinite(src.gameTimeClockCorrectionMinutes) ||
+              typeof src.gameTimeClockEpoch !== "string" || !src.gameTimeClockEpoch) continue;
+          var absolute = src.gameTimeAbsoluteMinutes;
+          var correction = src.gameTimeClockCorrectionMinutes;
+          var prev = saeivNativeGameClock;
+          var sameEpoch = prev && prev.epoch === src.gameTimeClockEpoch;
+          // Absolute minutes handle midnight and server jumps of multiple days.
+          // Use SDK precision for accounting, not invented display seconds.
+          var resolved = sameEpoch ? prev.timestamp + (absolute - prev.absolute) * 60000
+            : secondsOfDayToTimestampMs(((absolute % 1440) + 1440) % 1440 * 60, saeivGameClockLastSourceTsMs);
+          var shift = sameEpoch ? (correction - prev.correction) * 60000
+            : Number.isFinite(saeivGameClockLastSourceTsMs) ? resolved - saeivGameClockLastSourceTsMs : 0;
+          rebaseSaeivServiceClock(shift);
+          saeivNativeGameClock = { epoch: src.gameTimeClockEpoch, absolute: absolute, correction: correction, timestamp: resolved };
+          saeivGameClockNowMs = resolved;
+          saeivGameClockLastSourceTsMs = resolved;
+          saeivGameClockLastWallNowMs = Date.now();
+          return true;
+        }
         var clock = extractTelemetryGameClock(raw);
         if (!clock) return false;
         if (clock.kind === "timestamp") {
@@ -1094,7 +1140,7 @@
           if (!Number.isFinite(segmentMinutes) || segmentMinutes <= 0) continue;
           cumulatedMinutes += segmentMinutes;
         }
-        return routeStartAt + Math.round(cumulatedMinutes * 60000);
+        return routeStartAt + getSaeivRouteClockShiftMs() + Math.round(cumulatedMinutes * 60000);
       }
       function computeSaeivRefArrivalTimestampMs(entries, displayIndex, reachedIndex, targetIndex, vehiclePoint) {
         // L'heure "prévue" (Scheduled/Planned) doit rester fixe pour servir de référence.
@@ -1679,7 +1725,7 @@
         out.terminusReachedAtMs = reachedAt;
         var elapsedBase = Number.isFinite(startedAt) && startedAt > 0 ? startedAt : selectedAt;
         if (Number.isFinite(elapsedBase) && elapsedBase > 0) {
-          out.elapsedMs = Math.max(0, reachedAt - elapsedBase);
+          out.elapsedMs = Math.max(0, reachedAt - elapsedBase - getSaeivRouteClockShiftMs());
         }
         if (saeivPassengerState) {
           var servedStopsLive = 0;
