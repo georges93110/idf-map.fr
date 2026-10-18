@@ -109,6 +109,17 @@ function receiveNativePassengerStatus(message) {
   nativePassengerValidationCount=Math.max(nativePassengerValidationCount,s.validations);
   if(delta>0&&message.ready&&s.lease)playSaeivBoardingValidationSound(delta);
 }
+function getSaeivBrakingState() {
+  var m=nativePassengerStatus,s=m&&m.snapshot;
+  // The existing relay matches session + mission + stop before exposing this snapshot.
+  // A delayed packet from the previous route cannot charge the new service.
+  if(!m||m.status!=="active"||m.missionKey!==nativePassengerMissionKey()||
+     !saeivRouteState||saeivRouteState.started!==true||!s||
+     typeof s.brakingEpoch!=="string"||!/^[0-9]{1,20}-[0-9]{1,20}$/.test(s.brakingEpoch)||
+     !Number.isSafeInteger(s.brakingGeneration)||s.brakingGeneration<1||
+     typeof s.brakingPenalty!=="number"||!Number.isFinite(s.brakingPenalty)||s.brakingPenalty<0)return null;
+  return {source:s.brakingEpoch+":"+s.brakingGeneration,penalty:s.brakingPenalty};
+}
 function nativePassengerServiceView(key) {
   if(!nativePassengersExpected())return null;
   syncNativePassengers(false);

@@ -1913,17 +1913,25 @@ function tickSaeivAutomaticDestination() {
         var requestedDrop = payload.stopRequested === true ? 1 : 0;
         return passengersAtStop > 0 || boardingTotal > 0 || alightingTotal > 0 || requestedDrop > 0;
       }
-// Authoritative satisfaction: same damage/delay tariff as the mini SAEIV,
+// Authoritative satisfaction: damage/delay tariffs and native harsh-braking losses,
 // evaluated even when that widget is hidden. One score per actual service run.
 var saeivPassengerSatisfaction = null;
+function getSaeivPassengerPenaltyMultiplier(data) {
+  var passengers=Number(data.passengersInBus),capacity=Number(data.busMaxCapacity);
+  if(!Number.isFinite(passengers)||passengers<=0||!Number.isFinite(capacity)||capacity<=0)return 0;
+  return 2*passengers/capacity;
+}
 function applySaeivPassengerSatisfaction(data) {
   var key=data.routeStarted===true ? String(data.selectedKey||"")+":"+String(data.routeStartedAtMs||0) : "";
   var state=saeivPassengerSatisfaction;
-  if(!state || state.key!==key)state=saeivPassengerSatisfaction={key:key,damage:null,damagePenalty:0,delayPenalty:0,delayAt:0,score:100,finished:false};
+  if(!state || state.key!==key)state=saeivPassengerSatisfaction={key:key,damage:null,damagePenalty:0,delayPenalty:0,delayAt:0,brakingPenalty:0,brakingSeen:Object.create(null),brakingNoticeUntil:0,brakingNoticeLoss:0,score:100,finished:false};
   var now=Number(data.clockNowMs),damage=Number(data.truckDamagePercent);
+  var multiplier=getSaeivPassengerPenaltyMultiplier(data);
   if(key && !state.finished && telemetryConnected && !telemetryPaused && Number.isFinite(now) && now>0){
     if(Number.isFinite(damage)){
-      if(state.damage!==null && damage>state.damage && Number(data.passengersInBus)>0)state.damagePenalty+=(damage-state.damage)*2;
+      // Weight each new loss at its current load; boarding/alighting never
+      // reprices penalties already incurred. Track damage even while empty.
+      if(state.damage!==null && damage>state.damage)state.damagePenalty+=(damage-state.damage)*2*multiplier;
       state.damage=damage;
     }
     var routeDelay=Number(data.routeLiveDelayMinutes)||0,stopDelay=0;
@@ -1933,15 +1941,31 @@ function applySaeivPassengerSatisfaction(data) {
       if(stopDelay>720)stopDelay-=1440;if(stopDelay< -720)stopDelay+=1440;
     }
     var rate=Math.max(0,Math.round(Math.max(routeDelay,stopDelay)));
-    if(rate){
+    if(rate && multiplier>0){
       if(!state.delayAt || now<state.delayAt)state.delayAt=now;
       var elapsed=now-state.delayAt;
-      if(elapsed>=60000){state.delayPenalty+=Math.floor(elapsed/60000)*rate;state.delayAt=now-(elapsed%60000);}
-    }else state.delayAt=0;
-    state.score=Math.max(0,100-state.damagePenalty-state.delayPenalty);
+      if(elapsed>=60000){state.delayPenalty+=Math.floor(elapsed/60000)*rate*multiplier;state.delayAt=now-(elapsed%60000);}
+    }else state.delayAt=0; // No delayed charge for minutes driven without passengers.
+    // Native cumulative, mission-scoped losses survive dropped packets and WS reconnects.
+    // Occupancy was captured in the DLL at the event; do not multiply a second time.
+    var braking=data.brakingState;
+    if(braking && typeof braking.source==="string" && braking.source.length<=100 &&
+       typeof braking.penalty==="number" && Number.isFinite(braking.penalty) && braking.penalty>=0) {
+      var seen=state.brakingSeen[braking.source]||0;
+      var loss=Math.max(0,braking.penalty-seen);
+      state.brakingSeen[braking.source]=Math.max(seen,braking.penalty);
+      if(loss>0) {
+        state.brakingPenalty+=loss;
+        state.brakingNoticeLoss=loss;state.brakingNoticeUntil=Date.now()+5000;
+      }
+    }
+    state.score=Math.max(0,100-state.damagePenalty-state.delayPenalty-state.brakingPenalty);
     state.finished=data.routeCompleted===true;
   }else if(!state.finished)state.delayAt=0;
   data.passengerSatisfactionPercent=state.score;
+  data.brakingPenaltyPoints=state.brakingPenalty;
+  data.brakingPenaltyNotice=!state.finished&&Date.now()<state.brakingNoticeUntil?
+    "Excessive G-Force : -"+Number(state.brakingNoticeLoss.toFixed(2))+"%":"";
   return data;
 }
       function buildSaeivStatePayloadFromGame() {
@@ -2028,6 +2052,7 @@ function applySaeivPassengerSatisfaction(data) {
           plannedStopAlightingTotal: 0,
           passengerGenerationAvailable: false,
           busService: getSaeivBusServiceSnapshot(),
+          brakingState: getSaeivBrakingState(),
           busDoors: getSaeivDoorsState(),
           busServiceProtocol: 2,
           busStatusPassengerServiceLinked: false,

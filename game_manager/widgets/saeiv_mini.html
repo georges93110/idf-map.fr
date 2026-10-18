@@ -1542,12 +1542,14 @@
           return;
         }
 
-        var passengers = Math.max(0, Math.round(Number(data.passengersInBus) || 0));
+        var passengers = Number(data.passengersInBus), capacity = Number(data.busMaxCapacity);
+        var loadMultiplier = Number.isFinite(passengers) && passengers > 0 && Number.isFinite(capacity) && capacity > 0
+          ? 2 * passengers / capacity : 0;
 
         if (currentDamage > lastKnownDamagePercent) {
-          if (passengers > 0) {
+          if (loadMultiplier > 0) {
             var delta = currentDamage - lastKnownDamagePercent;
-            cumulativeDamageIncrease += (delta * 2);
+            cumulativeDamageIncrease += (delta * 2 * loadMultiplier);
           }
         }
         lastKnownDamagePercent = currentDamage;
@@ -1569,7 +1571,7 @@
         var delayMinutes = Math.max(routeDelay, stopDelay);
         var delayPenaltyPerMinute = Math.max(0, Math.round(delayMinutes));
 
-        if (delayPenaltyPerMinute >= 1) {
+        if (delayPenaltyPerMinute >= 1 && loadMultiplier > 0) {
           var now = Number(data.clockNowMs);
           if (!Number.isFinite(now) || now <= 0) now = Date.now();
 
@@ -1579,7 +1581,7 @@
             var elapsed = now - lastDelayPenaltyAtMs;
             if (elapsed >= 60000) {
               var mins = Math.floor(elapsed / 60000);
-              cumulativeDelayPenalty += (mins * delayPenaltyPerMinute);
+              cumulativeDelayPenalty += (mins * delayPenaltyPerMinute * loadMultiplier);
               lastDelayPenaltyAtMs = now - (elapsed % 60000);
             }
           }
