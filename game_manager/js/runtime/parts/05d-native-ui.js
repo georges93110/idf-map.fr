@@ -78,7 +78,8 @@ function buildNativeBusHudMessage(s){
     if(!doors.available||typeof value!=="number"||!Number.isFinite(value))return 0;
     return value<=0.01?1:value>=0.99?3:2; // Unknown / closed / moving / open.
   }
-  return {type:"nativeBusHud",protocol:2,enabled:enabled,atStop:s.vehicleAtStop===true,color:0,
+  var load=s.busMaxCapacityUnlimited||!count(s.busMaxCapacity)?0:count(s.passengersInBus)/count(s.busMaxCapacity);
+  return {type:"nativeBusHud",protocol:2,enabled:enabled,atStop:s.vehicleAtStop===true,color:load>=.95?2:load>=.75?1:0,
     line:nativeBusHudText("Ligne "+String(s.lineNumber||"Bus"),22),
     destination:nativeBusHudText(destination,128),
     occupancy:nativeBusHudText(count(s.passengersInBus)+"/"+cap+" passagers",26),

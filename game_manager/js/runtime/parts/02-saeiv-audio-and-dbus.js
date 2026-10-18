@@ -2479,7 +2479,21 @@ function applySaeivPassengerSatisfaction(data) {
         var lastIndex = entries.length - 1;
         var currentIndex = clampReachedStopIndex(saeivRouteState.reachedIndex, lastIndex);
         var targetIndex = clampRouteStopIndex(saeivRouteState.targetIndex, lastIndex);
-        if (targetIndex <= currentIndex) return false;
+        if (targetIndex <= currentIndex) {
+          // Reaching the last index is not the end of the passenger simulation.
+          // Keep consuming its final snapshot after departure (or a restored
+          // route already at the terminus), so a late exit can open the recap.
+          if (currentIndex === lastIndex && targetIndex === lastIndex) {
+            var terminalDistance = worldPointDistance(vehiclePoint, entries[lastIndex].point);
+            var terminalTick = processSaeivPassengerServiceTick(lastIndex, {
+              inReach: terminalDistance <= Math.max(SAEIV_STOP_REACH_DISTANCE, SAEIV_STOP_DWELL_REACH_DISTANCE),
+              isStopped: Math.abs(telemetrySpeedForStopDecision(speedKmhLive)) < SAEIV_STOP_DWELL_MAX_SPEED_KMH,
+              isTerminus: true, nowMs: now
+            });
+            if (terminalTick && terminalTick.changed) saeivLastStateKey = "";
+          }
+          return false;
+        }
         var targetEntry = entries[targetIndex];
         if (!targetEntry) return false;
         var targetUid = String(targetEntry.uid || "");

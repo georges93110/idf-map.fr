@@ -1630,6 +1630,10 @@
         var completed = IDFBusService.completed(view, opts.isStopped === true) ||
           (opts.isTerminus === true && opts.inReach === true && opts.isStopped === true &&
            view.flowComplete === true && view.inBus === 0 && view.alightingDone >= view.alightingTotal);
+        // A terminal cannot be completed by a ready flag alone. All physical
+        // exits must be accounted for, including a late native snapshot.
+        if (opts.isTerminus === true) completed = completed && view.flowComplete === true &&
+          view.inBus === 0 && view.alightingDone >= view.alightingTotal;
         if (completed) {
           saeivStopServedLog[stopIndex] = true;
           saeivCurrentStopWasServed = true;
