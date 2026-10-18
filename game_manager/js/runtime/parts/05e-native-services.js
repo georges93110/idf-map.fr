@@ -77,7 +77,13 @@ function syncNativeServices(){
     nativeServiceBadgeKeys=new Set(catalog.routes.map(function(r){return r.badgeKey;}));
     // Warm shared data before a selection. No service/GPS activation.
     prepareNativeServicePreviewData().catch(function(){});
-  }).catch(function(err){nativeServicesRetryAt=Date.now()+3000;console.warn('[Service ETS2] Catalogue indisponible, nouvelle tentative automatique',err);}).finally(function(){nativeServicesLoading=false;});
+  }).catch(function(err){
+    nativeServicesRetryAt=Date.now()+3000;
+    if(ws===telemetryWs&&ws.readyState===1&&generation===nativeGameModeGeneration&&window.GAME2_MANAGER.nativeGameMode&&window.GAME2_MANAGER.nativeGameMode.mode==='bus'){
+      try{ws.send(JSON.stringify({type:'nativeServicesCatalog',protocol:3,generation:generation,categories:[{key:'all',label:'Tout'},{key:'urban',label:'Urbaines'}],routes:[]}));}catch(_){}
+    }
+    console.warn('[Service ETS2] Catalogue indisponible, nouvelle tentative automatique',err);
+  }).finally(function(){nativeServicesLoading=false;});
 }
 function receiveNativeServiceAction(m){
   if(!m||m.protocol!==3||m.generation!==nativeGameModeGeneration||!nativeGameModeApplied||normalizeGameMode(currentGameMode)!=='bus'||!Number.isInteger(m.id)||m.id<1||!Number.isInteger(m.session)||!Number.isInteger(m.catalog)||typeof m.lineUid!=='string'||typeof m.routeUid!=='string')return false;
