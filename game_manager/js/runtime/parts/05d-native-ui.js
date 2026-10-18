@@ -72,7 +72,6 @@ function buildNativeBusHudMessage(s){
   }
   var requested=!s.vehicleAtStop&&s.stopRequestAnnounced===true&&s.stopRequested===true;
   if(requested)remaining.push("Arrêt demandé");
-  if(!remaining.length&&s.brakingPenaltyNotice)remaining.push(s.brakingPenaltyNotice);
   var satisfaction=typeof s.passengerSatisfactionPercent==="number"&&Number.isFinite(s.passengerSatisfactionPercent)?
     Math.max(0,Math.min(10000,Math.round(s.passengerSatisfactionPercent*100))):undefined;
   var delay=Number(s.routeLiveDelayMinutes);

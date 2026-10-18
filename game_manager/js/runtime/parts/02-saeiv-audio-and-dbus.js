@@ -1913,7 +1913,7 @@ function tickSaeivAutomaticDestination() {
         var requestedDrop = payload.stopRequested === true ? 1 : 0;
         return passengersAtStop > 0 || boardingTotal > 0 || alightingTotal > 0 || requestedDrop > 0;
       }
-// Authoritative satisfaction: damage/delay tariffs and native harsh-braking losses,
+// Authoritative satisfaction: load-weighted damage/delay tariffs,
 // evaluated even when that widget is hidden. One score per actual service run.
 var saeivPassengerSatisfaction = null;
 function getSaeivPassengerPenaltyMultiplier(data) {
@@ -1924,7 +1924,7 @@ function getSaeivPassengerPenaltyMultiplier(data) {
 function applySaeivPassengerSatisfaction(data) {
   var key=data.routeStarted===true ? String(data.selectedKey||"")+":"+String(data.routeStartedAtMs||0) : "";
   var state=saeivPassengerSatisfaction;
-  if(!state || state.key!==key)state=saeivPassengerSatisfaction={key:key,damage:null,damagePenalty:0,delayPenalty:0,delayAt:0,brakingPenalty:0,brakingSeen:Object.create(null),turningPenalty:0,turningSeen:Object.create(null),brakingNoticeLabel:"",brakingNoticeUntil:0,brakingNoticeLoss:0,score:100,finished:false};
+  if(!state || state.key!==key)state=saeivPassengerSatisfaction={key:key,damage:null,damagePenalty:0,delayPenalty:0,delayAt:0,score:100,finished:false};
   var now=Number(data.clockNowMs),damage=Number(data.truckDamagePercent);
   var multiplier=getSaeivPassengerPenaltyMultiplier(data);
   if(key && !state.finished && telemetryConnected && !telemetryPaused && Number.isFinite(now) && now>0){
@@ -1946,39 +1946,10 @@ function applySaeivPassengerSatisfaction(data) {
       var elapsed=now-state.delayAt;
       if(elapsed>=60000){state.delayPenalty+=Math.floor(elapsed/60000)*rate*multiplier;state.delayAt=now-(elapsed%60000);}
     }else state.delayAt=0; // No delayed charge for minutes driven without passengers.
-    // Native cumulative, mission-scoped losses survive dropped packets and WS reconnects.
-    // Occupancy was captured in the DLL at the event; do not multiply a second time.
-    var braking=data.brakingState;
-    if(braking && typeof braking.source==="string" && braking.source.length<=100 &&
-       typeof braking.penalty==="number" && Number.isFinite(braking.penalty) && braking.penalty>=0) {
-      var seen=state.brakingSeen[braking.source]||0;
-      var loss=Math.max(0,braking.penalty-seen);
-      state.brakingSeen[braking.source]=Math.max(seen,braking.penalty);
-      if(loss>0) {
-        state.brakingPenalty+=loss;
-        state.brakingNoticeLoss=loss;state.brakingNoticeUntil=Date.now()+5000;
-        state.brakingNoticeLabel="Excessive G-Force";
-      }
-    }
-    if(braking&&typeof braking.source==="string"&&braking.source.length<=100&&
-       typeof braking.turningPenalty==="number"&&Number.isFinite(braking.turningPenalty)&&braking.turningPenalty>=0){
-      var turnSeen=state.turningSeen[braking.source]||0,turnLoss=Math.max(0,braking.turningPenalty-turnSeen);
-      state.turningSeen[braking.source]=Math.max(turnSeen,braking.turningPenalty);
-      if(turnLoss>0){
-        state.turningPenalty+=turnLoss;
-        var combined=loss>0;
-        state.brakingNoticeLoss=turnLoss+(combined?loss:0);state.brakingNoticeUntil=Date.now()+5000;
-        state.brakingNoticeLabel=combined?"Excessive G-Force + Virage brusque":"Virage brusque";
-      }
-    }
-    state.score=Math.max(0,100-state.damagePenalty-state.delayPenalty-state.brakingPenalty-state.turningPenalty);
+    state.score=Math.max(0,100-state.damagePenalty-state.delayPenalty);
     state.finished=data.routeCompleted===true;
   }else if(!state.finished)state.delayAt=0;
   data.passengerSatisfactionPercent=state.score;
-  data.brakingPenaltyPoints=state.brakingPenalty;
-  data.turningPenaltyPoints=state.turningPenalty;
-  data.brakingPenaltyNotice=!state.finished&&Date.now()<state.brakingNoticeUntil?
-    state.brakingNoticeLabel+" : -"+Number(state.brakingNoticeLoss.toFixed(2))+"%":"";
   return data;
 }
       function buildSaeivStatePayloadFromGame() {
@@ -2065,7 +2036,6 @@ function applySaeivPassengerSatisfaction(data) {
           plannedStopAlightingTotal: 0,
           passengerGenerationAvailable: false,
           busService: getSaeivBusServiceSnapshot(),
-          brakingState: getSaeivBrakingState(),
           busDoors: getSaeivDoorsState(),
           busServiceProtocol: 2,
           busStatusPassengerServiceLinked: false,
