@@ -92,6 +92,7 @@ function resumeBusAudioContext() {
 }
 function busSpatialMix(kind, data) {
   if (!data || !data.audioCameraAvailable || data.paused) return { gain: 0, cutoff: 650, pan: 0 };
+  if(kind==="nativeWalkStep")return {gain:data.walkActive===true&&data.passengerEffectsEnabled!==false?1:0,cutoff:14000,pan:0};
   var inside = data.audioCameraInside === true;
   var source = inside && kind !== "validator" ? "audioAnnouncement" : "audioFrontDoor";
   var dx = data[source + "X"] - data.audioCameraX;
@@ -134,13 +135,14 @@ function updateBusSpatialAudioTelemetry(raw) {
   updateNativeGameAudio(data);
   if (!data || typeof data.audioCameraAvailable !== "boolean") return;
   var filtered = {};
-  Object.keys(data).forEach(function (key) { if (/^audio/.test(key) || key === "paused" || key === "busEntryDoorPosition" || key === "passengerEffectsEnabled") filtered[key] = data[key]; });
+  Object.keys(data).forEach(function (key) { if (/^audio/.test(key) || key === "paused" || key === "busEntryDoorPosition" || key === "passengerEffectsEnabled" || /^walk(?:Active|Steps|Running)$/.test(key)) filtered[key] = data[key]; });
   busSpatialAudio.stamp = Number.isFinite(data.audioCameraTimestamp) ? Math.min(Date.now(), data.audioCameraTimestamp) : Date.now();
   filtered.audioCameraTimestamp = busSpatialAudio.stamp;
   busSpatialAudio.telemetry = filtered; busSpatialAudio.seen = true;
   if (filtered.audioCameraAvailable && !filtered.paused) resumeBusAudioContext();
   tickBusAudio();
   if(typeof tickPassengerCabinAudio==='function')tickPassengerCabinAudio();
+  if(typeof receiveNativeWalkAudio==='function')receiveNativeWalkAudio(data);
   if(typeof publishNativeBusAnnouncementKeys === "function")publishNativeBusAnnouncementKeys();
   if(typeof saeivRouteAudio!=="undefined"&&saeivRouteAudio.queue.length&&typeof processSaeivRouteAudioQueue==="function")processSaeivRouteAudioQueue();
 }

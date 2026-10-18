@@ -115,3 +115,30 @@ function tickPassengerCabinAudio() {
   if(!s.actors.size&&!s.voices.size&&!s.ambience&&s.onboard<=15&&s.timer){clearInterval(s.timer);s.timer=null;}
 }
 window.addEventListener('pagehide',resetPassengerCabinAudio);
+
+// Independent player's footsteps. The DLL advances this serial only after real
+// grounded displacement, so standing against a wall never produces footsteps.
+var nativeWalkAudio = {step:null,stamp:0,active:false,voices:new Set()};
+function stopNativeWalkAudio() {
+  nativeWalkAudio.voices.forEach(function(audio){audio.pause();audio.src='';});
+  nativeWalkAudio.voices.clear();nativeWalkAudio.active=false;
+}
+function receiveNativeWalkAudio(data) {
+  var state=nativeWalkAudio,now=Date.now(),step=data&&data.walkSteps;
+  var ready=!!(data&&data.walkActive===true&&!data.paused&&data.audioCameraAvailable&&
+    data.passengerEffectsEnabled!==false&&Number.isSafeInteger(step)&&step>=0&&
+    nativeGameAudio.available&&now-nativeGameAudio.stamp<2000&&getGlobalAudioVolumeFactor()>0);
+  var play=ready&&state.active&&state.step!==null&&step>state.step&&step-state.step<=3&&now-state.stamp<600;
+  state.step=Number.isSafeInteger(step)?step:null;state.stamp=now;
+  if(!ready){stopNativeWalkAudio();return;}state.active=true;
+  if(!play)return;
+  // At most one fresh step per packet; never replay accumulated steps after a
+  // reconnect or delayed page load. Use IDF-RP's own existing clips, no TM assets.
+  if(state.voices.size>=2){var oldest=state.voices.values().next().value;oldest.pause();oldest.src='';state.voices.delete(oldest);}
+  var audio=createBusSpatialAudio('sounds/passengers/step-lino-'+(step%6+1)+'.wav','nativeWalkStep');
+  state.voices.add(audio);setBusAudioLevel(audio,data.walkRunning ? .48 : .34);
+  var done=function(){state.voices.delete(audio);};
+  audio.addEventListener('ended',done);audio.addEventListener('error',done);
+  var promise=audio.play();if(promise&&promise.catch)promise.catch(done);
+}
+window.addEventListener('pagehide',stopNativeWalkAudio);
