@@ -118,7 +118,8 @@ function getSaeivBrakingState() {
      typeof s.brakingEpoch!=="string"||!/^[0-9]{1,20}-[0-9]{1,20}$/.test(s.brakingEpoch)||
      !Number.isSafeInteger(s.brakingGeneration)||s.brakingGeneration<1||
      typeof s.brakingPenalty!=="number"||!Number.isFinite(s.brakingPenalty)||s.brakingPenalty<0)return null;
-  return {source:s.brakingEpoch+":"+s.brakingGeneration,penalty:s.brakingPenalty};
+  return {source:s.brakingEpoch+":"+s.brakingGeneration,penalty:s.brakingPenalty,
+    turningPenalty:typeof s.turningPenalty==="number"&&Number.isFinite(s.turningPenalty)&&s.turningPenalty>=0?s.turningPenalty:0};
 }
 function nativePassengerServiceView(key) {
   if(!nativePassengersExpected())return null;

@@ -1924,7 +1924,7 @@ function getSaeivPassengerPenaltyMultiplier(data) {
 function applySaeivPassengerSatisfaction(data) {
   var key=data.routeStarted===true ? String(data.selectedKey||"")+":"+String(data.routeStartedAtMs||0) : "";
   var state=saeivPassengerSatisfaction;
-  if(!state || state.key!==key)state=saeivPassengerSatisfaction={key:key,damage:null,damagePenalty:0,delayPenalty:0,delayAt:0,brakingPenalty:0,brakingSeen:Object.create(null),brakingNoticeUntil:0,brakingNoticeLoss:0,score:100,finished:false};
+  if(!state || state.key!==key)state=saeivPassengerSatisfaction={key:key,damage:null,damagePenalty:0,delayPenalty:0,delayAt:0,brakingPenalty:0,brakingSeen:Object.create(null),turningPenalty:0,turningSeen:Object.create(null),brakingNoticeLabel:"",brakingNoticeUntil:0,brakingNoticeLoss:0,score:100,finished:false};
   var now=Number(data.clockNowMs),damage=Number(data.truckDamagePercent);
   var multiplier=getSaeivPassengerPenaltyMultiplier(data);
   if(key && !state.finished && telemetryConnected && !telemetryPaused && Number.isFinite(now) && now>0){
@@ -1957,15 +1957,28 @@ function applySaeivPassengerSatisfaction(data) {
       if(loss>0) {
         state.brakingPenalty+=loss;
         state.brakingNoticeLoss=loss;state.brakingNoticeUntil=Date.now()+5000;
+        state.brakingNoticeLabel="Excessive G-Force";
       }
     }
-    state.score=Math.max(0,100-state.damagePenalty-state.delayPenalty-state.brakingPenalty);
+    if(braking&&typeof braking.source==="string"&&braking.source.length<=100&&
+       typeof braking.turningPenalty==="number"&&Number.isFinite(braking.turningPenalty)&&braking.turningPenalty>=0){
+      var turnSeen=state.turningSeen[braking.source]||0,turnLoss=Math.max(0,braking.turningPenalty-turnSeen);
+      state.turningSeen[braking.source]=Math.max(turnSeen,braking.turningPenalty);
+      if(turnLoss>0){
+        state.turningPenalty+=turnLoss;
+        var combined=loss>0;
+        state.brakingNoticeLoss=turnLoss+(combined?loss:0);state.brakingNoticeUntil=Date.now()+5000;
+        state.brakingNoticeLabel=combined?"Excessive G-Force + Virage brusque":"Virage brusque";
+      }
+    }
+    state.score=Math.max(0,100-state.damagePenalty-state.delayPenalty-state.brakingPenalty-state.turningPenalty);
     state.finished=data.routeCompleted===true;
   }else if(!state.finished)state.delayAt=0;
   data.passengerSatisfactionPercent=state.score;
   data.brakingPenaltyPoints=state.brakingPenalty;
+  data.turningPenaltyPoints=state.turningPenalty;
   data.brakingPenaltyNotice=!state.finished&&Date.now()<state.brakingNoticeUntil?
-    "Excessive G-Force : -"+Number(state.brakingNoticeLoss.toFixed(2))+"%":"";
+    state.brakingNoticeLabel+" : -"+Number(state.brakingNoticeLoss.toFixed(2))+"%":"";
   return data;
 }
       function buildSaeivStatePayloadFromGame() {
