@@ -3735,6 +3735,7 @@
           scheduleNextDiscordPresenceUpdate(getNextDiscordPresenceDelayMs());
         };
         ws.onmessage = function (event) {
+          if (ws.phase) ws.phase('parse-and-native-events');
           if (FORCE_DEV_UI) {
             console.log("[WebSocket game2 DEV]", event.data);
             var wsDevNode = windowNodeByType["ws_dev"];
@@ -3774,7 +3775,9 @@
           } catch (errIdentity) { }
           updateTelemetryConvoyState(raw, null);
           updateSaeivGameClockFromTelemetry(raw);
+          if (ws.phase) ws.phase('spatial-audio');
           updateBusSpatialAudioTelemetry(raw);
+          if (ws.phase) ws.phase('context-and-widget-events');
           // The host sends both keyEvent and overlayMode. Only the latter owns
           // manager visibility; toggling on both can leave the page hidden.
           var nextUiMode = raw && raw.type === "overlayMode" && (raw.mode === 1 || raw.mode === 2)
@@ -3814,15 +3817,21 @@
           lastWsMessageAt = Date.now();
           telemetryLastSignal = signal;
           telemetryLastPacketAt = Date.now();
+          if (ws.phase) ws.phase('navigation-pose');
           updateWazeBridgePoseFromTelemetry(signal);
+          if (ws.phase) ws.phase('saeiv-service-state');
           handleSaeivTelemetrySignal(signal);
           // Discord updates must also survive Chromium background timer throttling.
+          if (ws.phase) ws.phase('discord');
           sendDiscordPresenceUpdate();
           // The page can be hidden while driving. Socket callbacks continue
           // independently of background timer throttling.
+          if (ws.phase) ws.phase('native-gps');
           syncNativeGpsDestination(false);
+          if (ws.phase) ws.phase('map-and-remote-panel');
           publishTelemetryToWazeBridge(signal);
           sendTelemetryToRemotePanel(raw, signal);
+          if (ws.phase) ws.phase('widget-visibility');
           telemetryValidBurstCount += 1;
           if (telemetryValidBurstCount >= TELEMETRY_MIN_VALID_PACKETS_FOR_ONLINE) {
             telemetryOfflineLock = false;

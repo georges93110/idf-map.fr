@@ -19,8 +19,9 @@
   // send, onmessage and close handlers. No global WebSocket replacement.
   function connect() {
     var candidatePorts = ports(), next = 0, pending = new Set(), winner = null;
-    var listeners = {}, scheduled = 0, stopped = false, handshakeTimeout = 900;
+    var listeners = {}, scheduled = 0, stopped = false, handshakeTimeout = 900, monitor = null;
     var connection = { readyState: 0, url: "", onopen: null, onmessage: null, onerror: null, onclose: null };
+    connection.phase = function (name) { if (monitor) monitor.step(name); };
     Object.defineProperty(connection, "bufferedAmount", { get: function () { return winner ? winner.bufferedAmount : 0; } });
     function emit(type, source) {
       var event = { type: type, target: connection, currentTarget: connection,
@@ -49,6 +50,7 @@
     connection.close = function (code, reason) {
       if (stopped) return;
       stopped = true; stopProbes();
+      if (monitor) { monitor.close(); monitor = null; }
       if (winner) { connection.readyState = 2; winner.close(code, reason); }
       else {
         connection.readyState = 3;
@@ -89,6 +91,7 @@
         if (winner || stopped) { discard(p); return; }
         winner = socket; clearTimeout(p.timer); pending.delete(p); stopProbes();
         connection.url = socket.url; connection.readyState = 1;
+        try { if (root.IdfHtmlSchedulerProbe) monitor = root.IdfHtmlSchedulerProbe.create(connection); } catch (_) {}
         try { root.localStorage.setItem(KEY, String(port)); } catch (_) {}
         // Bound the renderer's task queue too, not merely TCP buffering. ACK
         // only after the app processed a snapshot; control messages stay live.
@@ -96,11 +99,15 @@
         socket.onmessage = function (message) {
           var match=hello.telemetryFlow===1&&typeof message.data==="string"&&/^\{"_idfTelemetrySeq":(\d+),/.exec(message.data);
           var start=Date.now();
+          if (monitor) monitor.begin(message.data);
           try { emit("message", message); }
-          finally { if(match&&socket.readyState===1)socket.send(JSON.stringify({type:"telemetryConsumed",protocol:1,seq:Number(match[1]),durationMs:Date.now()-start})); }
+          finally {
+            if (monitor) monitor.end();
+            if(match&&socket.readyState===1)socket.send(JSON.stringify({type:"telemetryConsumed",protocol:1,seq:Number(match[1]),durationMs:Date.now()-start}));
+          }
         };
         socket.onerror = function (error) { emit("error", error); };
-        socket.onclose = function (event) { stopped = true; connection.readyState = 3; emit("close", event); };
+        socket.onclose = function (event) { if (monitor) { monitor.close(); monitor = null; } stopped = true; connection.readyState = 3; emit("close", event); };
         emit("open");
       };
     }
