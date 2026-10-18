@@ -134,7 +134,7 @@ function updateBusSpatialAudioTelemetry(raw) {
   updateNativeGameAudio(data);
   if (!data || typeof data.audioCameraAvailable !== "boolean") return;
   var filtered = {};
-  Object.keys(data).forEach(function (key) { if (/^audio/.test(key) || key === "paused" || key === "busEntryDoorPosition") filtered[key] = data[key]; });
+  Object.keys(data).forEach(function (key) { if (/^audio/.test(key) || key === "paused" || key === "busEntryDoorPosition" || key === "passengerEffectsEnabled") filtered[key] = data[key]; });
   busSpatialAudio.stamp = Number.isFinite(data.audioCameraTimestamp) ? Math.min(Date.now(), data.audioCameraTimestamp) : Date.now();
   filtered.audioCameraTimestamp = busSpatialAudio.stamp;
   busSpatialAudio.telemetry = filtered; busSpatialAudio.seen = true;

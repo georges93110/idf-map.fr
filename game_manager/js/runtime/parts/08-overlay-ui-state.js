@@ -147,8 +147,10 @@
         return n;
       }
       function getGlobalAudioVolumeFactor() {
-        if (nativeGameAudio.seen) return nativeGameAudio.available && !nativeGameAudio.muted && Date.now()-nativeGameAudio.stamp < 2000 ? nativeGameAudio.volume : 0;
-        return 0; // Native master volume is authoritative; no HTML gain override.
+        // Plugin gain is independent from, and multiplied by, the game's master.
+        if (nativeGameAudio.seen) return nativeGameAudio.available && !nativeGameAudio.muted && Date.now()-nativeGameAudio.stamp < 2000
+          ? nativeGameAudio.volume * clampGlobalAudioVolumePercent(globalAudioVolumePercent) / 100 : 0;
+        return 0;
       }
       function updateSliderFill(slider) {
         if (!slider) return;
@@ -242,6 +244,9 @@
       function applyGlobalAudioVolumePercent(value, options) {
         var opts = options && typeof options === "object" ? options : {};
         globalAudioVolumePercent = clampGlobalAudioVolumePercent(value);
+        if (typeof tickBusAudio === "function") tickBusAudio();
+        if (typeof tickPassengerCabinAudio === "function") tickPassengerCabinAudio();
+        if (typeof tickConvoyDoorAudio === "function") tickConvoyDoorAudio();
         if (typeof syncSaeivRuntimeAudioVolumes === "function") {
           syncSaeivRuntimeAudioVolumes();
         }

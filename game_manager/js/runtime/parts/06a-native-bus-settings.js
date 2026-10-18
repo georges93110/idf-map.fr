@@ -33,6 +33,10 @@ function applyNativeBusSettings(packet) {
   state.applying = true;
   try {
     var opts = {syncUi:true, syncState:false};
+    if (typeof busSpatialAudio !== "undefined" && busSpatialAudio.telemetry && typeof packet.passengerEffectsEnabled === "boolean") {
+      busSpatialAudio.telemetry.passengerEffectsEnabled = packet.passengerEffectsEnabled;
+      if (typeof tickPassengerCabinAudio === "function") tickPassengerCabinAudio();
+    }
     applyGlobalAudioVolumePercent(v[0]); applyNotificationSoundsEnabled(!!v[1],opts);
     applyStopAnnouncementSoundsEnabled(!!v[2],opts); applyPassengerValidationSoundsEnabled(!!v[3],opts);
     applyPccVoiceReceptionMode(["always","solo","convoy","never"][v[4]],opts);
@@ -85,7 +89,7 @@ function receiveNativeBusSettings(packet) {
   if(packet.action === "request"){ if(Date.now()-(state.requestAt||0)>1000){state.requestAt=Date.now();nativeBusSettingsConnect();} return; }
   if(packet.action === "readOnly"){state.readOnly=true;return;}
   if(packet.action !== "current" || !Number.isInteger(packet.revision) || !Array.isArray(packet.values) || packet.values.length!==16) return;
-  if(state.revision === packet.revision && state.current && state.current.destinationAutomatic===packet.destinationAutomatic && state.current.saeivEnabled===packet.saeivEnabled && state.current && JSON.stringify(state.current.values)===JSON.stringify(packet.values) && JSON.stringify(state.current.keys)===JSON.stringify(packet.keys) && JSON.stringify(state.current.announcements)===JSON.stringify(packet.announcements)) return;
+  if(state.revision === packet.revision && state.current && state.current.passengerEffectsEnabled===packet.passengerEffectsEnabled && state.current.destinationAutomatic===packet.destinationAutomatic && state.current.saeivEnabled===packet.saeivEnabled && state.current && JSON.stringify(state.current.values)===JSON.stringify(packet.values) && JSON.stringify(state.current.keys)===JSON.stringify(packet.keys) && JSON.stringify(state.current.announcements)===JSON.stringify(packet.announcements)) return;
   state.revision=packet.revision;state.current=packet;applyNativeBusSettings(packet);
 }
 
