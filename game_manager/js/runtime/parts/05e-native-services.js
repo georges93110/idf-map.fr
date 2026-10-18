@@ -50,6 +50,7 @@ function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
   return {categories:categories,routes:routes};
 }
 var nativeServicesSocket=null,nativeServicesGeneration='',nativeServicesLoading=false,nativeServicesSource=null,nativeServicesSentAt=0;
+var nativeServicesRetryAt=0;
 var nativeServiceActions=new Map();
 function receiveNativeServicesSync(m){
  if(!m||m.protocol!==3||m.generation!==nativeGameModeGeneration)return false;
@@ -61,20 +62,22 @@ function receiveNativeServicesSync(m){
 function syncNativeServices(){
   if(!telemetryWs||telemetryWs.readyState!==1||telemetryWs.bufferedAmount>65536||!nativeGameModeApplied||!window.GAME2_MANAGER.nativeGameMode||window.GAME2_MANAGER.nativeGameMode.mode!=='bus')return;
   var ws=telemetryWs,generation=nativeGameModeGeneration;
-  if(nativeServicesSocket===ws&&nativeServicesGeneration===generation&&nativeServicesSource===dbusLines){
+  if(dbusLines.length&&nativeServicesSocket===ws&&nativeServicesGeneration===generation&&nativeServicesSource===dbusLines){
     if(Date.now()-nativeServicesSentAt>=1500){ws.send(JSON.stringify({type:'nativeServicesCatalog',protocol:3,generation:generation,heartbeat:true}));nativeServicesSentAt=Date.now();}
     return;
   }
-  if(nativeServicesLoading)return;nativeServicesLoading=true;
-  Promise.resolve(ensureDbusDataLoaded()).then(function(){
+  if(nativeServicesLoading||Date.now()<nativeServicesRetryAt)return;nativeServicesLoading=true;
+  Promise.resolve().then(function(){return ensureDbusDataLoaded();}).then(function(){
     if(ws!==telemetryWs||ws.readyState!==1||generation!==nativeGameModeGeneration||!window.GAME2_MANAGER.nativeGameMode||window.GAME2_MANAGER.nativeGameMode.mode!=='bus')return;
     var catalog=buildNativeServiceCatalog(dbusLines,getRouteStopEntries,getLineNumber);
     ws.send(JSON.stringify(Object.assign({type:'nativeServicesCatalog',protocol:3,generation:generation},catalog)));
+    if(!catalog.routes.length){dbusLoadPromise=null;dbusLines=[];nativeServicesRetryAt=Date.now()+3000;return;}
+    nativeServicesRetryAt=0;
     nativeServicesSocket=ws;nativeServicesGeneration=generation;nativeServicesSource=dbusLines;nativeServicesSentAt=Date.now();
     nativeServiceBadgeKeys=new Set(catalog.routes.map(function(r){return r.badgeKey;}));
     // Warm shared data before a selection. No service/GPS activation.
     prepareNativeServicePreviewData().catch(function(){});
-  }).catch(function(err){console.warn('[Service ETS2] Catalogue indisponible',err);}).finally(function(){nativeServicesLoading=false;});
+  }).catch(function(err){nativeServicesRetryAt=Date.now()+3000;console.warn('[Service ETS2] Catalogue indisponible, nouvelle tentative automatique',err);}).finally(function(){nativeServicesLoading=false;});
 }
 function receiveNativeServiceAction(m){
   if(!m||m.protocol!==3||m.generation!==nativeGameModeGeneration||!nativeGameModeApplied||normalizeGameMode(currentGameMode)!=='bus'||!Number.isInteger(m.id)||m.id<1||!Number.isInteger(m.session)||!Number.isInteger(m.catalog)||typeof m.lineUid!=='string'||typeof m.routeUid!=='string')return false;

@@ -1589,6 +1589,8 @@ function tickSaeivAutomaticDestination() {
         // Dev lines/types with website stops after a failed HTTP request.
         dbusLoadPromise = loadDbusDataForVersion(GAME_DEV_MAP_LAYER_VERSION)
           .then(function (loaded) {
+            if (!(loaded.stops instanceof Map) || !loaded.stops.size || !Array.isArray(loaded.lines) || !loaded.lines.length)
+              throw new Error("Catalogue de lignes vide ; nouvelle tentative au prochain chargement.");
             dbusDataVersion = String(loaded.version || "");
             dbusStopsById = loaded.stops instanceof Map ? loaded.stops : new Map();
             dbusLines = Array.isArray(loaded.lines) ? loaded.lines : [];

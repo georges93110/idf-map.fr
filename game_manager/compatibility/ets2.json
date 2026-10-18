@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "resolver": 1,
-  "revision": 28,
+  "revision": 29,
   "profiles": [
     {
       "sha256": "2014bfcc850a06108f4ca3c233a5bb6d31d7d83346c5d449f94c8e0675e5199a",
@@ -6215,7 +6215,7 @@
       "sha256": "b70c2357cc56eb5834ee47fea3c60b2f2d4591383ff2ac479cfd3cd254301b8c",
       "version": "1.61.1.9s.*",
       "abi": "ets2-win64-1.61.1.9-v1",
-      "layoutHash": "2e5f738de6cd61330997d1628af34481df3858ee5647e9619c71fa6fac2089bb",
+      "layoutHash": "90fb99fb44b67c1e8ba8af89fe6a0b9a918362c772e5b3153ffaa89fefd42253",
       "symbols": [
         {
           "id": "rva_000115a0",
@@ -9218,6 +9218,18 @@
           }
         },
         {
+          "id": "rva_008cf790",
+          "rva": 9238416,
+          "recipe": {
+            "pattern": "4c 8b dc 55 57 49 8d ab c8 fd ff ff 48 81 ec 28 03 00 00 48 8b 51 60 48 8b f9 48 8b 05 ?? ?? ?? ?? 48 83 c1 08 4c 8b 90 d0 12 00 00 48 3b 51 10 0f 83 ?? ?? ?? ?? 4c 8b 41 08 49 8b ca 4d 8b 0a 48 c1 e2 05 48 83 c2 08 49 89 5b 18 4c 03 c2 4d 89 7b d8 48 8d 54 24 40 41 ff 51 18",
+            "method": "match",
+            "offset": 0,
+            "operand": 0,
+            "end": 0,
+            "sectionFlags": 536870912
+          }
+        },
+        {
           "id": "rva_008cfc20",
           "rva": 9239584,
           "recipe": {
@@ -11462,6 +11474,24 @@
           }
         },
         {
+          "id": "rva_02205730",
+          "rva": 35673904,
+          "recipe": {
+            "pattern": "48 8d 8b 88 00 00 00 48 89 6b 60 48 c7 43 68 ff ff ff ff 48 89 6b 70 48 89 6b 78 48 89 ab 80 00 00 00 e8 ?? ?? ?? ?? 48 89 ab 08 01 00 00 48 8d 05 ?? ?? ?? ?? 48 89 b3 10 01 00 00 48 89 83 18 01 00 00 48 89 ab 20 01 00 00 48 89 ab 28 01 00 00 48 89 ab 30 01 00 00 e8 ?? ?? ?? ??",
+            "method": "rel32",
+            "offset": 0,
+            "operand": 35,
+            "end": 39,
+            "sectionFlags": 536870912,
+            "follow": [
+              {
+                "operand": 65,
+                "end": 69
+              }
+            ]
+          }
+        },
+        {
           "id": "rva_02222800",
           "rva": 35797296,
           "recipe": {
@@ -12502,6 +12532,18 @@
             "offset": 80,
             "operand": 88,
             "end": 92,
+            "sectionFlags": 536870912
+          }
+        },
+        {
+          "id": "rva_02429760",
+          "rva": 37918560,
+          "recipe": {
+            "pattern": "48 8d 05 ?? ?? ?? ?? 48 8d 8f 78 01 00 00 48 89 07 e8 ?? ?? ?? ?? 45 33 ff c6 87 98 01 00 00 00 48 8d 05 ?? ?? ?? ?? 4c 89 bf a8 01 00 00 48 89 87 a0 01 00 00 4c 89 bf b0 01 00 00 4c 89 bf b8 01 00 00 e8 ?? ?? ?? ?? 48 be 00 00 00 00 01 00 00 00 48 8b 48 10 48 8b c6 48 89 8f c0 01 00 00",
+            "method": "rip",
+            "offset": 0,
+            "operand": 3,
+            "end": 7,
             "sectionFlags": 536870912
           }
         },
