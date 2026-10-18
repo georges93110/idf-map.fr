@@ -30,7 +30,7 @@
   ];
 
   runtime.parts = PARTS.slice();
-  runtime.version = "native-session-20261018";
+  runtime.version = "session-displays-20261018";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
@@ -127,7 +127,7 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "native-session-20261018");
+    partUrl.searchParams.set("v", "session-displays-20261018");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
       if (part === "parts/05d-native-ui.js" && text.indexOf("function syncNativeBusHud(") < 0) {

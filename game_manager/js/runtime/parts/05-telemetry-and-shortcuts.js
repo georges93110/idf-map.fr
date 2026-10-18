@@ -507,9 +507,17 @@
         var maxAge = Math.max(600, Number(TELEMETRY_PACKET_TIMEOUT_MS) || 1000);
         return now - lastPacketAt <= maxAge;
       }
+      function hasLiveNativeTelemetrySession() {
+        // A late position callback is not a disconnect when the native game
+        // still reports this session. Position freshness remains separate for
+        // navigation/audio; never invent a new pose, pause or service event.
+        return !!telemetryLastPacketAt && !!telemetryWs && telemetryWs.readyState === 1 &&
+          typeof nativeGameModeLastAt !== "undefined" && nativeGameModeLastAt > 0 &&
+          Date.now() - nativeGameModeLastAt < 4000 && !nativeGameModeSuspended;
+      }
       function shouldHideTelemetryWidgets() {
         if (telemetryUiMode === 2) return false;
-        return telemetryPaused === true || !hasRecentTelemetryPositionSignal();
+        return telemetryPaused === true || (!hasRecentTelemetryPositionSignal() && !hasLiveNativeTelemetrySession());
       }
       function areTelemetryWidgetsLive() {
         return telemetryConnected === true && !shouldHideTelemetryWidgets();
@@ -3876,7 +3884,7 @@
             return;
           }
           var age = Date.now() - telemetryLastPacketAt;
-          if (age > TELEMETRY_PACKET_TIMEOUT_MS) {
+          if (age > TELEMETRY_PACKET_TIMEOUT_MS && !hasLiveNativeTelemetrySession()) {
             telemetryValidBurstCount = 0;
             setTelemetryConnectionState(false, "Signal telemetrie perdu (X/Y/Z/Heading).");
             refreshTelemetryVisibility();

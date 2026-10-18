@@ -117,7 +117,7 @@ window.setInterval(function(){syncNativeBusHud(false);},1000);
 
 // COACH7: native desktop mode selection, separate from the disabled native
 // mission-menu experiment. No widget preference or saved layout is erased.
-var nativeGameModeGeneration="", nativeGameModeApplied=false;
+var nativeGameModeGeneration="", nativeGameModeApplied=false,nativeGameModeLastAt=0,nativeGameModeSuspended=false;
 try { nativeGameModeGeneration=localStorage.getItem("idf_native_mode_generation_v1")||""; } catch(err) {}
 var nativeModeServiceObject=null,nativeModeServiceToken=0;
 function nativeModeActiveServiceToken(){
@@ -153,6 +153,7 @@ function receiveNativeGameMode(m){
      (m.mode!=="bus"&&m.mode!=="truck"))return false;
   // The mandatory introduction remains entirely owned by ETS2.
   var suspended=m.suspended===true;
+  nativeGameModeLastAt=Date.now();nativeGameModeSuspended=suspended;
   if(typeof document!=="undefined"&&document.documentElement&&document.head){
     document.documentElement.classList.toggle('idf-plugin-suspended',suspended);
     if(!document.getElementById('idf-intro-visibility')){
