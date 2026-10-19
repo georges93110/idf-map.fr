@@ -41,7 +41,7 @@
 
 const $=s=>document.querySelector(s),output=$('#ledCanvas'),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d'),route=$('#route');
 const outputCtx=output.getContext('2d');
-let renderMode='simple',nightStripe='';
+let renderMode='simple',nightStripe='',texturePowered=false;
 output.width=1024;output.height=128;
 const tabs=document.createElement('div');tabs.className='toolbar';tabs.style.margin='0 0 16px';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Format du rendu');
 for(const [mode,label] of [['simple','Simple · 1024 × 128'],['advanced','Avancé · 2048 × 256']]){
@@ -226,6 +226,9 @@ function drawRoute(){
  ctx.restore();
 }
 function draw(){
+ // Keep every atlas slot black, including badge/stripe, even if a delayed font
+ // load or animation callback requests another draw while the engine is off.
+ if(!texturePowered){outputCtx.fillStyle='#000000';outputCtx.fillRect(0,0,output.width,output.height);return 0;}
  const width=drawSimple();
  outputCtx.fillStyle=palette.background;outputCtx.fillRect(0,0,output.width,output.height);
  outputCtx.drawImage(canvas,0,0);
@@ -380,12 +383,16 @@ function girouetteText(value){
   .replace(/e\u0301/g,'é').replace(/E\u0301/g,'É').replace(/[\u0300-\u036f]/g,'');
 }
 function girouetteOutline(color){const c=String(color).replace('#','');const n=parseInt(c,16);return ((n>>16)*.2126+((n>>8)&255)*.7152+(n&255)*.0722)>127?'#000000':'#ffffff';}
-let textureKey='';window.IDFGirouette={revision:0,ready:false,resumeVersion:1,resume:async state=>{textureKey='';return refreshGirouette(state);},update:refreshGirouette};
+let textureKey='',textureUpdate=0;window.IDFGirouette={revision:0,ready:false,resumeVersion:1,resume:async state=>{textureKey='';return refreshGirouette(state);},update:refreshGirouette};
 // State arrives directly from the plugin's renderer, without a cross-origin localhost request.
 async function refreshGirouette(state){
  try{if(!state||typeof state.enabled!=='boolean')throw Error('Invalid girouette state');
   const key=JSON.stringify(state);if(key===textureKey)return true;
+  const update=++textureUpdate;
+  texturePowered=state.enabled&&state.powered!==false;
+  if(!texturePowered){running=false;draw();textureKey=key;window.IDFGirouette.ready=true;window.IDFGirouette.revision=state.revision;return true;}
   await Promise.all([document.fonts.ready,document.fonts.load('normal 100px AgoraGirouette')]);
+  if(update!==textureUpdate)return true;
   agoraLayout=state.layout==='agora';
   running=false;offset=0;route.value=state.enabled?girouetteText(state.line):'';dest.value=state.enabled?girouetteText(state.destination):'';
   $('#routeBox').checked=!!state.enabled&&state.badge!==false&&!!state.line;$('#scanBox').checked=true;$('#wrap').checked=true;$('#partial').checked=state.partial===true;$('#blink').checked=false;nightStripe=state.stripe||'';

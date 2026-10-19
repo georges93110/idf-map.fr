@@ -37,7 +37,7 @@
     hidden.textContent='.idf-plugin-suspended body,.idf-plugin-suspended body *{visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(hidden);
   }
   runtime.parts = PARTS.slice();
-  runtime.version = "voice-folders-20261019";
+  runtime.version = "hud-stop-advance-20261019";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {

@@ -2012,6 +2012,7 @@ function applySaeivPassengerSatisfaction(data) {
           routeLiveElapsedMs: 0,
           routeFinalDelayMinutes: Number.NaN,
           routeLiveDelayMinutes: Number.NaN,
+          stopScheduleDeltaMinutes: Number.NaN,
           routeLastStopDelayMinutes: Number.NaN,
           routeLastStopDelayIndex: -1,
           routeReachedStopsCount: 0,
@@ -2335,6 +2336,7 @@ function applySaeivPassengerSatisfaction(data) {
           { x: signalX, y: signalY, z: signalZ }
         );
         payload.refTime = formatClockTextFromTimestamp(refArrivalTs);
+        payload.stopScheduleDeltaMinutes = computeSaeivDelayMinutesByTimestamp(payload.clockNowMs, refArrivalTs);
         var completion = buildSaeivCompletionMetrics(entries, reachedIndex);
         // Fin de course : Index atteint le terminus ET bus vide
         var isAtTerminus = completion.completed === true;

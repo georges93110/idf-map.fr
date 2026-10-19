@@ -49,7 +49,7 @@ window.setInterval(function(){syncNativeUi(false);},1500);
 var nativeBusHudStatus=null,nativeBusHudStatusAt=0,nativeBusHudLastSend=0;
 var nativeBusHudLastPayload=null,nativeBusHudLastPayloadAt=0,nativeBusHudSocket=null;
 var nativeBusHudSendError="";
-var nativeBusHudDiagnostics={version:"HUD5",lastSentAt:0,enabled:false,error:"",status:null};
+var nativeBusHudDiagnostics={version:"HUD6",lastSentAt:0,enabled:false,error:"",status:null};
 window.GAME2_MANAGER.nativeBusHud=nativeBusHudDiagnostics;
 function receiveNativeBusHudStatus(m){nativeBusHudStatus=m;nativeBusHudStatusAt=Date.now();nativeBusHudDiagnostics.status=m;syncNativeUiSettings();}
 function nativeBusHudText(value,max){
@@ -74,15 +74,17 @@ function buildNativeBusHudMessage(s){
   if(requested)remaining.push("Arrêt demandé");
   var satisfaction=typeof s.passengerSatisfactionPercent==="number"&&Number.isFinite(s.passengerSatisfactionPercent)?
     Math.max(0,Math.min(10000,Math.round(s.passengerSatisfactionPercent*100))):undefined;
-  var delay=Number(s.routeLiveDelayMinutes);
-  var late=s.routeStarted&&Number.isFinite(delay)&&delay>0?Math.min(999,Math.ceil(delay)):0;
+  // At a stop use its own scheduled timestamp, never the terminus countdown.
+  var delay=s.vehicleAtStop?s.stopScheduleDeltaMinutes:s.routeLiveDelayMinutes;
+  var late=s.routeStarted&&typeof delay==="number"&&Number.isFinite(delay)&&(delay>0||s.vehicleAtStop)?
+    Math.sign(delay)*Math.min(999,Math.ceil(Math.abs(delay))):0;
   var doors=s.busDoors||{};
   function indicator(value){
     if(!doors.available||typeof value!=="number"||!Number.isFinite(value))return 0;
     return value<=0.01?1:value>=0.99?3:2; // Unknown / closed / moving / open.
   }
   var load=s.busMaxCapacityUnlimited||!count(s.busMaxCapacity)?0:count(s.passengersInBus)/count(s.busMaxCapacity);
-  return {type:"nativeBusHud",protocol:3,enabled:enabled,atStop:s.vehicleAtStop===true,color:load>=.95?2:load>=.75?1:0,
+  return {type:"nativeBusHud",protocol:4,enabled:enabled,atStop:s.vehicleAtStop===true,color:load>=.95?2:load>=.75?1:0,
     line:nativeBusHudText("Ligne "+String(s.lineNumber||"Bus"),22),
     destination:nativeBusHudText(destination,128),
     occupancy:nativeBusHudText(count(s.passengersInBus)+"/"+cap,26),
