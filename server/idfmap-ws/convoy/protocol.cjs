@@ -54,6 +54,20 @@ function lumiplan(v) {
  return {powered:v.powered,gameTimeMinutes:v.gameTimeMinutes,color:v.color,textColor:v.textColor,state};
 }
 function passenger(v) {
+  // Action replication carries no rendered pedestrian coordinates. The anchor
+  // is the fixed stop/departure frame, never the sender's collision contact.
+  if(object(v)&&v.actionSequence!==undefined){
+    const anchor=pose(v.anchor);
+    if(!key(v.id)||!integer(v.model,0,103)||!integer(v.seat,-1,255)||!integer(v.door,0,2)||
+       !['waiting','approach','enter','toPlace','resident','toExit','leave','outside','returning'].includes(v.stage)||
+       !integer(v.actionSequence,1,0xffffffff)||!integer(v.progress,0,4)||!integer(v.queue,0,63)||
+       !integer(v.animation,1,3)||!integer(v.standingVariant,0,6)||!integer(v.seatedVariant,0,2)||
+       !finite(v.walkSpeed,4)||v.walkSpeed<0||!anchor||v.pose!==undefined||v.space!==undefined||
+       (['toPlace','resident','toExit','leave'].includes(v.stage)&&v.seat<0))return null;
+    return {id:v.id,model:v.model,seat:v.seat,door:v.door,stage:v.stage,actionSequence:v.actionSequence,
+      progress:v.progress,queue:v.queue,animation:v.animation,standingVariant:v.standingVariant,
+      seatedVariant:v.seatedVariant,walkSpeed:v.walkSpeed,anchor};
+  }
   if (!object(v) || !key(v.id) || !integer(v.model, 0, 255) || !integer(v.seat, -1, 255) || !integer(v.door, 0, 2) ||
       !['waiting', 'approach', 'enter', 'toPlace', 'resident', 'toExit', 'leave', 'outside', 'returning'].includes(v.stage) ||
       !['bus', 'world'].includes(v.space) || !integer(v.animation, 0, 255) || !finite(v.phase, 86400)) return null;
@@ -70,17 +84,20 @@ function snapshot(v) {
       !v.doors.every(n => finite(n, 1) && n >= 0) || !Array.isArray(v.passengers) || v.passengers.length > LIMITS.passengers ||
       !integer(v.occupancy, 0, 500) || !text(v.line, 64) || !text(v.service, 64) || !text(v.stop, 128)) return null;
   const at = pose(v.pose); if (!at) return null;
+  if(v.passengerMode!==undefined&&v.passengerMode!=='actions-v1')return null;
+  const actionMode=v.passengerMode==='actions-v1';
   const seen = new Set(), seats = new Set(), passengers = [];
   for (const item of v.passengers) {
-    const p = passenger(item); if (!p || seen.has(p.id)) return null;
+    const p = passenger(item); if (!p || seen.has(p.id)||actionMode!==(p.actionSequence!==undefined)) return null;
     // Only seated residents own a seat; walking people may keep their target seat.
-    if (p.space === 'bus' && p.stage === 'resident' && p.seat >= 0) { if (seats.has(p.seat)) return null; seats.add(p.seat); }
+    if ((actionMode||p.space === 'bus') && p.stage === 'resident' && p.seat >= 0) { if (seats.has(p.seat)) return null; seats.add(p.seat); }
     seen.add(p.id); passengers.push(p);
   }
   let destination,screen; try { destination = sign(v.sign); screen=lumiplan(v.lumiplan); } catch { return null; }
   return { type: v.type, version: VERSION, epoch: v.epoch, sequence: v.sequence, vehicle: v.vehicle, profile: v.profile, generation: v.generation,
     pose: at, speed: v.speed, powered: v.powered, doors: v.doors.slice(), stopRequested: v.stopRequested, occupancy: v.occupancy,
-    line: v.line, service: v.service, stop: v.stop, sign: destination, lumiplan:screen, passengers };
+    line: v.line, service: v.service, stop: v.stop, sign: destination, lumiplan:screen, passengers,
+    ...(actionMode?{passengerMode:'actions-v1'}:{}) };
 }
 function busAudio(v) {
   if (!object(v) || !key(v.voice) || !['play','stop'].includes(v.action)) return null;

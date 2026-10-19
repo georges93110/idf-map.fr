@@ -1,3 +1,9 @@
+## Passagers par actions (20 octobre 2026)
+
+Publier `convoy/protocol.cjs` puis redémarrer le relais avant de mettre à jour les DLL des joueurs. Le mode `passengerMode: actions-v1` transmet l'identité du passager, l'action et sa révision, la porte, la place, les variantes d'animation et la progression par quarts. Il ne transmet plus la position rendue du passager ni sa hauteur de collision. L'ancre est un repère fixe d'arrêt ou de départ ; la pose globale du véhicule sert uniquement au filtrage de proximité existant. Le rendu utilise toujours le bus natif interpolé du client receveur.
+
+Chaque client reconstruit les chemins de cabine avec les mêmes profils mesurés et interroge ses collisions locales. Les transitions retardées terminent les phases d'entrée/sortie ; un doublon ne recommence pas l'animation. Des instantanés complets périodiques permettent une arrivée tardive et la récupération après reconnexion. Les identités attribuées par le relais, générations, listes natives, baux et limites restent contrôlés. Les anciens paquets restent lisibles, mais les deux clients doivent être à jour pour utiliser ce nouveau rendu dans les deux sens.
+
 ## Identités Convoi sans compte Steam (19 octobre 2026)
 
 Déployer `server.cjs`, `convoy/protocol.cjs` et `convoy/stops.cjs`, puis redémarrer le service Node avant les nouveaux clients. Ils demandent une identité via `convoy.identify` / `identityKind: native-session`, sans champ `player`. Le serveur attribue un identifiant aléatoire de 128 bits lié à cette connexion et refuse les identifiants natifs choisis par le client. Les règles `authorizeConvoy`, la session, les slots, les listes croisées et les baux restent appliqués. Les anciens clients Steam restent acceptés pour la transition ; mettre à jour les deux joueurs pour l'affichage mutuel. La télémétrie statistique historique est séparée et n'est pas modifiée.
