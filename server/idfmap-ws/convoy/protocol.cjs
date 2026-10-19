@@ -61,12 +61,14 @@ function passenger(v) {
     if(!key(v.id)||!integer(v.model,0,103)||!integer(v.seat,-1,255)||!integer(v.door,0,2)||
        !['waiting','approach','enter','toPlace','resident','toExit','leave','outside','returning'].includes(v.stage)||
        !integer(v.actionSequence,1,0xffffffff)||!integer(v.progress,0,4)||!integer(v.queue,0,63)||
+       (v.progressPermille!==undefined&&(!integer(v.progressPermille,0,1000)||Math.floor(v.progressPermille/250)!==v.progress))||
        !integer(v.animation,1,3)||!integer(v.standingVariant,0,6)||!integer(v.seatedVariant,0,2)||
        !finite(v.walkSpeed,4)||v.walkSpeed<0||!anchor||v.pose!==undefined||v.space!==undefined||
        (['toPlace','resident','toExit','leave'].includes(v.stage)&&v.seat<0))return null;
     return {id:v.id,model:v.model,seat:v.seat,door:v.door,stage:v.stage,actionSequence:v.actionSequence,
       progress:v.progress,queue:v.queue,animation:v.animation,standingVariant:v.standingVariant,
-      seatedVariant:v.seatedVariant,walkSpeed:v.walkSpeed,anchor};
+      seatedVariant:v.seatedVariant,walkSpeed:v.walkSpeed,anchor,
+      ...(v.progressPermille!==undefined?{progressPermille:v.progressPermille}:{})};
   }
   if (!object(v) || !key(v.id) || !integer(v.model, 0, 255) || !integer(v.seat, -1, 255) || !integer(v.door, 0, 2) ||
       !['waiting', 'approach', 'enter', 'toPlace', 'resident', 'toExit', 'leave', 'outside', 'returning'].includes(v.stage) ||
