@@ -1927,7 +1927,7 @@ function applySaeivPassengerSatisfaction(data) {
   if(!state || state.key!==key)state=saeivPassengerSatisfaction={key:key,damage:null,damagePenalty:0,delayPenalty:0,delayAt:0,score:100,finished:false};
   var now=Number(data.clockNowMs),damage=Number(data.truckDamagePercent);
   var multiplier=getSaeivPassengerPenaltyMultiplier(data);
-  if(key && !state.finished && telemetryConnected && !telemetryPaused && Number.isFinite(now) && now>0){
+  if(key && !(typeof nativeRuntimeRestoring!=='undefined'&&nativeRuntimeRestoring) && !(typeof nativeRuntimeMessage!=='undefined'&&nativeRuntimeMessage&&nativeRuntimeMessage.runtimeSuspended) && !state.finished && telemetryConnected && !telemetryPaused && Number.isFinite(now) && now>0){
     if(Number.isFinite(damage)){
       // Weight each new loss at its current load; boarding/alighting never
       // reprices penalties already incurred. Track damage even while empty.
@@ -2396,6 +2396,7 @@ function applySaeivPassengerSatisfaction(data) {
         var payload = buildSaeivStatePayloadFromGame();
         syncNativeStopMarker(false, payload);
         if(typeof syncNativeBusHud==="function")syncNativeBusHud(force,payload);
+        if(typeof syncNativeRuntimeCheckpoint==="function")syncNativeRuntimeCheckpoint(force);
         var key = "";
         try { key = JSON.stringify(payload); } catch (err) { key = ""; }
         if (!force && key && key === saeivLastStateKey) return false;

@@ -21,6 +21,7 @@
     "parts/05c-native-passengers.js",
     "parts/05d-native-ui.js",
     "parts/05e-native-services.js",
+    "parts/05f-runtime-recovery.js",
     "parts/06-settings-and-modes.js",
     "parts/06a-native-bus-settings.js",
     "parts/07-widgets-output.js",
@@ -29,8 +30,14 @@
     "parts/10-startup.js"
   ];
 
+  // Owned in-game UI is absent until the native readiness handshake succeeds.
+  if(new URLSearchParams(window.location.search).get('idfFloatUi')==='1'){
+    document.documentElement.classList.add('idf-plugin-suspended');
+    var hidden=document.createElement('style');hidden.id='idf-intro-visibility';
+    hidden.textContent='.idf-plugin-suspended body,.idf-plugin-suspended body *{visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(hidden);
+  }
   runtime.parts = PARTS.slice();
-  runtime.version = "bus-audio-settings-20261018";
+  runtime.version = "voice-folders-20261019";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {
@@ -127,7 +134,7 @@
   var baseUrl = new URL("./", currentScriptUrl());
   Promise.all(PARTS.map(function (part) {
     var partUrl = new URL(part, baseUrl);
-    partUrl.searchParams.set("v", "bus-audio-settings-20261018");
+    partUrl.searchParams.set("v", "voice-folders-20261019");
     var url = partUrl.href;
     return loadText(url).then(function (text) {
       if (part === "parts/05d-native-ui.js" && text.indexOf("function syncNativeBusHud(") < 0) {

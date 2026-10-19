@@ -8,7 +8,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -20,7 +20,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -32,7 +32,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -44,7 +44,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -56,7 +56,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -68,7 +68,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -80,7 +80,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -92,7 +92,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -104,7 +104,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -116,7 +116,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -128,7 +128,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -140,7 +140,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -152,7 +152,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "TRANSDEV",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Transdev)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "TRANSDEV", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true,                         // VISIBLE PCC
     ],
@@ -176,7 +176,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true                           // VISIBLE PCC
     ],
@@ -188,7 +188,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true                           // VISIBLE PCC
     ],
@@ -200,7 +200,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true                           // VISIBLE PCC
     ],
@@ -212,7 +212,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true                           // VISIBLE PCC
     ],
@@ -224,7 +224,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true                           // VISIBLE PCC
     ],
@@ -284,7 +284,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       false                           // VISIBLE PCC
     ],
@@ -296,7 +296,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       false                           // VISIBLE PCC
     ],
@@ -308,7 +308,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       false                           // VISIBLE PCC
     ],
@@ -320,7 +320,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       false                           // VISIBLE PCC
     ],
@@ -332,7 +332,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-2, 2],                       // VARIATION LIMITES NOMBRE PASSAGERS
       false                           // VISIBLE PCC
     ],
@@ -344,7 +344,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-5, 5],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true                           // VISIBLE PCC
     ],
@@ -356,7 +356,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-5, 5],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true                           // VISIBLE PCC
     ],
@@ -368,7 +368,7 @@
       true,                         // SON VALIDATION
       "arret_demande_ratp",         // SONS ARRET DEMANDE
       "RATP",                       // DOSSIER ANNONCES SONORES
-      "Voix de Synthèse (Anciennes)", // VOIX ANNONCES SONORES AUTOMATIQUES
+      "RATP", // VOIX ANNONCES SONORES AUTOMATIQUES
       [-5, 5],                       // VARIATION LIMITES NOMBRE PASSAGERS
       true                           // VISIBLE PCC
     ]

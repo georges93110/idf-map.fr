@@ -3758,6 +3758,7 @@
           if (raw && raw.type === "nativeServiceAction") { receiveNativeServiceAction(raw); return; }
           if (raw && raw.type === "nativeServiceBadgeRequest") { receiveNativeServiceBadgeRequest(raw); return; }
           if (raw && raw.type === "nativeServicePreviewRequest") { receiveNativeServicePreviewRequest(raw); return; }
+          if (raw && raw.type === "nativeRuntimeResume") { receiveNativeRuntimeResume(raw); return; }
           if (raw && raw.type === "nativeGameMode") { receiveNativeGameMode(raw); return; }
           if (raw && raw.type === "nativeUiPreference") { receiveNativeUiPreference(raw); return; }
           if (raw && raw.type === "nativeBusHudStatus") { receiveNativeBusHudStatus(raw); return; }
@@ -3820,7 +3821,7 @@
           if (ws.phase) ws.phase('navigation-pose');
           updateWazeBridgePoseFromTelemetry(signal);
           if (ws.phase) ws.phase('saeiv-service-state');
-          handleSaeivTelemetrySignal(signal);
+          if(!nativeRuntimeRestoring&&!(nativeRuntimeMessage&&nativeRuntimeMessage.runtimeSuspended))handleSaeivTelemetrySignal(signal);
           // Discord updates must also survive Chromium background timer throttling.
           if (ws.phase) ws.phase('discord');
           sendDiscordPresenceUpdate();

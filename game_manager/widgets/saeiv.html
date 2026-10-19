@@ -4719,7 +4719,6 @@
         const isSupportedVoice = family === "ratp" || family === "transdev" || family.includes("ancienne") || family.includes("transdev");
         if (!isSupportedVoice) return [];
         const hasDestination = data.routeAudioCanManualDestination === true;
-        const hasTerminus = data.routeAudioCanManualTerminus === true;
         const items = [];
         if (hasDestination) {
           items.push({
@@ -4730,15 +4729,8 @@
             action: "saeiv-manual-destination-announcement"
           });
         }
-        if (hasTerminus) {
-          items.push({
-            label: "Terminus",
-            slot: "",
-            url: "",
-            urls: Array.isArray(data.routeAudioManualTerminusUrls) ? data.routeAudioManualTerminusUrls : [],
-            action: "saeiv-manual-terminus-announcement"
-          });
-        }
+        // Manual terminus announcements come only from the global audio pack.
+        // The automatic route sequence belongs to stop playback, not this menu.
         return items;
       }
 

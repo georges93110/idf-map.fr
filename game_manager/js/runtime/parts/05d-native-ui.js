@@ -150,7 +150,7 @@ function nativeModeRuntimeReady(){
     if(typeof ensureNavStopLinksLoaded==='function')ensureNavStopLinksLoaded().catch(function(){});
     if(typeof ensureNavBridgesLoaded==='function')ensureNavBridgesLoaded().catch(function(){});
   }
-  return ready;
+  return ready&&!nativeRuntimeRestoring;
 }
 function receiveNativeGameMode(m){
   if(!m||m.protocol!==1||!Number.isSafeInteger(m.epoch)||m.epoch<=0||
@@ -158,9 +158,12 @@ function receiveNativeGameMode(m){
      (m.mode!=="bus"&&m.mode!=="truck"))return false;
   // The mandatory introduction remains entirely owned by ETS2.
   var suspended=m.suspended===true;
+  nativeRuntimeMessage=m;
+  var incomingGeneration=String(m.epoch)+":"+String(m.revision);
+  if(m.recovery===1&&nativeRuntimeResumeGeneration!==incomingGeneration)nativeRuntimeRestoring=true;
   nativeGameModeLastAt=Date.now();nativeGameModeSuspended=suspended;
   if(typeof document!=="undefined"&&document.documentElement&&document.head){
-    document.documentElement.classList.toggle('idf-plugin-suspended',suspended);
+    nativeRuntimeVisibility(suspended||m.runtimeSuspended===true||nativeRuntimeRestoring);
     if(!document.getElementById('idf-intro-visibility')){
       var style=document.createElement('style');style.id='idf-intro-visibility';
       style.textContent='.idf-plugin-suspended body,.idf-plugin-suspended body *{visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(style);
@@ -178,9 +181,10 @@ function receiveNativeGameMode(m){
   }
   if(telemetryWs&&telemetryWs.readyState===1){
     telemetryWs.send(JSON.stringify({type:"nativeGameModeAck",protocol:1,epoch:m.epoch,revision:m.revision,uiReady:nativeModeRuntimeReady(),serviceToken:m.mode==="bus"?nativeModeActiveServiceToken():0,
-      runtimeVersion:window.GAME2_MANAGER.runtime&&window.GAME2_MANAGER.runtime.version,visibility:typeof document!=="undefined"?document.visibilityState:"unknown"}));
+      browserVersion:window.IdfHtmlSchedulerProbe?window.IdfHtmlSchedulerProbe.browserInfo():"unknown",runtimeVersion:window.GAME2_MANAGER.runtime&&window.GAME2_MANAGER.runtime.version,visibility:typeof document!=="undefined"?document.visibilityState:"unknown"}));
     // ACK precedes GPS on the same socket, so generation authorization is
     // established before a restored/paused service submits its destination.
+    if(nativeRuntimeRestoring)return true;
     syncNativeGpsDestination(false);
     // Native events continue while hidden WebView timers can be throttled.
     // Send the catalogue only after the generation ACK on this same socket.
@@ -188,12 +192,13 @@ function receiveNativeGameMode(m){
     // These leases must follow real socket events as well as timers: a hidden
     // WebView may throttle intervals when switching to a stock camera.
     // Existing senders retain their rate limits, current state and pause rules.
-    if(!suspended){
+    if(!suspended&&!m.runtimeSuspended){
       if(typeof syncNativePassengers==='function')syncNativePassengers(false);
       if(typeof syncNativeStopMarker==='function')syncNativeStopMarker(false);
       if(typeof syncNativeBusHud==='function')syncNativeBusHud(false);
       if(typeof sendDiscordPresenceUpdate==='function')sendDiscordPresenceUpdate();
     }
+    syncNativeRuntimeCheckpoint(false);
   }
   return true;
 }

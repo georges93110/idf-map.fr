@@ -1,6 +1,6 @@
 {
   "dossiers": {
-    "Voix de Synthèse (Anciennes)": {
+    "RATP": {
       "_files": [
         "Alexander Fleming",
         "Alexandre 1er",
@@ -157,7 +157,7 @@
         "Vincennes"
       ]
     },
-    "Voix de Synthèse (Transdev)": {
+    "TRANSDEV": {
       "_files": [
         "Auguste Polissard",
         "Départ_351",
