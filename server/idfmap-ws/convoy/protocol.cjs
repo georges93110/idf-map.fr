@@ -4,6 +4,10 @@ const VERSION = 1;
 const LIMITS = Object.freeze({ peers: 128, passengers: 256, bytes: 196608, enterM: 200, leaveM: 230, fullM: 80, audioM: 60, leaseMs: 6000 });
 const key = v => typeof v === 'string' && /^[a-zA-Z0-9_.:-]{1,128}$/.test(v);
 const steam = v => typeof v === 'string' && /^7656119\d{10}$/.test(v);
+// Opaque connection identities are assigned by the relay, not inferred from
+// an account or chosen from predictable native client numbers.
+const nativePlayer = v => typeof v === 'string' && /^native:[0-9a-f]{32}$/.test(v);
+const player = v => steam(v) || nativePlayer(v);
 const integer = (v, lo, hi) => Number.isSafeInteger(v) && v >= lo && v <= hi;
 const finite = (v, bound) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= bound;
 const text = (v, max = 256) => typeof v === 'string' && v.length <= max && !/[\x00-\x1f\x7f]/.test(v);
@@ -14,12 +18,12 @@ function pose(v, local = false) {
   return { x: v.x, y: v.y, z: v.z, yaw: v.yaw };
 }
 function hello(v) {
-  if (!object(v) || v.type !== 'convoy.hello' || v.version !== VERSION || !key(v.room) || !steam(v.player) || !key(v.instance) ||
+  if (!object(v) || v.type !== 'convoy.hello' || v.version !== VERSION || !key(v.room) || !player(v.player) || !key(v.instance) ||
       !integer(v.clientId, 0, 65534) || v.map !== 'idf.mbd' || !key(v.assets) || !Array.isArray(v.roster) || v.roster.length > LIMITS.peers) return null;
   const seen = new Set(), ids = new Set();
   const roster = [];
   for (const p of v.roster) {
-    if (!object(p) || (p.player !== undefined && !steam(p.player)) || !integer(p.clientId, 0, 65534) ||
+    if (!object(p) || (p.player !== undefined && !player(p.player)) || !integer(p.clientId, 0, 65534) ||
         (p.player !== undefined && seen.has(p.player)) || ids.has(p.clientId)) return null;
     if (p.player !== undefined) seen.add(p.player);
     ids.add(p.clientId); roster.push(p.player === undefined ? { clientId: p.clientId } : { player: p.player, clientId: p.clientId });
@@ -27,9 +31,8 @@ function hello(v) {
   if (!roster.some(p => p.player === v.player && p.clientId === v.clientId)) return null;
   return { type: v.type, version: VERSION, room: v.room, player: v.player, instance: v.instance, clientId: v.clientId, map: v.map, assets: v.assets, roster };
 }
-// The native roster proves current client membership. A Steam ID, when present,
-// must agree as well. Stable Steam identity follows the relay authorization
-// policy; session client IDs alone are never persistent player identities.
+// Native membership and connection identity are separate checks. The relay
+// assigns new opaque identities; a native slot alone never authorizes a peer.
 function member(roster, player, clientId) {
   return roster.some(p => p.clientId === clientId && (p.player === undefined || p.player === player));
 }
@@ -101,4 +104,4 @@ function decode(data) {
     const v = JSON.parse(data); return object(v) ? v : null; } catch { return null; }
 }
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z); }
-module.exports = { VERSION, LIMITS, key, steam, integer, pose, hello, member, sign, lumiplan, passenger, snapshot, busAudio, event, decode, distance };
+module.exports = { VERSION, LIMITS, key, steam, player, nativePlayer, integer, pose, hello, member, sign, lumiplan, passenger, snapshot, busAudio, event, decode, distance };

@@ -1,3 +1,7 @@
+## Identités Convoi sans compte Steam (19 octobre 2026)
+
+Déployer `server.cjs`, `convoy/protocol.cjs` et `convoy/stops.cjs`, puis redémarrer le service Node avant les nouveaux clients. Ils demandent une identité via `convoy.identify` / `identityKind: native-session`, sans champ `player`. Le serveur attribue un identifiant aléatoire de 128 bits lié à cette connexion et refuse les identifiants natifs choisis par le client. Les règles `authorizeConvoy`, la session, les slots, les listes croisées et les baux restent appliqués. Les anciens clients Steam restent acceptés pour la transition ; mettre à jour les deux joueurs pour l'affichage mutuel. La télémétrie statistique historique est séparée et n'est pas modifiée.
+
 # Relais Convoi IDF-RP
 
 Sources locales uniquement : aucun déploiement ni push n'est effectué par les outils de compilation de la DLL.

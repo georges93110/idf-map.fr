@@ -16,7 +16,7 @@
         if (!id || !epoch || sessions.has(key)) return false;
         const session = { id, epoch, key, label: 'Convoi ' + id.slice(-12), players: [] };
         for (const raw of source.players) {
-          if (!raw || !/^7656119\d{10}$/.test(raw.player)) continue;
+          if (!raw || !/^(?:7656119\d{10}|native:[0-9a-f]{32})$/.test(raw.player)) continue;
           const p = { player: raw.player, session, clientId: number(raw.clientId, 0, 65534), synchronized: raw.synchronized === true, bus: raw.bus !== false && raw.vehicle !== 'none',
             ageMs: number(raw.ageMs, 0, 86400000), vehicle: clean(raw.vehicle), generation: clean(raw.generation),
             line: clean(raw.line, 64), service: clean(raw.service, 64), stop: clean(raw.stop, 128),

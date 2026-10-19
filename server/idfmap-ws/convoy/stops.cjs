@@ -22,7 +22,7 @@ class StopCrowds {
   }
   reserve(room, stopId, player, generation, count, position) {
     const stop = this.rooms.get(room)?.get(stopId);
-    if (!stop || !P.steam(player) || !P.key(generation) || !P.integer(count, 0, this.maxPeople) || !P.pose(position) || P.distance(stop.pose, position) > 40) return [];
+    if (!stop || !P.player(player) || !P.key(generation) || !P.integer(count, 0, this.maxPeople) || !P.pose(position) || P.distance(stop.pose, position) > 40) return [];
     const now = this.now(), assigned = [];
     for (const p of stop.people.values()) {
       if (p.boarded) continue;

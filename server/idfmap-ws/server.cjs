@@ -1,6 +1,7 @@
 'use strict';
 const { AdminOverview } = require('./admin-overview.cjs');
 const http = require('node:http');
+const crypto = require('node:crypto');
 const { PlayerStore, inner, identity, telemetry } = require('./store.cjs');
 const { ConvoyRooms } = require('./convoy/rooms.cjs');
 const P = require('./convoy/protocol.cjs');
@@ -54,6 +55,15 @@ function createServer({ WebSocketServer, store, authorizeConvoy, log = console.e
         // Reserved messages must NEVER fall through to the global admin relay.
         if (doc.type === 'convoy.identify') {
           const old = identities.get(peer);
+          if (doc.version === 1 && doc.identityKind === 'native-session' && doc.player === undefined) {
+            // The relay, never a caller/native slot, chooses the identity. A
+            // second connection cannot claim it. Keep authorizeConvoy unchanged.
+            if (old && !P.nativePlayer(old)) { peer.close(1008, 'Identity refused'); return; }
+            const player = old || 'native:' + crypto.randomBytes(16).toString('hex');
+            identities.set(peer, player);
+            send(peer, { type: 'convoy.identity', version: 1, player });
+            return;
+          }
           if (doc.version !== 1 || !P.steam(doc.player) || (old && old !== doc.player)) { peer.close(1008, 'Identity refused'); return; }
           // Dedicated Convoy connections do not overwrite the complete player
           // telemetry row with an empty identity-only snapshot.
