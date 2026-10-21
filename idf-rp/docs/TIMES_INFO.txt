@@ -1,0 +1,65 @@
+FREQUENTATION DES PASSAGERS - times.xml
+
+Un fichier par carte et version, a cote de lines.xml :
+- maps/idf/Mode Bus/times.xml
+- maps/idf/Mode Bus/0.1.7/times.xml
+- maps/grandutopia/Mode Bus/times.xml
+
+<times default="0"> choisit le profil par defaut.
+<time uid="0"> definit un profil.
+Dans lines.xml, time="1" sur un route choisit le profil 1.
+Priorite : route.time, line.time, puis le profil default de times.xml.
+
+PROFIL NOCTILIEN (les deux catalogues IDF)
+Les lignes N11, N23 et N33 declarent time="noctilien" dans leur balise line.
+Exemple : <line uid="10011" linename="N11" time="noctilien" ...>
+Tous leurs trajets heritent de ce profil, sauf si un route definit son propre time.
+Le profil <time uid="noctilien"> se regle dans le times.xml du meme dossier :
+00:00 75 %, 00:30 100 %, 02:00 75 %, 03:00 50 %, 04:00 75 %,
+05:00 50 %, 05:30 25 %, 06:00 0 %, 23:00 25 %, 23:30 50 %.
+Il s'agit d'un reglage de jeu modifiable, pas d'un horaire commercial.
+Le taux nul de jour ne retire pas les passagers deja embarques.
+Les autres lignes gardent le profil de jour par defaut, uid="0".
+
+<hour uid="16.5" percentage="75" />
+Applique le niveau 75 % a partir de 16 h 30, jusqu'a la prochaine heure
+declaree. Le cycle recommence chaque jour. Avant la premiere heure declaree,
+la derniere plage de la veille s'applique.
+
+Le pourcentage suffit : l'ancien attribut range n'est plus utilise.
+- 25 % : ancien niveau d'heures creuses (bas de la fourchette de passagers).
+- 100 % : ancien niveau d'heures de pointe (haut de la fourchette).
+- Entre 25 et 100 : interpolation des deux niveaux.
+- 62.5 % : exactement a mi-chemin entre heures creuses et pointe.
+- Entre 0 et 25 : reduction proportionnelle du niveau creux.
+- Au-dessus de 100 : multiplication du niveau de pointe (200 = double).
+- 0 % : aucun nouveau groupe; la descente finale reste assuree.
+Les pourcentages admis vont de 0 a 1000.
+
+Exemple avec passengersMin=10 et passengersMax=50 :
+25 % -> tirage entre 10 et 12; 50 % -> entre 20 et 25;
+62.5 % -> entre 25 et 31; 75 % -> entre 30 et 37;
+100 % -> entre 40 et 50.
+Les bornes sont arrondies avant le tirage. Les petits effectifs et min=max
+conservent leurs fourchettes entre 25 et 100 %, comme dans les anciens modes.
+Ensuite passengerVariation s'applique comme avant.
+Un pourcentage nul reste nul, meme avec une variation positive.
+
+IDF utilise 25 % la nuit et en heures creuses, 100 % de 06:00 a 10:00
+et de 16:30 a 19:30, avec des paliers 50/75 % autour des pointes.
+Grand Utopia conserve ses deux profils horaires avec la meme echelle :
+ses valeurs inferieures a 25 reduisent le niveau creux, et celles superieures
+a 100 renforcent le niveau de pointe.
+L'heure est celle du service : jeu/Convoi, ou IRL si cette option est choisie.
+Un plan de passagers deja cree reste stable; seules les nouvelles generations
+utilisent la plage courante. Le Convoi partage les actions du joueur proprietaire,
+sans recalculer les effectifs chez les autres joueurs.
+
+Fichier manquant/invalide ou profil inconnu : regles IDF-RP historiques.
+Les profils sont recharges avec le catalogue; aucun emprunt a une autre carte.
+
+GIROUETTE - lines.xml
+girouetteOveride="Service Scolaire" sur un line remplace le texte de destination
+sur sa girouette et masque son badge, y compris en Convoi.
+Attribut absent ou vide : comportement automatique habituel.
+La destination du service, les arrets, le GPS et le Lumiplan restent inchanges.

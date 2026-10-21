@@ -15,15 +15,16 @@ class ConvoyRooms {
     const h = P.hello(raw); if (!h || !this.authorize(peer, h)) return false;
     // Rejoining the identical generation only refreshes roster/lease.
     const previous = this.peers.get(peer);
-    if (previous && previous.hello.room === h.room && previous.hello.player === h.player && previous.hello.instance === h.instance && previous.hello.assets === h.assets && previous.hello.clientId === h.clientId) {
+    if (previous && previous.hello.room === h.room && previous.hello.map === h.map && previous.hello.player === h.player && previous.hello.instance === h.instance && previous.hello.assets === h.assets && previous.hello.clientId === h.clientId) {
       previous.hello = h; previous.seen = this.now(); this.reconcile(previous.room, previous); return true;
     }
     this.leave(peer);
     if (this.peers.size >= this.maxPeers) return false;
-    let room = this.rooms.get(h.room);
+    const roomKey=h.room+':'+h.map;
+    let room = this.rooms.get(roomKey);
     if (!room) {
       if (this.rooms.size >= this.maxRooms) return false;
-      room = { id: h.room, epoch: crypto.randomUUID(), peers: new Map() }; this.rooms.set(h.room, room);
+      room = { id: roomKey, epoch: crypto.randomUUID(), peers: new Map() }; this.rooms.set(roomKey, room);
     }
     // An active identity cannot be stolen by another connection. The old lease
     // must end or its socket close before a reconnect can replace it.
@@ -34,9 +35,20 @@ class ConvoyRooms {
     return true;
   }
   permitted(a, b) {
-    return a !== b && a.room === b.room && a.hello.assets === b.hello.assets &&
+    return a !== b && a.room === b.room && a.hello.assets === b.hello.assets && a.hello.map === b.hello.map &&
       P.member(a.hello.roster, b.hello.player, b.hello.clientId) &&
       P.member(b.hello.roster, a.hello.player, a.hello.clientId);
+  }
+  catalogue(viewer) {
+    for(const q of viewer.room.peers.values()) if(this.permitted(viewer,q)&&q.state&&['bluebus','solaris','agora','evadys'].includes(q.state.profile))
+      this.emit(viewer.peer,{type:'convoy.bus',version:1,epoch:viewer.room.epoch,player:q.hello.player,clientId:q.hello.clientId,
+        instance:q.hello.instance,generation:q.state.generation,profile:q.state.profile,pose:q.state.pose,sequence:q.sequence,
+        ...(q.state.moverStops!==undefined?{moverStops:q.state.moverStops}:{})});
+  }
+  observer(p) {
+    if(p.state?.spectatorClient!==undefined) for(const q of p.room.peers.values())
+      if(q.hello.clientId===p.state.spectatorClient&&this.permitted(p,q)&&q.state&&q.state.profile!=='none')return q.state.pose;
+    return p.state?.pose;
   }
   consume(p) {
     const now = this.now(); p.tokens = Math.min(40, p.tokens + Math.max(0, now - p.tokenAt) * .025); p.tokenAt = now;
@@ -45,7 +57,7 @@ class ConvoyRooms {
   receive(peer, raw) {
     if (raw?.type === 'convoy.hello') return this.join(peer, raw);
     const p = this.peers.get(peer); if (!p || raw?.epoch !== p.room.epoch || !this.consume(p)) return false;
-    if (raw.type === 'convoy.ping') { p.seen = this.now(); this.emit(peer, { type: 'convoy.pong', version: 1, epoch: p.room.epoch, time: this.now() }); return true; }
+    if (raw.type === 'convoy.ping') { p.seen = this.now(); this.catalogue(p); this.emit(peer, { type: 'convoy.pong', version: 1, epoch: p.room.epoch, time: this.now() }); return true; }
     if (raw.type === 'convoy.leave') { this.leave(peer); return true; }
     if (raw.type === 'convoy.stop') {
       if (!p.state || !P.key(raw.stop) || raw.generation !== p.state.generation || Math.abs(p.state.speed) > .2 || p.state.doors[0] < .1) return false;
@@ -75,7 +87,7 @@ class ConvoyRooms {
       const e = P.event(raw); if (!e || !p.state || e.generation !== p.state.generation || e.sequence <= p.eventSequence || p.lastEvents.has(e.id)) return false;
       p.eventSequence = e.sequence; p.seen = this.now(); p.lastEvents.add(e.id);
       if (p.lastEvents.size > 128) p.lastEvents.delete(p.lastEvents.values().next().value);
-      for (const q of p.room.peers.values()) if (this.permitted(p, q) && q.state && P.distance(p.state.pose, q.state.pose) <= P.LIMITS.audioM)
+      for (const q of p.room.peers.values()) if (this.permitted(p, q) && q.state && P.distance(p.state.pose, this.observer(q)) <= P.LIMITS.audioM)
         this.emit(q.peer, { ...e, player: p.hello.player, clientId: p.hello.clientId, instance: p.hello.instance, at: this.now() });
       return true;
     }
@@ -83,6 +95,8 @@ class ConvoyRooms {
   }
   reconcile(room, changed) {
     const now = this.now();
+    for(const viewer of room.peers.values()) if(viewer.state?.spectatorClient===changed.hello.clientId)
+      for(const source of room.peers.values()) if(source!==viewer)this.reconcilePair(viewer,source,now);
     for (const peer of room.peers.values()) if (peer !== changed) {
       this.reconcilePair(changed, peer, now);
       this.reconcilePair(peer, changed, now);
@@ -90,7 +104,7 @@ class ConvoyRooms {
   }
   reconcilePair(viewer, source, now) {
     const room = viewer.room, id = source.hello.player, had = viewer.visible.has(id);
-    const d = source.state && viewer.state ? P.distance(source.state.pose, viewer.state.pose) : Infinity;
+    const d = source.state && viewer.state ? P.distance(source.state.pose, this.observer(viewer)) : Infinity;
     const show = this.permitted(viewer, source) && d <= (had ? P.LIMITS.leaveM : P.LIMITS.enterM);
     if (!show) {
       viewer.pending.delete(source);
@@ -101,7 +115,11 @@ class ConvoyRooms {
     if (last && last.sequence === source.sequence && last.lod === lod) { viewer.pending.delete(source); return; }
     viewer.pending.add(source);
     if (last && last.lod === lod && now - last.at < (lod === 'full' ? 50 : 250)) return;
-    const state = lod === 'full' ? source.state : { ...source.state, passengers: source.state.passengers.filter(p => p.stage === 'resident') };
+    // Reduced LOD lowers send frequency, not the action catalogue. Dropping
+    // walkers looked like their removal and left returning observers waiting
+    // for another action. Models remain distance-culled on the receiver.
+    const state = lod === 'full' || source.state.passengerMode === 'actions-v1' ? source.state :
+      { ...source.state, passengers: source.state.passengers.filter(p => p.stage === 'resident') };
     if (this.emit(viewer.peer, { ...state, player: id, clientId: source.hello.clientId, instance: source.hello.instance, lod, at: now })) {
       viewer.visible.add(id); viewer.sent.set(id, { sequence: source.sequence, lod, at: now }); viewer.pending.delete(source);
     }

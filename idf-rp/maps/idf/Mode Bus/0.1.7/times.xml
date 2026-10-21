@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<times default="0">
+  <time uid="0">
+    <hour uid="0" percentage="25" />
+    <hour uid="5" percentage="50" />
+    <hour uid="5.5" percentage="75" />
+    <hour uid="6" percentage="100" />
+    <hour uid="10" percentage="75" />
+    <hour uid="11" percentage="50" />
+    <hour uid="12" percentage="25" />
+    <hour uid="15" percentage="50" />
+    <hour uid="16" percentage="75" />
+    <hour uid="16.5" percentage="100" />
+    <hour uid="19.5" percentage="75" />
+    <hour uid="20.5" percentage="50" />
+    <hour uid="21.5" percentage="25" />
+  </time>
+
+
+  <time uid="noctilien">
+    <hour uid="0" percentage="75" />
+    <hour uid="0.5" percentage="100" />
+    <hour uid="2" percentage="75" />
+    <hour uid="3" percentage="50" />
+    <hour uid="4" percentage="75" />
+    <hour uid="5" percentage="50" />
+    <hour uid="5.5" percentage="25" />
+    <hour uid="6" percentage="25" />
+    <hour uid="23" percentage="25" />
+    <hour uid="23.5" percentage="50" />
+  </time>
+</times>

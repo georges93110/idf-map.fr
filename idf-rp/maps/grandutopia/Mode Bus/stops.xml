@@ -1,0 +1,2614 @@
+<?xml version="1.0" encoding="utf-8"?>
+<busstops>
+  <busstop>
+    <id>1</id>
+    <name>Utopia Centre Ville (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-196934;4.98614;-49115.1;2.27122;-0.0114182</location>
+  </busstop>
+  <busstop>
+    <id>2</id>
+    <name>Utopia Centre Ville (busstation 13)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-196908;4.98997;-49129.7;0.262547;8.86917e-05</location>
+  </busstop>
+  <busstop>
+    <id>3</id>
+    <name>Utopia Centre Ville (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-196935;4.98699;-49120.5;2.37708;-0.000269715</location>
+  </busstop>
+  <busstop>
+    <id>4</id>
+    <name>Utopia Centre Ville (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-196936;4.98761;-49125.2;2.37315;-0.000380341</location>
+  </busstop>
+  <busstop>
+    <id>5</id>
+    <name>Louchartville (airport station, behind bus)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200554;9.98546;-55611.5;-2.42023;0.000680447</location>
+  </busstop>
+  <busstop>
+    <id>6</id>
+    <name>Louchartville (airport entrance, behind bus)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200500;9.98326;-55583.7;0.754573;-0.00148851</location>
+  </busstop>
+  <busstop>
+    <id>7</id>
+    <name>Louchartville (route de pavin, for 50 sign)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200512;9.00131;-54803.4;-2.52744;-9.23316e-05</location>
+  </busstop>
+  <busstop>
+    <id>8</id>
+    <name>Louchartville (route de pavin, to bridge)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200563;8.96788;-54818.9;-0.843617;0.00365734</location>
+  </busstop>
+  <busstop>
+    <id>9</id>
+    <name>Utopia Croix Blanche (avenue nationale, blue building)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-200552;3.35388;-54198.6;-2.86809;0.000415802</location>
+  </busstop>
+  <busstop>
+    <id>10</id>
+    <name>Utopia Croix Blanche (avenue nationale, yellow building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200539;3.35295;-54211.3;0.271523;-0.000593964</location>
+  </busstop>
+  <busstop>
+    <id>11</id>
+    <name>Utopia Croix Blanche (croix blanche, statue)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200293;11.3512;-53464;0.587278;-0.000671212</location>
+  </busstop>
+  <busstop>
+    <id>12</id>
+    <name>Utopia Croix Blanche (croix blanche, trees)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200299;11.3473;-53449.9;-2.39897;0.000852585</location>
+  </busstop>
+  <busstop>
+    <id>13</id>
+    <name>Utopia Croix Blanche (petit coeur, blue bulding)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-200061;11.3385;-53595;2.88364;0.311155</location>
+  </busstop>
+  <busstop>
+    <id>14</id>
+    <name>Utopia Croix Blanche (Petit Coeur, beton bulding)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-199976;11.3505;-53662.7;-0.210873;-0.000595872</location>
+  </busstop>
+  <busstop>
+    <id>17</id>
+    <name>Utopia Croix blanche (avenue des etats unis, from roundabout)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-199708;4.27963;-54274.6;-0.0467194;-0.0020836</location>
+  </busstop>
+  <busstop>
+    <id>18</id>
+    <name>Utopia Croix blanche (avenue des etats unis, to roundabout)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-199726;4.30273;-54267;3.09149;0.00197887</location>
+  </busstop>
+  <busstop>
+    <id>20</id>
+    <name>Utopia Stade (quai carnot, sea)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197432;0.989815;-51806.5;-0.873481;0.00179577</location>
+  </busstop>
+  <busstop>
+    <id>21</id>
+    <name>Utopia Stade (rue de la graille, mammouth)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198106;8.9389;-52969.1;-1.00285;-0.00025541</location>
+  </busstop>
+  <busstop>
+    <id>22</id>
+    <name>Utopia Stade (rue de la graille, trailer parking)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-198118;8.94163;-52970.3;2.13781;0.000640869</location>
+  </busstop>
+  <busstop>
+    <id>23</id>
+    <name>Utopia Stade (hendrik buslines 1, trees)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198301;8.93703;-53022.9;-1.02701;0.00118208</location>
+  </busstop>
+  <busstop>
+    <id>24</id>
+    <name>Utopia Stade (square poncillon, busses)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197927;10.2138;-52382.1;1.21988;-7.99338e-05</location>
+  </busstop>
+  <busstop>
+    <id>25</id>
+    <name>Utopia Stade (square poncillon, green building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197924;10.2031;-52373.7;-1.91518;0.000433922</location>
+  </busstop>
+  <busstop>
+    <id>26</id>
+    <name>Utopia Stade (stade marcel michelin field trees)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-197428;10.2178;-52140.4;-1.91724;-0.000148598</location>
+  </busstop>
+  <busstop>
+    <id>27</id>
+    <name>Utopia Stade (stade marcel michelin entree)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197429;10.21;-52160.2;1.21146;-0.000656907</location>
+  </busstop>
+  <busstop>
+    <id>29</id>
+    <name>Utopia Stade (quai carnot blue house)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-197437;0.993998;-51811.8;2.26556;-0.00134927</location>
+  </busstop>
+  <busstop>
+    <id>30</id>
+    <name>Utopia Stade (magic roundabout, flats)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197838;10.3103;-52076.9;0.652743;0.000718117</location>
+  </busstop>
+  <busstop>
+    <id>31</id>
+    <name>Utopia Centre Ville (magic roundabout, building with pilars)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197845;10.311;-52052.6;-2.51431;0.000329018</location>
+  </busstop>
+  <busstop>
+    <id>32</id>
+    <name>Utopia Stade (tour mygodness, stop with people)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198203;12.6951;-51850.8;2.18405;0.00270033</location>
+  </busstop>
+  <busstop>
+    <id>33</id>
+    <name>Utopia Stade (tour mygodness, stop without people)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-198197;12.7221;-51833.3;-0.940264;-0.00121195</location>
+  </busstop>
+  <busstop>
+    <id>34</id>
+    <name>Utopia Stade (avenue de l'europe nord, turkisch flag)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198342;6.68399;-51146.5;-2.51362;0.000769615</location>
+  </busstop>
+  <busstop>
+    <id>35</id>
+    <name>Utopia Stade (avenue de l'europe nord russian flag)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198327;6.67663;-51156.8;0.617509;-0.00248224</location>
+  </busstop>
+  <busstop>
+    <id>36</id>
+    <name>Utopia Stade (avenue de l'europe Sud (german flag)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198026;6.93612;-50734.6;0.628278;-0.00191194</location>
+  </busstop>
+  <busstop>
+    <id>37</id>
+    <name>Utopia Stade (avenue de l'europe sud, tsjech flag)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-198039;6.9307;-50722.6;-2.51573;0.00117302</location>
+  </busstop>
+  <busstop>
+    <id>38</id>
+    <name>Utopia Centre Ville (sainte charline, black building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197805;4.98613;-49950.8;0.946175;-0.000225846</location>
+  </busstop>
+  <busstop>
+    <id>39</id>
+    <name>Utopia Centre Ville (sainte charline, church)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197869;4.98512;-49974.5;-2.19788;-0.000109498</location>
+  </busstop>
+  <busstop>
+    <id>40</id>
+    <name>Utopia Centre Ville (casino royal, statue birds/fish)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197424;4.98654;-49049;1.05028;0.000576973</location>
+  </busstop>
+  <busstop>
+    <id>41</id>
+    <name>Utopia Centre Ville (casino royal, buildings)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197427;4.97745;-49030.2;-2.07301;0.000312328</location>
+  </busstop>
+  <busstop>
+    <id>42</id>
+    <name>Utopia Centre Ville (Marina, from harbour)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-198327;5.06039;-48958.2;1.19063;0.00438833</location>
+  </busstop>
+  <busstop>
+    <id>43</id>
+    <name>Utopia Centre Ville (marina, to harbour)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198381;5.01765;-48805.6;-1.96816;-0.00346071</location>
+  </busstop>
+  <busstop>
+    <id>44</id>
+    <name>Utopia Centre Ville (under bridge from tunnel)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198382;4.99179;-48677.1;-0.399111;0.00111961</location>
+  </busstop>
+  <busstop>
+    <id>45</id>
+    <name>Utopia Centre Ville (under bridge to tunnel)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198399;4.98721;-48679.6;2.74204;0.000435829</location>
+  </busstop>
+  <busstop>
+    <id>46</id>
+    <name>Utopia Centre Ville (cathedral, building with garden)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-198858;13.0067;-49182.2;1.15078;0.0338292</location>
+  </busstop>
+  <busstop>
+    <id>47</id>
+    <name>Utopia Centre Ville (cathedral, building without garden)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198917;12.9521;-49037.4;-1.98196;-0.0332783</location>
+  </busstop>
+  <busstop>
+    <id>48</id>
+    <name>Utopia Centre Ville (avenue gouverneur, attransports)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-199675;28.9792;-49455.8;1.16929;-0.0210884</location>
+  </busstop>
+  <busstop>
+    <id>49</id>
+    <name>Utopia Centre Ville (Avenue Gouverneur, grey buildings)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-199670;29.2513;-49434.5;-1.97256;0.103205</location>
+  </busstop>
+  <busstop>
+    <id>50</id>
+    <name>Utopia Croix Blanche (rue de missandre, church)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-200268;14.0356;-50325.1;0.683815;-0.0383061</location>
+  </busstop>
+  <busstop>
+    <id>51</id>
+    <name>Utopia Croix Blanche (rue de missandre, bridge site)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200265;14.5499;-50310.1;-2.44904;0.0387092</location>
+  </busstop>
+  <busstop>
+    <id>52</id>
+    <name>Utopia Clermont (enois)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200576;-1.00641;-50881.3;0.575354;-0.00143987</location>
+  </busstop>
+  <busstop>
+    <id>53</id>
+    <name>Gerzat (park)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200924;1.98541;-51685.3;1.89943;0.000902653</location>
+  </busstop>
+  <busstop>
+    <id>54</id>
+    <name>Gerzat (renar entrance)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-201061;1.98093;-51625.1;-1.20634;-0.00138456</location>
+  </busstop>
+  <busstop>
+    <id>57</id>
+    <name>Montmorillon (busstation 11)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208070;1.48415;-57042.2;2.6683;-0.00032026</location>
+  </busstop>
+  <busstop>
+    <id>58</id>
+    <name>Montmorillon (busstation 13)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208061;1.48195;-57060.8;2.64688;-0.000101868</location>
+  </busstop>
+  <busstop>
+    <id>59</id>
+    <name>Neyland (wooden statue)</name>
+    <zone>U1</zone>
+    <requestStop>false</requestStop>
+    <location>-201318;30.7613;-47309.8;2.36478;0.000109673</location>
+  </busstop>
+  <busstop>
+    <id>60</id>
+    <name>Neyland (buildings with tree)</name>
+    <zone>U1</zone>
+    <requestStop>false</requestStop>
+    <location>-201299;30.7678;-47304.8;-0.777373;-0.000462357</location>
+  </busstop>
+  <busstop>
+    <id>61</id>
+    <name>Utopia Zone Portauire (stop by bar)</name>
+    <zone>U1</zone>
+    <requestStop>false</requestStop>
+    <location>-194292;6.94391;-47452.2;2.95711;0.00110006</location>
+  </busstop>
+  <busstop>
+    <id>62</id>
+    <name>Utopia Zone Portauire (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-194253;6.93574;-47456;1.37486;9.53674e-07</location>
+  </busstop>
+  <busstop>
+    <id>63</id>
+    <name>Utopia Zone Portauire (busstation 2)</name>
+    <zone>U1</zone>
+    <requestStop>false</requestStop>
+    <location>-194270;6.93666;-47459.3;1.3818;-0.000597779</location>
+  </busstop>
+  <busstop>
+    <id>64</id>
+    <name>Krautersgerheim (statue)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-191322;9.98695;-48525.7;-1.93358;-0.000695054</location>
+  </busstop>
+  <busstop>
+    <id>65</id>
+    <name>Krautersgerheim (beach)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-191321;9.99445;-48532.4;1.21607;0.0696406</location>
+  </busstop>
+  <busstop>
+    <id>66</id>
+    <name>Port Aelvingue (house green roof)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-196259;8.34151;-45469;-2.43881;0.0376525</location>
+  </busstop>
+  <busstop>
+    <id>67</id>
+    <name>Port Aelvingue (house red roof)</name>
+    <zone>U1</zone>
+    <requestStop>false</requestStop>
+    <location>-196255;8.1764;-45474.7;0.707322;-0.0380867</location>
+  </busstop>
+  <busstop>
+    <id>68</id>
+    <name>Maringues (to eco)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-196133;3.62049;-46832.5;-0.182179;0.000893116</location>
+  </busstop>
+  <busstop>
+    <id>69</id>
+    <name>Maringues (beach)</name>
+    <zone>U1</zone>
+    <requestStop>false</requestStop>
+    <location>-196146;3.63061;-46848.9;-3.09093;-0.00166208</location>
+  </busstop>
+  <busstop>
+    <id>70</id>
+    <name>Meulan (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-187193;27.9877;-46376.1;2.82198;-1.03156e-05</location>
+  </busstop>
+  <busstop>
+    <id>71</id>
+    <name>Meulan (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-187174;27.9852;-46371.1;2.81846;9.58443e-05</location>
+  </busstop>
+  <busstop>
+    <id>72</id>
+    <name>Maisnil-Les-Libercourt (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-193188;62.6903;-42853.3;-2.13171;0.000745296</location>
+  </busstop>
+  <busstop>
+    <id>73</id>
+    <name>Courfeyrac (mountain)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-204741;123.985;-44698.9;1.38295;0.000264645</location>
+  </busstop>
+  <busstop>
+    <id>74</id>
+    <name>Courfeyrac (sea)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-204762;123.989;-44687.8;-1.79123;3.00407e-05</location>
+  </busstop>
+  <busstop>
+    <id>75</id>
+    <name>Alingsas (to church)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208089;99.9868;-43648.6;0.58944;0.0637526</location>
+  </busstop>
+  <busstop>
+    <id>76</id>
+    <name>Alingsas (town out)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208078;97.949;-43617.1;-2.63457;-0.0631664</location>
+  </busstop>
+  <busstop>
+    <id>77</id>
+    <name>Lavernay (from tunnel)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-205493;531.635;-47618.9;-1.46388;0.00898266</location>
+  </busstop>
+  <busstop>
+    <id>78</id>
+    <name>Lavernay (to tunnel)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-205497;531.605;-47625.5;1.68068;-0.0103138</location>
+  </busstop>
+  <busstop>
+    <id>79</id>
+    <name>Le Paradis (busstop by statue)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208895;1280.66;-50822.3;0.794833;-3.63985e-06</location>
+  </busstop>
+  <busstop>
+    <id>80</id>
+    <name>Poix du Nord (church)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210593;50.9557;-53877.3;-0.157723;-0.000477616</location>
+  </busstop>
+  <busstop>
+    <id>81</id>
+    <name>Poix du Nord (playground)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210618;50.9357;-53767.4;2.98601;0.000561237</location>
+  </busstop>
+  <busstop>
+    <id>82</id>
+    <name>Larzac (house two stairs)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213851;14.0715;-53394.6;-3.09495;0.000442505</location>
+  </busstop>
+  <busstop>
+    <id>83</id>
+    <name>Larzac (house one stair)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213843;14.0752;-53380.9;0.0219321;0.000975132</location>
+  </busstop>
+  <busstop>
+    <id>84</id>
+    <name>Gravouland (cranes)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213241;14.0731;-54584;-0.0298622;-0.000664536</location>
+  </busstop>
+  <busstop>
+    <id>85</id>
+    <name>Gravouland (houses)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213250;14.0688;-54594.8;3.10586;-0.000567261</location>
+  </busstop>
+  <busstop>
+    <id>86</id>
+    <name>Vierge-du-lac (busstop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213870;5.2571;-49240.9;2.39207;-0.000901047</location>
+  </busstop>
+  <busstop>
+    <id>87</id>
+    <name>Malterre (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217611;64.9583;-57331.1;-0.571843;-0.000374619</location>
+  </busstop>
+  <busstop>
+    <id>88</id>
+    <name>Utopia Centre Ville (gare routiere, from roundabout)</name>
+    <zone>U</zone>
+    <requestStop>false</requestStop>
+    <location>-196986;4.98422;-49130.1;0.258203;0.000984192</location>
+  </busstop>
+  <busstop>
+    <id>89</id>
+    <name>Utopia Centre Ville (gare routiere, to roundabout)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197001;5.00503;-49118.4;-2.88386;0.00359964</location>
+  </busstop>
+  <busstop>
+    <id>90</id>
+    <name>Malterre (avenue blaise pascal, fcp)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217530;64.7201;-57557.6;0.187952;-0.0054825</location>
+  </busstop>
+  <busstop>
+    <id>91</id>
+    <name>Malterre (avenue blaise pascal, high building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217545;64.8117;-57539;-2.94656;0.00715971</location>
+  </busstop>
+  <busstop>
+    <id>92</id>
+    <name>Malterre (route de dolan, railroad tracks)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218084;64.6529;-57431.9;2.90564;-0.000778977</location>
+  </busstop>
+  <busstop>
+    <id>93</id>
+    <name>Malterre (route de dolan, cesare supermercato)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218077;64.6546;-57428.9;-0.239775;0.000251293</location>
+  </busstop>
+  <busstop>
+    <id>94</id>
+    <name>Malterre (jovana, corner building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218154;68.3686;-56867.5;-2.58047;0.000192642</location>
+  </busstop>
+  <busstop>
+    <id>95</id>
+    <name>Malterre (jovana, building with balkon)</name>
+    <zone>M</zone>
+    <requestStop>false</requestStop>
+    <location>-218108;68.3679;-56802.8;0.547201;-0.000453774</location>
+  </busstop>
+  <busstop>
+    <id>96</id>
+    <name>Malterre (alexandre dumas, statues)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218005;71.7763;-56469.3;-1.49632;-0.000412766</location>
+  </busstop>
+  <busstop>
+    <id>97</id>
+    <name>Malterre (alexandre dumas, flats)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218005;71.7718;-56475;1.64532;0.00133991</location>
+  </busstop>
+  <busstop>
+    <id>98</id>
+    <name>Malterre (les 6 routes glass building)</name>
+    <zone>M</zone>
+    <requestStop>false</requestStop>
+    <location>-218374;72.0086;-56277.4;0.322489;-0.000229661</location>
+  </busstop>
+  <busstop>
+    <id>99</id>
+    <name>Malterre (les 6 routes building with car parked)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218395;72.0061;-56271;-2.81869;-0.00105554</location>
+  </busstop>
+  <busstop>
+    <id>100</id>
+    <name>Malterre (flats)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217895;64.6702;-57349.3;-1.79959;-0.000176255</location>
+  </busstop>
+  <busstop>
+    <id>101</id>
+    <name>Malterre (behind cesare supermecato)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217919;64.6659;-57363;1.31269;0.000481129</location>
+  </busstop>
+  <busstop>
+    <id>102</id>
+    <name>Malterre (margeride, playground)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218594;53.6643;-55610.7;-2.91944;0.00382709</location>
+  </busstop>
+  <busstop>
+    <id>103</id>
+    <name>Malterre (margeride, grassfield with trees)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218569;53.6809;-55601.7;0.174593;-0.000498597</location>
+  </busstop>
+  <busstop>
+    <id>104</id>
+    <name>Malterre (centre commercial sud, parking supermarkt)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218618;53.9121;-55210.7;-2.94293;0.00326633</location>
+  </busstop>
+  <busstop>
+    <id>105</id>
+    <name>Malterre (centre commercial sud, parking flats)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218611;53.908;-55212.6;0.217983;-0.00336343</location>
+  </busstop>
+  <busstop>
+    <id>106</id>
+    <name>Malterre, (chateau dauphin, green building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218199;55.0405;-55017.1;1.77925;-0.00697786</location>
+  </busstop>
+  <busstop>
+    <id>107</id>
+    <name>Malterre, Chateau Dauphin (parking shops)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218198;55.0359;-55011.8;-1.38839;0.007267</location>
+  </busstop>
+  <busstop>
+    <id>108</id>
+    <name>Malterre (route de kenzie, grass field)</name>
+    <zone>M</zone>
+    <requestStop>false</requestStop>
+    <location>-217377;68.2396;-55042.6;-1.89449;-0.000472848</location>
+  </busstop>
+  <busstop>
+    <id>109</id>
+    <name>Malterre (route de kenzie, fence)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217415;68.2435;-55063.8;1.23011;0.00122452</location>
+  </busstop>
+  <busstop>
+    <id>110</id>
+    <name>Saint-Flour (castle wall)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218581;57.7321;-53655.3;-2.51924;-0.0104635</location>
+  </busstop>
+  <busstop>
+    <id>111</id>
+    <name>Saint-Flour (gardens)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218557;57.7364;-53652;0.666059;-0.0125511</location>
+  </busstop>
+  <busstop>
+    <id>112</id>
+    <name>Saint-Flour (les lilas, from mill/roundabout)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217658;62.2027;-52715.6;-1.23336;-0.0319374</location>
+  </busstop>
+  <busstop>
+    <id>113</id>
+    <name>Saint-Flour (les lilas, to mill/roundabout)</name>
+    <zone>M1</zone>
+    <requestStop>false</requestStop>
+    <location>-217705;63.304;-52713.3;-1.04719;0.0860734</location>
+  </busstop>
+  <busstop>
+    <id>114</id>
+    <name>Chambret (garage)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217475;65.4862;-50780.1;3.12624;-0.000381295</location>
+  </busstop>
+  <busstop>
+    <id>115</id>
+    <name>Chambret (shelter)</name>
+    <zone>M1</zone>
+    <requestStop>false</requestStop>
+    <location>-217459;65.4845;-50791.1;-0.022249;-0.00103265</location>
+  </busstop>
+  <busstop>
+    <id>116</id>
+    <name>Kenzie (silo's)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217303;65.0499;-53801.9;-0.171998;-0.00698167</location>
+  </busstop>
+  <busstop>
+    <id>117</id>
+    <name>Kenzie (grassfield)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217328;64.9887;-53889.4;-2.51251;-0.000479523</location>
+  </busstop>
+  <busstop>
+    <id>118</id>
+    <name>Chambret (le patelin, white house)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217969;58.893;-48750.4;1.24695;0.00168467</location>
+  </busstop>
+  <busstop>
+    <id>119</id>
+    <name>Chambret (le patelin, stone house)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217985;58.893;-48747.4;-1.88194;0.00124645</location>
+  </busstop>
+  <busstop>
+    <id>120</id>
+    <name>Chalezeule (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220056;24.35;-47544.5;0.136278;-0.000882928</location>
+  </busstop>
+  <busstop>
+    <id>121</id>
+    <name>Saint-Angel (pont gruppengrille)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220428;210.493;-44482.1;2.80253;0.0301137</location>
+  </busstop>
+  <busstop>
+    <id>123</id>
+    <name>Saint-Angel (oil, stone wall)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220552;211.041;-43942.5;-1.74594;-0.000382249</location>
+  </busstop>
+  <busstop>
+    <id>124</id>
+    <name>Saint-Angel (nucleon, right of roundabout)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218574;-113.413;-44816.2;-1.83374;0.00086689</location>
+  </busstop>
+  <busstop>
+    <id>125</id>
+    <name>Krewit (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222342;45.9838;-58022.4;-3.10843;0.000601292</location>
+  </busstop>
+  <busstop>
+    <id>126</id>
+    <name>Krewit (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222341;45.9807;-58008.5;-3.1178;-0.000475709</location>
+  </busstop>
+  <busstop>
+    <id>127</id>
+    <name>Krewit (traffic lights)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222381;46.2898;-57585.6;0.345112;0.000221252</location>
+  </busstop>
+  <busstop>
+    <id>128</id>
+    <name>Krewit (busstop D15)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-221786;56.0061;-59079.1;0.473475;0.0504675</location>
+  </busstop>
+  <busstop>
+    <id>129</id>
+    <name>Chavanon (castle)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-224033;46.0166;-58973;1.67363;-0.000733201</location>
+  </busstop>
+  <busstop>
+    <id>130</id>
+    <name>Saint-Benoit (VRM Oil)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229028;4.50164;-59017;-2.41704;0.000259876</location>
+  </busstop>
+  <busstop>
+    <id>133</id>
+    <name>Saint-Benoit (hotel, no official stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-226569;311.633;-58468.9;-1.87122;-0.0229633</location>
+  </busstop>
+  <busstop>
+    <id>134</id>
+    <name>Saint-Benoit (skypark platform end, no official stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-227497;520.529;-58643.8;1.34447;0.00180817</location>
+  </busstop>
+  <busstop>
+    <id>135</id>
+    <name>Saint-Benoit (skypark white house, no official stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-227440;520.53;-58623.1;2.87774;0.000586987</location>
+  </busstop>
+  <busstop>
+    <id>136</id>
+    <name>Jean-du-Bartail (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-226774;9.98803;-54113.8;1.19812;0.000563622</location>
+  </busstop>
+  <busstop>
+    <id>139</id>
+    <name>Jean du Bartail (busstop D13,wooden stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-226173;25.5967;-55692.2;0.50111;0.0259266</location>
+  </busstop>
+  <busstop>
+    <id>140</id>
+    <name>Jean du Bartail (busstop D13,  stop by tree)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-226203;25.9141;-55709.1;2.86879;-0.0373772</location>
+  </busstop>
+  <busstop>
+    <id>141</id>
+    <name>Gebbbe du Montargis (busstation stop 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-228007;0.999856;-53945.4;-1.26449;0.000683308</location>
+  </busstop>
+  <busstop>
+    <id>142</id>
+    <name>Gebbbe du Montargis industial zone (first stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-227899;19.9796;-52404.7;3.02548;-0.000626389</location>
+  </busstop>
+  <busstop>
+    <id>143</id>
+    <name>Gebbbe du Montargis industial zone (last stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-227902;19.992;-52377.2;3.01058;-0.00145036</location>
+  </busstop>
+  <busstop>
+    <id>144</id>
+    <name>Tours (oval building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-234379;9.69537;-56740.1;-0.720546;-0.000979249</location>
+  </busstop>
+  <busstop>
+    <id>145</id>
+    <name>Tours (parking garage)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-234368;9.69002;-56780.6;2.44358;-0.000674073</location>
+  </busstop>
+  <busstop>
+    <id>146</id>
+    <name>Eilmont (busstation first stop, parking)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-233323;2.97712;-52722.1;2.97528;-0.0003956</location>
+  </busstop>
+  <busstop>
+    <id>147</id>
+    <name>Eilmont (busstation second stop, parking)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-233326;2.99164;-52701.1;3.00187;-0.00051767</location>
+  </busstop>
+  <busstop>
+    <id>150</id>
+    <name>Baie du Chien (kaarfor)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-230169;0.987107;-56441.8;2.3589;-0.000200097</location>
+  </busstop>
+  <busstop>
+    <id>151</id>
+    <name>Ghyvelde (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-212977;7.85485;-59311.8;3.08688;0.000321388</location>
+  </busstop>
+  <busstop>
+    <id>152</id>
+    <name>Saint-Vaury (flat)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-214810;4.54549;-60057.7;-3.08924;8.72612e-05</location>
+  </busstop>
+  <busstop>
+    <id>153</id>
+    <name>Saint-Vaury (bungalow)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-214791;4.5497;-59974.3;0.0563335;-0.000922028</location>
+  </busstop>
+  <busstop>
+    <id>154</id>
+    <name>Montchaux-Soreng (grass field)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-214644;55.9881;-58417.1;-1.55185;-0.000132386</location>
+  </busstop>
+  <busstop>
+    <id>155</id>
+    <name>Montchaux-Soreng (tree field)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-214656;55.9877;-58434.2;1.56162;-0.00203973</location>
+  </busstop>
+  <busstop>
+    <id>156</id>
+    <name>Dolan-sur-Mer (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-219747;13.056;-61254.4;-0.0814217;9.58443e-05</location>
+  </busstop>
+  <busstop>
+    <id>157</id>
+    <name>Château d'Ours (fle)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218108;6.44963;-64410.7;2.02115;-0.00036699</location>
+  </busstop>
+  <busstop>
+    <id>158</id>
+    <name>La Josefine (pink building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-221767;120.151;-67094.8;-1.98217;-0.00763113</location>
+  </busstop>
+  <busstop>
+    <id>161</id>
+    <name>Ville Marie (blue shelter)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-216257;103.878;-58945.9;-1.29086;0.00245237</location>
+  </busstop>
+  <busstop>
+    <id>162</id>
+    <name>Ville Marie (trees)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-216282;103.707;-58948.4;1.72272;-0.00724107</location>
+  </busstop>
+  <busstop>
+    <id>164</id>
+    <name>Monteil (to bridge)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213694;10.3209;-44082.8;0.500401;0.0121775</location>
+  </busstop>
+  <busstop>
+    <id>165</id>
+    <name>Monteil (from bridge)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213698;10.2451;-44073.4;-2.64213;-0.0111025</location>
+  </busstop>
+  <busstop>
+    <id>166</id>
+    <name>Gavrouche (farm)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-214389;28.1618;-40250.6;0.31957;0.000491142</location>
+  </busstop>
+  <busstop>
+    <id>167</id>
+    <name>Gavrouche (house)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-214405;28.1564;-40238.7;-2.85948;0.000263214</location>
+  </busstop>
+  <busstop>
+    <id>168</id>
+    <name>Lafalaise (busstation, stop 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213378;59.8673;-38233.4;1.0352;0.000160694</location>
+  </busstop>
+  <busstop>
+    <id>169</id>
+    <name>Bausel (first stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-214243;28.2375;-35793.6;-1.37107;-0.000971619</location>
+  </busstop>
+  <busstop>
+    <id>170</id>
+    <name>Montbois (parking place)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217608;26.7675;-39182.6;-0.365195;-0.00193864</location>
+  </busstop>
+  <busstop>
+    <id>171</id>
+    <name>Legrotas (big tree)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217389;47.9906;-36468.2;2.39905;0.000937462</location>
+  </busstop>
+  <busstop>
+    <id>172</id>
+    <name>Legrotas (field with little trees)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217383;47.9965;-36464.5;-0.757139;-0.00150758</location>
+  </busstop>
+  <busstop>
+    <id>173</id>
+    <name>Nouillorc (park with trees)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218577;29.9867;-34057.1;0.213222;-2.74817e-05</location>
+  </busstop>
+  <busstop>
+    <id>174</id>
+    <name>Clerlande (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215583;69.8418;-34141.7;-1.21234;0.000314236</location>
+  </busstop>
+  <busstop>
+    <id>175</id>
+    <name>Castelnoir (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>223813;9.92327;-36567.9;-0.177136;-5.79993e-05</location>
+  </busstop>
+  <busstop>
+    <id>176</id>
+    <name>Sainte-Agnes (building with garage)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220741;15.1243;-36169;-0.100507;0.00071764</location>
+  </busstop>
+  <busstop>
+    <id>177</id>
+    <name>Sainte-Agnes (blue warehouse)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220752;15.1341;-36165.2;3.0432;0.00138903</location>
+  </busstop>
+  <busstop>
+    <id>178</id>
+    <name>La Palmyre (white bungalow, first)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-221592;10.5354;-34806.3;-0.012492;0.000873566</location>
+  </busstop>
+  <busstop>
+    <id>179</id>
+    <name>La Palmyre (bulding with tractors)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222258;9.32434;-34498;1.07586;0.000558853</location>
+  </busstop>
+  <busstop>
+    <id>180</id>
+    <name>Saint-Sylvestre-Cappel (busstop 11)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215592;29.2413;-31775.6;3.02311;0.000720501</location>
+  </busstop>
+  <busstop>
+    <id>181</id>
+    <name>Saint-Sylvestre-Cappel (busstop 12)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215591;29.2368;-31785.2;3.02318;0.000920296</location>
+  </busstop>
+  <busstop>
+    <id>182</id>
+    <name>Saint-Sylvestre-Cappel (busstop 13)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215590;29.2414;-31794.4;3.02327;-0.00193864</location>
+  </busstop>
+  <busstop>
+    <id>183</id>
+    <name>Saint-Sylvestre-Cappel (busstop 14)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215589;29.2553;-31803.9;3.02214;-0.00140745</location>
+  </busstop>
+  <busstop>
+    <id>184</id>
+    <name>Saint-Sylvestre-Cappel (busstop 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215561;29.248;-31798.2;-1.14409;0.000173092</location>
+  </busstop>
+  <busstop>
+    <id>185</id>
+    <name>Sulikow (parking mammouth)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213878;108.45;-31724.6;-1.99801;-0.000773255</location>
+  </busstop>
+  <busstop>
+    <id>186</id>
+    <name>Sulikow (building entrance)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213857;108.447;-31723.5;1.15936;-0.000717942</location>
+  </busstop>
+  <busstop>
+    <id>187</id>
+    <name>Courpiere (cesta)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217644;42.0254;-28191.5;2.31217;-0.000449006</location>
+  </busstop>
+  <busstop>
+    <id>188</id>
+    <name>Courpiere (carwash)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217646;42.0216;-28197.3;-0.834582;-0.000875298</location>
+  </busstop>
+  <busstop>
+    <id>189</id>
+    <name>Chaseville (cargotras)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218621;55.9915;-26632.9;0.970473;0.00136089</location>
+  </busstop>
+  <busstop>
+    <id>190</id>
+    <name>Chaseville (recruitment office)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218624;55.9843;-26625.6;-2.1763;-0.00126344</location>
+  </busstop>
+  <busstop>
+    <id>192</id>
+    <name>Sainte-Sur-Marie-Mer (statue with trees)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-219432;34.5942;-25226;-0.913438;-0.0240887</location>
+  </busstop>
+  <busstop>
+    <id>193</id>
+    <name>Denver (houses, against traffic)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220955;1.33085;-28132.6;1.28232;0.000262737</location>
+  </busstop>
+  <busstop>
+    <id>194</id>
+    <name>Denver (sea, against traffic)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220959;1.32936;-28125.2;-1.83981;0.000699043</location>
+  </busstop>
+  <busstop>
+    <id>197</id>
+    <name>Pontiac (mill)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213810;29.6309;-24313.3;-1.50213;-0.000456635</location>
+  </busstop>
+  <busstop>
+    <id>198</id>
+    <name>Pontiac (garage)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213819;29.6287;-24330.5;1.63472;-0.000245873</location>
+  </busstop>
+  <busstop>
+    <id>199</id>
+    <name>Chirac (cars/tree)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213593;66.988;-27036.2;1.78799;0.000175476</location>
+  </busstop>
+  <busstop>
+    <id>200</id>
+    <name>Chirac (houses)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213604;66.9947;-27026;-1.34614;0.000598907</location>
+  </busstop>
+  <busstop>
+    <id>201</id>
+    <name>Egeskov (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-209558;48.698;-26446.9;0.285799;0.000534058</location>
+  </busstop>
+  <busstop>
+    <id>202</id>
+    <name>Egeskov (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-209542;48.701;-26450.3;0.290819;-0.000842873</location>
+  </busstop>
+  <busstop>
+    <id>203</id>
+    <name>Egeskov (church stop 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-209585;48.8626;-26529.9;0.614985;2.81334e-05</location>
+  </busstop>
+  <busstop>
+    <id>204</id>
+    <name>Egeskov (church stop 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-209597;48.8637;-26538.6;1.3464;-0.00190336</location>
+  </busstop>
+  <busstop>
+    <id>206</id>
+    <name>Salininkai (D5/D32 to Iliffe)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213864;2.08413;-22148.4;-1.6614;0.00132656</location>
+  </busstop>
+  <busstop>
+    <id>207</id>
+    <name>Salininkai (D32 to Pontiac, no official stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213953;2.08332;-22187.7;1.40815;-0.00504381</location>
+  </busstop>
+  <busstop>
+    <id>208</id>
+    <name>Salininkai (beach)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213834;6.57781;-19554.3;0.041666;-2.17597e-05</location>
+  </busstop>
+  <busstop>
+    <id>211</id>
+    <name>IIiffe (glass building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-211896;4.98507;-21199.1;1.99727;-0.000563447</location>
+  </busstop>
+  <busstop>
+    <id>212</id>
+    <name>IIiffe (flat)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-211895;4.97664;-21182;-1.1317;9.44138e-05</location>
+  </busstop>
+  <busstop>
+    <id>213</id>
+    <name>Iliffe (little harbour, boats)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-211312;4.98261;-21053.7;0.993421;0.00074768</location>
+  </busstop>
+  <busstop>
+    <id>214</id>
+    <name>Iliffe (little harbour, buildings)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-211314;4.98761;-21034.1;-2.13586;0.00120115</location>
+  </busstop>
+  <busstop>
+    <id>219</id>
+    <name>Iliffe (blancherive, parking to marina)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210290;2.98706;-20484.3;1.63581;0.000429153</location>
+  </busstop>
+  <busstop>
+    <id>221</id>
+    <name>Iliffe (blancherive, marina, white parking)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210653;0.987954;-20453.5;1.9506;-0.00171739</location>
+  </busstop>
+  <busstop>
+    <id>222</id>
+    <name>Rombas (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200608;4.98165;-22878.2;-0.567558;-0.000223939</location>
+  </busstop>
+  <busstop>
+    <id>223</id>
+    <name>Rombas (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200621;4.98172;-22887;-0.570304;-0.00046045</location>
+  </busstop>
+  <busstop>
+    <id>224</id>
+    <name>Rombas (airport entrance)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-202294;18.2358;-22122.8;-1.73747;0.000837803</location>
+  </busstop>
+  <busstop>
+    <id>225</id>
+    <name>Rombas (airport parking)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-202264;12.8573;-22155.9;1.41143;-0.000832383</location>
+  </busstop>
+  <busstop>
+    <id>226</id>
+    <name>Grandville (houses)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-195649;8.45547;-26828.5;0.548569;-0.000510041</location>
+  </busstop>
+  <busstop>
+    <id>227</id>
+    <name>Grandville (lake)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-195668;8.44881;-26837.4;-2.4466;-0.000307862</location>
+  </busstop>
+  <busstop>
+    <id>228</id>
+    <name>Aix-Noulette sur Hulluch (by houses)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197893;77.4263;-29576.6;-2.38335;-0.00034887</location>
+  </busstop>
+  <busstop>
+    <id>229</id>
+    <name>Aix-Noulette sur Hulluch (by trees)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197885;77.4275;-29578.6;0.750261;-0.000183884</location>
+  </busstop>
+  <busstop>
+    <id>230</id>
+    <name>Stellamar (house red roof)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-190701;19.2043;-28600.7;2.36186;0.000496864</location>
+  </busstop>
+  <busstop>
+    <id>231</id>
+    <name>Gérardmer (iveco)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-187050;7.18416;-31550.5;-1.44573;-0.00185568</location>
+  </busstop>
+  <busstop>
+    <id>232</id>
+    <name>Gerardmer (timber turtle/tdc)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-187054;7.1891;-31557.7;1.69661;0.00164747</location>
+  </busstop>
+  <busstop>
+    <id>233</id>
+    <name>Chauriat (country road)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-192867;49.8566;-29167;-1.89602;-0.00738222</location>
+  </busstop>
+  <busstop>
+    <id>235</id>
+    <name>Lossande-Gelesse (trees)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-190828;93.5017;-32597;-1.48357;-0.000687424</location>
+  </busstop>
+  <busstop>
+    <id>236</id>
+    <name>Lossande-Gelesse (lake)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-190857;93.4942;-32600.2;1.6777;-0.00191766</location>
+  </busstop>
+  <busstop>
+    <id>237</id>
+    <name>Belmont (norrfood)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-194469;79.9887;-33436.4;-1.51111;-0.000218217</location>
+  </busstop>
+  <busstop>
+    <id>238</id>
+    <name>Riviere Sens (building green roof)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-204671;5.03222;-37527.8;1.7283;-0.0173958</location>
+  </busstop>
+  <busstop>
+    <id>239</id>
+    <name>Riviere Sens (busstop, parking place)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-204668;5.06157;-37520.4;-1.42404;0.0170779</location>
+  </busstop>
+  <busstop>
+    <id>241</id>
+    <name>Beaubourg (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210324;1.4892;-38266.2;2.59028;0.000181198</location>
+  </busstop>
+  <busstop>
+    <id>242</id>
+    <name>Rivenchy (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-206008;3.81542;-35369.1;-0.725409;0.000671864</location>
+  </busstop>
+  <busstop>
+    <id>243</id>
+    <name>Arlandis (uphill)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-209407;-80.9938;-31157.8;-0.780883;0.0786376</location>
+  </busstop>
+  <busstop>
+    <id>244</id>
+    <name>Arlandis (downhill)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-209415;-81.1023;-31163.7;2.34184;-0.0802601</location>
+  </busstop>
+  <busstop>
+    <id>245</id>
+    <name>Pérignat (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208408;20.3179;-28371.7;-0.529097;-9.80536e-0</location>
+  </busstop>
+  <busstop>
+    <id>246</id>
+    <name>Asamaka (wall with fence)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218322;193.805;-5322.21;0.408842;-0.0156124</location>
+  </busstop>
+  <busstop>
+    <id>247</id>
+    <name>Rombas (big fence)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-201862;12.859;-22207.9;0.027842;0.0110064</location>
+  </busstop>
+  <busstop>
+    <id>248</id>
+    <name>Bad Water (boderonie)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-204372;68.9806;-68813.6;-2.28721;0.000731945</location>
+  </busstop>
+  <busstop>
+    <id>249</id>
+    <name>Bad Water (soccer field)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-204354;68.9909;-68812.1;0.847112;0.000142097</location>
+  </busstop>
+  <busstop>
+    <id>250</id>
+    <name>Bausel (second stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-214217;28.2194;-35798.3;-1.37428;0.000641823</location>
+  </busstop>
+  <busstop>
+    <id>251</id>
+    <name>Beaubourg (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210326;1.48865;-38270.7;2.60698;-0.000160042</location>
+  </busstop>
+  <busstop>
+    <id>252</id>
+    <name>Beaubourg (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210329;1.49343;-38274.9;2.60787;-0.000780884</location>
+  </busstop>
+  <busstop>
+    <id>253</id>
+    <name>Beaubourg (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210329;1.48907;-38288.7;1.30408;0.000535011</location>
+  </busstop>
+  <busstop>
+    <id>254</id>
+    <name>Beaubourg (busstation 6)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210336;1.49118;-38288.1;2.59698;0.000273228</location>
+  </busstop>
+  <busstop>
+    <id>255</id>
+    <name>Bradfort (only bussign)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-184881;4.99199;-67284.8;-2.16561;0.0011949</location>
+  </busstop>
+  <busstop>
+    <id>256</id>
+    <name>Bradfort (busstop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-184876;4.9864;-67289;0.963745;-0.000128571</location>
+  </busstop>
+  <busstop>
+    <id>257</id>
+    <name>Bully (tree with cows)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222167;2.97863;-71057.3;1.37834;-0.000946823</location>
+  </busstop>
+  <busstop>
+    <id>258</id>
+    <name>Bully (grass field)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222167;2.98997;-71050.9;-1.76667;-0.000149552</location>
+  </busstop>
+  <busstop>
+    <id>259</id>
+    <name>Castelnoir (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-223797;9.92155;-36566.1;-0.184238;0.000542641</location>
+  </busstop>
+  <busstop>
+    <id>260</id>
+    <name>Castelnoir (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-223805;9.92068;-36567;-0.19153;0.000599861</location>
+  </busstop>
+  <busstop>
+    <id>261</id>
+    <name>Castelnoir (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-223821;9.92151;-36566.1;-0.183453;0.000391006</location>
+  </busstop>
+  <busstop>
+    <id>262</id>
+    <name>Chambet (busstop D9)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-216248;15.0296;-48839.7;1.64807;-0.0094269</location>
+  </busstop>
+  <busstop>
+    <id>263</id>
+    <name>Clerlande (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215578;69.8393;-34126.5;-1.21078;0.000392914</location>
+  </busstop>
+  <busstop>
+    <id>264</id>
+    <name>Clerlande (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215582;69.8402;-34133.6;-1.20817;0.000386238</location>
+  </busstop>
+  <busstop>
+    <id>265</id>
+    <name>Clerlande (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215573;69.8403;-34148.1;0.113869;0.000286579</location>
+  </busstop>
+  <busstop>
+    <id>266</id>
+    <name>Saint-Sylvestre-Cappel (busstation 6)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215564;29.2389;-31772.8;-1.18185;-0.000493828</location>
+  </busstop>
+  <busstop>
+    <id>267</id>
+    <name>Crater Lake (garage)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-212641;6.01514;-69610.2;-0.250981;-0.000668351</location>
+  </busstop>
+  <busstop>
+    <id>268</id>
+    <name>Crater Lake (sheeps)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-212646;6.00682;-69613.2;2.88184;-0.000498597</location>
+  </busstop>
+  <busstop>
+    <id>269</id>
+    <name>Egeskov (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-209550;48.7016;-26448.4;0.299244;-0.000119034</location>
+  </busstop>
+  <busstop>
+    <id>270</id>
+    <name>Egeskov (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-209565;48.6974;-26442.5;0.29871;0.000150681</location>
+  </busstop>
+  <busstop>
+    <id>271</id>
+    <name>Eilmont (busstation first stop, roundabout)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-233316;2.96555;-52699.9;-0.162009;-8.66095e-05</location>
+  </busstop>
+  <busstop>
+    <id>272</id>
+    <name>Foxhaven (drive thru)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-231435;26.971;-72509.5;-2.34844;-0.000733201</location>
+  </busstop>
+  <busstop>
+    <id>273</id>
+    <name>Foxhaven (blue glass building)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-231280;26.9955;-72664;0.80596;0.000981331</location>
+  </busstop>
+  <busstop>
+    <id>274</id>
+    <name>Gebbbe du Montargis (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-228051;0.969176;-53933.9;2.67822;-0.00011522</location>
+  </busstop>
+  <busstop>
+    <id>275</id>
+    <name>Gebbbe du Montargis (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-228041;0.970702;-53937.9;-0.465293;-0.000487153</location>
+  </busstop>
+  <busstop>
+    <id>276</id>
+    <name>Gebbbe du Montargis (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-228021;0.976721;-53941.3;2.67632;-0.00115091</location>
+  </busstop>
+  <busstop>
+    <id>277</id>
+    <name>Ghyvelde (busstation 5)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-212961;7.86433;-59310;3.09068;-0.000227753</location>
+  </busstop>
+  <busstop>
+    <id>278</id>
+    <name>Gebbbe du Montargis (busstation middle stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-228179;19.9793;-52537.3;-3.12449;-0.000904862</location>
+  </busstop>
+  <busstop>
+    <id>279</id>
+    <name>Gougaram (polar fish)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-211746;2.4087;-4566.26;0.877811;-0.0256165</location>
+  </busstop>
+  <busstop>
+    <id>280</id>
+    <name>Gougaram (river)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-211761;2.30975;-4567.95;-2.7121;0.0146179</location>
+  </busstop>
+  <busstop>
+    <id>281</id>
+    <name>Hillside (gasmer)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-216587;73.6084;-70640;-1.44906;-0.000698868</location>
+  </busstop>
+  <busstop>
+    <id>282</id>
+    <name>Hillside (shops)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-216624;73.6097;-70642.7;1.69184;-0.000164811</location>
+  </busstop>
+  <busstop>
+    <id>283</id>
+    <name>Kamelot (from roundabout)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-173017;103.442;-74237.9;2.77867;-0.0067795</location>
+  </busstop>
+  <busstop>
+    <id>284</id>
+    <name>Kamelot (to roundabout)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-173005;103.531;-74248.6;-0.358037;0.00515985</location>
+  </busstop>
+  <busstop>
+    <id>285</id>
+    <name>Krewit (first busstation, second stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222341;45.9984;-58008.9;-3.10628;0.00066566</location>
+  </busstop>
+  <busstop>
+    <id>286</id>
+    <name>Krewit (second busstation, second stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222361;45.9919;-58010.4;-2.92724;0.000651359</location>
+  </busstop>
+  <busstop>
+    <id>287</id>
+    <name>La Palmyre (white bungalow, second)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-221592;10.5354;-34806.3;-0.012492;0.000873566</location>
+  </busstop>
+  <busstop>
+    <id>288</id>
+    <name>Lafalaise (busstation, stop 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213370;59.8679;-38247.1;1.03401;9.9659e-05</location>
+  </busstop>
+  <busstop>
+    <id>289</id>
+    <name>Lafalaise (busstation, stop 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213374;59.8682;-38240.5;1.03607;-0.000393693</location>
+  </busstop>
+  <busstop>
+    <id>290</id>
+    <name>Lafalaise (busstation, stop 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213382;59.8674;-38226.8;1.04322;4.33922e-05</location>
+  </busstop>
+  <busstop>
+    <id>291</id>
+    <name>Liberty Bay (diplodocus)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197358;6.93172;-66169.7;3.08699;-0.000584427</location>
+  </busstop>
+  <busstop>
+    <id>292</id>
+    <name>Liberty Bay (wooden stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197480;6.92973;-66130.8;0.790821;-0.000358407</location>
+  </busstop>
+  <busstop>
+    <id>293</id>
+    <name>Louchartville (airport station, for bus)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200519;9.98809;-55570.7;-2.66923;-0.0172795</location>
+  </busstop>
+  <busstop>
+    <id>294</id>
+    <name>Louchartville (airport entrance, between busses)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200526;9.97946;-55613.1;0.724337;0.000646591</location>
+  </busstop>
+  <busstop>
+    <id>295</id>
+    <name>Paulsboro (busstation last stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215907;84.7739;-78382.7;0.338131;-0.0015381</location>
+  </busstop>
+  <busstop>
+    <id>296</id>
+    <name>Monteil (by road end)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213608;8.67954;-43761.3;-0.10087;0.000843048</location>
+  </busstop>
+  <busstop>
+    <id>297</id>
+    <name>Oakwood-Meadows (airell)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-173507;70.9175;-69148.6;-1.03134;0.0155849</location>
+  </busstop>
+  <busstop>
+    <id>298</id>
+    <name>Paulsboro (houses with parking place)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215745;85.2125;-78462.9;-0.713141;0.000360966</location>
+  </busstop>
+  <busstop>
+    <id>299</id>
+    <name>Paulsboro (wooden house with car)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215761;85.2171;-78473.7;2.43923;-0.00131113</location>
+  </busstop>
+  <busstop>
+    <id>300</id>
+    <name>Paulsboro (busstation first stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215899;84.7717;-78359.9;0.325754;0.000380039</location>
+  </busstop>
+  <busstop>
+    <id>301</id>
+    <name>Pérignat (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208390;20.3185;-28365.4;-0.520748;0.000294208</location>
+  </busstop>
+  <busstop>
+    <id>302</id>
+    <name>Pérignat (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208401;20.3163;-28367.3;-0.514641;-0.00102693</location>
+  </busstop>
+  <busstop>
+    <id>304</id>
+    <name>Pérignat (busstation 5)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208423;20.3156;-28377.6;-0.515317;0.000494003</location>
+  </busstop>
+  <busstop>
+    <id>305</id>
+    <name>Port Meli (munze supermarkt)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-216473;2.08583;-6795.87;-1.61923;-0.000836198</location>
+  </busstop>
+  <busstop>
+    <id>306</id>
+    <name>Port Meli (bungalow)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-216868;96.8639;-5784.21;-0.155352;0.00056076</location>
+  </busstop>
+  <busstop>
+    <id>307</id>
+    <name>Port Meli (church)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-216470;2.08841;-6814.47;1.5305;-0.000140015</location>
+  </busstop>
+  <busstop>
+    <id>308</id>
+    <name>Rivenchy (pier bus front)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-205643;2.69679;-36134.8;-1.41135;-0.000942055</location>
+  </busstop>
+  <busstop>
+    <id>309</id>
+    <name>Rivenchy (pier bus back)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-205605;2.70542;-36141.5;-1.38989;0.00117111</location>
+  </busstop>
+  <busstop>
+    <id>310</id>
+    <name>Saint-Sylvestre-Cappel (busstop 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215562;29.2489;-31793.2;-1.16191;0.000250816</location>
+  </busstop>
+  <busstop>
+    <id>311</id>
+    <name>Saint-Sylvestre-Cappel (busstop 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215562;29.2445;-31788.1;-1.15496;0.00033617</location>
+  </busstop>
+  <busstop>
+    <id>312</id>
+    <name>Saint-Sylvestre-Cappel (busstop 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215563;29.2449;-31783;-1.16081;-0.000556771</location>
+  </busstop>
+  <busstop>
+    <id>313</id>
+    <name>Saint-Sylvestre-Cappel (busstop 9)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215569;29.2457;-31756.5;-1.14051;-0.000380341</location>
+  </busstop>
+  <busstop>
+    <id>314</id>
+    <name>Sulikow (fence, dead end street)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213940;105.202;-31354.7;-0.378168;-0.000586335</location>
+  </busstop>
+  <busstop>
+    <id>315</id>
+    <name>Sulikow (house, dead end street)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-213949;105.203;-31351.2;2.72586;0.000107288</location>
+  </busstop>
+  <busstop>
+    <id>316</id>
+    <name>Sulikow (market route D6)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-212910;105.195;-31794.7;1.19914;-0.0011471</location>
+  </busstop>
+  <busstop>
+    <id>317</id>
+    <name>Taggafadi (church)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-209422;45.8791;-802.994;0.993495;-0.00020105</location>
+  </busstop>
+  <busstop>
+    <id>318</id>
+    <name>Tours (Building with red/blue)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-234406;9.79636;-56857.7;-2.29721;-0.00126917</location>
+  </busstop>
+  <busstop>
+    <id>319</id>
+    <name>Tours (by bridge)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-232613;3.61906;-56605.3;0.603144;-0.0323437</location>
+  </busstop>
+  <busstop>
+    <id>320</id>
+    <name>Two Rivers (houses with garden)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-190531;410.03;-72695.1;-1.92985;-0.000212495</location>
+  </busstop>
+  <busstop>
+    <id>321</id>
+    <name>Two Rivers (houses with stairs)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-190535;410.026;-72714.6;1.20553;-0.000113312</location>
+  </busstop>
+  <busstop>
+    <id>322</id>
+    <name>Westbank (to crossing)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-199643;9.30177;-65032.5;-0.210376;0.000272751</location>
+  </busstop>
+  <busstop>
+    <id>323</id>
+    <name>Westbank (to yellow sign)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-199649;9.30989;-65033.9;2.92365;-0.00110323</location>
+  </busstop>
+  <busstop>
+    <id>324</id>
+    <name>Windfield (busstation 1, for bus)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-178789;3.2792;-64792.7;2.15449;0.00168085</location>
+  </busstop>
+  <busstop>
+    <id>325</id>
+    <name>Windfield (busstation 2, behind bus)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-178808;3.28324;-64780;2.17002;-0.00084192</location>
+  </busstop>
+  <busstop>
+    <id>326</id>
+    <name>Utopia Centre Ville (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-196937;4.98539;-49129.7;2.32608;-0.00050718</location>
+  </busstop>
+  <busstop>
+    <id>327</id>
+    <name>Utopia Centre Ville (busstation 9)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-196941;4.99358;-49157.3;2.36191;-0.000435654</location>
+  </busstop>
+  <busstop>
+    <id>328</id>
+    <name>Utopia Clermont (les gravanches, only bussign)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-201201;-0.298237;-51099;-0.892916;-0.000586335</location>
+  </busstop>
+  <busstop>
+    <id>329</id>
+    <name>Utopia Clermont (les gravanches wooden busstop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-201196;-0.298001;-51112;2.25326;0.000118256</location>
+  </busstop>
+  <busstop>
+    <id>330</id>
+    <name>Utopia Croix Blanche (latte)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200115;11.3479;-53653.9;1.36748;-0.000673119</location>
+  </busstop>
+  <busstop>
+    <id>331</id>
+    <name>Utopia Croix Blanche (supermarkt)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200109;11.3453;-53634.9;-1.80527;-4.59353e-06</location>
+  </busstop>
+  <busstop>
+    <id>332</id>
+    <name>Utopia Stade (baobab transport)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-197157;14.6674;-52287.3;-1.14682;0.000303745</location>
+  </busstop>
+  <busstop>
+    <id>333</id>
+    <name>Utopia Stade (hendrik buslines 2, bus right)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198299;8.94024;-53039.9;-1.02691;0.000621796</location>
+  </busstop>
+  <busstop>
+    <id>334</id>
+    <name>Utopia Stade (hendrik buslines 3, building left)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-198296;8.94038;-53048.9;-1.02867;0.000450134</location>
+  </busstop>
+  <busstop>
+    <id>335</id>
+    <name>Maisnil-Les Libercourt (busstation stop 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-193204;62.6841;-42863.6;-2.15167;0.000212669</location>
+  </busstop>
+  <busstop>
+    <id>336</id>
+    <name>Malterre (from little church to traffic lights)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-218689;71.2532;-56198.4;2.70751;0.000111103</location>
+  </busstop>
+  <busstop>
+    <id>337</id>
+    <name>Meulan (harreriq loch)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-188282;34.9946;-45752.4;-0.734611;-0.000838105</location>
+  </busstop>
+  <busstop>
+    <id>338</id>
+    <name>Meulan (globeur)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-188295;34.9852;-45749.3;2.40378;-0.000633065</location>
+  </busstop>
+  <busstop>
+    <id>339</id>
+    <name>Oakwood (kaarfor)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-173486;71.2488;-69167.6;2.10681;-0.0103758</location>
+  </busstop>
+  <busstop>
+    <id>340</id>
+    <name>Montmorillon (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208033;1.48634;-57052.3;-1.49665;0.000539303</location>
+  </busstop>
+  <busstop>
+    <id>341</id>
+    <name>Montmorillon (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208038;1.48183;-57043.5;-1.49956;1.90735e-05</location>
+  </busstop>
+  <busstop>
+    <id>342</id>
+    <name>Montmorillon (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208040;1.49911;-57038.8;-1.52681;-0.000818078</location>
+  </busstop>
+  <busstop>
+    <id>343</id>
+    <name>Montmorillon (busstation 6)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208045;1.48128;-57029.8;-1.50474;-0.000218217</location>
+  </busstop>
+  <busstop>
+    <id>344</id>
+    <name>Montmorillon (busstation 7)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208047;1.4884;-57025.4;-1.51482;-0.00125295</location>
+  </busstop>
+  <busstop>
+    <id>345</id>
+    <name>Montmorillon (busstation 8)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208050;1.48077;-57020.8;-1.50903;0.00141954</location>
+  </busstop>
+  <busstop>
+    <id>346</id>
+    <name>Montmorillon (busstation 5)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208042;1.48005;-57034.2;-1.50018;0.000987053</location>
+  </busstop>
+  <busstop>
+    <id>347</id>
+    <name>Montmorillon (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208040;1.48208;-57038.8;-1.51916;0.000471115</location>
+  </busstop>
+  <busstop>
+    <id>348</id>
+    <name>Montmorillon (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-208036;1.48285;-57047.9;-1.49972;0.000598431</location>
+  </busstop>
+  <busstop>
+    <id>351</id>
+    <name>Meulan (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-187185;27.9866;-46368.3;2.82085;-0.000316445</location>
+  </busstop>
+  <busstop>
+    <id>352</id>
+    <name>Meulan (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-187180;27.9844;-46352;2.81899;-0.000496689</location>
+  </busstop>
+  <busstop>
+    <id>353</id>
+    <name>Meulan (busstation 5)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-187168;27.986;-46356.4;2.82024;-0.000256363</location>
+  </busstop>
+  <busstop>
+    <id>354</id>
+    <name>Malterre (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217630;64.9592;-57328.3;-0.570638;4.00543e-05</location>
+  </busstop>
+  <busstop>
+    <id>355</id>
+    <name>Malterre (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217620;64.9619;-57329.7;-0.566775;-0.000246827</location>
+  </busstop>
+  <busstop>
+    <id>356</id>
+    <name>Malterre (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217601;64.9581;-57333.7;-0.595538;2.71797e-05</location>
+  </busstop>
+  <busstop>
+    <id>357</id>
+    <name>Malterre (busstation 5)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217607;64.962;-57350.9;-0.589322;-0.000934426</location>
+  </busstop>
+  <busstop>
+    <id>358</id>
+    <name>Chalezeule (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220040;24.3478;-47544.6;0.139482;-0.000246827</location>
+  </busstop>
+  <busstop>
+    <id>359</id>
+    <name>Chalezeule (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220048;24.3516;-47545.7;0.135004;-0.000360314</location>
+  </busstop>
+  <busstop>
+    <id>360</id>
+    <name>Chalezeule (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220064;24.3444;-47539.1;0.152184;0.000795841</location>
+  </busstop>
+  <busstop>
+    <id>361</id>
+    <name>Krewit (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222363;45.9875;-58021.5;-2.94582;-3.98795e-05</location>
+  </busstop>
+  <busstop>
+    <id>362</id>
+    <name>Jean-du-Bartail (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-226769;9.98683;-54128.9;1.19424;0.000927448</location>
+  </busstop>
+  <busstop>
+    <id>363</id>
+    <name>Jean-du-Bartail (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-226761;13.6738;-54116.5;1.14799;-0.183518</location>
+  </busstop>
+  <busstop>
+    <id>365</id>
+    <name>Jean-du-Bartail (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-226774;9.9905;-54104.9;1.18515;-0.000117127</location>
+  </busstop>
+  <busstop>
+    <id>366</id>
+    <name>Dolan-sur-Mer (busstation 5)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-219764;13.0865;-61255.2;-0.0890396;-0.00112802</location>
+  </busstop>
+  <busstop>
+    <id>367</id>
+    <name>Saint-Sylvestre-Cappel (busstop 8)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-215564;29.2465;-31763;-1.1622;0.000296116</location>
+  </busstop>
+  <busstop>
+    <id>368</id>
+    <name>Ghyvelde (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-212996;7.85813;-59313.3;3.08267;-0.000538651</location>
+  </busstop>
+  <busstop>
+    <id>369</id>
+    <name>Ghyvelde (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-212985;7.8579;-59310.8;2.90452;0.0229735</location>
+  </busstop>
+  <busstop>
+    <id>371</id>
+    <name>Ghyvelde (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-212968;7.82646;-59306.4;-0.0527485;-0.000248734</location>
+  </busstop>
+  <busstop>
+    <id>372</id>
+    <name>Dolan-sur-Mer (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-219730;13.0823;-61251.3;-0.0921257;0.000248909</location>
+  </busstop>
+  <busstop>
+    <id>373</id>
+    <name>Dolan-sur-Mer (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-219740;13.0844;-61251.4;-0.0798538;9.53674e-05</location>
+  </busstop>
+  <busstop>
+    <id>374</id>
+    <name>Dolan-sur-Mer (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-219756;13.088;-61252;-0.0960491;-5.79993e-05</location>
+  </busstop>
+  <busstop>
+    <id>375</id>
+    <name>Rombas (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200633;4.99095;-22899.6;0.749912;-0.00132829</location>
+  </busstop>
+  <busstop>
+    <id>376</id>
+    <name>Rombas (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-200627;4.9836;-22892.5;-0.57615;-0.000464265</location>
+  </busstop>
+  <busstop>
+    <id>378</id>
+    <name>Rivenchy (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-206010;3.8158;-35391.7;2.42296;-0.000616852</location>
+  </busstop>
+  <busstop>
+    <id>379</id>
+    <name>Rivenchy (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-206006;3.81571;-35387.7;2.41474;-0.000126664</location>
+  </busstop>
+  <busstop>
+    <id>380</id>
+    <name>Rivenchy (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-205999;3.81698;-35369.5;-0.69471;-2.27133e-05</location>
+  </busstop>
+  <busstop>
+    <id>381</id>
+    <name>White House (entrance building, no official stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-205998;3.82407;-35386.6;0.0609832;0.00106573</location>
+  </busstop>
+  <busstop>
+    <id>382</id>
+    <name>White House (entrance building, no official stop)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-187358;329.331;-70480.6;2.48053;-0.00023729</location>
+  </busstop>
+  <busstop>
+    <id>383</id>
+    <name>Utopia Centre Ville (busstation 8)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-196943;4.99149;-49150;2.36239;-0.000227753</location>
+  </busstop>
+  <busstop>
+    <id>384</id>
+    <name>Meulan (busstation 6)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-187173;27.985;-46340.7;2.8231;0.000199795</location>
+  </busstop>
+  <busstop>
+    <id>385</id>
+    <name>Maisnil-Les-Libercourt (busstation 2)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-193204;62.7003;-42863.6;-2.12985;-0.000178162</location>
+  </busstop>
+  <busstop>
+    <id>386</id>
+    <name>Malterre (busstation 6)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217612;64.9575;-57355.8;2.55282;0.00015974</location>
+  </busstop>
+  <busstop>
+    <id>387</id>
+    <name>Malterre (busstation 7)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217622;64.9584;-57354;2.53387;-0.000253503</location>
+  </busstop>
+  <busstop>
+    <id>388</id>
+    <name>Malterre (busstation 8)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-217632;64.9604;-57351.9;2.55015;0.000233173</location>
+  </busstop>
+  <busstop>
+    <id>389</id>
+    <name>Krewit (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-222361;45.9848;-58010.3;-2.96123;-0.000464265</location>
+  </busstop>
+  <busstop>
+    <id>390</id>
+    <name>Beauborg (busstation 8)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210342;1.48782;-38296.6;2.6073;-8.08875e-05</location>
+  </busstop>
+  <busstop>
+    <id>391</id>
+    <name>Beauborg (busstation 8)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210342;1.48782;-38296.6;2.6073;-8.08875e-05</location>
+  </busstop>
+  <busstop>
+    <id>392</id>
+    <name>Beauborg (busstation 9)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210341;1.49328;-38304.7;2.61392;-0.000969712</location>
+  </busstop>
+  <busstop>
+    <id>393</id>
+    <name>Beauborg (busstation 13)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-210303;1.49284;-38288.4;0.517477;-0.000124756</location>
+  </busstop>
+  <busstop>
+    <id>394</id>
+    <name>Prat l'Etang (hotel)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-231919;3.0262;-49777.3;-2.24584;-0.00168306</location>
+  </busstop>
+  <busstop>
+    <id>395</id>
+    <name>Prat l'Etang (dragon wok)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-231922;3.0206;-49785.4;0.894986;0.00148869</location>
+  </busstop>
+  <busstop>
+    <id>396</id>
+    <name>Saint-Sebastien-le-Bec (busstation 1)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229383;8.31634;-49120.4;-0.616031;0.000892639</location>
+  </busstop>
+  <busstop>
+    <id>397</id>
+    <name>Saint-Sebastien-le-Bec (busstation 3)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229363;8.32613;-49122.6;-0.638434;-8.47022e-05</location>
+  </busstop>
+  <busstop>
+    <id>398</id>
+    <name>Saint-Sebastien-le-Bec (busstation 4)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229353;8.32078;-49123.5;-0.663478;-0.000690285</location>
+  </busstop>
+  <busstop>
+    <id>399</id>
+    <name>Saint-Sebastien-le-Bec (busstation 6)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229363;8.32325;-49146.4;2.4931;-1.98523e-05</location>
+  </busstop>
+  <busstop>
+    <id>400</id>
+    <name>Saint-Sebastien-le-Bec (busstation 7)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229372;8.31858;-49145.4;2.49376;-0.000492875</location>
+  </busstop>
+  <busstop>
+    <id>401</id>
+    <name>Saint-Sebastien-le-Bec (busstation 8)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229382;8.31801;-49144.2;2.45628;-0.000122849</location>
+  </busstop>
+  <busstop>
+    <id>402</id>
+    <name>Jurassic Junction (parking place 1, secret road)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229728;6.98865;-48772;-1.98607;0.000199318</location>
+  </busstop>
+  <busstop>
+    <id>403</id>
+    <name>Jurassic Junction (parking place 2, secret road)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229711;6.9847;-48764.7;-1.9788;-0.000346009</location>
+  </busstop>
+  <busstop>
+    <id>404</id>
+    <name>Jurassic Junction (parking place 3, secret road)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229363;8.32613;-49122.6;-0.638434;-8.47022e-05</location>
+  </busstop>
+  <busstop>
+    <id>405</id>
+    <name>Jurassic Junction (parking place 4, secret road)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229725;6.97009;-48790.9;1.15814;0.000239849</location>
+  </busstop>
+  <busstop>
+    <id>406</id>
+    <name>Jurassic Junction (parking big al 1, secret road)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-229725;6.97009;-48790.9;1.15814;0.000239849</location>
+  </busstop>
+  <busstop>
+    <id>407</id>
+    <name>Jurassic Junction (parking big al 2, secret road)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-225232;4.98408;-52296.5;0.210106;0.00114393</location>
+  </busstop>
+  <busstop>
+    <id>408</id>
+    <name>Saint-Angel (oil, parking place)</name>
+    <zone />
+    <requestStop>false</requestStop>
+    <location>-220554;211.043;-43953.8;1.39014;0.000618458</location>
+  </busstop>
+</busstops>

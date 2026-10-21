@@ -21,7 +21,7 @@ Sources locales uniquement : aucun déploiement ni push n'est effectué par les 
 3. Conserver `data/player_stats.sqlite`, ou définir `DB_PATH` vers la base existante. La migration conserve les tables et les données de télémétrie et de lignes.
 4. Configurer le fichier de démarrage de l'hébergeur sur **`server.js`**, puis démarrer avec `npm start` ou `node server.js`. `WS_PORT` (ou `PORT`) vaut 9377 par défaut. L'écoute utilise `0.0.0.0` pour les hébergements en conteneur ; `WS_HOST=127.0.0.1` permet une écoute locale si le proxy est sur le même hôte.
 5. Le proxy de `panel.idf-map.fr` doit transmettre l'upgrade WebSocket de `/idfmap/ws/native/` au serveur. Le chemin intégral et `/` après suppression du préfixe sont acceptés.
-6. Déployer aussi les fichiers modifiés du site, dont `game_manager/js/runtime/game2-main.js` et les parties de son runtime. La DLL ne publie pas le site.
+6. Déployer aussi les fichiers modifiés du site, dont `idf-rp/js/runtime/game2-main.js` et les parties de son runtime. La DLL ne publie pas le site.
 
 Les messages historiques de télémétrie, PCC et widgets restent relayés. Les messages `convoy.*` ne passent jamais dans ce relais global : ils sont filtrés par session, liste native des participants, compatibilité des ressources et distance.
 
@@ -41,7 +41,8 @@ Le catalogue se régénère avec `telemetry/tools/convoy_audio_catalog.cjs` à c
 - Passagers appartenant à chaque véhicule, avec positions et animations. Leur placement suit le véhicule interpolé par ETS2 ; aucun second camion n'est créé.
 - Girouettes privées par joueur, véhicule et session. Les mêmes modèles de bus peuvent afficher des destinations différentes.
 - Sons pneumatiques communs d'ouverture/fermeture, spatialisés jusqu'à 60 m, sans rejouer les événements historiques. Ce ne sont pas les échantillons audio spécifiques des banques de chaque véhicule. Les animations natives de portes ne sont pas remplacées.
-- Hystérésis de visibilité : apparition à 200 m, retrait au-delà de 230 m ; passagers détaillés à 80 m. Nettoyage des états après six secondes sans données.
+- Hystérésis de visibilité : apparition à 200 m, retrait au-delà de 230 m ; cadence détaillée à 80 m. En mode `actions-v1`, les états de tous les passagers sont conservés entre 80 et 230 m, y compris pendant la montée/descente ; seule leur représentation graphique est déchargée par la DLL. Le retour à portée reconstruit le dernier état reçu sans attendre une nouvelle action. Nettoyage des états après six secondes sans données.
+- Pour cette reprise après éloignement, publier `convoy/rooms.cjs` sur le relais et redémarrer son service Node, puis installer la nouvelle DLL/bridge. Le compilateur ne publie pas le relais.
 - Un joueur en camion peut observer les bus équipés : le mode Bus n'est pas requis pour recevoir les états distants. Tous les observateurs doivent avoir la nouvelle DLL.
 
 ## Limites explicites
@@ -58,7 +59,7 @@ Les tests locaux couvrent les paquets, WebSockets réels, l'isolation des lobbie
 
 ## Carte admin : sessions et état des bus
 
-Déployer ensemble `game_manager/html_divers/admin_map.html` et son nouveau fichier
+Déployer ensemble `idf-rp/html_divers/admin_map.html` et son nouveau fichier
 `adminConvoy.js` sur le site, puis `server.cjs` et `admin-overview.cjs` sur le relais.
 Redémarrer le service Node après sa mise à jour. La compilation de la DLL ne
 déploie aucun de ces fichiers.

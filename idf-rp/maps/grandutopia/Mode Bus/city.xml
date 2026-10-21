@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<city>
+  <ticket uid="0" name="20min" price="1" probability="35" upsell="25" />
+  <ticket uid="1" name="60min" price="2" probability="55" upsell="8" />
+  <ticket uid="2" name="24h" price="12" probability="5" upsell="2" />
+  <ticket uid="3" name="7d" price="60" probability="1" upsell="0" />
+  <!-- 
+
+1) City tag is active
+2) You roll to a stop with 20 people in your bus, 6 of them leaving and 50 new people boarding
+3) You have a list of tickets with unique uids and various stats
+4) Ticket uid 0 has a probability 35% of boarding passengers, meaning that 35% of 50 buy this ticket
+5) It also has a 25% chance of an upsell to the next ticket (=uid 1)
+6) 25% of 35% of 50 is 4,375 people. You cannot have 0,375 person buy a ticket, so you trim all decimals (=4)
+7) Therefore 4 people might get and upsell. Flip a coin for each person. If true, then they buy the ticket with the next uid (=uid 1), if not, they buy the current ticket (uid = 0)
+8) Repeat steps 4-7 for all tickets
+9) 14 people you already have in your vehicle don't buy new tickets, they exist just as they are
+
+We don't care that passengers that got an upsell leave at the next stop - it's a "city" they might take another line we don't see
+
+Not all passengers buy tickets and that is fine. 
+			-->
+</city>

@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "detectionRadius": 1,
+  "lod": [
+    {
+      "distance": 50,
+      "fps": 60
+    },
+    {
+      "distance": 100,
+      "fps": 30
+    },
+    {
+      "distance": 200,
+      "fps": 10
+    }
+  ],
+  "qualityScale": {
+    "high": 1,
+    "medium": 0.75,
+    "low": 0.5
+  },
+  "screens": [
+    {
+      "id": "rer-np",
+      "texture": "/model/idf/pancartes/siel/siel_rera_np.dds",
+      "url": "https://departs.leon.gp/screen?screenId=rer&stopId=fr-idf_IDFM:73190&lineId=line:IDFM:C01742",
+      "width": 1024,
+      "height": 578,
+      "positions": [
+        [
+          5263.93,
+          3.81,
+          -81.29
+        ],
+        [
+          5286.07,
+          3.81,
+          -85.68
+        ],
+        [
+          5292.35,
+          14.09,
+          4.3
+        ],
+        [
+          5292.62,
+          14.09,
+          5.44
+        ],
+        [
+          5302.33,
+          14.09,
+          1.72
+        ],
+        [
+          5302.61,
+          14.09,
+          2.86
+        ],
+        [
+          5304.63,
+          14.09,
+          55.07
+        ],
+        [
+          5314.61,
+          14.09,
+          52.48
+        ]
+      ]
+    },
+    {
+      "id": "information-trafic",
+      "texture": "/model/idf/pancartes/siel/siel_global.dds",
+      "url": "https://departs.leon.gp/screen?screenId=information-trafic&stopId=fr-idf_IDFM:73190&lineId=line:IDFM:C01742",
+      "width": 1024,
+      "height": 578,
+      "positions": [
+        [
+          5265.66,
+          3.81,
+          -82.48
+        ],
+        [
+          5288.1,
+          3.81,
+          -85.14
+        ]
+      ]
+    }
+  ]
+}

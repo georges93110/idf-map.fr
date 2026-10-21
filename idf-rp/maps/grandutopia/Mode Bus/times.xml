@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Passenger demand: 25 = off-peak, 100 = peak; intermediate percentages blend both levels.
+     Below 25 reduces off-peak demand; above 100 multiplies peak demand.
+     Game/Convoy service time. Each value applies until the next hour.
+     Routes select their profile with time="0" or time="1". -->
+<times default="0">
+  <time uid="0">
+    <hour uid="0" percentage="20" />
+    <hour uid="4" percentage="7" />
+    <hour uid="6" percentage="100" />
+    <hour uid="7" percentage="120" />
+    <hour uid="8" percentage="100" />
+    <hour uid="10" percentage="60" />
+    <hour uid="15" percentage="80" />
+    <hour uid="16" percentage="120" />
+    <hour uid="17" percentage="120" />
+    <hour uid="20" percentage="80" />
+    <hour uid="23" percentage="20" />
+  </time>
+  <time uid="1">
+    <hour uid="0" percentage="60" />
+    <hour uid="2" percentage="40" />
+    <hour uid="4" percentage="10" />
+    <hour uid="6" percentage="50" />
+    <hour uid="8" percentage="120" />
+    <hour uid="10" percentage="90" />
+    <hour uid="14" percentage="90" />
+    <hour uid="16" percentage="180" />
+    <hour uid="18" percentage="120" />
+    <hour uid="20" percentage="70" />
+    <hour uid="22" percentage="30" />
+  </time>
+</times>

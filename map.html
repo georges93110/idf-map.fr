@@ -15,7 +15,8 @@
   <meta name="twitter:title" content="Ile-de-France Map - Carte Interactive"/>
   <meta name="twitter:description" content="Explorez la carte interactive de la map Ile-de-France."/>
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
-  <script src="config/theme-init.js"></script>
+  <script src="idf-rp/config/map-context.js?v=maps-20261020"></script>
+<script src="config/theme-init.js"></script>
   <style>
     html[data-app-ready="0"] {
       background:#000;
@@ -3625,10 +3626,6 @@
                   <label for="devStopNextStopTime">nextStopTime</label>
                   <input id="devStopNextStopTime" type="number" step="1"/>
                 </div>
-                <div class="dev-lines-editor-field">
-                  <label for="devStopNextStopPrice">nextStopPrice</label>
-                  <input id="devStopNextStopPrice" type="number" step="1"/>
-                </div>
               </div>
               <div class="dev-lines-editor-actions">
                 <button id="btnDevLinesStopApply" type="button">appliquer</button>
@@ -3896,12 +3893,6 @@
             <div class="line-preview-meta" id="lpRouteMeta">-</div>
           </div>
           <div class="line-preview-actions">
-            <a class="line-preview-link" id="lpLink" href="" target="_blank" rel="noopener" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-              </svg>
-            </a>
             <button type="button" class="line-preview-close" id="lpClose" aria-label="Fermer">X</button>
           </div>
         </div>
@@ -4013,7 +4004,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="config/translations.js"></script>
   <script src="config/site-nav.js"></script>
-  <script src="game_manager/config/line-config.js"></script>
+  <script src="idf-rp/config/line-config.js?v=route-assets-20261020"></script>
 
   <script>
 
@@ -4889,12 +4880,6 @@
     if ($lpCueUp) $lpCueUp.setAttribute("aria-label", t("line_preview_scroll_up"));
     const $lpCueDown = document.querySelector("#linePreview .line-preview-scroll-cue.bottom");
     if ($lpCueDown) $lpCueDown.setAttribute("aria-label", t("line_preview_scroll_down"));
-    const $lpLink = document.getElementById("lpLink");
-    if ($lpLink){
-      const label = t("open_link");
-      $lpLink.setAttribute("aria-label", label);
-      $lpLink.title = label;
-    }
     const $lpAudioLink = document.getElementById("lpAudioLink");
     if ($lpAudioLink){
       const label = t("audio_system_enable");
@@ -5676,7 +5661,6 @@
     const $devStopPassengersMax = document.getElementById("devStopPassengersMax");
     const $devStopCoefOn = document.getElementById("devStopCoefOn");
     const $devStopNextStopTime = document.getElementById("devStopNextStopTime");
-    const $devStopNextStopPrice = document.getElementById("devStopNextStopPrice");
     const $btnDevLinesStopApply = document.getElementById("btnDevLinesStopApply");
     const $btnDevLinesStopAddAfter = document.getElementById("btnDevLinesStopAddAfter");
     const $btnDevLinesStopDelete = document.getElementById("btnDevLinesStopDelete");
@@ -7044,9 +7028,9 @@
     function stopLineAnim(key) { const h = routeAnimHandles.get(key); if (h) { h.stop(); routeAnimHandles.delete(key); } }
 
     const dbusRoot = DBUS_BASE;
-    const DBUS_FIS_ROOT = "./game_manager/sounds/bus/voix_bus";
-    const DBUS_FIS_DOSSIERS_ROOT = `${DBUS_FIS_ROOT}/dossiers`;
-    const DBUS_FIS_GLOBAL_ROOT = `${DBUS_FIS_ROOT}/global`;
+    const DBUS_FIS_ROOT = "./idf-rp/sounds/bus/voix_bus";
+    const DBUS_FIS_TRAJET_ROOT = `${DBUS_FIS_ROOT}/trajet`;
+    const DBUS_FIS_ANNONCES_ROOT = `${DBUS_FIS_ROOT}/annonces`;
     const dbusLayers = L.layerGroup().addTo(map);
     const dbusStopsLayer = L.layerGroup().addTo(map);
     const dbusDepartLayers = L.layerGroup();
@@ -7120,7 +7104,7 @@
     let dbusFisRootLineFolderTokensPromise = null;
     let DBUS_FIS_INDEX = null;
     const LINE_PREVIEW_AUDIO_STATE = { folderPath: "", stopNames: [], currentIndex: 0, enabled: false, volume: 1, voiceStyles: [], selectedVoiceIndex: 0, departureClipName: "Départ" };
-    const LINE_PREVIEW_AUDIO_GLOBAL_STATE = { folders: [], selectedFolderPath: "", loadPromise: null, profile: "ratp", typeTokens: [] };
+    const LINE_PREVIEW_AUDIO_GLOBAL_STATE = { folders: [], selectedFolderPath: "", loadPromise: null, profile: "ratp" };
     const LINE_PREVIEW_AUDIO_PLAYBACK = {
       token: 0,
       audio: null,
@@ -7265,7 +7249,7 @@
       let stopsCount = 0;
       const preview = [];
       lines.forEach((lineNode, index) => {
-        const num = String(lineNode.getAttribute("number") || "").trim() || "?";
+        const num = String(lineNode.getAttribute("linename") || "").trim() || String(lineNode.getAttribute("number") || "").trim() || String(lineNode.getAttribute("uid") || "").trim() || "?";
         if (index < 14) preview.push(num);
         const routes = getDevRouteNodes(lineNode);
         routesCount += routes.length;
@@ -7283,7 +7267,6 @@
       if ($devStopPassengersMax) $devStopPassengersMax.value = empty ? "" : String(stopNode.getAttribute("passengersMax") || "0");
       if ($devStopCoefOn) $devStopCoefOn.value = empty ? "" : String(stopNode.getAttribute("coefOn") || "1");
       if ($devStopNextStopTime) $devStopNextStopTime.value = empty ? "" : String(stopNode.getAttribute("nextStopTime") || "0");
-      if ($devStopNextStopPrice) $devStopNextStopPrice.value = empty ? "" : String(stopNode.getAttribute("nextStopPrice") || "0");
     }
     function makeDevStopOptionLabel(stopNode, index){
       const uid = sanitizeInt(stopNode?.getAttribute("uid"), 0, 0);
@@ -7301,7 +7284,8 @@
       const line = {
         uid: `${rawLineUid}__devedit__${lineIdx}`,
         uidRaw: rawLineUid,
-        number: String(lineNode.getAttribute("number") || "?").trim() || "?",
+        lineStyle: window.IDF_LINE_CONFIG.read(lineNode),
+        number: String(lineNode.getAttribute("linename") || "").trim() || String(lineNode.getAttribute("number") || "").trim() || String(lineNode.getAttribute("uid") || "").trim() || "?",
         routes: []
       };
       const stops = getDevStopNodes(routeNode).map((stopNode) => ({
@@ -7311,7 +7295,8 @@
       const route = {
         uid: `${rawRouteUid}__devedit__${routeIdx}`,
         uidRaw: rawRouteUid,
-        name: String(routeNode.getAttribute("name") || "").trim(),
+        lineStyle: window.IDF_LINE_CONFIG.read(lineNode, routeNode),
+        name: window.IDF_LINE_CONFIG.routeName(lineNode, routeNode, DBUS_STOPS),
         stops,
         totalMinutes: stops.reduce((sum, stop) => sum + sanitizeInt(stop.nextStopTime, 0, 0), 0)
       };
@@ -7395,7 +7380,7 @@
       if ($devLinesEditorLineSelect) {
         $devLinesEditorLineSelect.innerHTML = "";
         lines.forEach((lineNode, idx) => {
-          const number = String(lineNode.getAttribute("number") || "").trim() || "?";
+          const number = String(lineNode.getAttribute("linename") || "").trim() || String(lineNode.getAttribute("number") || "").trim() || String(lineNode.getAttribute("uid") || "").trim() || "?";
           const uid = String(lineNode.getAttribute("uid") || "").trim() || `line_${idx + 1}`;
           const opt = document.createElement("option");
           opt.value = String(idx);
@@ -7418,7 +7403,7 @@
         $devLinesEditorRouteSelect.innerHTML = "";
         routes.forEach((routeNode, idx) => {
           const uid = String(routeNode.getAttribute("uid") || "").trim() || `route_${idx + 1}`;
-          const name = String(routeNode.getAttribute("name") || "").trim() || "(sans nom)";
+          const name = window.IDF_LINE_CONFIG.routeName(lineNode, routeNode, DBUS_STOPS) || "(sans nom)";
           const opt = document.createElement("option");
           opt.value = String(idx);
           opt.textContent = `${idx + 1}. ${uid} | ${name}`;
@@ -7618,13 +7603,11 @@
       const uid = sanitizeInt($devStopUid?.value, sanitizeInt(stopNode.getAttribute("uid"), 0, 0), 0);
       const coefOn = sanitizeInt($devStopCoefOn?.value, sanitizeInt(stopNode.getAttribute("coefOn"), 1), 0);
       const nextStopTime = sanitizeInt($devStopNextStopTime?.value, sanitizeInt(stopNode.getAttribute("nextStopTime"), 0), 0);
-      const nextStopPrice = sanitizeInt($devStopNextStopPrice?.value, sanitizeInt(stopNode.getAttribute("nextStopPrice"), 0), 0);
       stopNode.setAttribute("uid", String(uid));
       stopNode.setAttribute("passengersMin", String(passengersMin));
       stopNode.setAttribute("passengersMax", String(passengersMax));
       stopNode.setAttribute("coefOn", String(coefOn));
       stopNode.setAttribute("nextStopTime", String(nextStopTime));
-      stopNode.setAttribute("nextStopPrice", String(nextStopPrice));
       return true;
     }
     function applySelectedDevStopEdits(){
@@ -7645,7 +7628,6 @@
       stopNode.setAttribute("passengersMax", String(sanitizeInt($devStopPassengersMax?.value, 0, 0)));
       stopNode.setAttribute("coefOn", String(sanitizeInt($devStopCoefOn?.value, 1, 0)));
       stopNode.setAttribute("nextStopTime", String(sanitizeInt($devStopNextStopTime?.value, 0, 0)));
-      stopNode.setAttribute("nextStopPrice", String(sanitizeInt($devStopNextStopPrice?.value, 0, 0)));
       const pMin = sanitizeInt(stopNode.getAttribute("passengersMin"), 0, 0);
       const pMax = sanitizeInt(stopNode.getAttribute("passengersMax"), pMin, pMin);
       if (pMax < pMin) stopNode.setAttribute("passengersMax", String(pMin));
@@ -7876,7 +7858,7 @@
       if (DBUS_FIS_INDEX) return DBUS_FIS_INDEX;
 
       try {
-        const res = await fetch("./game_manager/sounds/bus/voix_bus_index.json", {
+        const res = await fetch("./idf-rp/sounds/bus/voix_bus_index.json", {
           cache: "no-store"
         });
         if (!res.ok) {
@@ -7901,7 +7883,7 @@
       // normalise le path
       const clean = String(path || "")
         .replace(/^\.?\//, "")
-        .replace(/^game_manager\/sounds\/bus\/voix_bus\/?/, "")
+        .replace(/^idf-rp\/sounds\/bus\/voix_bus\/?/, "")
         .replace(/\/+$/, "");
 
       if (!clean) {
@@ -8179,7 +8161,7 @@
       return out;
     }
     async function listDbusFisRouteStyleFoldersFromDossiers(){
-      const rootPath = ensureTrailingSlash(DBUS_FIS_DOSSIERS_ROOT);
+      const rootPath = ensureTrailingSlash(DBUS_FIS_TRAJET_ROOT);
       const folders = [];
       const rootClips = await listDirectoryMp3BaseNames(rootPath);
       if (rootClips.length) {
@@ -8888,26 +8870,10 @@
       return rawToken.includes(wanted) || displayToken.includes(wanted);
     }
     function getLinePreviewAudioProfileForLine(line, route){
-      const lineNumber = String(getLineNumber(line, route) || line?.number || "").trim();
-      const routeName = String(route?.name || "").trim();
-      const parsedLineNumber = String(parseRouteName(routeName || "").lineNumber || "").trim();
-      const isExpressLike = isExpress(line) || isExpressNumber(lineNumber) || /^express\b/i.test(routeName);
-      const isAutocarLike =
-        isAutocar(line) ||
-        /^autocar\b/i.test(routeName) ||
-        /^fict/i.test(routeName) ||
-        /^autocar\b/i.test(parsedLineNumber) ||
-        /^fict/i.test(parsedLineNumber);
-      const isScolaireLike =
-        getCategory(line) === "Scolaire" ||
-        /^scolaire\b/i.test(String(line?.number || "")) ||
-        /^scolaire\b/i.test(routeName) ||
-        /^scolaire\b/i.test(parsedLineNumber);
-      if (isAutocarLike) return "flixbus";
-      if (isExpressLike) return "ratp";
-      if (isScolaireLike) return "ratp";
-      if (isFlix(line)) return "flixbus";
-      return "ratp";
+      const network = window.IDF_LINE_CONFIG.network(
+        typeof route?.reseau === "string" ? route.reseau : line?.reseau
+      );
+      return network || "disabled";
     }
     function isLinePreviewAudioAllowedForLine(line, route){
       return true;
@@ -8915,92 +8881,12 @@
     function getLinePreviewAudioGlobalProfileForLine(line, route){
       return getLinePreviewAudioProfileForLine(line, route);
     }
-    function parseLinePreviewAudioTypeTokens(raw){
-      return String(raw ?? "")
-        .split(",")
-        .map((part) => String(part || "").trim())
-        .filter((part) => /^[0-9]+$/.test(part));
-    }
-    function getLinePreviewAudioStyleEntryForLine(line, route){
-      const routeName = String(route?.name || "").trim();
-      const parsedLineNumber = String(parseRouteName(routeName || "").lineNumber || "").trim();
-      const lineNumber = String(getLineNumber(line, route) || line?.number || "").trim();
-      const category = String(getCategory(line) || "").trim();
-      const isExpressLike =
-        isExpress(line) ||
-        isExpressNumber(lineNumber) ||
-        /^express\b/i.test(routeName) ||
-        /^express\b/i.test(parsedLineNumber);
-      const isAutocarLike =
-        isAutocar(line) ||
-        /^autocar\b/i.test(routeName) ||
-        /^fict/i.test(routeName) ||
-        /^autocar\b/i.test(parsedLineNumber) ||
-        /^fict/i.test(parsedLineNumber);
-      const isScolaireLike =
-        category === "Scolaire" ||
-        /^scolaire\b/i.test(String(line?.number || "")) ||
-        /^scolaire\b/i.test(routeName) ||
-        /^scolaire\b/i.test(parsedLineNumber);
-      const candidates = [];
-      const addExpressCandidates = () => {
-        if (!isExpressLike) return;
-        const addFrom = (raw) => {
-          const text = String(raw || "").trim();
-          if (!text) return;
-          const match = /^express\b\s*([0-9a-z]+)/i.exec(text);
-          if (match && match[1]) {
-            candidates.push(`Express ${String(match[1]).trim()}`);
-          }
-        };
-        addFrom(parsedLineNumber);
-        addFrom(lineNumber);
-        addFrom(line?.number);
-        addFrom(routeName);
-        candidates.push("Express");
-      };
-      addExpressCandidates();
-      if (parsedLineNumber) candidates.push(parsedLineNumber);
-      if (lineNumber) candidates.push(lineNumber);
-      if (line?.number) candidates.push(line.number);
-      if (category) candidates.push(category);
-      if (category === "FlixBus") candidates.push("FLIXBUS");
-      if (isAutocarLike) candidates.push("Autocar");
-      if (isScolaireLike) candidates.push("Scolaire");
-      const seen = new Set();
-      for (const candidateRaw of candidates) {
-        const candidate = String(candidateRaw || "").trim();
-        if (!candidate) continue;
-        const key = candidate.toLowerCase();
-        if (seen.has(key)) continue;
-        seen.add(key);
-        const entry = getLineStyleEntry(candidate);
-        if (entry) return entry;
-      }
-      return null;
-    }
-    function setLinePreviewAudioGlobalTypeTokensForLine(line, route){
-      const entry = getLinePreviewAudioStyleEntryForLine(line, route);
-      const rawTypes = entry?.[3];
-      LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens = parseLinePreviewAudioTypeTokens(rawTypes);
-      updateLinePreviewAudioGlobalFolderSelect();
-    }
     function parseLinePreviewAudioGlobalClipMeta(rawClipName){
-      const raw = String(rawClipName || "").trim();
-      if (!raw) return { typeToken: "", label: "" };
-      const split = raw.match(/^([^_]+)_(.+)$/);
-      if (!split) return { typeToken: "", label: raw };
-      const prefix = String(split[1] || "").trim();
-      const label = String(split[2] || "").trim() || raw;
-      const tokenMatch = prefix.match(/^[0-9]+$/);
-      return {
-        typeToken: tokenMatch ? prefix : "",
-        label
-      };
+      return { label: String(rawClipName || "").trim().replace(/^\d+_/, "") };
     }
     function parseLinePreviewAudioGlobalFolderMeta(rawFolderName){
       const raw = String(rawFolderName || "").trim();
-      if (!raw) return { typeToken: "", label: "" };
+      if (!raw) return { label: "", volumeMultiplier: 1 };
       const parseVolumeMultiplier = (text) => {
         const m = String(text || "").match(/\{([^}]+)\}/);
         if (!m) return 1;
@@ -9010,15 +8896,7 @@
         return Math.max(0, parsed);
       };
       const volumeMultiplier = parseVolumeMultiplier(raw);
-      const match = raw.match(/^\s*([0-9]+)\s*_\s*(.+)$/);
-      if (!match) {
-        return { typeToken: "", label: linePreviewAudioGlobalFolderDisplayName(raw), volumeMultiplier };
-      }
-      return {
-        typeToken: String(match[1] || "").trim(),
-        label: linePreviewAudioGlobalFolderDisplayName(String(match[2] || "").trim()),
-        volumeMultiplier
-      };
+      return { label: linePreviewAudioGlobalFolderDisplayName(raw), volumeMultiplier };
     }
     function setLinePreviewAudioGlobalProfileForLine(line, route){
       const nextProfile = getLinePreviewAudioGlobalProfileForLine(line, route);
@@ -9031,74 +8909,24 @@
     function getPreferredGlobalFolderIndex(folders){
       const list = Array.isArray(folders) ? folders : [];
       if (!list.length) return -1;
-      const profile = String(LINE_PREVIEW_AUDIO_GLOBAL_STATE.profile || "ratp");
-      const findBy = (predicate) => list.findIndex((folder) => predicate(folder));
-      const findRatp = () => findBy((folder) => linePreviewAudioGlobalFolderHasTag(folder, "ratp"));
-      const findFlix = () => findBy((folder) =>
-        linePreviewAudioGlobalFolderHasTag(folder, "flixbus") ||
-        linePreviewAudioGlobalFolderHasTag(folder, "flix bus")
-      );
-      const findNeutral = () => findBy((folder) =>
-        !linePreviewAudioGlobalFolderHasTag(folder, "ratp") &&
-        !linePreviewAudioGlobalFolderHasTag(folder, "flixbus") &&
-        !linePreviewAudioGlobalFolderHasTag(folder, "flix bus")
-      );
-      if (profile === "flixbus") {
-        const flixIdx = findFlix();
-        if (flixIdx >= 0) return flixIdx;
-      } else if (profile === "neutral") {
-        const neutralIdx = findNeutral();
-        if (neutralIdx >= 0) return neutralIdx;
-      } else {
-        const ratpIdx = findRatp();
-        if (ratpIdx >= 0) return ratpIdx;
-      }
-      return 0;
+      const index = list.findIndex((folder) => linePreviewAudioGlobalFolderMatchesProfile(folder));
+      return index >= 0 ? index : 0;
     }
     function linePreviewAudioGlobalFolderMatchesProfile(folder, profileInput = ""){
-      const profile = String(profileInput || LINE_PREVIEW_AUDIO_GLOBAL_STATE.profile || "ratp");
-      const isRatp = linePreviewAudioGlobalFolderHasTag(folder, "ratp");
-      const isFlix = linePreviewAudioGlobalFolderHasTag(folder, "flixbus") || linePreviewAudioGlobalFolderHasTag(folder, "flix bus");
-      if (profile === "disabled") return false;
-      if (profile === "flixbus") return isFlix;
-      if (profile === "neutral") return !isRatp && !isFlix;
-      return isRatp;
+      const profile = String(profileInput || LINE_PREVIEW_AUDIO_GLOBAL_STATE.profile || "");
+      if (!profile || profile === "disabled") return false;
+      return normalizeAudioNameToken(linePreviewAudioGlobalFolderDisplayName(folder?.name)) === normalizeAudioNameToken(profile);
     }
     function shouldFilterLinePreviewAudioGlobalsBySelectedLine(){
       return !!String(currentSelectedKey || "").trim();
     }
     function getLinePreviewAudioGlobalAvailableFolders(folders){
       const list = Array.isArray(folders) ? folders : [];
-      if (!shouldFilterLinePreviewAudioGlobalsBySelectedLine()) return list;
-      const allowedTypes = new Set(
-        (Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens : [])
-          .map((t) => String(t || "").trim())
-          .filter(Boolean)
-      );
-      return list.filter((folder) => {
-        if (!linePreviewAudioGlobalFolderMatchesProfile(folder)) return false;
-        if (!allowedTypes.size) return true;
-        const meta = parseLinePreviewAudioGlobalFolderMeta(folder?.name);
-        if (!meta.typeToken) return true;
-        return allowedTypes.has(meta.typeToken);
-      });
+      return shouldFilterLinePreviewAudioGlobalsBySelectedLine()
+        ? list.filter((folder) => linePreviewAudioGlobalFolderMatchesProfile(folder)) : list;
     }
     function getLinePreviewAudioGlobalPlayableClips(folder){
-      const clipsRaw = Array.isArray(folder?.clips) ? folder.clips : [];
-      if (!shouldFilterLinePreviewAudioGlobalsBySelectedLine()) return clipsRaw;
-      const allowedTypes = new Set(
-        (Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.typeTokens : [])
-          .map((t) => String(t || "").trim())
-          .filter(Boolean)
-      );
-      const folderType = parseLinePreviewAudioGlobalFolderMeta(folder?.name || "").typeToken;
-      return clipsRaw.filter((clipName) => {
-        if (!allowedTypes.size) return true;
-        if (folderType) return allowedTypes.has(folderType);
-        const meta = parseLinePreviewAudioGlobalClipMeta(clipName);
-        if (!meta.typeToken) return true;
-        return allowedTypes.has(meta.typeToken);
-      });
+      return Array.isArray(folder?.clips) ? folder.clips : [];
     }
     function hasLinePreviewAudioGlobalPlayableClip(){
       const allFolders = Array.isArray(LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders) ? LINE_PREVIEW_AUDIO_GLOBAL_STATE.folders : [];
@@ -9199,7 +9027,7 @@
     }
     async function loadLinePreviewAudioGlobalFolders(){
       const folders = [];
-      const rootPath = ensureTrailingSlash(DBUS_FIS_GLOBAL_ROOT);
+      const rootPath = ensureTrailingSlash(DBUS_FIS_ANNONCES_ROOT);
       const rootClips = (await listDirectoryMp3BaseNames(rootPath))
         .map((clip) => String(clip || "").trim())
         .filter(Boolean);
@@ -9704,121 +9532,30 @@
         return { completeStyles, missingByFolder };
       };
 
-      const dossiersScanTargets = await listDbusFisRouteStyleFoldersFromDossiers();
-      if (dossiersScanTargets.length) {
-        const { completeStyles, missingByFolder } = evaluateScanTargets(
-          dossiersScanTargets.map((target) => ({
-            folderName: target?.name || ".",
-            folderPath: ensureTrailingSlash(String(target?.path || "")),
-            files: Array.isArray(target?.files) ? target.files : []
-          }))
-        );
-        if (completeStyles.length) {
-          const targetFolder = completeStyles[0]?.path || "";
-          return {
-            ok: true,
-            href: ensureTrailingSlash(targetFolder),
-            styles: completeStyles,
-            departureClipName: String(completeStyles[0]?.departureClipName || preferredDepartureLabel),
-            reason: "complete",
-            line: lineFolder,
-            route: routeName
-          };
-        }
-        return {
-          ok: false,
-          href: "",
-          reason: "missing_stops_mp3",
-          line: lineFolder,
-          route: routeName,
-          missingByFolder: missingByFolder.length
-            ? missingByFolder
-            : [{ folder: DBUS_FIS_DOSSIERS_ROOT, missingStops: allRequiredStops }]
-        };
-      }
-
-      const linePath = ensureTrailingSlash(joinEncodedPath(DBUS_FIS_ROOT, lineFolder));
-      if (!lineFolder) {
-        return {
-          ok: false,
-          href: "",
-          reason: "line_folder_name_empty",
-          line: lineFolder,
-          route: routeName,
-          missingByFolder: [
-            { folder: "", missingStops: allRequiredStops }
-          ]
-        };
-      }
-      const scanTargets = [];
-      const seenScanTarget = new Set();
-      const addScanTarget = (folderName, folderPath, files) => {
-        const normalizedFolderPath = ensureTrailingSlash(String(folderPath || ""));
-        const key = normalizedFolderPath.toLowerCase();
-        if (!folderPath || seenScanTarget.has(key)) return;
-        seenScanTarget.add(key);
-        scanTargets.push({
-          folderName,
-          folderPath: normalizedFolderPath,
-          files: Array.isArray(files) ? files : []
-        });
-      };
-      const scanLineRoot = async (rootPath, rootLabel = ".") => {
-        const rootFiles = await listDirectoryMp3BaseNames(rootPath);
-        if (rootFiles.length) addScanTarget(rootLabel, rootPath, rootFiles);
-        const subfolders = await listDirectorySubfolders(rootPath);
-        for (const subfolderName of subfolders) {
-          const folderPath = ensureTrailingSlash(joinEncodedPath(rootPath, subfolderName));
-          const files = await listDirectoryMp3BaseNames(folderPath);
-          if (files.length) addScanTarget(subfolderName, folderPath, files);
-        }
-      };
-      const missingCandidates = new Set([linePath]);
-
-      await scanLineRoot(linePath, ".");
-      if (!scanTargets.length) {
-        const fallbackRoots = await listDbusFisFallbackLineFolders(lineFolder);
-        for (const fallbackRoot of fallbackRoots) {
-          const fallbackPath = ensureTrailingSlash(String(fallbackRoot?.path || ""));
-          if (fallbackPath) missingCandidates.add(fallbackPath);
-          await scanLineRoot(fallbackPath, String(fallbackRoot?.styleName || "."));
-        }
-      }
-
-      if (!scanTargets.length) {
-        return {
-          ok: false,
-          href: "",
-          reason: "line_folder_missing_or_empty",
-          line: lineFolder,
-          route: routeName,
-          linePath,
-          missingByFolder: [...missingCandidates].map((folder) => ({
-            folder,
-            missingStops: allRequiredStops
-          }))
-        };
-      }
-      const { completeStyles, missingByFolder } = evaluateScanTargets(scanTargets);
+      const network = getLinePreviewAudioProfileForLine(line, route);
+      if (network === "disabled") return { ok: false, href: "", reason: "network_not_set", missingByFolder: [] };
+      const dossiersScanTargets = (await listDbusFisRouteStyleFoldersFromDossiers()).filter(
+        (target) => linePreviewAudioGlobalFolderMatchesProfile(target, network)
+      );
+      const { completeStyles, missingByFolder } = evaluateScanTargets(
+        dossiersScanTargets.map((target) => ({
+          folderName: target?.name || ".",
+          folderPath: ensureTrailingSlash(String(target?.path || "")),
+          files: Array.isArray(target?.files) ? target.files : []
+        }))
+      );
       if (!completeStyles.length) {
         return {
-          ok: false,
-          href: "",
-          reason: "missing_stops_mp3",
-          line: lineFolder,
-          route: routeName,
-          missingByFolder
+          ok: false, href: "", reason: "missing_stops_mp3",
+          line: lineFolder, route: routeName,
+          missingByFolder: missingByFolder.length ? missingByFolder
+            : [{ folder: network, missingStops: allRequiredStops }]
         };
       }
-      const targetFolder = completeStyles[0]?.path || linePath;
       return {
-        ok: true,
-        href: ensureTrailingSlash(targetFolder),
-        styles: completeStyles,
-        departureClipName: String(completeStyles[0]?.departureClipName || preferredDepartureLabel),
-        reason: "complete",
-        line: lineFolder,
-        route: routeName
+        ok: true, href: ensureTrailingSlash(completeStyles[0].path), styles: completeStyles,
+        departureClipName: String(completeStyles[0].departureClipName || preferredDepartureLabel),
+        reason: "complete", line: lineFolder, route: routeName
       };
     }
     function getRouteAudioCoverage(line, route){
@@ -9859,7 +9596,6 @@
     function updateLinePreviewAudioButton(line, route){
       const token = ++linePreviewAudioCheckToken;
       setLinePreviewAudioGlobalProfileForLine(line, route);
-      setLinePreviewAudioGlobalTypeTokensForLine(line, route);
       setLinePreviewAudioButtonState({ visible: false, routeAudioReady: false });
       clearLinePreviewAudioRouteState({ closePanel: false, stopPlayback: true });
       const globalReadyPromise = Promise.resolve(ensureLinePreviewAudioGlobalFoldersLoaded())
@@ -10067,6 +9803,8 @@
       return "Fictive";
     }
     function getStopEntryVisual(entry){
+      const configured = window.IDF_LINE_CONFIG.badgeElement(entry?.route?.lineStyle || entry?.line?.lineStyle, getStopEntryLineLabel(entry), 26);
+      if (configured) return {kind:"configured", element:configured};
       const networkLogo = getStopEntryNetworkLogo(entry);
       if (networkLogo) return { kind: "logo", ...networkLogo };
       const cat = getCategory(entry?.line);
@@ -10178,6 +9916,13 @@
       entries.forEach(entry => {
         const activate = (opts = {}) => selectDbusLineRouteFromStopEntry(entry, opts);
         const visual = getStopEntryVisual(entry);
+        if (visual.kind === "configured") {
+          const button = visual.element;
+          button.style.cursor = "pointer";
+          button.addEventListener("click", (event) => { event.preventDefault(); event.stopPropagation(); activate(); });
+          badges.appendChild(button);
+          return;
+        }
         if (visual.kind === "school") {
           const schoolLogo = document.createElement("img");
           schoolLogo.className = "dbus-stop-line-school-logo";
@@ -10302,10 +10047,11 @@
     let DBUS_LINES = [];
     async function loadLines(){
       const xml = await fetchMapXml("Mode%20Bus/lines.xml");
+      window.IDF_LINE_CONFIG.load(xml);
       const seenLineUids = new Map();
       DBUS_LINES = [...xml.querySelectorAll("lines > line")].map((line, lineIndex) => {
         const rawUid = String(line.getAttribute("uid") || "").trim();
-        const number  = line.getAttribute("number") || "?";
+        const number  = String(line.getAttribute("linename") || "").trim() || String(line.getAttribute("number") || "").trim() || String(line.getAttribute("uid") || "").trim() || "?";
         const uidBase = rawUid || `line_${lineIndex}`;
         const seenCount = (seenLineUids.get(uidBase) || 0) + 1;
         seenLineUids.set(uidBase, seenCount);
@@ -10318,7 +10064,7 @@
 
         const routes = [...line.querySelectorAll(":scope > route")].map(rt=>{
           const rUid  = rt.getAttribute("uid");
-          const rName = rt.getAttribute("name") || "";
+          const rName = window.IDF_LINE_CONFIG.routeName(line, rt, DBUS_STOPS);
           const stops = [...rt.querySelectorAll(":scope > busstop")].map(b => {
             return {
               uid: parseInt(b.getAttribute("uid"), 10),
@@ -10328,10 +10074,10 @@
 
           const totalMinutes = stops.reduce((sum, s) => sum + (s.nextStopTime || 0), 0);
 
-          return { uid: rUid, name: rName, stops, totalMinutes };
+          return { uid: rUid, name: rName, stops, totalMinutes, lineStyle: window.IDF_LINE_CONFIG.read(line, rt), reseau: window.IDF_LINE_CONFIG.network(rt.hasAttribute("reseau") ? rt.getAttribute("reseau") : line.getAttribute("reseau")) };
         });
 
-        return { uid: lineUid, uidRaw: rawUid, number, routes };
+        return { uid: lineUid, uidRaw: rawUid, number, routes, lineStyle: window.IDF_LINE_CONFIG.read(line), reseau: window.IDF_LINE_CONFIG.network(line.getAttribute("reseau")) };
       });
     }
 
@@ -10847,7 +10593,7 @@
       } catch {}
     }
     function buildWazeModeUrl(){
-      const next = new URL("./game_manager/widgets/waze.html", location.href);
+      const next = new URL("./idf-rp/widgets/waze.html", location.href);
       if (SELECTED_VERSION) next.searchParams.set("version", SELECTED_VERSION);
       next.searchParams.set("bridge", "1");
       return next.toString();
@@ -13035,41 +12781,7 @@
     function getLineStyleEntry(number){
       const n = String(number || "").trim();
       if (!n) return null;
-      const STYLE_LC = getLineStyleEntry.STYLE_LC || (
-        getLineStyleEntry.STYLE_LC = Object.fromEntries(
-          Object.entries(LINE_STYLES).map(([k,v]) => [k.toLowerCase(), v])
-        )
-      );
-      return STYLE_LC[n.toLowerCase()] || null;
-    }
-
-    function getLineLink(line, route){
-      const candidates = [];
-      try {
-        const { lineNumber } = parseRouteName(route?.name || "");
-        if (lineNumber) candidates.push(lineNumber);
-      } catch {}
-      if (line?.number) candidates.push(line.number);
-      try {
-        const cat = getCategory(line);
-        if (cat) candidates.push(cat);
-        if (cat === "FlixBus") candidates.push("FLIXBUS");
-      } catch {}
-
-      const seen = new Set();
-      for (const cand of candidates){
-        const key = String(cand || "").trim();
-        if (!key) continue;
-        const lc = key.toLowerCase();
-        if (seen.has(lc)) continue;
-        seen.add(lc);
-        const entry = getLineStyleEntry(key);
-        if (entry) {
-          const url = (typeof entry[2] === "string") ? entry[2].trim() : "";
-          if (url) return url;
-        }
-      }
-      return "";
+      return window.IDF_LINE_CONFIG.find(n);
     }
 
     const LINE_COLOR_CACHE = new Map();
@@ -13077,12 +12789,7 @@
       const n = String(number || "").trim();
       if (isNoctilien2(n)) return Promise.resolve(["#080080", "#FFFFFF"]);
 
-      const STYLE_LC = getLineColors.STYLE_LC || (
-        getLineColors.STYLE_LC = Object.fromEntries(
-          Object.entries(LINE_STYLES).map(([k,v]) => [k.toLowerCase(), v])
-        )
-      );
-      const hit = STYLE_LC[n.toLowerCase()];
+      const hit = window.IDF_LINE_CONFIG.find(n);
       if (hit) return Promise.resolve(hit);
 
       const key = n.toLowerCase();
@@ -13352,10 +13059,7 @@
 
       if (isNoctilien2(n)) return ["#080080", "#FFFFFF"];
 
-      const STYLE_LC = Object.fromEntries(
-        Object.entries(LINE_STYLES).map(([k,v]) => [k.toLowerCase(), v])
-      );
-      const hit = STYLE_LC[n.toLowerCase()];
+      const hit = window.IDF_LINE_CONFIG.find(n);
       if (hit) return hit;
 
       const key = n.toLowerCase();
@@ -14060,20 +13764,6 @@
       const isNoctLinePreview = isNoctilien2(lineNumber);
       let previewBadgeChip = null;
 
-      const lpLink = document.getElementById("lpLink");
-      if (lpLink){
-        const url = getLineLink(line, route);
-        const hasUrl = !!url;
-        if (hasUrl) {
-          lpLink.href = url;
-          lpLink.hidden = false;
-          lpLink.style.display = "";
-        } else {
-          lpLink.removeAttribute("href");
-          lpLink.hidden = true;
-          lpLink.style.display = "none";
-        }
-      }
       updateLinePreviewAudioButton(line, route);
 
       function applyNetworkBadgeToPreview(opts){
@@ -14137,7 +13827,12 @@
       const navettePreviewLogo = (isNavetteNogentToken(lineNumber) || isNavetteNogentLine(line))
         ? getOtherNetworkLogoMeta(line, lineNumber)
         : null;
-      if (navettePreviewLogo) {
+      const configuredPreview = window.IDF_LINE_CONFIG.badgeElement(route.lineStyle || line.lineStyle, lineNumber, 32);
+      if (configuredPreview) {
+        badge.innerHTML = ""; badge.className = "lp-badge-wrapper";
+        badge.style.background = "transparent"; badge.dataset.networkBadge = "true";
+        badge.appendChild(configuredPreview);
+      } else if (navettePreviewLogo) {
         applyLogoOnlyNetworkToPreview(navettePreviewLogo);
       } else if (mTitusLP) {
         applyNetworkBadgeToPreview({
@@ -15396,6 +15091,9 @@
     }
 
     function appendRouteLogo(item, line, lineNumber, showLogo) {
+      const configured = (window.IDF_LINE_CONFIG.find(lineNumber) || line.lineStyle);
+      const custom = window.IDF_LINE_CONFIG.badgeElement(configured, lineNumber || line.number, 32);
+      if (custom) { item.appendChild(custom); return; }
       if (!showLogo) return;
       const rawLineNumber = String(lineNumber || line.number || "").trim();
       const isNoct = isNoctilien2(rawLineNumber);
@@ -15449,7 +15147,7 @@
       if (lineCategory === "Speciaux") displayNumber = getSpecialBadgeLabel(displayNumber);
       const isScolaire = lineCategory === "Scolaire";
       const badgeSize = lineCategory === "Speciaux" ? getRerRouteBadgeSize() : routeBadgeSizeFor(displayNumber);
-      const badge = (isScolaire || isNavetteNogentItem) ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
+      const badge = (isScolaire || isNavetteNogentItem || (route.lineStyle && route.lineStyle.badgeImage)) ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
       if (badge && isRerLine) {
         badge.classList.add("badge-rer");
         if (specialKind === "metro") badge.classList.add("badge-metro");
@@ -16156,6 +15854,8 @@
         }
 
         function createLogoForLine(line) {
+          const custom = window.IDF_LINE_CONFIG.badgeElement(line.lineStyle, line.number, 32);
+          if (custom) return custom;
           const raw = String(line.number || "").trim();
           const wrap = document.createElement("div");
           wrap.className = "dbus-logo";
@@ -16463,7 +16163,7 @@
       const badgeSize = category === "Speciaux"
         ? getRerRouteBadgeSize()
         : (forceExpressLengthSize ? routeBadgeSizeFor("Express") : (compactLengthBadge ? "72x28" : routeBadgeSizeFor(displayNumber)));
-      const badge = (isScolaire || isNavetteNogentItem) ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
+      const badge = (isScolaire || isNavetteNogentItem || (route.lineStyle && route.lineStyle.badgeImage)) ? null : makeLineBadge(displayNumber, "#444", "#fff", badgeSize);
       if (badge && isRerLine) {
         badge.classList.add("badge-rer");
         if (specialKind === "metro") badge.classList.add("badge-metro");
@@ -16895,7 +16595,10 @@
           const navetteSearchLogo = isNavetteNogentToken(lineNumber)
             ? getOtherNetworkLogoMeta({ number: lineNumber }, lineNumber)
             : null;
-          if (navetteSearchLogo) {
+          const searchBadge = window.IDF_LINE_CONFIG.badgeElement(window.IDF_LINE_CONFIG.find(lineNumber), lineNumber, 24);
+          if (searchBadge) {
+            div.appendChild(searchBadge);
+          } else if (navetteSearchLogo) {
             const wrap = document.createElement('div');
             wrap.style.display = 'inline-flex';
             wrap.style.alignItems = 'center';

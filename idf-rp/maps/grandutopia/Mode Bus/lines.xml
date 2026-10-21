@@ -1,0 +1,1363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lines map_type="utopia" defaultcategory="Autocars">
+  <line
+    uid="0"
+    linename="Aix Noulette sur Hulluch"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="228" passengersMin="10" passengersMax="50" coefOn="100" nextStopTime="8" />
+      <!--Aix-Noulette sur Hulluch by houses-->
+      <busstop uid="227" passengersMin="10" passengersMax="50" coefOn="50" nextStopTime="15" />
+      <!--Grandville lake-->
+      <busstop uid="223" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Rombas busstation 3-->
+    </route>
+  </line>
+  <line
+    uid="1"
+    linename="Beaubourg"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="241" passengersMin="10" passengersMax="50" coefOn="100" nextStopTime="11" />
+      <!--Beaubourg busstation 1-->
+      <busstop uid="168" passengersMin="5" passengersMax="25" coefOn="50" nextStopTime="5" />
+      <!--Lafalaise busstation 3-->
+      <busstop uid="166" passengersMin="10" passengersMax="20" coefOn="25" nextStopTime="5" />
+      <!--Gavrouche farm-->
+      <busstop uid="170" passengersMin="15" passengersMax="25" coefOn="30" nextStopTime="7" />
+      <!--Montbois parking place-->
+      <busstop uid="171" passengersMin="15" passengersMax="30" coefOn="45" nextStopTime="5" />
+      <!--Legrotas big tree-->
+      <busstop uid="173" passengersMin="10" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Nouillorc park with trees-->
+      <busstop uid="174" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Clerlande busstation 3-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="241" passengersMin="10" passengersMax="40" coefOn="100" nextStopTime="10" />
+      <!--Beaubourg busstation 1-->
+      <busstop uid="228" passengersMin="5" passengersMax="15" coefOn="20" nextStopTime="11" />
+      <!--Aix-Noulette sur Hulluch by houses-->
+      <busstop uid="237" passengersMin="5" passengersMax="15" coefOn="20" nextStopTime="6" />
+      <!--Belmont norrfood-->
+      <busstop uid="235" passengersMin="10" passengersMax="40" coefOn="45" nextStopTime="7" />
+      <!--Lossande-Gelesse trees-->
+      <busstop uid="232" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Gerardmer timber turtle-->
+    </route>
+    <route uid="2" time="0">
+      <busstop uid="241" passengersMin="10" passengersMax="40" coefOn="100" nextStopTime="10" />
+      <!--Beaubourg busstation 1-->
+      <busstop uid="238" passengersMin="5" passengersMax="30" coefOn="40" nextStopTime="5" />
+      <!--Riviere Sens building green roof-->
+      <busstop uid="242" passengersMin="5" passengersMax="50" coefOn="60" nextStopTime="12" />
+      <!--Rivenchy busstation 3-->
+      <busstop uid="243" passengersMin="5" passengersMax="10" coefOn="10" nextStopTime="5" />
+      <!--Arlandis uphill-->
+      <busstop uid="245" passengersMin="10" passengersMax="50" coefOn="50" nextStopTime="10" />
+      <!--Pérignat busstation 3-->
+      <busstop uid="202" passengersMin="10" passengersMax="50" coefOn="50" nextStopTime="13" />
+      <!--Egeskov busstation 1-->
+      <busstop uid="199" passengersMin="5" passengersMax="15" coefOn="25" nextStopTime="9" />
+      <!--Chirac cars tree-->
+      <busstop uid="198" passengersMin="5" passengersMax="15" coefOn="50" nextStopTime="8" />
+      <!--Pontiac garage-->
+      <busstop uid="208" passengersMin="5" passengersMax="40" coefOn="50" nextStopTime="5" />
+      <!--Salininkai beach-->
+      <busstop uid="214" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Iliffe little harbour buildings-->
+    </route>
+    <route uid="3" time="0">
+      <busstop uid="241" passengersMin="5" passengersMax="50" coefOn="100" nextStopTime="11" />
+      <!--Beaubourg busstation 1-->
+      <busstop uid="168" passengersMin="5" passengersMax="45" coefOn="65" nextStopTime="5" />
+      <!--Lafalaise busstation 3-->
+      <busstop uid="166" passengersMin="5" passengersMax="15" coefOn="20" nextStopTime="10" />
+      <!--Gavrouche farm-->
+      <busstop uid="165" passengersMin="5" passengersMax="40" coefOn="40" nextStopTime="9" />
+      <!--Monteil from bridge-->
+      <busstop uid="75" passengersMin="5" passengersMax="20" coefOn="50" nextStopTime="13" />
+      <!--Alingsas bungalow one stairs-->
+      <busstop uid="77" passengersMin="5" passengersMax="20" coefOn="45" nextStopTime="25" />
+      <!--Lavernay from tunnel-->
+      <busstop uid="79" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Le Paradis busstop by statue-->
+    </route>
+  </line>
+  <line
+    uid="2"
+    linename="Castelnoir"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="175" passengersMin="5" passengersMax="50" coefOn="100" nextStopTime="10" />
+      <!--Castelnoir busstation 3-->
+      <busstop uid="176" passengersMin="2" passengersMax="10" coefOn="50" nextStopTime="7" />
+      <!--Sainte-Agnes building with garage-->
+      <busstop uid="178" passengersMin="2" passengersMax="10" coefOn="50" nextStopTime="7" />
+      <!--La Palmyre white bungalow-->
+      <busstop uid="173" passengersMin="2" passengersMax="10" coefOn="50" nextStopTime="10" />
+      <!--Nouillorc park with trees-->
+      <busstop uid="174" passengersMin="5" passengersMax="50" coefOn="50" nextStopTime="12" />
+      <!--Clerlande busstation 3-->
+      <busstop uid="200" passengersMin="2" passengersMax="10" coefOn="50" nextStopTime="9" />
+      <!--Chirac houses-->
+      <busstop uid="198" passengersMin="5" passengersMax="15" coefOn="50" nextStopTime="15" />
+      <!--Pontiac garage-->
+      <busstop uid="223" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Rombas busstation 3-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="175" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="15" />
+      <!--Castelnoir busstation 3-->
+      <busstop uid="174" passengersMin="5" passengersMax="25" coefOn="75" nextStopTime="15" />
+      <!--Clerlande busstation 3-->
+      <busstop uid="241" passengersMin="5" passengersMax="50" coefOn="50" nextStopTime="15" />
+      <!--Beaubourg busstation 1-->
+      <busstop uid="242" passengersMin="0" passengersMax="50" coefOn="50" nextStopTime="20" />
+      <!--Rivenchy busstation 3-->
+      <busstop uid="245" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Pérignat busstation 3-->
+    </route>
+    <route uid="2" time="0">
+      <busstop uid="175" passengersMin="5" passengersMax="45" coefOn="100" nextStopTime="10" />
+      <!--Castelnoir busstation 3-->
+      <busstop uid="178" passengersMin="5" passengersMax="15" coefOn="50" nextStopTime="7" />
+      <!--La Palmyre white bungalow-->
+      <busstop uid="173" passengersMin="5" passengersMax="15" coefOn="45" nextStopTime="12" />
+      <!--Nouillorc park with trees-->
+      <busstop uid="168" passengersMin="5" passengersMax="50" coefOn="50" nextStopTime="10" />
+      <!--Lafalaise busstation 3-->
+      <busstop uid="169" passengersMin="5" passengersMax="15" coefOn="45" nextStopTime="5" />
+      <!--Bausel first stop-->
+      <busstop uid="174" passengersMin="5" passengersMax="40" coefOn="100" nextStopTime="5" />
+      <!--Clerlande busstation 3-->
+      <busstop uid="186" passengersMin="5" passengersMax="20" coefOn="35" nextStopTime="4" />
+      <!--Sulikow building entrance-->
+      <busstop uid="184" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Saint-Sylvestre-Cappel busstation 1-->
+    </route>
+  </line>
+  <line
+    uid="3"
+    linename="Clerlande"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="174" passengersMin="2" passengersMax="50" coefOn="100" nextStopTime="10" />
+      <!--Clerlande busstation 3-->
+      <busstop uid="173" passengersMin="2" passengersMax="25" coefOn="50" nextStopTime="5" />
+      <!--Nouillorc park with trees-->
+      <busstop uid="172" passengersMin="2" passengersMax="10" coefOn="100" nextStopTime="7" />
+      <!--Legrotas field with little trees-->
+      <busstop uid="170" passengersMin="5" passengersMax="25" coefOn="40" nextStopTime="5" />
+      <!--Montbois parking place-->
+      <busstop uid="167" passengersMin="3" passengersMax="18" coefOn="50" nextStopTime="5" />
+      <!--Gavrouche house-->
+      <busstop uid="168" passengersMin="5" passengersMax="50" coefOn="75" nextStopTime="10" />
+      <!--Lafalaise busstation 3-->
+      <busstop uid="241" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Beaubourg busstation 1-->
+    </route>
+  </line>
+  <line
+    uid="4"
+    linename="Denver"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="194" passengersMin="0" passengersMax="45" coefOn="100" nextStopTime="12" />
+      <!--Denver sea against traffic-->
+      <busstop uid="189" passengersMin="5" passengersMax="35" coefOn="50" nextStopTime="5" />
+      <!--Chaseville cargotras-->
+      <busstop uid="188" passengersMin="2" passengersMax="30" coefOn="100" nextStopTime="10" />
+      <!--Courpiere carwash-->
+      <busstop uid="184" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Saint Sylvestre Cappel busstation 1-->
+    </route>
+  </line>
+  <line
+    uid="5"
+    linename="Egeskov"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="1">
+      <busstop uid="201" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="9" />
+      <!--Egeskov busstation 3-->
+      <busstop uid="199" passengersMin="5" passengersMax="15" coefOn="50" nextStopTime="8" />
+      <!--Chirac cars tree-->
+      <busstop uid="198" passengersMin="5" passengersMax="15" coefOn="60" nextStopTime="13" />
+      <!--Pontiac garage-->
+      <busstop uid="223" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Rombas busstation 3-->
+    </route>
+  </line>
+  <line
+    uid="6"
+    linename="Foxhaven"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="1" time="0">
+      <busstop uid="272" passengersMin="5" passengersMax="30" coefOn="100" nextStopTime="13" />
+      <!--Foxhaven drive thru-->
+      <busstop uid="258" passengersMin="2" passengersMax="10" coefOn="20" nextStopTime="5" />
+      <!--Bully grass field-->
+      <busstop uid="281" passengersMin="1" passengersMax="10" coefOn="20" nextStopTime="6" />
+      <!--Hillside gasmer-->
+      <busstop uid="267" passengersMin="1" passengersMax="30" coefOn="50" nextStopTime="19" />
+      <!--Crater Lake garage-->
+      <busstop uid="322" passengersMin="1" passengersMax="30" coefOn="25" nextStopTime="5" />
+      <!--Westbank to crossing-->
+      <busstop uid="291" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Liberty Bay diplodocus-->
+    </route>
+  </line>
+  <line
+    uid="7"
+    linename="Gerardmer"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="231" passengersMin="0" passengersMax="25" coefOn="100" nextStopTime="7" />
+      <!--Gérardmer iveco-->
+      <busstop uid="236" passengersMin="2" passengersMax="50" coefOn="50" nextStopTime="6" />
+      <!--Lossande Gelesse lake-->
+      <busstop uid="237" passengersMin="2" passengersMax="15" coefOn="45" nextStopTime="11" />
+      <!--Belmont norrfood-->
+      <busstop uid="239" passengersMin="2" passengersMax="35" coefOn="50" nextStopTime="10" />
+      <!--Riviere Sens busstop parking place-->
+      <busstop uid="241" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Beaubourg busstation 1-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="232" passengersMin="0" passengersMax="25" coefOn="100" nextStopTime="8" />
+      <!--Gerardmer timber turtle-->
+      <busstop uid="230" passengersMin="2" passengersMax="30" coefOn="30" nextStopTime="5" />
+      <!--Stellamar house red roof-->
+      <busstop uid="237" passengersMin="2" passengersMax="25" coefOn="35" nextStopTime="11" />
+      <!--Belmont norrfood-->
+      <busstop uid="239" passengersMin="2" passengersMax="35" coefOn="50" nextStopTime="11" />
+      <!--Riviere Sens busstop parking place-->
+      <busstop uid="241" passengersMin="2" passengersMax="50" coefOn="55" nextStopTime="8" />
+      <!--Beaubourg busstation 1-->
+      <busstop uid="168" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Lafalaise busstation 3-->
+    </route>
+    <route uid="2" time="0">
+      <busstop uid="232" passengersMin="0" passengersMax="25" coefOn="100" nextStopTime="8" />
+      <!--Gerardmer timber turtle-->
+      <busstop uid="230" passengersMin="1" passengersMax="25" coefOn="30" nextStopTime="15" />
+      <!--Stellamar house red roof-->
+      <busstop uid="226" passengersMin="0" passengersMax="25" coefOn="25" nextStopTime="15" />
+      <!--Grandville houses-->
+      <busstop uid="223" passengersMin="2" passengersMax="50" coefOn="35" nextStopTime="10" />
+      <!--Rombas busstation 3-->
+      <busstop uid="213" passengersMin="2" passengersMax="35" coefOn="40" nextStopTime="10" />
+      <!--Iliffe little harbour boats-->
+      <busstop uid="208" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Salininkai beach-->
+    </route>
+  </line>
+  <line
+    uid="8"
+    linename="Ilife"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="214" passengersMin="0" passengersMax="40" coefOn="75" nextStopTime="5" />
+      <!--Iliffe little harbour buildings-->
+      <busstop uid="208" passengersMin="5" passengersMax="45" coefOn="50" nextStopTime="8" />
+      <!--Salininkai beach-->
+      <busstop uid="197" passengersMin="2" passengersMax="25" coefOn="50" nextStopTime="9" />
+      <!--Pontiac mill-->
+      <busstop uid="200" passengersMin="4" passengersMax="24" coefOn="50" nextStopTime="13" />
+      <!--Chirac houses-->
+      <busstop uid="202" passengersMin="1" passengersMax="50" coefOn="75" nextStopTime="10" />
+      <!--Egeskov busstation 1-->
+      <busstop uid="245" passengersMin="1" passengersMax="50" coefOn="75" nextStopTime="5" />
+      <!--Pérignat busstation 3-->
+      <busstop uid="244" passengersMin="2" passengersMax="15" coefOn="25" nextStopTime="12" />
+      <!--Arlandis downhill-->
+      <busstop uid="242" passengersMin="1" passengersMax="50" coefOn="30" nextStopTime="5" />
+      <!--Rivenchy busstation 3-->
+      <busstop uid="239" passengersMin="5" passengersMax="30" coefOn="50" nextStopTime="10" />
+      <!--Riviere Sens busstop parking place-->
+      <busstop uid="241" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Beaubourg busstation 1-->
+    </route>
+  </line>
+  <line
+    uid="9"
+    linename="Jean du Bartail"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="136" passengersMin="1" passengersMax="50" coefOn="80" nextStopTime="9" />
+      <!--Jean-du-Bartail busstation 3-->
+      <busstop uid="129" passengersMin="0" passengersMax="50" coefOn="60" nextStopTime="10" />
+      <!--Chavanon castle-->
+      <busstop uid="156" passengersMin="2" passengersMax="50" coefOn="50" nextStopTime="9" />
+      <!--Dolan-sur-Mer busstation 3-->
+      <busstop uid="153" passengersMin="2" passengersMax="15" coefOn="25" nextStopTime="5" />
+      <!--Saint-Vaury bungalow-->
+      <busstop uid="151" passengersMin="1" passengersMax="30" coefOn="50" nextStopTime="10" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="156" passengersMin="2" passengersMax="50" coefOn="50" nextStopTime="15" />
+      <!--Montmorillon busstation 12-->
+      <busstop uid="5" passengersMin="2" passengersMax="35" coefOn="60" nextStopTime="9" />
+      <!--Louchartville airport station behind bus-->
+      <busstop uid="2" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Utopia Centre Ville busstation 11-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="136" passengersMin="2" passengersMax="50" coefOn="75" nextStopTime="17" />
+      <!--Jean-du-Bartail busstation 3-->
+      <busstop uid="130" passengersMin="1" passengersMax="20" coefOn="40" nextStopTime="14" />
+      <!--Saint-Benoit VRM Oil-->
+      <busstop uid="129" passengersMin="2" passengersMax="50" coefOn="60" nextStopTime="6" />
+      <!--Chavanon castle-->
+      <busstop uid="125" passengersMin="2" passengersMax="45" coefOn="30" nextStopTime="15" />
+      <!--Krewit first busstation first stop-->
+      <busstop uid="87" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Malterre busstation 3-->
+    </route>
+  </line>
+  <line
+    uid="10"
+    linename="Kamelot"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="1" time="0">
+      <busstop uid="283" passengersMin="5" passengersMax="25" coefOn="100" nextStopTime="7">
+        <!--Kamelot from roundabout
+-->
+      </busstop>
+      <busstop uid="339" passengersMin="5" passengersMax="25" coefOn="100" nextStopTime="12" />
+      <!--Bradfort busstop-->
+      <busstop uid="324" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Windfield busstation 1 for bus-->
+    </route>
+  </line>
+  <line
+    uid="11"
+    linename="La Josefine"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="158" passengersMin="1" passengersMax="25" coefOn="100" nextStopTime="11" />
+      <!--La Josefine pink building-->
+      <busstop uid="157" passengersMin="1" passengersMax="25" coefOn="30" nextStopTime="7" />
+      <!--Château d'Ours fle-->
+      <busstop uid="156" passengersMin="2" passengersMax="50" coefOn="50" nextStopTime="12" />
+      <!--Dolan-sur-Mer busstation 3-->
+      <busstop uid="87" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Malterre busstation 3-->
+    </route>
+  </line>
+  <line
+    uid="12"
+    linename="Lafalaise"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="168" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="9" />
+      <!--Lafalaise busstation 3-->
+      <busstop uid="241" passengersMin="2" passengersMax="45" coefOn="50" nextStopTime="10" />
+      <!--Beaubourg busstation 1-->
+      <busstop uid="239" passengersMin="2" passengersMax="30" coefOn="45" nextStopTime="11" />
+      <!--Riviere Sens busstop parking place-->
+      <busstop uid="237" passengersMin="2" passengersMax="15" coefOn="25" nextStopTime="6" />
+      <!--Belmont norrfood-->
+      <busstop uid="230" passengersMin="1" passengersMax="20" coefOn="30" nextStopTime="9" />
+      <!--Stellamar house red roof-->
+      <busstop uid="231" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Gérardmer iveco-->
+    </route>
+  </line>
+  <line
+    uid="13"
+    linename="Le Paradis"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="79" passengersMin="1" passengersMax="30" coefOn="75" nextStopTime="25" />
+      <!--Le Paradis busstop by statue
+-->
+      <busstop uid="78" passengersMin="1" passengersMax="15" coefOn="35" nextStopTime="22" />
+      <!--Lavernay to tunnel-->
+      <busstop uid="74" passengersMin="1" passengersMax="35" coefOn="50" nextStopTime="7" />
+      <!--Courfeyrac sea-->
+      <busstop uid="60" passengersMin="2" passengersMax="15" coefOn="50" nextStopTime="10" />
+      <!--Neyland buildings with tree-->
+      <busstop uid="4" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Utopia Centre Ville busstation 14-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="79" passengersMin="1" passengersMax="25" coefOn="100" nextStopTime="22" />
+      <!--Le Paradis busstop by statue-->
+      <busstop uid="78" passengersMin="1" passengersMax="25" coefOn="50" nextStopTime="14" />
+      <!--Lavernay to tunnel-->
+      <busstop uid="76" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="9" />
+      <!--Alingsas bungalow two stairs-->
+      <busstop uid="165" passengersMin="1" passengersMax="20" coefOn="50" nextStopTime="15" />
+      <!--Monteil from bridge-->
+      <busstop uid="86" passengersMin="2" passengersMax="20" coefOn="50" nextStopTime="10" />
+      <!--Vierge-du-lac busstop-->
+      <busstop uid="81" passengersMin="1" passengersMax="20" coefOn="50" nextStopTime="20" />
+      <!--Poix du Nord playground-->
+      <busstop uid="5" passengersMin="1" passengersMax="50" coefOn="75" nextStopTime="15" />
+      <!--Louchartville airport station-->
+      <busstop uid="4" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Utopia Centre Ville busstation 14-->
+    </route>
+    <route uid="2" time="0">
+      <busstop uid="79" passengersMin="0" passengersMax="35" coefOn="100" nextStopTime="22" />
+      <!--Le Paradis busstop by statue-->
+      <busstop uid="78" passengersMin="2" passengersMax="35" coefOn="50" nextStopTime="15" />
+      <!--Lavernay to tunnel-->
+      <busstop uid="76" passengersMin="1" passengersMax="20" coefOn="20" nextStopTime="9" />
+      <!--Alingsas bungalow two stairs-->
+      <busstop uid="164" passengersMin="1" passengersMax="30" coefOn="35" nextStopTime="10" />
+      <!--Monteil to bridge-->
+      <busstop uid="166" passengersMin="1" passengersMax="25" coefOn="50" nextStopTime="5" />
+      <!--Gavrouche house-->
+      <busstop uid="168" passengersMin="1" passengersMax="50" coefOn="50" nextStopTime="10" />
+      <!--Lafalaise busstation 3-->
+      <busstop uid="241" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Beaubourg busstation 1-->
+    </route>
+  </line>
+  <line
+    uid="14"
+    linename="Liberty Bay"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="291" passengersMin="5" passengersMax="25" coefOn="100" nextStopTime="3" />
+      <!--Liberty Bay diplodocus-->
+      <busstop uid="323" passengersMin="1" passengersMax="15" coefOn="20" nextStopTime="15" />
+      <!--Westbank to yellow sign-->
+      <busstop uid="255" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="11" />
+      <!--Bradfort only bussign-->
+      <busstop uid="324" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Windfield busstation 1 for bus-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="291" passengersMin="2" passengersMax="30" coefOn="100" nextStopTime="3" />
+      <!--Liberty Bay diplodocus
+-->
+      <busstop uid="323" passengersMin="0" passengersMax="10" coefOn="75" nextStopTime="8" />
+      <!--Westbank to yellow sign
+-->
+      <busstop uid="249" passengersMin="1" passengersMax="25" coefOn="75" nextStopTime="18" />
+      <!--Bad Water soccer field
+-->
+      <busstop uid="299" passengersMin="1" passengersMax="25" coefOn="75" nextStopTime="3" />
+      <!--Paulsboro wooden house with car-->
+      <busstop uid="300" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Paulsboro busstation first stop
+-->
+    </route>
+    <route uid="2" time="0">
+      <busstop uid="291" passengersMin="1" passengersMax="50" coefOn="100" nextStopTime="4" />
+      <!--Liberty Bay diplodocus-->
+      <busstop uid="323" passengersMin="1" passengersMax="15" coefOn="75" nextStopTime="14" />
+      <!--Westbank to yellow sign-->
+      <busstop uid="255" passengersMin="1" passengersMax="15" coefOn="40" nextStopTime="18"></busstop>
+      <!--Bradfort only bussign-->
+      <busstop uid="321" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Two Rivers houses with stairs
+-->
+    </route>
+    <route uid="3" time="0">
+      <busstop uid="291" passengersMin="5" passengersMax="50" coefOn="100" nextStopTime="5" />
+      <!--Liberty Bay diplodocus-->
+      <busstop uid="323" passengersMin="2" passengersMax="10" coefOn="20" nextStopTime="19" />
+      <!--Westbank to yellow sign-->
+      <busstop uid="268" passengersMin="1" passengersMax="10" coefOn="20" nextStopTime="6" />
+      <!--Crater Lake sheeps-->
+      <busstop uid="282" passengersMin="1" passengersMax="30" coefOn="50" nextStopTime="5" />
+      <!--Hillside shops
+-->
+      <busstop uid="257" passengersMin="1" passengersMax="30" coefOn="25" nextStopTime="13" />
+      <!--Bully tree with cows-->
+      <busstop uid="273" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Foxhaven blue glass building-->
+    </route>
+  </line>
+  <line
+    uid="15"
+    linename="Louchartville"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="1">
+      <busstop uid="6" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="9" />
+      <!--Louchartville airport entrance-->
+      <busstop uid="2" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Utopia Centre Ville busstation 11-->
+    </route>
+  </line>
+  <line
+    uid="16"
+    linename="Maisnil les Libercourt"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="72" passengersMin="0" passengersMax="45" coefOn="100" nextStopTime="8" />
+      <!--Maisnil-Les-Libercourt busstation 3-->
+      <busstop uid="66" passengersMin="2" passengersMax="25" coefOn="50" nextStopTime="3" />
+      <!--Port Aelvingue house green roof-->
+      <busstop uid="68" passengersMin="1" passengersMax="20" coefOn="50" nextStopTime="3" />
+      <!--Maringues to eco-->
+      <busstop uid="61" passengersMin="2" passengersMax="35" coefOn="50" nextStopTime="5" />
+      <!--Utopia Zone Portauire stop by bar-->
+      <busstop uid="63" passengersMin="1" passengersMax="50" coefOn="50" nextStopTime="7" />
+      <!--Utopia Zone Portauire busstation 2-->
+      <busstop uid="64" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Krautersgerheim statue-->
+      <busstop uid="70" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Meulan busstation 1-->
+    </route>
+  </line>
+  <line
+    uid="17"
+    linename="Malterre"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="1">
+      <busstop uid="87" passengersMin="0" passengersMax="35" coefOn="100" nextStopTime="2" />
+      <!--Malterre busstation 3-->
+      <busstop uid="90" passengersMin="2" passengersMax="10" coefOn="35" nextStopTime="6" />
+      <!--Malterre avenue blaise pascal fcp-->
+      <busstop uid="161" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="6" />
+      <!--Ville Marie blue shelter-->
+      <busstop uid="153" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="7" />
+      <!--Saint-Vaury bungalow-->
+      <busstop uid="151" passengersMin="1" passengersMax="45" coefOn="50" nextStopTime="15" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="57" passengersMin="1" passengersMax="35" coefOn="50" nextStopTime="19" />
+      <!--Montmorillon busstation 12-->
+      <busstop uid="29" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="7" />
+      <!--Utopia Stade quai carnot blue house-->
+      <busstop uid="30" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="10" />
+      <!--Utopia Stade magic roundabout flats-->
+      <busstop uid="4" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Utopia Centre Ville busstation 14-->
+    </route>
+    <route uid="3" time="1">
+      <busstop uid="87" passengersMin="0" passengersMax="25" coefOn="100" nextStopTime="10" />
+      <!--Malterre busstation 3-->
+      <busstop uid="110" passengersMin="1" passengersMax="15" coefOn="20" nextStopTime="4" />
+      <!--Saint-Flour castle wall-->
+      <busstop uid="116" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="8" />
+      <!--Kenzie silo-->
+      <busstop uid="85" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Gravouland houses-->
+      <busstop uid="155" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="3" />
+      <!--Montchaux-Soreng tree field-->
+      <busstop uid="153" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="7" />
+      <!--Saint-Vaury bungalow-->
+      <busstop uid="151" passengersMin="1" passengersMax="35" coefOn="50" nextStopTime="15" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="57" passengersMin="1" passengersMax="35" coefOn="40" nextStopTime="19" />
+      <!--Montmorillon busstation 12-->
+      <busstop uid="30" passengersMin="1" passengersMax="20" coefOn="25" nextStopTime="17" />
+      <!--Utopia Stade magic roundabout flats-->
+      <busstop uid="4" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Utopia Centre Ville busstation 14-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="87" passengersMin="0" passengersMax="35" coefOn="100" nextStopTime="15" />
+      <!--Malterre busstation 3-->
+      <busstop uid="125" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="6" />
+      <!--Krewit busstation first stop-->
+      <busstop uid="129" passengersMin="1" passengersMax="45" coefOn="50" nextStopTime="14" />
+      <!--Chavanon castle-->
+      <busstop uid="130" passengersMin="1" passengersMax="15" coefOn="35" nextStopTime="17" />
+      <!--Saint-Benoit VRM Oil-->
+      <busstop uid="136" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Jean-du-Bartail busstation 3-->
+    </route>
+    <route uid="2" time="0">
+      <busstop uid="87" passengersMin="0" passengersMax="35" coefOn="100" nextStopTime="12" />
+      <!--Malterre busstation 3-->
+      <busstop uid="156" passengersMin="2" passengersMax="35" coefOn="30" nextStopTime="7" />
+      <!--Dolan-sur-Mer busstation 3-->
+      <busstop uid="157" passengersMin="2" passengersMax="10" coefOn="20" nextStopTime="14" />
+      <!--Château d'Ours fle-->
+      <busstop uid="158" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--La Josefine pink building-->
+    </route>
+    <route uid="4" time="0">
+      <busstop uid="87" passengersMin="1" passengersMax="45" coefOn="75" nextStopTime="10" />
+      <!--Malterre busstation 3-->
+      <busstop uid="110" passengersMin="2" passengersMax="15" coefOn="25" nextStopTime="6" />
+      <!--Saint-Flour castle wall-->
+      <busstop uid="82" passengersMin="2" passengersMax="15" coefOn="25" nextStopTime="5" />
+      <!--Larzac house two stairs-->
+      <busstop uid="86" passengersMin="2" passengersMax="15" coefOn="25" nextStopTime="10" />
+      <!--Vierge-du-lac busstop-->
+      <busstop uid="164" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Monteil to bridge-->
+    </route>
+    <route uid="5" time="0">
+      <busstop uid="87" passengersMin="2" passengersMax="35" coefOn="75" nextStopTime="10" />
+      <!--Malterre busstation 3-->
+      <busstop uid="110" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="4" />
+      <!--Saint-Flour castle wall-->
+      <busstop uid="116" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="8" />
+      <!--Kenzie silo-->
+      <busstop uid="84" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="3" />
+      <!--Gravouland cranes-->
+      <busstop uid="82" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="5" />
+      <!--Larzac house two stairs-->
+      <busstop uid="86" passengersMin="1" passengersMax="20" coefOn="50" nextStopTime="8" />
+      <!--Vierge-du-lac busstop-->
+      <busstop uid="81" passengersMin="2" passengersMax="20" coefOn="35" nextStopTime="10" />
+      <!--Poix du Nord playground-->
+      <busstop uid="58" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Montmorillon busstation 13-->
+    </route>
+    <route uid="6" time="0">
+      <busstop uid="87" passengersMin="5" passengersMax="40" coefOn="75" nextStopTime="10" />
+      <!--Malterre busstation 3-->
+      <busstop uid="110" passengersMin="2" passengersMax="25" coefOn="30" nextStopTime="4" />
+      <!--Saint-Flour castle wall-->
+      <busstop uid="114" passengersMin="1" passengersMax="10" coefOn="50" nextStopTime="8" />
+      <!--Chambret garage-->
+      <busstop uid="120" passengersMin="4" passengersMax="40" coefOn="50" nextStopTime="14" />
+      <!--Chalezeule busstation 3-->
+      <busstop uid="123" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Saint-Angel oil stone wall-->
+    </route>
+  </line>
+  <line
+    uid="18"
+    linename="Meulan"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="70" passengersMin="5" passengersMax="45" coefOn="75" nextStopTime="10" />
+      <!--Meulan busstation 1-->
+      <busstop uid="65" passengersMin="2" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Krautersgerheim beach-->
+      <busstop uid="63" passengersMin="2" passengersMax="45" coefOn="50" nextStopTime="8" />
+      <!--Utopia Zone Portauire busstation 2-->
+      <busstop uid="69" passengersMin="2" passengersMax="30" coefOn="30" nextStopTime="3" />
+      <!--Maringues beach-->
+      <busstop uid="67" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="8" />
+      <!--Port Aelvingue house red roof-->
+      <busstop uid="72" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Maisnil-Les-Libercourt busstation 3-->
+    </route>
+  </line>
+  <line
+    uid="19"
+    linename="Monteil"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="1">
+      <busstop uid="164" passengersMin="3" passengersMax="40" coefOn="75" nextStopTime="10" />
+      <!--Monteil to bridge-->
+      <busstop uid="86" passengersMin="1" passengersMax="25" coefOn="50" nextStopTime="5" />
+      <!--Vierge-du-lac busstop-->
+      <busstop uid="83" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="6" />
+      <!--Larzac house one stair-->
+      <busstop uid="111" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Saint-Flour gardens-->
+      <busstop uid="87" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Malterre busstation 3-->
+    </route>
+  </line>
+  <line
+    uid="20"
+    linename="Montmorillon"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="5" time="0">
+      <busstop uid="58" passengersMin="2" passengersMax="35" coefOn="75" nextStopTime="10" />
+      <!--Montmorillon busstation 13-->
+      <busstop uid="75" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="8" />
+      <!--Poix du Nord church-->
+      <busstop uid="86" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="5" />
+      <!--Vierge-du-lax busstop-->
+      <busstop uid="83" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="3" />
+      <!--Larzac house one stair-->
+      <busstop uid="85" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="8" />
+      <!--Gravouland houses-->
+      <busstop uid="117" passengersMin="1" passengersMax="20" coefOn="50" nextStopTime="4" />
+      <!--Kenzie grassfield-->
+      <busstop uid="111" passengersMin="2" passengersMax="20" coefOn="35" nextStopTime="10" />
+      <!--Saint-Flour gardens-->
+      <busstop uid="87" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Malterre busstation 3-->
+    </route>
+  </line>
+  <line
+    uid="21"
+    linename="Paulsboro"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="1" time="0">
+      <busstop uid="295" passengersMin="1" passengersMax="45" coefOn="100" nextStopTime="1"></busstop>
+      <!--Paulsboro busstation last stop-->
+      <busstop uid="298" passengersMin="0" passengersMax="15" coefOn="40" nextStopTime="18"></busstop>
+      <!--Paulsboro houses with parking place
+-->
+      <busstop uid="248" passengersMin="0" passengersMax="15" coefOn="40" nextStopTime="8" />
+      <!--Bad Water boderonie
+-->
+      <busstop uid="322" passengersMin="0" passengersMax="10" coefOn="40" nextStopTime="13" />
+      <!--Westbank to crossing
+-->
+      <busstop uid="291" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Liberty Bay diplodocus-->
+    </route>
+  </line>
+  <line
+    uid="22"
+    linename="Perignat"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="245" passengersMin="2" passengersMax="45" coefOn="75" nextStopTime="20" />
+      <!--Pérignat busstation 3-->
+      <busstop uid="242" passengersMin="2" passengersMax="45" coefOn="50" nextStopTime="15" />
+      <!--Rivenchy busstation 3-->
+      <busstop uid="241" passengersMin="2" passengersMax="45" coefOn="50" nextStopTime="15" />
+      <!--Beaubourg busstation 1-->
+      <busstop uid="174" passengersMin="2" passengersMax="45" coefOn="50" nextStopTime="15" />
+      <!--Clerlande busstation 3-->
+      <busstop uid="175" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Castelnoir busstation 3-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="245" passengersMin="2" passengersMax="45" coefOn="75" nextStopTime="8" />
+      <!--Pérignat busstation 3-->
+      <busstop uid="244" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Arlandis downhill-->
+      <busstop uid="186" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="5" />
+      <!--Sulikow building entrance-->
+      <busstop uid="184" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Saint-Sylvestre-Cappel busstop 1-->
+    </route>
+  </line>
+  <line
+    uid="23"
+    linename="Port Meli"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="305" passengersMin="1" passengersMax="50" coefOn="75" nextStopTime="12" />
+      <!--Port Meli munze supermarkt-->
+      <busstop uid="280" passengersMin="1" passengersMax="15" coefOn="50" nextStopTime="10" />
+      <!--Gougaram river-->
+      <busstop uid="317" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Taggafadi church
+-->
+    </route>
+  </line>
+  <line
+    uid="24"
+    linename="Rombas"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="1">
+      <busstop uid="223" passengersMin="2" passengersMax="50" coefOn="100" nextStopTime="20" />
+      <!--Rombas busstation 3-->
+      <busstop uid="245" passengersMin="2" passengersMax="50" coefOn="40" nextStopTime="20" />
+      <!--Pérignat busstation 3-->
+      <busstop uid="168" passengersMin="2" passengersMax="50" coefOn="40" nextStopTime="20" />
+      <!--Lafalaise busstation 3-->
+      <busstop uid="87" passengersMin="2" passengersMax="50" coefOn="40" nextStopTime="10" />
+      <!--Malterre busstation 3-->
+      <busstop uid="151" passengersMin="2" passengersMax="50" coefOn="40" nextStopTime="22" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="3" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Utopia Centre Ville busstation 12-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="223" passengersMin="5" passengersMax="50" coefOn="60" nextStopTime="12" />
+      <!--Rombas busstation 3-->
+      <busstop uid="226" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Grandville houses-->
+      <busstop uid="228" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Aix-Noulette sur Hulluch by houses-->
+    </route>
+    <route uid="2" time="0">
+      <busstop uid="223" passengersMin="4" passengersMax="50" coefOn="60" nextStopTime="15" />
+      <!--Rombas busstation 3-->
+      <busstop uid="197" passengersMin="2" passengersMax="15" coefOn="25" nextStopTime="9" />
+      <!--Pontiac mill-->
+      <busstop uid="199" passengersMin="2" passengersMax="15" coefOn="30" nextStopTime="12" />
+      <!--Chirac cars/tree-->
+      <busstop uid="174" passengersMin="4" passengersMax="50" coefOn="50" nextStopTime="10" />
+      <!--Clerlande busstation 3-->
+      <busstop uid="173" passengersMin="1" passengersMax="20" coefOn="30" nextStopTime="7" />
+      <!--Nouillorc park with trees-->
+      <busstop uid="178" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="7" />
+      <!--La Palmyre white bungalow first-->
+      <busstop uid="177" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="10" />
+      <!--Sainte-Agnes blue warehouse-->
+      <busstop uid="175" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Castelnoir busstation 3-->
+    </route>
+    <route uid="3" time="0">
+      <busstop uid="223" passengersMin="2" passengersMax="45" coefOn="75" nextStopTime="28" />
+      <!--Rombas busstation 3-->
+      <!-- Pack correction: Pontiac (mill) is stop 197; source reference 209 does not exist. -->
+      <busstop uid="197" passengersMin="1" passengersMax="20" coefOn="20" nextStopTime="8" />
+      <!--Pontiac mill-->
+      <busstop uid="200" passengersMin="1" passengersMax="20" coefOn="20" nextStopTime="13" />
+      <!--Chirac houses-->
+      <busstop uid="201" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Egeskov busstation 3-->
+    </route>
+    <route uid="4" time="0">
+      <busstop uid="223" passengersMin="2" passengersMax="30" coefOn="60" nextStopTime="21" />
+      <!--Rombas busstation 3-->
+      <busstop uid="213" passengersMin="2" passengersMax="15" coefOn="30" nextStopTime="16" />
+      <!--Iliffe little harbour boats-->
+      <busstop uid="208" passengersMin="2" passengersMax="35" coefOn="40" nextStopTime="18" />
+      <!--Salininkai beach-->
+      <busstop uid="189" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="4" />
+      <!--Chaseville cargotras-->
+      <busstop uid="188" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="11" />
+      <!--Courpiere carwash-->
+      <busstop uid="184" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Saint-Sylvestre-Cappel busstation 1-->
+    </route>
+  </line>
+  <line
+    uid="25"
+    linename="Saint Angel"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="123" passengersMin="2" passengersMax="35" coefOn="100" nextStopTime="10" />
+      <!--Saint-Angel oil stone wall-->
+      <busstop uid="165" passengersMin="2" passengersMax="35" coefOn="40" nextStopTime="9" />
+      <!--Monteil from bridge-->
+      <busstop uid="75" passengersMin="2" passengersMax="35" coefOn="40" nextStopTime="7" />
+      <!--Alingsas bungalow one stairs-->
+      <!---->
+      <busstop uid="74" passengersMin="1" passengersMax="40" coefOn="50" nextStopTime="7" />
+      <!--Courfeyrac sea-->
+      <busstop uid="60" passengersMin="1" passengersMax="25" coefOn="30" nextStopTime="10" />
+      <!--Neyland buildings with tree-->
+      <busstop uid="4" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Utopia Centre Ville busstation 14-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="123" passengersMin="1" passengersMax="25" coefOn="100" nextStopTime="12" />
+      <!--Saint-Angel oil stone wall-->
+      <busstop uid="120" passengersMin="1" passengersMax="45" coefOn="50" nextStopTime="7" />
+      <!--Chalezeule busstation 3-->
+      <busstop uid="115" passengersMin="1" passengersMax="20" coefOn="30" nextStopTime="6" />
+      <!--Chambret shelter-->
+      <busstop uid="111" passengersMin="1" passengersMax="20" coefOn="35" nextStopTime="10" />
+      <!--Saint-Flour gardens-->
+      <busstop uid="87" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Malterre busstation 3-->
+    </route>
+  </line>
+  <line
+    uid="26"
+    linename="Saint Sylvestre Cappel"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="182" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="10" />
+      <!--Saint-Sylvestre-Cappel busstation 13)-->
+      <busstop uid="187" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="5" />
+      <!--Courpiere cesta-->
+      <busstop uid="189" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="8" />
+      <!--Chaseville cargotras-->
+      <busstop uid="208" passengersMin="1" passengersMax="35" coefOn="50" nextStopTime="15" />
+      <!--Salininkai beach-->
+      <busstop uid="214" passengersMin="2" passengersMax="35" coefOn="50" nextStopTime="15" />
+      <!--Iliffe little harbour buildings-->
+      <busstop uid="223" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Rombas busstation 3-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="180" passengersMin="2" passengersMax="50" coefOn="75" nextStopTime="4" />
+      <!--Saint-Sylvestre-Cappel busstation 11-->
+      <busstop uid="185" passengersMin="1" passengersMax="25" coefOn="30" nextStopTime="15" />
+      <!--Sulikow parking mammouth-->
+      <busstop uid="174" passengersMin="1" passengersMax="45" coefOn="50" nextStopTime="5" />
+      <!--Clerlande busstation 3-->
+      <busstop uid="169" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Bausel first stop-->
+      <busstop uid="168" passengersMin="3" passengersMax="45" coefOn="50" nextStopTime="11" />
+      <!--Lafalaise busstation 3-->
+      <busstop uid="173" passengersMin="1" passengersMax="20" coefOn="30" nextStopTime="7" />
+      <!--Nouillorc park with trees-->
+      <busstop uid="178" passengersMin="1" passengersMax="20" coefOn="30" nextStopTime="10" />
+      <!--La Palmyre white bungalow first-->
+      <busstop uid="175" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Castelnoir busstation 3-->
+    </route>
+    <route uid="2" time="0">
+      <busstop uid="181" passengersMin="5" passengersMax="35" coefOn="100" nextStopTime="10" />
+      <!--Saint-Sylvestre-Cappel busstation 12-->
+      <busstop uid="187" passengersMin="2" passengersMax="15" coefOn="30" nextStopTime="5" />
+      <!--Courpiere cesta-->
+      <busstop uid="189" passengersMin="2" passengersMax="15" coefOn="30" nextStopTime="12" />
+      <!--Chaseville cargotras-->
+      <busstop uid="193" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Denver houses against traffic-->
+    </route>
+    <route uid="3" time="0">
+      <busstop uid="183" passengersMin="4" passengersMax="45" coefOn="100" nextStopTime="3" />
+      <!--Saint-Sylvestre-Cappel busstation 14-->
+      <busstop uid="185" passengersMin="1" passengersMax="25" coefOn="25" nextStopTime="9" />
+      <!--Sulikow parking mammouth-->
+      <busstop uid="243" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="10" />
+      <!--Arlandis uphill-->
+      <busstop uid="245" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Pérignat busstation 3-->
+    </route>
+  </line>
+  <line
+    uid="27"
+    linename="Salininkai"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="208" passengersMin="5" passengersMax="40" coefOn="100" nextStopTime="10" />
+      <!--Salininkai beach-->
+      <busstop uid="214" passengersMin="2" passengersMax="35" coefOn="20" nextStopTime="10" />
+      <!--Iliffe little harbour buildings-->
+      <busstop uid="223" passengersMin="1" passengersMax="50" coefOn="35" nextStopTime="14" />
+      <!--Rombas busstation 3-->
+      <busstop uid="227" passengersMin="1" passengersMax="20" coefOn="35" nextStopTime="15" />
+      <!--Grandville lake-->
+      <busstop uid="230" passengersMin="1" passengersMax="20" coefOn="35" nextStopTime="12" />
+      <!--Stellamar house red roof-->
+      <busstop uid="231" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Gérardmer iveco-->
+    </route>
+  </line>
+  <line
+    uid="28"
+    linename="Taggafadi"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="1" time="0">
+      <busstop uid="317" passengersMin="1" passengersMax="30" coefOn="100" nextStopTime="7" />
+      <!--Taggafadi church-->
+      <busstop uid="279" passengersMin="1" passengersMax="30" coefOn="75" nextStopTime="10" />
+      <!--Gougaram polar fish-->
+      <busstop uid="307" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Port Meli church-->
+    </route>
+  </line>
+  <line
+    uid="29"
+    linename="Tours"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="1">
+      <busstop uid="144" passengersMin="3" passengersMax="50" coefOn="75" nextStopTime="10" />
+      <!--Tours oval building-->
+      <busstop uid="150" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="8" />
+      <!--Baie du Chien kaarfor-->
+      <busstop uid="141" passengersMin="1" passengersMax="50" coefOn="60" nextStopTime="24" />
+      <!--Gebbbe du Montargis busstation 3-->
+      <busstop uid="87" passengersMin="1" passengersMax="50" coefOn="50" nextStopTime="12" />
+      <!--Malterre busstation 3-->
+      <busstop uid="151" passengersMin="1" passengersMax="50" coefOn="50" nextStopTime="26" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="2" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Utopia Centre Ville busstation 11-->
+    </route>
+  </line>
+  <line
+    uid="30"
+    linename="Two Rivers"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="1" time="0">
+      <busstop uid="320" passengersMin="5" passengersMax="25" coefOn="100" nextStopTime="16" />
+      <!--Two Rivers houses with garden-->
+      <busstop uid="256" passengersMin="1" passengersMax="15" coefOn="40" nextStopTime="15"></busstop>
+      <!--Bradfort busstop-->
+      <busstop uid="322" passengersMin="1" passengersMax="15" coefOn="40" nextStopTime="14"></busstop>
+      <!--Westbank to crossing-->
+      <busstop uid="291" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Liberty Bay diplodocus-->
+    </route>
+  </line>
+  <line
+    uid="31"
+    linename="Utopia Centre Ville"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="1">
+      <busstop uid="2" passengersMin="5" passengersMax="50" coefOn="75" nextStopTime="11" />
+      <!--Utopia Centre Ville busstation 11-->
+      <busstop uid="59" passengersMin="1" passengersMax="25" coefOn="30" nextStopTime="6" />
+      <!--Neyland wooden statue-->
+      <busstop uid="73" passengersMin="1" passengersMax="25" coefOn="30" nextStopTime="25" />
+      <!--Courfeyrac mountain-->
+      <busstop uid="77" passengersMin="1" passengersMax="25" coefOn="45" nextStopTime="30" />
+      <!--Lavernay from tunnel-->
+      <busstop uid="79" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Le Paradis busstop by statue-->
+    </route>
+    <route uid="1" time="1">
+      <busstop uid="2" passengersMin="4" passengersMax="50" coefOn="100" nextStopTime="10" />
+      <!--Utopia Centre Ville busstation 11-->
+      <busstop uid="31" passengersMin="1" passengersMax="10" coefOn="25" nextStopTime="6" />
+      <!--Utopia Centre Ville magic roundabout, building with pilars-->
+      <busstop uid="20" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="20" />
+      <!--Utopia Stade Quai Carnot sea-->
+      <busstop uid="57" passengersMin="5" passengersMax="50" coefOn="50" nextStopTime="15" />
+      <!--Montmorillon busstation 12-->
+      <busstop uid="151" passengersMin="5" passengersMax="50" coefOn="50" nextStopTime="10" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="152" passengersMin="1" passengersMax="20" coefOn="30" nextStopTime="6" />
+      <!--Saint-Vaury flat-->
+      <busstop uid="162" passengersMin="1" passengersMax="20" coefOn="30" nextStopTime="6" />
+      <!--Ville Marie trees-->
+      <busstop uid="91" passengersMin="3" passengersMax="30" coefOn="30" nextStopTime="2" />
+      <!--Malterre avenue blaise pascal, high building-->
+      <busstop uid="87" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Malterre busstation 3-->
+    </route>
+    <route uid="2" time="0">
+      <busstop uid="2" passengersMin="5" passengersMax="50" coefOn="100" nextStopTime="9" />
+      <!--Utopia Centre Ville busstation 11-->
+      <busstop uid="6" passengersMin="5" passengersMax="50" coefOn="50" nextStopTime="15" />
+      <!--Louchartville airport entrance behind bus-->
+      <busstop uid="57" passengersMin="2" passengersMax="45" coefOn="50" nextStopTime="10" />
+      <!--Montmorillon busstation 12-->
+      <busstop uid="151" passengersMin="2" passengersMax="45" coefOn="50" nextStopTime="5" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="152" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="9" />
+      <!--Saint-Vaury flat-->
+      <busstop uid="156" passengersMin="4" passengersMax="45" coefOn="50" nextStopTime="10" />
+      <!--Dolan-sur-Mer busstation 3-->
+      <busstop uid="129" passengersMin="1" passengersMax="25" coefOn="30" nextStopTime="9" />
+      <!--Chavanon castle-->
+      <busstop uid="136" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Jean-du-Bartail busstation 3-->
+    </route>
+    <route uid="4" time="1">
+      <busstop uid="2" passengersMin="5" passengersMax="50" coefOn="100" nextStopTime="10" />
+      <!--Utopia Centre Ville busstation 11-->
+      <busstop uid="31" passengersMin="2" passengersMax="15" coefOn="30" nextStopTime="7" />
+      <!--Utopia Centre Ville magic roundabout building with pilars-->
+      <busstop uid="20" passengersMin="2" passengersMax="15" coefOn="30" nextStopTime="20" />
+      <!--Utopia Stade quai carnot sea-->
+      <busstop uid="57" passengersMin="2" passengersMax="50" coefOn="50" nextStopTime="15" />
+      <!--Montmorillon busstation 12-->
+      <busstop uid="151" passengersMin="2" passengersMax="50" coefOn="50" nextStopTime="10" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="152" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="3" />
+      <!--Saint-Vaury flat-->
+      <busstop uid="154" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Montchaux-Soreng grass field-->
+      <busstop uid="84" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="3" />
+      <!--Gravouland cranes-->
+      <busstop uid="117" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="4" />
+      <!--Kenzie grassfield-->
+      <busstop uid="111" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="10" />
+      <!--Saint-Flour gardens-->
+      <busstop uid="87" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Malterre busstation 3-->
+    </route>
+    <route uid="5" time="1">
+      <busstop uid="2" passengersMin="5" passengersMax="40" coefOn="100" nextStopTime="15" />
+      <!--Utopia Centre Ville busstation 11-->
+      <busstop uid="5" passengersMin="5" passengersMax="40" coefOn="50" nextStopTime="20" />
+      <!--Louchartville airport station behind bus-->
+      <busstop uid="80" passengersMin="2" passengersMax="20" coefOn="30" nextStopTime="10" />
+      <!--Poix du Nord church-->
+      <busstop uid="86" passengersMin="2" passengersMax="20" coefOn="30" nextStopTime="15" />
+      <!--Vierge-du-lac busstop-->
+      <busstop uid="165" passengersMin="1" passengersMax="20" coefOn="30" nextStopTime="13" />
+      <!--Monteil from bridge-->
+      <busstop uid="75" passengersMin="1" passengersMax="15" coefOn="30" nextStopTime="13" />
+      <!--Alingsas bungalow one stairs-->
+      <busstop uid="77" passengersMin="1" passengersMax="25" coefOn="30" nextStopTime="25" />
+      <!--Lavernay from tunnel-->
+      <busstop uid="79" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Le Paradis busstop by statue-->
+    </route>
+    <route uid="6" time="1">
+      <busstop uid="3" passengersMin="5" passengersMax="50" coefOn="100" nextStopTime="25" />
+      <!--Utopia Centre Ville busstation 12-->
+      <busstop uid="151" passengersMin="5" passengersMax="30" coefOn="50" nextStopTime="10" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="87" passengersMin="2" passengersMax="30" coefOn="50" nextStopTime="25" />
+      <!--Malterre busstation 3-->
+      <busstop uid="168" passengersMin="2" passengersMax="25" coefOn="50" nextStopTime="20" />
+      <!--Lafalaise busstation 3-->
+      <busstop uid="245" passengersMin="1" passengersMax="30" coefOn="25" nextStopTime="15" />
+      <!--Pérignat busstation 3-->
+      <busstop uid="223" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Rombas busstation 3-->
+    </route>
+    <route uid="7" time="0">
+      <busstop uid="2" passengersMin="4" passengersMax="45" coefOn="100" nextStopTime="10" />
+      <!--Utopia Centre Ville busstation 11-->
+      <busstop uid="59" passengersMin="0" passengersMax="15" coefOn="30" nextStopTime="6" />
+      <!--Neyland wooden statue-->
+      <busstop uid="73" passengersMin="0" passengersMax="20" coefOn="30" nextStopTime="7" />
+      <!--Courfeyrac mountain-->
+      <busstop uid="76" passengersMin="0" passengersMax="15" coefOn="30" nextStopTime="9" />
+      <!--Alingsas bungalow two stairs-->
+      <busstop uid="164" passengersMin="0" passengersMax="20" coefOn="30" nextStopTime="12" />
+      <!--Monteil to bridge-->
+      <busstop uid="123" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Saint-Angel oil stone wall-->
+    </route>
+    <route uid="8" time="1">
+      <busstop uid="2" passengersMin="5" passengersMax="30" coefOn="100" nextStopTime="26" />
+      <!--114 - Utopia Centre Ville busstation 11-->
+      <busstop uid="151" passengersMin="1" passengersMax="30" coefOn="50" nextStopTime="12" />
+      <!--Ghyvelde busstation 3-->
+      <busstop uid="87" passengersMin="1" passengersMax="30" coefOn="50" nextStopTime="24" />
+      <!--Malterre busstation 3-->
+      <busstop uid="141" passengersMin="1" passengersMax="30" coefOn="50" nextStopTime="8" />
+      <!--Gebbbe du Montargis busstation 3-->
+      <busstop uid="150" passengersMin="1" passengersMax="15" coefOn="25" nextStopTime="10" />
+      <!--Baie du Chien kaarfor-->
+      <busstop uid="144" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Tours oval building-->
+    </route>
+    <route uid="3" time="1">
+      <busstop uid="2" passengersMin="5" passengersMax="50" coefOn="100" nextStopTime="9" />
+      <!--Utopia Centre Ville busstation 11-->
+      <busstop uid="6" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Louchartville airport entrance behind bus-->
+    </route>
+  </line>
+  <line
+    uid="32"
+    linename="Windfield"
+    type="Autocars"
+    color="#446b89"
+    textColor="#FFFFFF"
+    reseau=""
+    validationSounds="false"
+    passengerVariation="0,0"
+    badgeImage="false"
+    prefixImage="false">
+    <route uid="0" time="0">
+      <busstop uid="325" passengersMin="0" passengersMax="50" coefOn="100" nextStopTime="11" />
+      <!--Windfield busstation 2 behind bus
+-->
+      <busstop uid="256" passengersMin="1" passengersMax="15" coefOn="40" nextStopTime="15" />
+      <!--Bradfort busstop-->
+      <busstop uid="322" passengersMin="1" passengersMax="15" coefOn="40" nextStopTime="4" />
+      <!--Westbank to crossing-->
+      <busstop uid="291" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Liberty Bay diplodocus-->
+    </route>
+    <route uid="1" time="0">
+      <busstop uid="324" passengersMin="0" passengersMax="40" coefOn="100" nextStopTime="12" />
+      <!--Windfield busstation 1 for bus-->
+      <busstop uid="297" passengersMin="0" passengersMax="15" coefOn="40" nextStopTime="7" />
+      <!--Oakwood-Meadows airell-->
+      <busstop uid="284" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0" />
+      <!--Kamelot to roundabout-->
+    </route>
+  </line>
+</lines>

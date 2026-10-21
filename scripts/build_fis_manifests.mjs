@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const ROOT = path.join(process.cwd(), "game_manager", "sounds", "bus", "voix_bus");
-const OUTPUT = path.join(process.cwd(), "game_manager", "sounds", "bus", "voix_bus_index.json");
+const ROOT = path.join(process.cwd(), "idf-rp", "sounds", "bus", "voix_bus");
+const OUTPUT = path.join(process.cwd(), "idf-rp", "sounds", "bus", "voix_bus_index.json");
 
 function exists(p){
   try { fs.accessSync(p); return true; }
