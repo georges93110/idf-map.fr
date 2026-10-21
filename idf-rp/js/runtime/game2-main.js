@@ -37,7 +37,7 @@
     hidden.textContent='.idf-plugin-suspended body,.idf-plugin-suspended body *{visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(hidden);
   }
   runtime.parts = PARTS.slice();
-  runtime.version = "data-version-20261021";
+  runtime.version = "service-zoom-20261022";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {

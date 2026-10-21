@@ -4,7 +4,7 @@
 'use strict';
 const SCOPE='idf_game_widget_bridge_v1';
 const text=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
-const fit=(v,n)=>text(v).slice(0,n).padEnd(n,' ');
+const fit=(v,n)=>text(v).replace(/['’ʼ]/g,' ').slice(0,n).padEnd(n,' ');
 const initials=v=>text(v).split(/[^A-Z0-9]+/).filter(Boolean).map(w=>w[0]).join('').slice(0,3);
 class AgoraSaeiv {
  constructor(send,now=Date.now){this.send=send;this.now=now;this.state={};this.catalogue=[];this.page='home';this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.resume='home';this.pending=null;this.notice=['',''];this.noticeAt=0;this.clock='';this.power=true;this.at=0;this.audio=0;}
@@ -122,6 +122,7 @@ class AgoraSaeiv {
    this.page='home';
   }
  }
+ displayLines(){return this.lines().map(s=>fit(s,20));}
  lines(){
   if(!this.power)return ['',''];
   if(this.pending&&this.now()-this.pending.at>7000){this.pending=null;this.message(['LIAISON INTERROMPUE','REESSAYER']);}
@@ -172,7 +173,7 @@ const controller=new AgoraSaeiv(m=>{
 });
 const ctx=document.getElementById('lcd').getContext('2d');
 function draw(){
- const lines=controller.lines().map(s=>fit(s,20));
+ const lines=controller.displayLines();
  for(const button of document.querySelectorAll('.hit'))button.disabled=!controller.canPress(button.dataset.key);
  const key=lines.join('\n');if(key===last)return;last=key;
  ctx.clearRect(0,0,1280,220);ctx.fillStyle='rgb(8,12,2)';

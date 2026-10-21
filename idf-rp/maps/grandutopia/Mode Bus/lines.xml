@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<lines map_type="utopia" defaultcategory="Autocars">
+<lines map_zoom="+1" map_type="utopia" defaultcategory="Autocars">
   <line
     uid="0"
     linename="Aix Noulette sur Hulluch"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -24,11 +25,12 @@
     uid="1"
     linename="Beaubourg"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -102,11 +104,12 @@
     uid="2"
     linename="Castelnoir"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -162,11 +165,12 @@
     uid="3"
     linename="Clerlande"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -190,11 +194,12 @@
     uid="4"
     linename="Denver"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -212,11 +217,12 @@
     uid="5"
     linename="Egeskov"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="1">
@@ -234,11 +240,12 @@
     uid="6"
     linename="Foxhaven"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="1" time="0">
@@ -260,11 +267,12 @@
     uid="7"
     linename="Gerardmer"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -312,11 +320,12 @@
     uid="8"
     linename="Ilife"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -346,11 +355,12 @@
     uid="9"
     linename="Jean du Bartail"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -388,11 +398,12 @@
     uid="10"
     linename="Kamelot"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="1" time="0">
@@ -410,11 +421,12 @@
     uid="11"
     linename="La Josefine"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -432,11 +444,12 @@
     uid="12"
     linename="Lafalaise"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -458,11 +471,12 @@
     uid="13"
     linename="Le Paradis"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -517,11 +531,12 @@
     uid="14"
     linename="Liberty Bay"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -581,11 +596,12 @@
     uid="15"
     linename="Louchartville"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="1">
@@ -599,11 +615,12 @@
     uid="16"
     linename="Maisnil les Libercourt"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -627,11 +644,12 @@
     uid="17"
     linename="Malterre"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="1">
@@ -745,11 +763,12 @@
     uid="18"
     linename="Meulan"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -771,11 +790,12 @@
     uid="19"
     linename="Monteil"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="1">
@@ -795,11 +815,12 @@
     uid="20"
     linename="Montmorillon"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="5" time="0">
@@ -825,11 +846,12 @@
     uid="21"
     linename="Paulsboro"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="1" time="0">
@@ -852,11 +874,12 @@
     uid="22"
     linename="Perignat"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -886,11 +909,12 @@
     uid="23"
     linename="Port Meli"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -907,11 +931,12 @@
     uid="24"
     linename="Rombas"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="1">
@@ -984,11 +1009,12 @@
     uid="25"
     linename="Saint Angel"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -1023,11 +1049,12 @@
     uid="26"
     linename="Saint Sylvestre Cappel"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -1087,11 +1114,12 @@
     uid="27"
     linename="Salininkai"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">
@@ -1113,11 +1141,12 @@
     uid="28"
     linename="Taggafadi"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="1" time="0">
@@ -1133,11 +1162,12 @@
     uid="29"
     linename="Tours"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="1">
@@ -1159,11 +1189,12 @@
     uid="30"
     linename="Two Rivers"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="1" time="0">
@@ -1181,11 +1212,12 @@
     uid="31"
     linename="Utopia Centre Ville"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="1">
@@ -1333,11 +1365,12 @@
     uid="32"
     linename="Windfield"
     type="Autocars"
-    color="#446b89"
-    textColor="#FFFFFF"
+    color="#8cc299"
+    textColor="#221f20"
     reseau=""
     validationSounds="false"
     passengerVariation="0,0"
+    badge="false"
     badgeImage="false"
     prefixImage="false">
     <route uid="0" time="0">

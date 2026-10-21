@@ -988,6 +988,20 @@
         }
         return key ? saeivRouteClockShiftMs : 0;
       }
+      function getSaeivTransportClockShiftMs() {
+        // The schedule starts at selection, but transport starts when the
+        // service is launched. Only shifts AFTER that instant affect duration.
+        var shift = getSaeivRouteClockShiftMs();
+        var baseline = Number(saeivRouteStartedAtMs) > 0 && saeivRouteState
+          ? Number(saeivRouteState.startedClockShiftMs) : 0;
+        return shift - (Number.isFinite(baseline) ? baseline : 0);
+      }
+      function computeSaeivTransportElapsedMs(atMs) {
+        var start = Number(saeivRouteStartedAtMs) > 0 ? Number(saeivRouteStartedAtMs) : Number(saeivRouteSelectedAtMs);
+        var end = Number(atMs);
+        if (!Number.isFinite(start) || start <= 0 || !Number.isFinite(end) || end <= 0) return 0;
+        return Math.max(0, end - start - getSaeivTransportClockShiftMs());
+      }
       function rebaseSaeivServiceClock(deltaMs) {
         getSaeivRouteClockShiftMs();
         if (!saeivRouteClockShiftKey || !Number.isFinite(deltaMs) || !deltaMs) return;
@@ -1752,7 +1766,7 @@
         out.terminusReachedAtMs = reachedAt;
         var elapsedBase = Number.isFinite(startedAt) && startedAt > 0 ? startedAt : selectedAt;
         if (Number.isFinite(elapsedBase) && elapsedBase > 0) {
-          out.elapsedMs = Math.max(0, reachedAt - elapsedBase - getSaeivRouteClockShiftMs());
+          out.elapsedMs = computeSaeivTransportElapsedMs(reachedAt);
         }
         if (saeivPassengerState) {
           var servedStopsLive = 0;

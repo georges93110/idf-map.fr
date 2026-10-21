@@ -1633,6 +1633,11 @@ function tickSaeivAutomaticDestination() {
         });
         var root = xml && xml.querySelector("lines");
         lines.defaultCategory = root ? String(root.getAttribute("defaultcategory") || "").trim() : "";
+        // Relative native Service zoom; an absent limit leaves the game's range intact.
+        var zoom = root ? String(root.getAttribute("map_zoom") || "").trim() : "";
+        var maxZoom = root ? String(root.getAttribute("max_zoom") || "").trim() : "";
+        lines.mapZoom = zoom && Number.isFinite(Number(zoom)) ? Math.max(-31, Math.min(31, Number(zoom))) : 0;
+        lines.maxZoom = maxZoom && Number.isFinite(Number(maxZoom)) && Number(maxZoom) >= 0 ? Math.min(31, Number(maxZoom)) : null;
         return lines;
       }
       function loadDbusDataForVersion(version) {
@@ -2447,14 +2452,14 @@ function applySaeivPassengerSatisfaction(data) {
         payload.routePlannedTerminusAtMs = Number(completion.plannedTerminusAtMs);
         payload.routeActualTerminusAtMs = payload.routeCompleted ? (Number(saeivRouteCompletedAtMs) || payload.routeTerminusReachedAtMs || Number(payload.clockNowMs) || 0) : 0;
         var elapsedBase = Number(payload.routeStartedAtMs) > 0 ? Number(payload.routeStartedAtMs) : Number(payload.routeSelectedAtMs);
-        payload.routeClockShiftMs = getSaeivRouteClockShiftMs();
+        payload.routeClockShiftMs = getSaeivTransportClockShiftMs();
         elapsedBase += payload.routeClockShiftMs;
         var elapsedNow = payload.routeCompleted
           ? Number(payload.routeActualTerminusAtMs)
           : (Number(payload.clockNowMs) || getSaeivNowTimestampMs());
         var elapsedMs = 0;
         if (Number.isFinite(elapsedBase) && elapsedBase > 0 && Number.isFinite(elapsedNow) && elapsedNow > 0) {
-          elapsedMs = Math.max(0, elapsedNow - elapsedBase);
+          elapsedMs = computeSaeivTransportElapsedMs(elapsedNow);
         } else {
           elapsedMs = Number(completion.elapsedMs) || 0;
         }
@@ -2926,6 +2931,7 @@ function applySaeivPassengerSatisfaction(data) {
         var startClockNow = getSaeivNowTimestampMs();
         fixSaeivDepartureSchedule(telemetryLastSignal);
         saeivRouteStartedAtMs = startClockNow;
+        saeivRouteState.startedClockShiftMs = getSaeivRouteClockShiftMs();
         saeivTerminusReachedAtMs = 0;
         saeivRouteCompletedAtMs = 0;
         saeivRouteBoardedPassengers = 0;

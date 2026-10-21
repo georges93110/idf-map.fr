@@ -53,7 +53,7 @@ function buildNativeServiceCatalog(lines,stopEntries,lineNumber){
   var selected=categories.find(function(c){return foldCategory(c.key)===wanted||foldCategory(c.label)===wanted;});
   // One real type is not a useful filter. Keep only All in the native control.
   if(present.size<=1){categories=categories.slice(0,1);routes.forEach(function(r){r.category='all';});selected=null;}
-  return {categories:categories,routes:routes,defaultCategory:selected?selected.key:'all'};
+  return {categories:categories,routes:routes,defaultCategory:selected?selected.key:'all',mapZoom:lines&&lines.mapZoom||0,maxZoom:!lines||lines.maxZoom==null?null:lines.maxZoom};
 }
 var nativeServicesSocket=null,nativeServicesGeneration='',nativeServicesLoading=false,nativeServicesSource=null,nativeServicesSentAt=0;
 var nativeServicesRetryAt=0;
