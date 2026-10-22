@@ -521,6 +521,21 @@
 					<busstop uid="22" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0"/>
 			</route>
 
+			<route uid="13">
+					<busstop uid="289" passengersMin="9" passengersMax="17" coefOn="50" nextStopTime="1"/>
+					<busstop uid="290" passengersMin="3" passengersMax="8" coefOn="75" nextStopTime="1"/>
+					<busstop uid="291" passengersMin="1" passengersMax="3" coefOn="75" nextStopTime="1"/>
+					<busstop uid="292" passengersMin="1" passengersMax="3" coefOn="75" nextStopTime="1"/>
+					<busstop uid="293" passengersMin="1" passengersMax="3" coefOn="75" nextStopTime="1"/>
+					<busstop uid="294" passengersMin="1" passengersMax="3" coefOn="75" nextStopTime="1"/>
+					<busstop uid="295" passengersMin="1" passengersMax="3" coefOn="75" nextStopTime="1"/>
+
+					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100" nextStopTime="3"/>
+					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50" nextStopTime="2"/>
+					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50" nextStopTime="2"/>
+					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0" nextStopTime="0"/>
+			</route>
+
 	</line>
 
 	<line
