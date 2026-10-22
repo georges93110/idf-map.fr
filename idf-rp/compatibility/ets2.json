@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "resolver": 1,
-  "revision": 57,
+  "revision": 58,
   "profiles": [
     {
       "sha256": "2014bfcc850a06108f4ca3c233a5bb6d31d7d83346c5d449f94c8e0675e5199a",
@@ -10214,10 +10214,46 @@
           }
         },
         {
+          "id": "rva_0094eb50",
+          "rva": 9759568,
+          "recipe": {
+            "pattern": "48 8b c4 48 89 58 08 48 89 70 18 55 57 41 56 48 8d 68 b8 48 81 ec 30 01 00 00 0f 29 70 d8 44 8b f2 0f 29 78 c8 48 8b f9 44 0f 29 40 b8 44 0f 29 48 a8 44 0f 29 50 98 44 0f 28 d2 44 0f 29 58 88 44 0f 28 db 44 0f 29 a0 78 ff ff ff f7 c2 ff 0f 00 00 0f 84 ?? ?? ?? ?? 4c 8b 49 20 33 f6 4c 8b 41 28 8b de f3 44 0f 10 05 ?? ?? ?? ?? 45 0f 57 e4 41 0f 28 f8 4f 8d 14 c1 4d 3b ca 74 ?? 66 90",
+            "method": "match",
+            "offset": 0,
+            "operand": 0,
+            "end": 0,
+            "sectionFlags": 536870912
+          }
+        },
+        {
+          "id": "rva_0094f070",
+          "rva": 9760880,
+          "recipe": {
+            "pattern": "48 8b c4 48 89 58 08 48 89 70 18 55 57 41 56 48 8d 68 a8 48 81 ec 40 01 00 00 0f 29 70 d8 44 8b f2 0f 29 78 c8 48 8b f1 44 0f 29 40 b8 44 0f 29 48 a8 44 0f 29 50 98 44 0f 29 58 88 44 0f 28 da 44 0f 29 a0 78 ff ff ff 44 0f 28 e3 44 0f 29 a8 68 ff ff ff f7 c2 ff 0f 00 00 0f 84 ?? ?? ?? ?? 48 8b 51 28 33 ff 48 8b 41 20 48 ff ca 4c 8b 49 20 8b df f3 44 0f 10 05 ?? ?? ?? ?? 49 83 e9 08",
+            "method": "match",
+            "offset": 0,
+            "operand": 0,
+            "end": 0,
+            "sectionFlags": 536870912
+          }
+        },
+        {
           "id": "rva_0094f720",
           "rva": 9762592,
           "recipe": {
             "pattern": "48 89 5c 24 08 57 48 83 ec 20 48 8b 49 78 0f 28 c3 49 8b f8 48 8b da f3 0f 10 59 70 48 8b 01 f3 0f 5c d8 ff 50 60 48 8b cb e8 ?? ?? ?? ?? f3 0f 10 43 34 f3 0f 5c 07 48 8b 5c 24 30 f3 0f 11 07 48 83 c4 20 5f c3",
+            "method": "match",
+            "offset": 0,
+            "operand": 0,
+            "end": 0,
+            "sectionFlags": 536870912
+          }
+        },
+        {
+          "id": "rva_0094f800",
+          "rva": 9762816,
+          "recipe": {
+            "pattern": "48 8b 49 78 0f b6 44 24 30 88 44 24 30 f3 0f 10 41 70 4c 8b 01 f3 0f 5c c2 0f 28 d0 49 ff a0 c0 00 00 00",
             "method": "match",
             "offset": 0,
             "operand": 0,
