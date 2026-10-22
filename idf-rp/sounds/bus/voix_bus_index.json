@@ -1,4 +1,34 @@
 {
+  "annonces": {
+    "FLIXBUS": {
+      "_files": [
+        "Bienvenue (Anglais)",
+        "Bienvenue (Français)"
+      ]
+    },
+    "RATP": {
+      "_files": [
+        "Attention aux pickpockets",
+        "Avancez vers le fond",
+        "Avancez vers le fond (Ancien)",
+        "Avancez vers le fond (Variante 1)",
+        "Avertissement poussettes (Variante 1)",
+        "Bienvenue sur cette ligne IDFM",
+        "Montée par l’avant",
+        "Montée par l’avant (Ancien)",
+        "Terminus (Ancien)",
+        "Validez votre titre",
+        "Validez votre titre (Ancien)",
+        "Validez votre titre (Variante 1)",
+        "Veuillez vous écarter des portes (Variante 1)"
+      ]
+    },
+    "TRANSDEV": {
+      "_files": [
+        "Terminus"
+      ]
+    }
+  },
   "trajet": {
     "RATP": {
       "_files": [
@@ -168,36 +198,6 @@
         "Porte de Vincennes",
         "Prochain_Arret",
         "Pyrénées – Docteur Netter",
-        "Terminus"
-      ]
-    }
-  },
-  "annonces": {
-    "FLIXBUS": {
-      "_files": [
-        "Bienvenue (Anglais)",
-        "Bienvenue (Français)"
-      ]
-    },
-    "RATP": {
-      "_files": [
-        "Attention aux pickpockets",
-        "Avancez vers le fond",
-        "Avancez vers le fond (Ancien)",
-        "Avancez vers le fond (Variante 1)",
-        "Avertissement poussettes (Variante 1)",
-        "Bienvenue sur cette ligne IDFM",
-        "Montée par l’avant",
-        "Montée par l’avant (Ancien)",
-        "Terminus (Ancien)",
-        "Validez votre titre",
-        "Validez votre titre (Ancien)",
-        "Validez votre titre (Variante 1)",
-        "Veuillez vous écarter des portes (Variante 1)"
-      ]
-    },
-    "TRANSDEV": {
-      "_files": [
         "Terminus"
       ]
     }
