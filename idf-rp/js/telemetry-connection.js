@@ -19,6 +19,11 @@
   // send, onmessage and close handlers. No global WebSocket replacement.
   function connect(options) {
     var candidatePorts = ports(), next = 0, pending = new Set(), winner = null;
+    // The private service host exposes only the bridge endpoint passed by the
+    // DLL. IPC keeps the browser's network permissions unchanged. Ordinary
+    // browser pages continue using their existing permission-aware WebSocket.
+    var hostTransport = (!options || options.purpose !== "girouette-editor") && root.IdfServiceTransport;
+
     var listeners = {}, scheduled = 0, stopped = false, handshakeTimeout = 900, monitor = null;
     var connection = { readyState: 0, url: "", onopen: null, onmessage: null, onerror: null, onclose: null };
     connection.phase = function (name) { if (monitor) monitor.step(name); };
@@ -71,14 +76,20 @@
       var socket;
       var endpoint = "ws://127.0.0.1:" + port + (options && options.purpose === "girouette-editor" ? "/girouette-editor" : "/idf-discovery");
       try {
-        try { socket = new root.WebSocket(endpoint, { protocols: ["idf-telemetry-v1"], targetAddressSpace: "loopback" }); }
-        catch (_) { socket = new root.WebSocket(endpoint, "idf-telemetry-v1"); }
+        if (hostTransport) socket = hostTransport.open(endpoint, "idf-telemetry-v1");
+        else {
+          try { socket = new root.WebSocket(endpoint, { protocols: ["idf-telemetry-v1"], targetAddressSpace: "loopback" }); }
+          catch (_) { socket = new root.WebSocket(endpoint, "idf-telemetry-v1"); }
+        }
       }
       catch (_) { scheduled = setTimeout(pump, 0); return; }
       var p = { socket: socket, timer: 0 };
       pending.add(p);
       function failed() { if (!pending.has(p)) return; discard(p); scheduled = setTimeout(pump, 0); }
-      p.timer = setTimeout(failed, handshakeTimeout);
+      // The hinted/remembered bridge may be delayed by Chromium's connection
+      // backoff or a busy game startup. Do not cancel it every 900 ms forever.
+      // Unrelated discovery ports keep the short timeout; prompts keep 30 s.
+      p.timer = setTimeout(failed, Math.max(handshakeTimeout, port === candidatePorts[0] ? 8000 : 900));
       socket.onerror = socket.onclose = failed;
       socket.onmessage = function (event) {
         var hello;
@@ -115,6 +126,10 @@
       if (stopped || next > 0) return;
       clearTimeout(scheduled);
       probe(candidatePorts[next++]);
+    }
+    if (hostTransport) {
+      scheduled = setTimeout(startDiscovery, 0);
+      return connection;
     }
     // A first-time browser permission prompt may take much longer than a
     // loopback handshake. Do not cancel it after 900 ms. Never query Chromium's
