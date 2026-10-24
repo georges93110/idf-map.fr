@@ -17,7 +17,7 @@
   }
   // A WebSocket-shaped connection: callers retain their existing reconnect,
   // send, onmessage and close handlers. No global WebSocket replacement.
-  function connect() {
+  function connect(options) {
     var candidatePorts = ports(), next = 0, pending = new Set(), winner = null;
     var listeners = {}, scheduled = 0, stopped = false, handshakeTimeout = 900, monitor = null;
     var connection = { readyState: 0, url: "", onopen: null, onmessage: null, onerror: null, onclose: null };
@@ -69,7 +69,7 @@
     }
     function probe(port) {
       var socket;
-      var endpoint = "ws://127.0.0.1:" + port + "/idf-discovery";
+      var endpoint = "ws://127.0.0.1:" + port + (options && options.purpose === "girouette-editor" ? "/girouette-editor" : "/idf-discovery");
       try {
         try { socket = new root.WebSocket(endpoint, { protocols: ["idf-telemetry-v1"], targetAddressSpace: "loopback" }); }
         catch (_) { socket = new root.WebSocket(endpoint, "idf-telemetry-v1"); }
@@ -90,7 +90,7 @@
         }
         if (winner || stopped) { discard(p); return; }
         winner = socket; clearTimeout(p.timer); pending.delete(p); stopProbes();
-        connection.url = socket.url; connection.readyState = 1;
+        connection.url = socket.url; connection.hello = hello; connection.readyState = 1;
         try { if (root.IdfHtmlSchedulerProbe) monitor = root.IdfHtmlSchedulerProbe.create(connection); } catch (_) {}
         try { root.localStorage.setItem(KEY, String(port)); } catch (_) {}
         // Bound the renderer's task queue too, not merely TCP buffering. ACK

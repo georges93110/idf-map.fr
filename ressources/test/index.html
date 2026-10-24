@@ -25,7 +25,7 @@
 .sign:fullscreen{display:flex;align-items:center}
 .layout{grid-template-columns:minmax(0,1fr)}
 .sidebar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.sidebar h2{grid-column:1/-1}.sidebar .divider{display:none}.toolbar{flex-wrap:wrap}
+.sidebar h2{grid-column:1/-1}.sidebar .divider{display:none}.toolbar{flex-wrap:wrap}.game-link{align-items:center}.game-link .hint{flex:1;min-width:220px;line-height:1.5}
 @media(max-width:650px){.sidebar{grid-template-columns:1fr}.section-head{flex-wrap:wrap}}
   </style>
 </head>
@@ -537,5 +537,20 @@ gifSave.onclick=async()=>{
 Promise.all([document.fonts.load('normal 92px Girouette'),document.fonts.load('normal 112px Girouette'),document.fonts.load('normal 100px AgoraGirouette')]).then(update).catch(()=>{
  $('.section-head .hint').textContent='Impossible de charger Girouette.ttf';
 });
+
+// Capture the exact editor composition using the game's 2048 x 256 UV atlas,
+// even while the user is looking at the simple preview. Never export GIF samples.
+window.IDFGirouetteEditor={capture(){
+ if(exporting)return null;
+ const previous={mode:renderMode,width:output.width,height:output.height};
+ try{
+  renderMode='advanced';output.width=2048;output.height=256;draw();
+  return {png:output.toDataURL('image/png').split(',')[1],state:{line:route.value,destination:dest.value,
+   background:nightStripe?'#080080':routeColor.value,foreground:palette.number,badge:$('#routeBox').checked,
+   partial:$('#partial').checked,stripe:nightStripe,layout:agoraLayout?'agora':'standard'}};
+ }finally{renderMode=previous.mode;output.width=previous.width;output.height=previous.height;draw();}
+}};
   </script>
+  <script src="../../idf-rp/js/telemetry-connection.js?v=girouette-link-20261024"></script>
+  <script src="./game-link.js?v=20261024"></script>
 </body></html>

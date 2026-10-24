@@ -802,66 +802,82 @@
 
 	<busstop>
 		<id>101</id>
-		<name>École primaire Edouard Herriot (Neuilly-Plaisance)</name>
+		<name>École primaire Edouard Herriot</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>5308.67;47.1814;-2409.02;0.207798;0.000981331</location>
+		<school>true</school>
+		<type>maternelle</type>
 	</busstop>
 
 	<busstop>
 		<id>102</id>
-		<name>Lycée Blaise Pascal (Villemomble)</name>
+		<name>Lycée Blaise Pascal</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>5045.71;0.0964487;-3095.46;2.47783;0.0012064</location>
+		<school>true</school>
+		<type>lycee</type>
 	</busstop>
 
 	<busstop>
 		<id>103</id>
-		<name>École Maternelle Joseph Gallieni (Villemomble)</name>
+		<name>École Maternelle Joseph Gallieni</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>4735.91;0.0158074;-4198.8;0.92247;0.000907421</location>
+		<school>true</school>
+		<type>maternelle</type>
 	</busstop>
 
 	<busstop>
 		<id>104</id>
-		<name>École Elémentaire du Centre (Rosny-sous-Bois)</name>
+		<name>École Elémentaire du Centre</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>2744.49;5.40124;-1805.87;-0.317597;0.000509262</location>
+		<school>true</school>
+		<type>primaire</type>
 	</busstop>
 
 	<busstop>
 		<id>105</id>
-		<name>Collège Saint-Exupery (Vincennes)</name>
+		<name>Collège Saint-Exupery</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-1021.41;14.9154;610.284;-3.08902;0.000379562</location>
+		<school>true</school>
+		<type>college</type>
 	</busstop>
 
 	<busstop>
 		<id>106</id>
-		<name>École maternelle publique le Vau (Paris 20e)</name>
+		<name>École maternelle publique le Vau</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-3386.1;13.0903;-1455.48;3.00606;0.00154209</location>
+		<school>true</school>
+		<type>maternelle</type>
 	</busstop>
 
 	<busstop>
 		<id>107</id>
-		<name>Cité Scolaire Maurice Ravel (Paris 20e)</name>
+		<name>Cité Scolaire Maurice Ravel</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-3328.07;20.1042;33.441;2.69595;0.000127316</location>
+		<school>true</school>
+		<type>college</type>
 	</busstop>
 
 	<busstop>
 		<id>108</id>
-		<name>École maternelle publique Lachambeaudie (Paris 12e)</name>
+		<name>École maternelle publique Lachambeaudie</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-4792.35;15.5344;1235.08;-0.841533;0.00118685</location>
+		<school>true</school>
+		<type>maternelle</type>
 	</busstop>
 
 	<busstop>
@@ -870,6 +886,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>4398;47.1936;-2087.89;-2.97822;0.000700474</location>
+		<school>false</school>
+		<type>maternelle;primaire</type>
 	</busstop>
 
 	<busstop>
@@ -878,6 +896,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>3898.04;-0.019976;-3622.25;1.55901;-0.0000732581</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
@@ -886,14 +906,18 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>22302;8.11891;-1779.6;-0.374114;0.0019083</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
 		<id>112</id>
-		<name>Centre Aquanautique Camille Muffat (Rosny-sous-Bois)</name>
+		<name>Centre Aquanautique Camille Muffat</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>2602.24;5.45738;-2136.37;-2.98073;0.0000481605</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
@@ -902,14 +926,18 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-961.959;14.6473;2295.03;-1.74064;0.00135899</location>
+		<school>false</school>
+		<type>maternelle;primaire;college;lycee</type>
 	</busstop>
 
 	<busstop>
 		<id>114</id>
-		<name>Stade Léo Lagrange (Paris 12e)</name>
+		<name>Stade Léo Lagrange</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-976.728;14.8646;1219.86;2.68722;-0.00017244</location>
+		<school>false</school>
+		<type>maternelle;primaire;college;lycee</type>
 	</busstop>
 
 	<busstop>
@@ -918,6 +946,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-948.968;14.9124;1200.18;0.562555;0.00143671</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
@@ -926,6 +956,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-1017.81;14.7893;695.843;-3.10001;-0.000323121</location>
+		<school>false</school>
+		<type>maternelle;primaire;college;lycee</type>
 	</busstop>
 
 	<busstop>
@@ -934,6 +966,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-3678.11;23.021;1550.78;-0.772023;0.000227451</location>
+		<school>false</school>
+		<type>maternelle;primaire</type>
 	</busstop>
 
 	<busstop>
@@ -942,6 +976,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-5003.5;15.6311;-355.251;-0.977511;-0.00191385</location>
+		<school>false</school>
+		<type>maternelle;primaire;college;lycee</type>
 	</busstop>
 
 	<busstop>
@@ -950,6 +986,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-11232.8;30.0214;-1192.72;-2.4738;0.00119734</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
@@ -958,6 +996,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-10926.5;15.0203;-1029.28;2.35609;0.00123072</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
@@ -966,6 +1006,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-10787.2;15.0041;-825.594;-0.787989;0.00130939</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
@@ -974,6 +1016,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>-10787.2;15.0041;-825.594;-0.787989;0.00130939</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
@@ -982,6 +1026,8 @@
 		<zone></zone>
 		<requestStop>true</requestStop>
 		<location>-11238;30.0206;-1252.01;2.71413;0.00121021</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
@@ -990,6 +1036,8 @@
 		<zone></zone>
 		<requestStop>true</requestStop>
 		<location>-936.583;14.9041;1220.22;0.551286;0.00300121</location>
+		<school>false</school>
+		<type>maternelle;primaire;college</type>
 	</busstop>
 
 	<busstop>
@@ -998,6 +1046,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>22300.7;8.11839;-1776.43;-0.371609;0.0014143</location>
+		<school>false</school>
+		<type>maternelle;primaire</type>
 	</busstop>
 
 	<busstop>
@@ -1890,50 +1940,62 @@
 
 	<busstop>
 		<id>237</id>
-		<name>École primaire Bel Air (Neuilly-Plaisance)</name>
+		<name>École primaire Bel Air</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>5169.81;10.7752;-1873.36;2.97216;-0.0598753</location>
+		<school>true</school>
+		<type>primaire</type>
 	</busstop>
 
 	<busstop>
 		<id>238</id>
-		<name>Centre municipal de l'Enfance (Neuilly-Plaisance)</name>
+		<name>Centre municipal de l'Enfance</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>5783.04;4.35748;-1317.09;1.52835;-0.0005253</location>
+		<school>true</school>
+		<type>maternelle</type>
 	</busstop>
 
 	<busstop>
 		<id>239</id>
-		<name>Lycée Polyvalent Nicolas Joseph Cugnot (Neuilly-Plaisance)</name>
+		<name>Lycée Polyvalent Nicolas Joseph Cugnot</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>6083.89;-0.0185976;-1126.87;-0.0149964;-0.0000999609</location>
+		<school>true</school>
+		<type>lycee</type>
 	</busstop>
 
 	<busstop>
 		<id>240</id>
-		<name>Centre de protection maternelle et infantile (Neuilly-Plaisance)</name>
+		<name>Centre de protection maternelle et infantile</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>5185.33;-0.023743;-1025.46;1.78623;-0.000570122</location>
+		<school>true</school>
+		<type>maternelle</type>
 	</busstop>
 
 	<busstop>
 		<id>241</id>
-		<name>École primaire du centre (Neuilly-Plaisance)</name>
+		<name>École primaire du centre</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>4956.67;0.0891263;-985.39;1.71699;-0.0218838</location>
+		<school>true</school>
+		<type>primaire</type>
 	</busstop>
 
 	<busstop>
 		<id>242</id>
-		<name>École primaire Victor Hugo (Neuilly-Plaisance)</name>
+		<name>École primaire Victor Hugo</name>
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>5153.85;-0.0196004;-344.504;-2.99772;0.000331402</location>
+		<school>true</school>
+		<type>primaire</type>
 	</busstop>
 
 	<busstop>
@@ -1942,6 +2004,8 @@
 		<zone></zone>
 		<requestStop>false</requestStop>
 		<location>5153.85;-0.0196004;-344.504;-2.99772;0.000331402</location>
+		<school>true</school>
+		<type>primaire</type>
 	</busstop>
 
 	<busstop>
@@ -2568,4 +2632,84 @@
 		<location>6114.93;-0.0234641;-1085.95;-1.60076;0.000114441</location>
 	</busstop>
 
+	<busstop>
+		<id>322</id>
+		<name>Neuilly-Plaisance RER</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>5265.27;-0.00676006;-45.9733;0.296927;-0.000183884</location>
+		<gareroutiere>true</gareroutiere>
+	</busstop>
+
+	<busstop>
+		<id>323</id>
+		<name>Le Raincy-Villemomble Monfermeil RER</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>5181.39;0.0476111;-3943.77;-1.68748;-0.000202958</location>
+		<gareroutiere>true</gareroutiere>
+	</busstop>
+
+	<busstop>
+		<id>324</id>
+		<name>Pont de Bondy</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>2124.99;-4.29886;-5286.65;1.84932;-0.000185792</location>
+		<gareroutiere>true</gareroutiere>
+	</busstop>
+
+	<busstop>
+		<id>325</id>
+		<name>Val-de-Fontenay RER</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>2541.12;0.291922;76.5601;-3.09993;-0.000633065</location>
+		<gareroutiere>true</gareroutiere>
+	</busstop>
+
+	<busstop>
+		<id>326</id>
+		<name>Nogent-Le Perreux RER</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>2612.06;14.7761;1424.3;1.43796;-4.59353e-06</location>
+		<gareroutiere>true</gareroutiere>
+	</busstop>
+
+	<busstop>
+		<id>327</id>
+		<name>Nogent-sur-Marne RER</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>1173.66;14.7806;1523.17;-0.163277;-0.000360314</location>
+		<gareroutiere>true</gareroutiere>
+	</busstop>
+
+	<busstop>
+		<id>328</id>
+		<name>Bagnolet - Gallieni</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>-3001.96;5.06863;-1546.13;-2.80155;-0.00156671</location>
+		<gareroutiere>true</gareroutiere>
+	</busstop>
+
+	<busstop>
+		<id>329</id>
+		<name>Marché International de Rungis</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>-6988.63;19.9987;6011.94;-2.85432;-0.00030214</location>
+		<gareroutiere>true</gareroutiere>
+	</busstop>
+
+	<busstop>
+		<id>330</id>
+		<name>Rosny-sous-Bois RER</name>
+		<zone></zone>
+		<requestStop>true</requestStop>
+		<location>2716.69;5.37665;-1740.58;-0.303782;0.000634193</location>
+		<gareroutiere>true</gareroutiere>
+	</busstop>
 </busstops>
