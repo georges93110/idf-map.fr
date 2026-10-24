@@ -2027,73 +2027,25 @@
         return nominalDistance;
       }
       function computeRouteEtaToTerminus(entries, targetIndex, currentPoint) {
-        var list = Array.isArray(entries) ? entries : [];
-        var idxRaw = Number(targetIndex);
-        if (!list.length || !Number.isFinite(idxRaw)) return null;
-        var idx = Math.max(0, Math.min(list.length - 1, Math.floor(idxRaw)));
-        var current = parseWorldPoint3D(currentPoint) || parseWorldPoint3D(saeivRouteStartPoint) || null;
-        var cacheKey = getSaeivRouteCacheBaseKey(list);
-        var canUseCache = false;
-        if (current && String(activeRouteEtaCache.routeKey || "") === cacheKey && Number(activeRouteEtaCache.targetIndex) === idx) {
-          var dtMs = Date.now() - Number(activeRouteEtaCache.lastComputedAt || 0);
-          var moved = worldPointDistance(activeRouteEtaCache.lastPoint, current);
-          if (Number.isFinite(dtMs) && dtMs < ETA_RECOMPUTE_MIN_MS && Number.isFinite(moved) && moved < ETA_RECOMPUTE_MIN_MOVE) {
-            canUseCache = Number.isFinite(Number(activeRouteEtaCache.remainingMinutes));
-          }
+        var list=Array.isArray(entries)?entries:[],idx=Number(targetIndex);
+        if(!list.length||!Number.isInteger(idx)||idx<0||idx>=list.length)return null;
+        var remaining=0;
+        // Every future leg has its own GPS duration; the terminal has none.
+        for(var i=idx;i+1<list.length;++i){
+          var seconds=list[i].nextStopDurationS;
+          if(typeof seconds!=='number'||!Number.isFinite(seconds)||seconds<0)return null;
+          remaining+=seconds;
         }
-        if (canUseCache) {
-          var cachedRemaining = Number(activeRouteEtaCache.remainingMinutes);
-          var cachedPlanned = Number(activeRouteEtaCache.plannedMinutes);
-          var cachedNowTs = (typeof getSaeivNowTimestampMs === "function") ? getSaeivNowTimestampMs() : Date.now();
-          return {
-            remainingMinutes: cachedRemaining,
-            arrivalTimestampMs: cachedNowTs + Math.round(Math.max(0, cachedRemaining) * 60000),
-            segmentDurationMinutes: Number.isFinite(cachedPlanned) ? cachedPlanned : 0
-          };
+        var planned=remaining;
+        var atStop=saeivRouteState&&Number(saeivRouteState.reachedIndex)>=idx;
+        if(!atStop){
+          var status=typeof nativeGpsStatus==='object'?nativeGpsStatus:null;
+          var key=saeivRouteState?String(saeivRouteState.selectedKey)+":"+idx+":"+String(list[idx].uid||"")+(saeivRouteState.started?"":":approach"):"";
+          var signal=typeof telemetryLastSignal==='object'?telemetryLastSignal:null;
+          if(!status||status.stopKey!==key||!/^applied/.test(status.status)||!signal||!Number.isFinite(signal.navigationTimeS)||signal.navigationTimeS<0||Date.now()-telemetryLastPacketAt>2000)return null;
+          remaining+=signal.navigationTimeS;
         }
-        var remainingMinutes = 0;
-        var plannedMinutes = 0;
-        for (var i = idx; i < list.length; i += 1) {
-          var stopEntry = list[i];
-          if (!stopEntry || !stopEntry.point) continue;
-          var baseDuration = Number(stopEntry.nextStopTime);
-          if (!Number.isFinite(baseDuration) || baseDuration <= 0) continue;
-          plannedMinutes += baseDuration;
-          if (i === idx) {
-            var firstSegmentEnd = parseWorldPoint3D(stopEntry.point);
-            if (!firstSegmentEnd) continue;
-            var nominalStart = null;
-            if (i <= 0) {
-              nominalStart = parseWorldPoint3D(saeivRouteStartPoint) || current || firstSegmentEnd;
-            } else {
-              nominalStart = parseWorldPoint3D(list[i - 1] && list[i - 1].point) || current || firstSegmentEnd;
-            }
-            var actualStart = current || nominalStart;
-            var nominalDistance = getNominalSegmentDistance(list, i, nominalStart);
-            var actualDistance = worldPolylineDistance(buildShortestRoutePoints(actualStart, firstSegmentEnd));
-            var ratio = 1;
-            if (Number.isFinite(nominalDistance) && nominalDistance > 0.5) {
-              // Keep detour penalty (>1) and shrink only when really closer to the stop.
-              ratio = Math.max(0, actualDistance / nominalDistance);
-            }
-            remainingMinutes += Math.max(0, baseDuration * ratio);
-            continue;
-          }
-          remainingMinutes += baseDuration;
-        }
-        if (!Number.isFinite(remainingMinutes) || remainingMinutes < 0) return null;
-        activeRouteEtaCache.routeKey = cacheKey;
-        activeRouteEtaCache.targetIndex = idx;
-        activeRouteEtaCache.lastPoint = current ? { x: current.x, y: current.y, h: current.h } : null;
-        activeRouteEtaCache.lastComputedAt = Date.now();
-        activeRouteEtaCache.remainingMinutes = remainingMinutes;
-        activeRouteEtaCache.plannedMinutes = plannedMinutes;
-        var nowForEtaMs = (typeof getSaeivNowTimestampMs === "function") ? getSaeivNowTimestampMs() : Date.now();
-        return {
-          remainingMinutes: remainingMinutes,
-          arrivalTimestampMs: nowForEtaMs + Math.round(remainingMinutes * 60000),
-          segmentDurationMinutes: plannedMinutes
-        };
+        return {remainingMinutes:remaining/60,arrivalTimestampMs:getSaeivNowTimestampMs()+Math.round(remaining*1000),segmentDurationMinutes:planned/60};
       }
       function clearActiveRouteCache() {
         activeBridgeRoutePoints = null;

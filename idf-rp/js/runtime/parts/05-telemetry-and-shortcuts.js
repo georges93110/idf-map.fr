@@ -2623,7 +2623,9 @@
         }, waitMs);
       }
       function scheduleRemotePanelWsReconnect() {
-        if (remoteServerWsReconnectTimer) return;
+        if (remoteServerWsManualClose || remoteServerWsReconnectTimer) return;
+        var socket = getRemotePanelWsSocket();
+        if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return;
         remoteServerWsReconnectTimer = window.setTimeout(function () {
           remoteServerWsReconnectTimer = 0;
           startRemotePanelWsBridge();
@@ -2640,10 +2642,7 @@
           remoteServerWsLastMessageText = "Telemetry envoyee au panel.";
           return true;
         } catch (err1) {
-          remoteServerWsLastEventText = "Erreur envoi WebSocket panel.";
-          remotePanelTelemetryQueuedPayload = payload;
-          try { getRemotePanelWsSocket().close(); } catch (err2) { }
-          scheduleRemotePanelWsReconnect();
+          failRemotePanelWs(getRemotePanelWsSocket(), "Erreur envoi WebSocket panel.");
           return false;
         }
       }
@@ -2681,9 +2680,7 @@
           remoteServerWsLastMessageText = "Message SAEIV envoye au panel.";
           return true;
         } catch (err1) {
-          remoteServerWsLastEventText = "Erreur envoi message SAEIV panel.";
-          try { getRemotePanelWsSocket().close(); } catch (err2) { }
-          scheduleRemotePanelWsReconnect();
+          failRemotePanelWs(getRemotePanelWsSocket(), "Erreur envoi message SAEIV panel.");
           return false;
         }
       }
@@ -2716,39 +2713,48 @@
       }
       function flushRemotePanelTelemetryQueue() {
         if (remotePanelTelemetryInFlight || !isRemotePanelWsOpen()) return;
-        var payload = remotePanelTelemetryQueuedPayload;
-        if (!payload) return;
+        var sample = remotePanelTelemetryQueuedSample;
+        if (!sample) return;
         var now = Date.now();
         var intervalMs = getRemotePanelTelemetrySendIntervalMs();
-        var lastSentAt = Number(remotePanelTelemetryLastSentAtMs) || 0;
+        var lastSentAt = Number(remotePanelTelemetryLastAttemptAtMs) || 0;
         var elapsedMs = lastSentAt > 0 ? (now - lastSentAt) : intervalMs;
         if (elapsedMs < intervalMs) {
           scheduleRemotePanelTelemetryFlush(intervalMs - elapsedMs);
           return;
         }
-        remotePanelTelemetryQueuedPayload = null;
+        remotePanelTelemetryQueuedSample = null;
         remotePanelTelemetryInFlight = true;
-        if (sendRemotePanelWsPayload(payload)) {
-          remotePanelTelemetryLastSentAtMs = Date.now();
+        remotePanelTelemetryLastAttemptAtMs = now;
+        try {
+          if (Number(getRemotePanelWsSocket().bufferedAmount) > 262144) return;
+          if (!canSendRemotePanelTelemetryForMap(sample.raw, sample.signal)) return;
+          var payload = buildRemotePanelTelemetryPayload(sample.raw, sample.signal);
+          if (payload && sendRemotePanelWsPayload(payload)) remotePanelTelemetryLastSentAtMs = Date.now();
+        } catch (err) {
+          updateRemotePanelWsStatus("error", "Envoi panel ignore : preparation indisponible.");
+        } finally {
+          remotePanelTelemetryInFlight = false;
         }
-        remotePanelTelemetryInFlight = false;
-        if (remotePanelTelemetryQueuedPayload) scheduleRemotePanelTelemetryFlush(getRemotePanelTelemetrySendIntervalMs());
       }
       function sendTelemetryToRemotePanel(raw, signal) {
-        if (!signal || typeof signal !== "object") return;
-        if (!getRemotePanelWsUrl()) return;
+        if (remoteServerWsManualClose || !signal || typeof signal !== "object") return;
+        // The external relay is optional. Offline packets are dropped, not replayed.
+        if (!isRemotePanelWsOpen()) {
+          remotePanelTelemetryQueuedSample = null;
+          stopRemotePanelTelemetryFlushTimer();
+          scheduleRemotePanelWsReconnect();
+          return;
+        }
         if (!canSendRemotePanelTelemetryForMap(raw, signal)) {
-          remotePanelTelemetryQueuedPayload = null;
+          remotePanelTelemetryQueuedSample = null;
           stopRemotePanelTelemetryFlushTimer();
           return;
         }
-        remotePanelTelemetryQueuedPayload = buildRemotePanelTelemetryPayload(raw, signal);
-        if (!remotePanelTelemetryQueuedPayload) return;
-        if (!isRemotePanelWsOpen()) {
-          startRemotePanelWsBridge();
-          return;
-        }
-        flushRemotePanelTelemetryQueue();
+        // Keep only the latest sample. Build the full payload outside local telemetry,
+        // at the panel send cadence instead of on every game frame.
+        remotePanelTelemetryQueuedSample = { raw: raw, signal: signal };
+        scheduleRemotePanelTelemetryFlush(0);
       }
       function normalizePccVoiceSteamId(value) {
         return String(value == null ? "" : value).trim().replace(/\s+/g, "").toLowerCase();
@@ -3467,6 +3473,11 @@
         return true;
       }
       function stopRemotePanelWsBridge() {
+        remoteServerWsManualClose = true;
+        clearRemotePanelWsConnectTimer();
+        remotePanelTelemetryQueuedSample = null;
+        remotePanelTelemetryLastSentAtMs = 0;
+        remotePanelTelemetryLastAttemptAtMs = 0;
         if (remoteServerWsReconnectTimer) {
           clearTimeout(remoteServerWsReconnectTimer);
           remoteServerWsReconnectTimer = 0;
@@ -3618,69 +3629,69 @@
           }
         }
       }
+      function clearRemotePanelWsConnectTimer() {
+        if (remoteServerWsConnectTimer) clearTimeout(remoteServerWsConnectTimer);
+        remoteServerWsConnectTimer = 0;
+      }
+      function updateRemotePanelWsStatus(kind, message) {
+        var changed = remoteServerWsLastEventText !== message;
+        remoteServerWsLastEventText = message;
+        // Panel diagnostics/UI must never interrupt the local runtime or retry timer.
+        try { if (changed && kind && typeof pushRemoteServerWsLog === "function") pushRemoteServerWsLog(kind, message); } catch (err0) { }
+        try { if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi(); } catch (err1) { }
+        try { if (typeof syncConvoyStatusFromRemotePanelWs === "function") syncConvoyStatusFromRemotePanelWs(); } catch (err2) { }
+      }
+      function failRemotePanelWs(socket, message) {
+        if (!remoteServerWs || remoteServerWs.socket !== socket) return;
+        clearRemotePanelWsConnectTimer();
+        remoteServerWs = null;
+        remoteServerWsLastPongAtMs = 0;
+        remoteServerWsPlayersCount = null;
+        remoteServerWsPlayerList = [];
+        remotePanelTelemetryQueuedSample = null;
+        stopRemotePanelTelemetryFlushTimer();
+        socket.onopen = socket.onmessage = socket.onerror = socket.onclose = null;
+        try { socket.close(); } catch (err) { }
+        scheduleRemotePanelWsReconnect();
+        updateRemotePanelWsStatus("error", message);
+      }
       function startRemotePanelWsBridge() {
+        // Telemetry and SAEIV callers must not cancel the retry backoff.
+        if (remoteServerWsManualClose || remoteServerWsReconnectTimer) return;
         var url = getRemotePanelWsUrl();
         if (!url) return;
         var existing = getRemotePanelWsSocket();
         if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) return;
-        if (remoteServerWsReconnectTimer) {
-          clearTimeout(remoteServerWsReconnectTimer);
-          remoteServerWsReconnectTimer = 0;
-        }
+        clearRemotePanelWsConnectTimer();
         var socket = null;
         try { socket = new WebSocket(url); } catch (err0) { socket = null; }
         if (!socket) {
-          remoteServerWsLastEventText = "Impossible d'ouvrir le WebSocket panel.";
           scheduleRemotePanelWsReconnect();
+          updateRemotePanelWsStatus("error", "Impossible d'ouvrir le WebSocket panel.");
           return;
         }
-        remoteServerWs = {
-          url: url,
-          socket: socket,
-          online: false,
-          lastFailureText: ""
-        };
+        remoteServerWs = { url: url, socket: socket, online: false, lastFailureText: "" };
         remoteServerWsPlayerList = [];
-        remoteServerWsLastEventText = "Connexion WebSocket au panel en cours...";
-        if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
+        remoteServerWsConnectTimer = window.setTimeout(function () {
+          failRemotePanelWs(socket, "Delai de connexion WebSocket panel depasse.");
+        }, Math.max(1000, Number(REMOTE_SERVER_WS_REQUEST_TIMEOUT_MS) || 4500));
         socket.onopen = function () {
           if (!remoteServerWs || remoteServerWs.socket !== socket) return;
+          clearRemotePanelWsConnectTimer();
           remoteServerWs.online = true;
           remoteServerWsLastPongAtMs = Date.now();
-          remoteServerWsLastEventText = "WebSocket panel connecte.";
-          if (typeof pushRemoteServerWsLog === "function") pushRemoteServerWsLog("open", "WebSocket panel connecte.");
-          if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
-          if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
-            syncConvoyStatusFromRemotePanelWs();
-          }
-          flushRemotePanelTelemetryQueue();
-          flushRemotePanelSaeivBridgeQueue();
+          updateRemotePanelWsStatus("open", "WebSocket panel connecte.");
+          // Local telemetry will supply a fresh state; never replay the outage.
+          try { flushRemotePanelSaeivBridgeQueue(); } catch (err) { }
         };
-        socket.onmessage = handleRemotePanelWsMessage;
-        socket.onerror = function () {
-          if (!remoteServerWs || remoteServerWs.socket !== socket) return;
-          remoteServerWs.online = false;
-          remoteServerWsLastEventText = "Erreur WebSocket panel.";
-          if (typeof pushRemoteServerWsLog === "function") pushRemoteServerWsLog("error", remoteServerWsLastEventText);
-          if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
-          if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
-            syncConvoyStatusFromRemotePanelWs();
+        socket.onmessage = function (event) {
+          try { handleRemotePanelWsMessage(event); } catch (err) {
+            updateRemotePanelWsStatus("error", "Message panel ignore : traitement indisponible.");
           }
-          try { socket.close(); } catch (err0) { }
         };
-        socket.onclose = function () {
-          if (!remoteServerWs || remoteServerWs.socket !== socket) return;
-          remoteServerWs.online = false;
-          remoteServerWs = null;
-          remoteServerWsLastPongAtMs = 0;
-          remoteServerWsLastEventText = "WebSocket panel deconnecte, reconnexion...";
-          if (typeof pushRemoteServerWsLog === "function") pushRemoteServerWsLog("error", remoteServerWsLastEventText);
-          if (typeof renderRemoteServerWsUi === "function") renderRemoteServerWsUi();
-          if (typeof syncConvoyStatusFromRemotePanelWs === "function") {
-            syncConvoyStatusFromRemotePanelWs();
-          }
-          scheduleRemotePanelWsReconnect();
-        };
+        socket.onerror = function () { failRemotePanelWs(socket, "Erreur WebSocket panel."); };
+        socket.onclose = function () { failRemotePanelWs(socket, "WebSocket panel deconnecte, reconnexion..."); };
+        updateRemotePanelWsStatus("", "Connexion WebSocket au panel en cours...");
       }
       function connectTelemetryWs() {
         closeTelemetryWs();
@@ -3782,6 +3793,8 @@
           }
           if (raw && raw.type === "nativeBusSettings") { receiveNativeBusSettings(raw); return; }
           if (raw && raw.type === "nativeConvoyAudio") { receiveNativeConvoyAudio(raw); return; }
+          if (raw && raw.type === "nativeServicesReload") { receiveNativeServicesReload(raw); return; }
+          if (raw && raw.type === "nativeServiceMetrics") { receiveNativeServiceMetrics(raw); return; }
           if (raw && raw.type === "nativeServicesSync") { receiveNativeServicesSync(raw); return; }
           if (raw && raw.type === "nativeServiceAction") { receiveNativeServiceAction(raw); return; }
           if (raw && raw.type === "nativeServiceBadgeRequest") { receiveNativeServiceBadgeRequest(raw); return; }
@@ -3859,7 +3872,9 @@
           syncNativeGpsDestination(false);
           if (ws.phase) ws.phase('map-and-remote-panel');
           publishTelemetryToWazeBridge(signal);
-          sendTelemetryToRemotePanel(raw, signal);
+          try { sendTelemetryToRemotePanel(raw, signal); } catch (errPanel) {
+            updateRemotePanelWsStatus("error", "Envoi panel ignore : relais indisponible.");
+          }
           if (ws.phase) ws.phase('widget-visibility');
           telemetryValidBurstCount += 1;
           if (telemetryValidBurstCount >= TELEMETRY_MIN_VALID_PACKETS_FOR_ONLINE) {
@@ -3900,7 +3915,6 @@
       }
       function startTelemetryConnectionWatch() {
         stopTelemetryConnectionWatch();
-        startRemotePanelWsBridge();
         setTelemetryConnectionState(false, "Connexion ouverte, attente signal X/Y/Z/Heading...");
         connectTelemetryWs();
         startDiscordPresenceUpdates();
@@ -3930,6 +3944,8 @@
         }, TELEMETRY_WATCHDOG_INTERVAL_MS);
         window.addEventListener("pagehide", stopTelemetryConnectionWatch);
         window.addEventListener("beforeunload", stopTelemetryConnectionWatch);
+        remoteServerWsManualClose = false;
+        scheduleRemotePanelWsReconnect();
       }
       window.addEventListener("pageshow", function (event) {
         if (event.persisted && !gameSingletonClosing) startTelemetryConnectionWatch();

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-bus-ui-temporarily-hidden="true" lang="fr">
+<html lang="fr">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -15,7 +15,6 @@
   <meta name="twitter:title" content="Ile-de-France Map - Carte Interactive"/>
   <meta name="twitter:description" content="Explorez la carte interactive de la map Ile-de-France."/>
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
-  <script src="idf-rp/config/map-context.js?v=maps-20261020"></script>
 <script src="config/theme-init.js"></script>
   <style>
     html[data-app-ready="0"] {
@@ -29,12 +28,6 @@
       visibility:hidden !important;
       overflow:hidden !important;
     }
-    /* Temporary public-map restrictions; native service data is unchanged. */
-    html[data-bus-ui-temporarily-hidden="true"] #btnDbus,
-    html[data-bus-ui-temporarily-hidden="true"] #settingsDbusCategory,
-    html[data-bus-ui-temporarily-hidden="true"] #settingsBusStopsRow,
-    html[data-bus-ui-temporarily-hidden="true"] #dbusPanel,
-    html[data-bus-ui-temporarily-hidden="true"] #dbusStopPanel { display: none !important; }
   </style>
   <script>
     (function setupAppReadyGate() {
@@ -3640,7 +3633,7 @@
         </div>
       </div>
       <div class="top-actions">
-        <button id="btnDbus" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Lignes de bus" title="Lignes de bus">
+        <button id="btnDbus" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Lignes DBus World" title="Lignes DBus World">
           <img id="btnDbusLogo" class="dbus-icon-logo" src="map_files/website/Overlays/bus_logo_idfm.png" alt="" aria-hidden="true"/>
         </button>
         <button id="btnSettings" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Parametres" title="Parametres">
@@ -3680,7 +3673,7 @@
     <div id="dbusPanel" class="dbus-panel">
       <div class="side-panel-resizer" data-panel-resizer aria-hidden="true"></div>
       <div class="dbus-header">
-        <div class="dbus-title" id="dbusPanelTitle">Lignes de bus</div>
+        <div class="dbus-title" id="dbusPanelTitle">Lignes DBus World</div>
         <a
           class="line-preview-link dbus-world-link"
           id="dbusWorldLink"
@@ -4057,7 +4050,7 @@
     return SUPPORTED.has(nav) ? nav : "fr";
   }
   let LANG = detectInitialLang();
-  const MAP_BUS_UI_ENABLED = false; // Temporary: native Services remains available.
+  const MAP_BUS_UI_ENABLED = true;
   const MAP_POPUP_ROUTE_ENABLED = false;
   const STOP_TYPE_TRANSLATION_KEY = "idf_translate_stop_types";
   const UI_ANIMATIONS_KEY = "idf_ui_animations";
@@ -5315,14 +5308,15 @@
     const TILE_BASE = `${MAP_FILES_ROOT}/website/Tiles`;
     const DEV_TILE_BASE = `${MAP_FILES_ROOT}/website/Dev/Tiles`;
     const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-    const DBUS_BASE = `${DEV_DATA_BASE}/Mode%20Bus`;
+    const DBUS_BASE = `${MAP_FILES_ROOT}/website/Dbus%20World%20Lines`;
     const dataPath = (file) => `${DATA_BASE}/${file}`;
     const overlayPath = (file) => `${OVERLAY_BASE}/${file}`;
     function mapFileCandidatePaths(file){
       const clean = String(file || "").replace(/^\/+/, "").replace(/^(?:DBus|Mode(?:%20| )Bus)\//i, "Mode%20Bus/");
-      // Navigation is shared at map_files/; the single bus catalogue lives in IDF-RP.
+      // Public DBus XML is independent of IDFRP and its in-game GPS.
+      // Route geometry uses the website navigation nodes at map_files/.
       if (/^(?:nav_graph|nav_bridges|nav_stop_links|traffic_areas)\.json$/.test(clean)) return [`${MAP_FILES_ROOT}/${clean}`];
-      if (clean.startsWith("Mode%20Bus/")) return [`${DEV_DATA_BASE}/${clean}`];
+      if (clean.startsWith("Mode%20Bus/")) return [`${DBUS_BASE}/${clean.slice("Mode%20Bus/".length)}`];
       if (/^(?:CentreCommerciaux|Monuments|Countries)\.json$/.test(clean)) return [`${MAP_FILES_ROOT}/website/${clean}`];
       const useIdfRp = NEXT_VERSION_MODE || (SELECTED_VERSION || "website") === "IDF-RP";
       if (clean === "uber_eats_restaurants.json") {
@@ -10064,7 +10058,7 @@
 
         const routes = [...line.querySelectorAll(":scope > route")].map(rt=>{
           const rUid  = rt.getAttribute("uid");
-          const rName = window.IDF_LINE_CONFIG.routeName(line, rt, DBUS_STOPS);
+          const rName = String(rt.getAttribute("name") || "").trim() || window.IDF_LINE_CONFIG.routeName(line, rt, DBUS_STOPS);
           const stops = [...rt.querySelectorAll(":scope > busstop")].map(b => {
             return {
               uid: parseInt(b.getAttribute("uid"), 10),

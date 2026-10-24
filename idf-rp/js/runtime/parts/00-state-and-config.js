@@ -607,9 +607,10 @@
       var discordPresenceRouteStartedAtSec = 0;
       var REMOTE_SERVER_WS_DEFAULT_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       var remotePanelTelemetryInFlight = false;
-      var remotePanelTelemetryQueuedPayload = null;
+      var remotePanelTelemetryQueuedSample = null;
       var remotePanelTelemetryFlushTimer = 0;
       var remotePanelTelemetryLastSentAtMs = 0;
+      var remotePanelTelemetryLastAttemptAtMs = 0;
       var remotePanelLocalPlayerIdentity = null;
       var OVERLAY_NOTIFICATION_MIN_DURATION_MS = 2400;
       var REMOTE_SERVER_WS_RECONNECT_INTERVAL_MS = 2000;
@@ -620,6 +621,7 @@
       var REMOTE_SERVER_WS_LOG_LIMIT = 40;
       var remoteServerWs = null;
       var remoteServerWsReconnectTimer = 0;
+      var remoteServerWsConnectTimer = 0;
       var remoteServerWsPingTimer = 0;
       var remoteServerWsLastPongAtMs = 0;
       var remoteServerWsLastEventText = "";

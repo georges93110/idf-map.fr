@@ -22,6 +22,7 @@
     "parts/05d-native-ui.js",
     "parts/05e-native-services.js",
     "parts/05f-runtime-recovery.js",
+    "parts/05g-native-depots.js",
     "parts/06-settings-and-modes.js",
     "parts/06a-native-bus-settings.js",
     "parts/07-widgets-output.js",
@@ -37,7 +38,7 @@
     hidden.textContent='.idf-plugin-suspended body,.idf-plugin-suspended body *{visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(hidden);
   }
   runtime.parts = PARTS.slice();
-  runtime.version = "service-zoom-20261022";
+  runtime.version = "depots-native-20261023";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {

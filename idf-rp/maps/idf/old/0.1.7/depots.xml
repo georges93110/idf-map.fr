@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<depots>
+  <depot reseau="ratp" name="Centre Bus RATP#Paris-Est – Lagny">
+    <placement position="-3318.47;20.2224;-124.983;-2.01411;-0.000260178"/>
+    <placement position="-3316.26;20.2223;-128.545;-2.01411;7.72476e-05"/>
+    <placement position="-3310.88;20.2182;-139.874;-2.01411;0.000207424"/>
+    <placement position="-3309.14;20.2165;-143.536;-2.01411;0.000415325"/>
+    <placement position="-3303.79;20.2182;-154.81;-2.01411;0.000115871"/>
+  </depot>
+  <depot reseau="ratp_cap_bdm" name="Centre Bus CAP RATP#Boucle de Marne">
+    <placement position="5496.06;0.00214997;58.2257;1.81141;0.000411034"/>
+    <placement position="5494.93;0.000217795;53.6572;1.81141;0.000706196"/>
+    <placement position="5491.5;-0.000967413;39.6411;1.81141;9.25064e-05"/>
+    <placement position="5489.22;0.00146785;30.3749;1.81141;-0.000258271"/>
+    <placement position="5488.11;-0.000287086;25.8776;1.81717;-0.000498597"/>
+    <placement position="5486.95;0.000992209;21.2543;1.81717;-0.000105683"/>
+    <placement position="5485.74;0.00269082;16.4626;1.81717;0.000296593"/>
+    <placement position="5484.6;0.00200787;11.9368;1.81717;0.00038147"/>
+    <placement position="5481.12;-0.000730991;-1.89767;1.81717;-3.41574e-05"/>
+  </depot>
+</depots>

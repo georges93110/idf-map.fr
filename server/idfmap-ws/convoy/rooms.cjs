@@ -2,12 +2,14 @@
 const crypto = require('node:crypto');
 const P = require('./protocol.cjs');
 const { StopCrowds } = require('./stops.cjs');
+const {DepotReservations}=require('./depots.cjs');
 
 // Transport-independent. Authentication belongs to the host server; native client
 // identity/roster is additional routing evidence, not an authentication credential.
 class ConvoyRooms {
   constructor({ send, now = Date.now, authorize = () => false, maxRooms = 256, maxPeers = 512 } = {}) {
     this.send = send; this.now = now; this.authorize = authorize; this.maxRooms = maxRooms;
+    this.depots=new DepotReservations({now});
     this.rooms = new Map(); this.peers = new Map(); this.maxPeers = maxPeers; this.crowds = new StopCrowds({ now });
   }
   emit(peer, message) { try { return this.send(peer, message) !== false; } catch { return false; } }
@@ -59,6 +61,13 @@ class ConvoyRooms {
     const p = this.peers.get(peer); if (!p || raw?.epoch !== p.room.epoch || !this.consume(p)) return false;
     if (raw.type === 'convoy.ping') { p.seen = this.now(); this.catalogue(p); this.emit(peer, { type: 'convoy.pong', version: 1, epoch: p.room.epoch, time: this.now() }); return true; }
     if (raw.type === 'convoy.leave') { this.leave(peer); return true; }
+    if(raw.type==='convoy.depot.reserve'){
+      if(!P.key(raw.request)||typeof raw.depot!=='string'||!/^[a-f0-9]{64}$/.test(raw.depot)||!Array.isArray(raw.positions)||!raw.positions.length||raw.positions.length>256||raw.positions.some(v=>!Array.isArray(v)||v.length!==5||v.some(x=>typeof x!=='number'||!Number.isFinite(x))||v.slice(0,3).some(x=>Math.abs(x)>5e6)||v.slice(3).some(x=>Math.abs(x)>Math.PI*2)))return false;
+      if(crypto.createHash('sha256').update(JSON.stringify(raw.positions)).digest('hex')!==raw.depot)return false;
+      const occupied=[...p.room.peers.values()].filter(q=>q.state&&this.now()-q.seen<P.LIMITS.leaseMs).map(q=>q.state.pose);
+      const result=this.depots.reserve(p.room.id,p.hello.player,raw.request,raw.depot,raw.positions,occupied);
+      p.seen=this.now();this.emit(peer,{type:'convoy.depot.result',version:1,epoch:p.room.epoch,request:raw.request,...result});return true;
+    }
     if (raw.type === 'convoy.stop') {
       if (!p.state || !P.key(raw.stop) || raw.generation !== p.state.generation || Math.abs(p.state.speed) > .2 || p.state.doors[0] < .1) return false;
       if (raw.action === 'reserve') {

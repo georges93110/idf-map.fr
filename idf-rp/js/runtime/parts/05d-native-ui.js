@@ -51,7 +51,7 @@ var nativeBusHudLastPayload=null,nativeBusHudLastPayloadAt=0,nativeBusHudSocket=
 var nativeBusHudSendError="";
 var nativeBusHudDiagnostics={version:"HUD6",lastSentAt:0,enabled:false,error:"",status:null};
 window.GAME2_MANAGER.nativeBusHud=nativeBusHudDiagnostics;
-function receiveNativeBusHudStatus(m){nativeBusHudStatus=m;nativeBusHudStatusAt=Date.now();nativeBusHudDiagnostics.status=m;syncNativeUiSettings();}
+function receiveNativeBusHudStatus(m){receiveNativeDepartureWait(m);nativeBusHudStatus=m;nativeBusHudStatusAt=Date.now();nativeBusHudDiagnostics.status=m;syncNativeUiSettings();}
 function nativeBusHudText(value,max){
   var chars=Array.from(String(value==null?"":value).replace(/[\x00-\x1f|@<>]/g," ").replace(/\s+/g," ").trim());
   return chars.length<=max?chars.join(""):chars.slice(0,max-1).join("")+"…";
@@ -94,6 +94,38 @@ function buildNativeBusHudMessage(s){
     satisfactionBasisPoints:satisfaction,boarding:board,alighting:alight,stopRequested:requested,
     lateMinutes:late,doorFront:indicator(doors.entry),doorRear:indicator(doors.exit)};
 }
+
+function buildNativeDepartureWait(s){
+  var route=saeivRouteState,flow=s.busService;
+  // A cached complete snapshot must not survive a lost physical-passenger lease.
+  if(flow&&flow.native&&typeof nativePassengerServiceView==="function")flow=nativePassengerServiceView(getSaeivBusServiceKey());
+  var remaining=route&&Number(route.departureAtMs)>0?Number(route.departureAtMs)+getSaeivRouteClockShiftMs()-getSaeivNowTimestampMs():0;
+  var valid=normalizeGameMode(currentGameMode)==="bus"&&s.selected&&!s.routeCompleted&&s.routeTargetIndex===0&&
+    s.vehicleAtStop===true&&s.vehicleAtStopIndex===0&&Math.abs(Number(s.busSpeedKmh))<.5&&
+    flow&&flow.flowComplete===true&&(!flow.native||flow.fresh===true)&&
+    Number(flow.alightingDone)>=Number(flow.alightingTotal)&&!flow.entryNeedsOpen;
+  return {protocol:5,waitService:route?nativeModeActiveServiceToken():0,
+    waitMs:valid&&Number.isFinite(remaining)&&remaining>0&&remaining<=86340000?Math.floor(remaining):0,
+    waitAck:route&&Number.isInteger(route.departureWaitAck)?route.departureWaitAck:0};
+}
+function receiveNativeDepartureWait(m){
+  var r=saeivRouteState;
+  if(!r||!m||m.waitService!==nativeModeActiveServiceToken()||!Number.isSafeInteger(m.waitEpoch)||
+     !Number.isInteger(m.waitAction)||m.waitAction<1||!Number.isInteger(m.waitMs)||m.waitMs<1||m.waitMs>86340000||!Number.isInteger(m.waitGameMs)||m.waitGameMs<0||m.waitGameMs>86400000)return false;
+  var key=String(m.waitEpoch)+":"+m.waitAction;
+  if(r.departureWaitResult===key)return false;
+  if(r.departureWaitEpoch===m.waitEpoch&&m.waitAction<=Number(r.departureWaitAck||0))return false;
+  var gameJump=normalizeSaeivTimeSystem(saeivTimeSystem)===SAEIV_TIME_SYSTEM_IRL?0:m.waitGameMs;
+  // Cancel ONLY the native jump belonging to this acknowledged wait. Other
+  // g_set_time changes keep their normal rebasing, whichever packet arrives first.
+  if(gameJump)rebaseSaeivServiceClock(-gameJump);
+  r.departureWaitClockOffsetMs=(Number(r.departureWaitClockOffsetMs)||0)+m.waitMs-gameJump;
+  r.departureWaitResult=key;r.departureWaitEpoch=m.waitEpoch;r.departureWaitAck=m.waitAction;
+  nativeBusHudLastPayload=null;nativeBusHudLastPayloadAt=0;
+  if(typeof syncNativeRuntimeCheckpoint==='function')syncNativeRuntimeCheckpoint(true);
+  return true;
+}
+
 function syncNativeBusHud(force,payload){
   var now=Date.now();
   if(payload){nativeBusHudLastPayload=payload;nativeBusHudLastPayloadAt=now;}
@@ -107,6 +139,7 @@ function syncNativeBusHud(force,payload){
     }
     syncNativeBusCompletion(state);
     var message=buildNativeBusHudMessage(state);
+    Object.assign(message,buildNativeDepartureWait(state));
     telemetryWs.send(JSON.stringify(message));nativeBusHudLastSend=now;
     telemetryWs.send(JSON.stringify(buildNativeGirouetteMessage(state)));
     nativeBusHudDiagnostics.lastSentAt=now;nativeBusHudDiagnostics.enabled=message.enabled;
@@ -251,7 +284,7 @@ function buildNativeGirouetteMessage(s){
  var number=route?getLineNumber(line,route):'';
  var style=route?nativeServiceStyle(line,route,number):{};
  // XML override affects the destination display only, not stops/GPS/service labels.
- var override=route?String(line.girouetteOveride||'').trim():'';
+ var override=route?String((route.girouetteOveride!=null?route.girouetteOveride:line.girouetteOveride)||'').trim():'';
  return {type:'nativeGirouette',protocol:1,generation:nativeGameModeGeneration,enabled:bus,
    line:route?String(style.label||number).replace(/\s*\(provisoire\)/gi,'').trim():'',destination:route?(override||(last?String(last.name||last.stop&&last.stop.name||''):String(s.routeName||'')).replace(/\s*\(provisoire\)/gi,'').trim()):'Sans voyageur',
    badge:!!route&&!override&&line.badge!==false,partial:!!route&&route.partiel===true,stripe:style.stripe||'',

@@ -8,7 +8,7 @@ const read=f=>fs.readFileSync(path.join(root,f),'utf8');
 for(const file of ['map.html','idf-rp/widgets/gps_mini.html','idf-rp/html_divers/admin_map.html']){
  for(const [,attrs,script] of read(file).matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi))
   if(!/\bsrc=|\btype=["'](?:module|application\/)/.test(attrs))new vm.Script(script,{filename:file});
- assert(read(file).includes('config/map-context.js'),file);
+ if(file!=='map.html')assert(read(file).includes('config/map-context.js'),file);
 }
 const source=read('idf-rp/js/runtime/parts/00-state-and-config.js');
 const helpers=source.slice(source.indexOf('function normalizeGameMapFilePath('),source.indexOf('function fetchGameMapJson('));
@@ -37,3 +37,20 @@ for(const map of ['idf','grandutopia','unsupported']){
  }
 }
 console.log('PASS bus XML follows map; IDF web exports stay at website/shared paths; no web map loaded for Grand Utopia.');
+
+const publicMap=read('map.html');
+assert(!publicMap.includes('config/map-context.js'),'public map never remaps XML to IDFRP');
+const publicPaths=publicMap.slice(publicMap.indexOf('    const DBUS_BASE ='),publicMap.indexOf('    async function fetchMapFile('));
+for(const selected of ['website','IDF-RP','grandutopia']){
+ const ctx=vm.createContext({MAP_FILES_ROOT:'./map_files',DEV_DATA_BASE:'./map_files/IDF-RP',DATA_BASE:'./map_files/'+selected,
+  OVERLAY_BASE:'./map_files/website/Overlays',NEXT_VERSION_MODE:selected==='IDF-RP',SELECTED_VERSION:selected});
+ vm.runInContext(publicPaths,ctx);
+ for(const file of ['lines.xml','stops.xml','city.xml']){
+  const urls=ctx.mapFileCandidatePaths('Mode%20Bus/'+file);
+  assert.equal(urls.length,1);
+  assert.equal(urls[0],'./map_files/website/Dbus%20World%20Lines/'+file);
+  assert(fs.existsSync(path.join(root,decodeURIComponent(urls[0]))));
+ }
+ assert.equal(ctx.mapFileCandidatePaths('nav_graph.json')[0],'./map_files/nav_graph.json');
+}
+console.log('PASS public DBus catalogue and nav graph stay independent of plugin maps/versions.');

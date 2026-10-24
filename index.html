@@ -105,7 +105,7 @@
       padding: calc(var(--sitebar-height, 52px) + 14px) 14px 32px;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
     }
 
     .home-shell {
@@ -216,6 +216,48 @@
 
     .home-category-panel[hidden] {
       display: none !important;
+    }
+
+    .home-idfrp-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+      align-items: center;
+      gap: 28px;
+      padding: 12px 0;
+      box-sizing: border-box;
+    }
+    .home-idfrp-copy h1 {
+      margin: 0 0 14px;
+      color: #f5f5f5;
+      font-size: clamp(28px, 4vw, 38px);
+      line-height: 1.1;
+    }
+    .home-idfrp-copy p {
+      margin: 0 0 12px;
+      color: #e2e2e2;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .home-idfrp-copy p:last-child { margin-bottom: 0; color: #bfc8c2; }
+    .home-idfrp-media { margin: 0; min-width: 0; }
+    .home-idfrp-video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #0b0b0b;
+    }
+    .home-idfrp-video-frame {
+      overflow: hidden;
+      border-radius: 10px;
+      background: #0b0b0b;
+      box-shadow: 0 8px 24px #0005;
+    }
+    .home-shell.is-category-idfrp .home-hero::before { opacity: 0.25; }
+    #homeInstallOverview[hidden] { display: none; }
+    @media (max-width: 720px) {
+      .home-idfrp-panel { grid-template-columns: 1fr; gap: 20px; }
     }
 
     .home-convoy-panel {
@@ -1530,13 +1572,11 @@
             type="button"
             id="homeCategoryGameBtn"
             class="home-category-pill"
-            data-home-category="game"
+            data-home-category="idfrp"
             aria-current="false"
             aria-pressed="false"
-            disabled
-            aria-disabled="true"
           >
-            <span data-home-system-name>IDFRP</span>
+            <span data-home-system-name>IDF-RP</span>
           </button>
         </nav>
         <section class="home-hero" aria-label="Contenu d'accueil">
@@ -1613,6 +1653,23 @@
                   Guide Convoi
                 </button>
               </article>
+            </section>
+
+            <section class="home-category-panel home-idfrp-panel" data-home-category-panel="idfrp" hidden>
+              <div class="home-idfrp-copy">
+                <h1 data-home-system-name>IDF-RP</h1>
+                <p data-i18n="home_idfrp_intro">Vos missions de bus prennent vie dans Euro Truck Simulator 2.</p>
+                <p data-i18n="home_idfrp_features">Choisissez votre ligne, prenez votre service et transportez vos passagers. Gestion de l'horaire, passagers animés, girouettes et bien d'autres vous accompagnent au fil des arrêts, en solo comme en mode convoi.</p>
+                <p data-i18n="home_idfrp_future">Un plugin dédié au bus aujourd’hui, avec d'autres métiers et encore plus d’immersion prévues pour la suite. Aucune date de sortie officielle pour le moment, mais ça arrive bientôt !</p>
+              </div>
+              <figure class="home-idfrp-media">
+                <div class="home-idfrp-video-frame">
+                <video id="homeIdfrpVideo" class="home-idfrp-video" src="images/video.mp4"
+                  autoplay muted playsinline preload="metadata" disablepictureinpicture
+                  disableremoteplayback aria-label="Présentation vidéo IDF-RP"></video>
+                </div>
+                <p id="homeIdfrpVideoError" data-i18n="home_idfrp_video_error" role="status" hidden>La vidéo est momentanément indisponible.</p>
+              </figure>
             </section>
 
           </div>
@@ -1762,6 +1819,8 @@
   <script>
     (function initHomePage() {
       const homeShell = document.getElementById("homeShell");
+      const homeIdfrpVideo = document.getElementById("homeIdfrpVideo");
+      let homeVideoHovered = false;
       const homeAutoDownloadBtn = document.getElementById("homeAutoDownloadBtn");
       const homeAutoDownloadAlert = document.getElementById("homeAutoDownloadAlert");
       const homeManualToggleBtn = document.getElementById("homeManualToggleBtn");
@@ -1885,7 +1944,7 @@
           ? window.SITE_GAME_CONFIG
           : {};
         const configured = String(game.systemName || game.systemname || window.GAME_SYSTEM_NAME || "").trim();
-        return configured || "IDFRP";
+        return !configured || configured === "IDFRP" ? "IDF-RP" : configured;
       }
 
       function applyGameSystemName() {
@@ -1957,17 +2016,18 @@
         }
       }
 
-      function setManualPanelOpen(open) {
+      function setManualPanelOpen(open, { syncUrl = true } = {}) {
         if (!homeShell) return;
         const wasOpen = homeShell.classList.contains("is-manual-open");
         const useModal = isHomeManualModalMode();
-        homeManualVideoFrame.contentWindow?.postMessage(
+        homeManualVideoFrame?.contentWindow?.postMessage(
           '{"event":"command","func":"stopVideo","args":""}',
           "*"
         );
         homeShell.classList.toggle("is-manual-open", !!open);
         document.body.classList.toggle("home-manual-modal-open", !!open && useModal);
         syncManualGuideButtons(!!open);
+        if (syncUrl) writeHomeRoute();
         if (open && useModal) {
           homeManualCloseBtn?.focus();
           return;
@@ -2045,21 +2105,23 @@
         pendingManualModeSwitchTimer = window.setTimeout(applyMode, Math.ceil(transitionMs) + 40);
       }
 
-      function setHomeCategory(category) {
+      function setHomeCategory(category, { syncUrl = true } = {}) {
         const next = String(category || "installation").trim().toLowerCase();
-        const normalized = next === "convoy" ? next : "installation";
+        const normalized = next === "convoy" || next === "idfrp" ? next : "installation";
         const previousCategory = activeHomeCategory;
         const categoryChanged = previousCategory !== normalized;
-        const manualPanelVisible = !!(homeManualPanel && homeManualPanel.getBoundingClientRect().height > 0.5);
+        const manualPanelVisible = homeShell?.classList.contains("is-manual-open")
+          || !!(homeManualPanel && homeManualPanel.getBoundingClientRect().height > 0.5);
         const targetManualMode = normalized === "convoy" ? "convoy" : "installation";
         activeHomeCategory = normalized;
         if (homeShell) {
           const isConvoy = normalized === "convoy";
           homeShell.classList.toggle("is-category-convoy", isConvoy);
+          homeShell.classList.toggle("is-category-idfrp", normalized === "idfrp");
           homeShell.classList.toggle("is-category-installation", normalized === "installation");
         }
         if (categoryChanged && manualPanelVisible) {
-          setManualPanelOpen(false);
+          setManualPanelOpen(false, { syncUrl: false });
           scheduleManualModeAfterPanelClose(targetManualMode);
         } else if (categoryChanged) {
           clearPendingManualModeSwitch();
@@ -2073,14 +2135,21 @@
           button.setAttribute("aria-pressed", isActive ? "true" : "false");
           button.setAttribute("aria-current", isActive ? "page" : "false");
         });
+        requestAnimationFrame(() => {
+          const button = homeCategoryButtons.find((item) => item.dataset.homeCategory === activeHomeCategory);
+          if (!button || !homeCategoriesNav) return;
+          const tab = button.getBoundingClientRect(), nav = homeCategoriesNav.getBoundingClientRect();
+          if (tab.right > nav.right) homeCategoriesNav.scrollLeft += tab.right - nav.right;
+          else if (tab.left < nav.left) homeCategoriesNav.scrollLeft -= nav.left - tab.left;
+        });
         homeCategoryPanels.forEach((panel) => {
           const isActive = String(panel.dataset.homeCategoryPanel || "") === normalized;
           panel.hidden = !isActive;
         });
         const showInstallation = normalized === "installation";
         if (homeInstallOverview) {
-          homeInstallOverview.hidden = false;
-          homeInstallOverview.setAttribute("aria-hidden", "false");
+          homeInstallOverview.hidden = normalized === "idfrp";
+          homeInstallOverview.setAttribute("aria-hidden", normalized === "idfrp" ? "true" : "false");
         }
         setManualToggleVisibility(showInstallation && !isHomeAutoDownloadManualFallback());
         if (!showInstallation) {
@@ -2097,6 +2166,87 @@
           setConvoyStatusVisualState(convoyStatusViewState);
           syncConvoyStatusAgeTicker();
         }
+        syncHomeVideo();
+        if (syncUrl) writeHomeRoute();
+      }
+
+      // Hash routes work on static hosting and preserve language/query settings.
+      function writeHomeRoute() {
+        const guideOpen = homeShell?.classList.contains("is-manual-open");
+        const route = activeHomeCategory === "idfrp" ? "idfrp"
+          : activeHomeCategory === "convoy" ? (guideOpen ? "convoi/guide" : "convoi")
+          : guideOpen ? "telechargement/manuel" : "telechargement";
+        if (location.hash === "#" + route) return;
+        const url = new URL(location.href);
+        url.hash = route;
+        history.pushState(null, "", url);
+      }
+
+      function restoreHomeRoute() {
+        const route = location.hash.slice(1).toLowerCase();
+        const category = route === "idfrp" ? "idfrp"
+          : route === "convoi" || route === "convoi/guide" ? "convoy" : "installation";
+        setHomeCategory(category, { syncUrl: false });
+        // Cancel a closing transition before opening a different guide via Back/Forward.
+        clearPendingManualModeSwitch();
+        setManualPanelMode(category === "convoy" ? "convoy" : "installation");
+        setManualPanelOpen(route === "telechargement/manuel" || route === "convoi/guide", { syncUrl: false });
+      }
+
+      let homeVideoFrame = 0;
+      let homeVideoLastFrame = 0;
+      let homeVideoVolume = 0;
+      let homeVideoAudioBlocked = false;
+      const HOME_VIDEO_AUDIO_FADE_MS = 600;
+      const HOME_VIDEO_LOOP_FADE_SECONDS = 0.65;
+
+      function playHomeVideo() {
+        homeIdfrpVideo.play()?.catch(() => {
+          // A browser can require a click before sound is permitted.
+          // Keep the muted preview running and retry after a user gesture.
+          homeVideoAudioBlocked = true;
+          homeIdfrpVideo.muted = true;
+          if (activeHomeCategory === "idfrp" && !document.hidden) homeIdfrpVideo.play()?.catch(() => {});
+        });
+      }
+
+      function animateHomeVideo(now) {
+        homeVideoFrame = 0;
+        if (activeHomeCategory !== "idfrp" || document.hidden) return;
+        const elapsed = homeVideoLastFrame ? Math.min(100, now - homeVideoLastFrame) : 0;
+        homeVideoLastFrame = now;
+        const target = homeVideoHovered && !homeVideoAudioBlocked ? 1 : 0;
+        const step = elapsed / HOME_VIDEO_AUDIO_FADE_MS;
+        homeVideoVolume += Math.max(-step, Math.min(step, target - homeVideoVolume));
+        // Fade through black at the end and at the start of the next play.
+        // Seeking only while black prevents a visible last/first-frame cut.
+        const duration = homeIdfrpVideo.duration;
+        const fade = Number.isFinite(duration) && duration > 0
+          ? Math.min(HOME_VIDEO_LOOP_FADE_SECONDS, duration / 4) : 0;
+        const opacity = fade ? Math.max(0, Math.min(1,
+          homeIdfrpVideo.currentTime / fade, (duration - homeIdfrpVideo.currentTime) / fade)) : 1;
+        homeIdfrpVideo.style.opacity = String(opacity);
+        homeIdfrpVideo.volume = homeVideoVolume * opacity;
+        homeIdfrpVideo.muted = homeVideoAudioBlocked || homeVideoVolume === 0;
+        homeVideoFrame = requestAnimationFrame(animateHomeVideo);
+      }
+
+      function syncHomeVideo() {
+        if (!homeIdfrpVideo) return;
+        if (activeHomeCategory !== "idfrp" || document.hidden) {
+          homeVideoHovered = false;
+          homeVideoVolume = 0;
+          homeVideoLastFrame = 0;
+          cancelAnimationFrame(homeVideoFrame);
+          homeVideoFrame = 0;
+          homeIdfrpVideo.volume = 0;
+          homeIdfrpVideo.muted = true;
+          homeIdfrpVideo.pause();
+          return;
+        }
+        if (homeVideoHovered && !homeVideoAudioBlocked) homeIdfrpVideo.muted = false;
+        playHomeVideo();
+        if (!homeVideoFrame) homeVideoFrame = requestAnimationFrame(animateHomeVideo);
       }
 
       function convoyStatusImageName(status) {
@@ -2997,7 +3147,7 @@
         }
         setAutoDownloadMode("link");
         syncHomeDownloadManualStartLink();
-        setHomeCategory(activeHomeCategory);
+        setHomeCategory(activeHomeCategory, { syncUrl: false });
         if (homeSteamDlcLink) {
           const href = String(guide.steam_dlc || "").trim();
           if (href) homeSteamDlcLink.href = href;
@@ -3030,6 +3180,35 @@
       }
 
       render();
+      restoreHomeRoute();
+      window.addEventListener("hashchange", restoreHomeRoute);
+      homeIdfrpVideo?.addEventListener("pointerenter", (event) => {
+        homeVideoHovered = event.pointerType !== "touch";
+        homeVideoAudioBlocked = false;
+        syncHomeVideo();
+      });
+      homeIdfrpVideo?.addEventListener("pointerleave", () => {
+        homeVideoHovered = false;
+        syncHomeVideo();
+      });
+      // Retry sound after a user gesture if the browser blocked hover-only unmuting.
+      homeIdfrpVideo?.addEventListener("click", () => {
+        homeVideoAudioBlocked = false;
+        syncHomeVideo();
+      });
+      homeIdfrpVideo?.addEventListener("ended", () => {
+        homeIdfrpVideo.style.opacity = "0";
+        homeIdfrpVideo.currentTime = 0;
+        syncHomeVideo();
+      });
+      homeIdfrpVideo?.addEventListener("error", () => {
+        document.getElementById("homeIdfrpVideoError").hidden = false;
+      });
+      document.addEventListener("visibilitychange", syncHomeVideo);
+      window.addEventListener("blur", () => {
+        homeVideoHovered = false;
+        syncHomeVideo();
+      });
 
       new MutationObserver(render).observe(document.documentElement, {
         attributes: true,

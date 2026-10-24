@@ -813,24 +813,9 @@
         }
         function closeRemoteServerWs(options) {
           var opts = options && typeof options === "object" ? options : {};
-          remoteServerWsManualClose = opts.manual === true;
           stopRemoteServerWsPing();
-          if (!remoteServerWs) {
-            renderRemoteServerWsUi();
-            return;
-          }
-          var socket = remoteServerWs.socket;
-          if (socket) {
-            try { socket.onopen = null; } catch (err1) { }
-            try { socket.onmessage = null; } catch (err2) { }
-            try { socket.onerror = null; } catch (err3) { }
-            try { socket.onclose = null; } catch (err4) { }
-            try { socket.close(); } catch (err5) { }
-          }
-          remoteServerWs = null;
-          remoteServerWsPlayersCount = null;
-          remoteServerWsPlayerList = [];
-          remoteServerWsLastPongAtMs = 0;
+          stopRemotePanelWsBridge();
+          remoteServerWsManualClose = opts.manual === true;
           renderRemoteServerWsUi();
         }
         function renderRemoteServerWsUi() {

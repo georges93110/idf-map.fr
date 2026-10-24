@@ -44,7 +44,7 @@ function nativePassengerNextPlan(stops,index,mission) {
     if(nextIndex===stops.length-1)counts={board:0,alight:0};
     cached=state.nextNativePlan={index:nextIndex,uid:uid,counts:{board:counts.board,alight:counts.alight,demandDisabled:counts.demandDisabled===true}};
   }
-  var point=getSaeivStopExactWorldPoint(stop),yaw=Number(stop.stopHeading);
+  var point=getSaeivStopExactWorldPoint(stop),yaw=saeivStopZoneHeading(stop);
   if(!point||!Number.isFinite(point.h)||!Number.isFinite(yaw))return null;
   return {stopKey:[mission,nextIndex,uid].join(":"),board:Math.min(500,cached.counts.board),
     world:{x:point.x,y:point.h,z:point.y,yawDegrees:((yaw%360)+540)%360-180},
@@ -57,7 +57,7 @@ function buildNativePassengerPayload() {
   // Coordinates, counts and identity must belong to the same stop snapshot.
   var stops=saeivRouteState.stops,index=saeivPassengerState.targetIndex;
   if (!Array.isArray(stops)||!stops[index]) return off;
-  var stop=stops[index],point=getSaeivStopExactWorldPoint(stop),yaw=Number(stop.stopHeading);
+  var stop=stops[index],point=getSaeivStopExactWorldPoint(stop),yaw=saeivStopZoneHeading(stop);
   if (!point || !Number.isFinite(point.h) || !Number.isFinite(yaw)) return off;
   var state=saeivPassengerState,capacity=getSaeivActiveCapacityState(saeivVehicleName);
   var count=function(v){return Math.max(0,Math.min(500,Math.floor(Number(v)||0)));};

@@ -1473,7 +1473,7 @@ function tickSaeivAutomaticDestination() {
         });
         return Promise.race([loader
           .then(function (res) {
-            if (!res || !res.ok) throw new Error("XML load failed: " + path);
+            if (!res || !res.ok) { var failure = new Error("XML load failed: " + path); failure.status = res && res.status; throw failure; }
             return res.text();
           })
           .then(function (txt) {
@@ -1550,11 +1550,11 @@ function tickSaeivAutomaticDestination() {
         if (invalid) console.warn("[IDF-RP] times.xml : " + invalid + " entree(s) invalide(s) ignoree(s).");
         return profiles;
       }
-      function getSaeivPassengerTimeRule(nowTsMs) {
+      function getSaeivPassengerTimeRule(nowTsMs, selectedLine, selectedRoute) {
         var profiles = dbusLines && dbusLines.passengerTimes;
-        if (!(profiles instanceof Map) || !profiles.size || !saeivRouteState) return null;
-        var line = dbusLines.find(function (item) { return String(item.uid) === String(saeivRouteState.lineUid); });
-        var route = line && line.routes.find(function (item) { return String(item.uid) === String(saeivRouteState.routeUid); });
+        if (!(profiles instanceof Map) || !profiles.size || (!selectedRoute && !saeivRouteState)) return null;
+        var line = selectedLine || dbusLines.find(function (item) { return String(item.uid) === String(saeivRouteState.lineUid); });
+        var route = selectedRoute || (line && line.routes.find(function (item) { return String(item.uid) === String(saeivRouteState.routeUid); }));
         if (!route) return null;
         var hours = profiles.get(route.time || line.time || profiles.defaultUid || "0");
         if (!hours || !hours.length) return null;
@@ -1590,13 +1590,13 @@ function tickSaeivAutomaticDestination() {
             var stopNodes = Array.prototype.slice.call(routeNode.querySelectorAll(":scope > busstop"));
             var stops = stopNodes.map(function (stopNode) {
               var stopId = parseInt(String(stopNode.getAttribute("uid") || "0"), 10);
-              var nextStopTime = parseInt(String(stopNode.getAttribute("nextStopTime") || "0"), 10);
+
               var passengersMin = parseFloat(String(stopNode.getAttribute("passengersMin") || "NaN"));
               var passengersMax = parseFloat(String(stopNode.getAttribute("passengersMax") || "NaN"));
               var coefOn = parseFloat(String(stopNode.getAttribute("coefOn") || "NaN"));
               return {
                 uid: stopId,
-                nextStopTime: Number.isFinite(nextStopTime) ? nextStopTime : 0,
+                nextStopDurationS: null,
                 passengersMin: Number.isFinite(passengersMin) ? passengersMin : Number.NaN,
                 passengersMax: Number.isFinite(passengersMax) ? passengersMax : Number.NaN,
                 coefOn: Number.isFinite(coefOn) ? coefOn : Number.NaN
@@ -1604,13 +1604,13 @@ function tickSaeivAutomaticDestination() {
             }).filter(function (stopRef) {
               return Number.isFinite(stopRef.uid);
             });
-            var totalMinutes = stops.reduce(function (sum, stopRef) {
-              return sum + (Number(stopRef.nextStopTime) || 0);
-            }, 0);
+            var totalMinutes = null; // Resolved by the native GPS, not XML.
             return {
               uid: routeUid,
               name: routeName,
               time: String(routeNode.getAttribute("time") || "").trim(),
+              // An absent route attribute inherits the line; an explicit empty value restores automatic text.
+              girouetteOveride: routeNode.hasAttribute("girouetteOveride") ? String(routeNode.getAttribute("girouetteOveride") || "").trim() : null,
               lineStyle: window.IDF_LINE_CONFIG.read(lineNode, routeNode),
               reseau: window.IDF_LINE_CONFIG.network(routeNode.hasAttribute("reseau") ? routeNode.getAttribute("reseau") : lineNode.getAttribute("reseau")),
               partiel: /^(?:true|1)$/i.test(String(routeNode.getAttribute("partiel") || "").trim()),
@@ -1646,7 +1646,12 @@ function tickSaeivAutomaticDestination() {
         return Promise.all([
           fetchXmlDoc("Mode%20Bus/stops.xml", safeVersion, true),
           fetchXmlDoc("Mode%20Bus/lines.xml", safeVersion, true),
-          fetchXmlDoc("Mode%20Bus/points_de_passages.xml", safeVersion, true).catch(function () { return null; }),
+          fetchXmlDoc("Mode%20Bus/points_de_passages.xml", safeVersion, true).catch(function (error) {
+            // An optional absent file is fine. A timeout, HTTP error or malformed
+            // XML must not publish a different itinerary with wrong durations.
+            if (error && error.status === 404) return null;
+            throw error;
+          }),
           fetchXmlDoc("Mode%20Bus/times.xml", safeVersion, true).catch(function () {
             console.warn("[IDF-RP] times.xml indisponible : frequentation historique conservee.");
             return null;
@@ -1715,13 +1720,17 @@ function tickSaeivAutomaticDestination() {
             Z: Z,
             stopHeading: stop.Heading,
             point: { x: X, y: Y, z: Z },
-            nextStopTime: Number(stopRef && stopRef.nextStopTime) || 0,
+            nextStopDurationS: null,
+            nextStopDistanceM: null,
             passengersMin: Number(stopRef && stopRef.passengersMin),
             passengersMax: Number(stopRef && stopRef.passengersMax),
             coefOn: Number(stopRef && stopRef.coefOn)
           });
         });
         applyNavStopLinksToEntries(out);
+        if(Array.isArray(route.nativeGpsMetrics)&&route.nativeGpsMetrics.length===out.length-1)out.forEach(function(e,i){
+          var leg=route.nativeGpsMetrics[i];e.nextStopDurationS=leg?leg[1]:0;e.nextStopDistanceM=leg?leg[0]:0;
+        });
         return out;
       }
       function clampRouteStopIndex(value, lastIndex) {
@@ -1755,6 +1764,29 @@ function tickSaeivAutomaticDestination() {
         saeivStoppedAtStopUid = nextUid;
         return changed;
       }
+      // Keep aligned with native stop_detection_zone.h. This is a stop berth,
+      // not a traffic/overtaking area. Heading follows ETS2: forward = local -Z.
+      function saeivStopZoneHeading(entry) {
+        var yaw=Number(entry && entry.stopHeading);
+        if (Number.isFinite(yaw)) return yaw;
+        var stops=saeivRouteState && saeivRouteState.stops, i=Array.isArray(stops)?stops.indexOf(entry):-1;
+        var a=i>0?stops[i-1]:entry,b=i>=0&&i+1<stops.length?stops[i+1]:entry;
+        if(!a||!b||!a.point||!b.point)return NaN;
+        var dx=Number(b.point.x)-Number(a.point.x),dz=Number(b.point.z)-Number(a.point.z);
+        return Math.hypot(dx,dz)>.001?Math.atan2(-dx,-dz)*180/Math.PI:NaN;
+      }
+      function saeivStopZoneContains(vehicle,entry,reach) {
+        if(!vehicle||!entry)return false;
+        var yaw=saeivStopZoneHeading(entry),stop=entry.point;
+        var sx=Number(entry.X),sy=Number(entry.Y),sz=Number(entry.Z);
+        if(![sx,sy,sz].every(Number.isFinite)) {
+          sx=Number(stop&&stop.x);sy=Number(stop&&stop.y);sz=Number(stop&&stop.z);
+        }
+        var dx=Number(vehicle.x)-sx,dy=Number(vehicle.y)-sy,dz=Number(vehicle.z)-sz;
+        if(![yaw,dx,dy,dz,reach].every(Number.isFinite))return false;
+        var angle=yaw*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle),x=c*dx-s*dz,z=s*dx+c*dz;
+        return Math.abs(dy)<=4&&z>=-8&&z<=Math.max(8,reach)&&Math.abs(x)<=3+Math.max(0,z-6)*.5;
+      }
       function getSaeivRouteStartStopInfo(signal) {
         var out = {
           valid: false,
@@ -1777,7 +1809,7 @@ function tickSaeivAutomaticDestination() {
         if (Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z)) {
           var dist = worldPointDistance({ x: x, y: y, z: z }, startEntry.point);
           out.distanceM = dist;
-          out.atStartStop = Number.isFinite(dist) && dist <= SAEIV_STOP_REACH_DISTANCE;
+          out.atStartStop = saeivStopZoneContains(sig,startEntry,SAEIV_STOP_REACH_DISTANCE);
         }
         return out;
       }
@@ -2266,7 +2298,7 @@ function applySaeivPassengerSatisfaction(data) {
         var currentName = String(names[displayIndex] || "Arret").trim() || "Arret";
         var nextName = displayIndex < lastIndex ? String(names[displayIndex + 1] || "").trim() : "";
         var thirdName = (displayIndex + 2) <= lastIndex ? String(names[displayIndex + 2] || "").trim() : "";
-        var departMinutesRaw = Number(displayEntry && displayEntry.nextStopTime);
+        var departMinutesRaw = Number(displayEntry && displayEntry.nextStopDurationS)/60;
         var departMinutes = departMinutesRaw > 0 ? String(Math.floor(departMinutesRaw)).padStart(2, "0") : "";
         payload.selected = true;
         payload.lineSelected = true;
@@ -2409,7 +2441,7 @@ function applySaeivPassengerSatisfaction(data) {
         }
         payload.distanceToDisplayStopM = distanceToDisplayStopM;
         if (Number.isFinite(distanceToDisplayStopM)) {
-          payload.currentStopLabel = distanceToDisplayStopM <= SAEIV_STOP_REACH_DISTANCE ? "Arrêt actuel" : "Prochain arrêt";
+          payload.currentStopLabel = saeivStopZoneContains(telemetryLastSignal,displayEntry,SAEIV_STOP_REACH_DISTANCE) ? "Arrêt actuel" : "Prochain arrêt";
         } else {
           payload.currentStopLabel = payload.vehicleAtStop ? "Arrêt actuel" : "Prochain arrêt";
         }
@@ -2597,7 +2629,7 @@ function applySaeivPassengerSatisfaction(data) {
           if (currentIndex === lastIndex && targetIndex === lastIndex) {
             var terminalDistance = worldPointDistance(vehiclePoint, entries[lastIndex].point);
             var terminalTick = processSaeivPassengerServiceTick(lastIndex, {
-              inReach: terminalDistance <= Math.max(SAEIV_STOP_REACH_DISTANCE, SAEIV_STOP_DWELL_REACH_DISTANCE),
+              inReach: saeivStopZoneContains(vehiclePoint,entries[lastIndex],Math.max(SAEIV_STOP_REACH_DISTANCE, SAEIV_STOP_DWELL_REACH_DISTANCE)),
               isStopped: Math.abs(telemetrySpeedForStopDecision(speedKmhLive)) < SAEIV_STOP_DWELL_MAX_SPEED_KMH,
               isTerminus: true, nowMs: now
             });
@@ -2634,14 +2666,17 @@ function applySaeivPassengerSatisfaction(data) {
         if (currentIndex >= 0 && entries[currentIndex]) {
           currentStopDistance = worldPointDistance(vehiclePoint, entries[currentIndex].point);
         }
-        var outsideCurrentStopArea = Number.isFinite(currentStopDistance) && currentStopDistance > reachDistance;
-        var outsideTargetStopArea = Number.isFinite(targetDistance) && targetDistance > reachDistance;
+        var inReach=saeivStopZoneContains(vehiclePoint,targetEntry,reachDistance);
+        var currentInReach=currentIndex>=0&&saeivStopZoneContains(vehiclePoint,entries[currentIndex],reachDistance);
+        if(inReach&&saeivPassengerState)saeivPassengerState.targetZoneTouched=true;
+        var outsideCurrentStopArea = !currentInReach;
+        var outsideTargetStopArea = !inReach;
         var outsideAnyStopAreaForAnnouncement = outsideCurrentStopArea && outsideTargetStopArea;
         var atStopIndex = -1;
-        if (isStopped && targetDistance <= reachDistance) {
+        if (isStopped && inReach) {
           atStopIndex = targetIndex;
         } else if (isStopped && currentIndex >= 0 && entries[currentIndex]) {
-          if (Number.isFinite(currentStopDistance) && currentStopDistance <= reachDistance) {
+          if (currentInReach) {
             atStopIndex = currentIndex;
           }
         }
@@ -2682,7 +2717,6 @@ function applySaeivPassengerSatisfaction(data) {
           }
         }
         var reachedTerminusNow = targetIndex >= lastIndex;
-        var inReach = targetDistance <= reachDistance;
         var passengerTick = processSaeivPassengerServiceTick(targetIndex, {
           inReach: inReach,
           isStopped: isStopped,
@@ -2691,11 +2725,11 @@ function applySaeivPassengerSatisfaction(data) {
         });
         if (passengerTick && passengerTick.changed) saeivLastStateKey = "";
 
-        if (targetDistance > reachDistance) {
+        if (!inReach) {
           // A zero-work stop is complete immediately, but must still be approached
           // and announced. Never skip a future empty stop from hundreds of metres away.
           var completedOnDeparture = !!(departing && passengerTick && passengerTick.completed === true &&
-            Number(saeivPassengerState && saeivPassengerState.targetMinDistanceM) <= reachDistance);
+            saeivPassengerState && saeivPassengerState.targetZoneTouched === true);
           var stopNecessaryFar = !!(saeivPassengerState && saeivPassengerState.stopNecessary === true);
           var minSeenDistance = Number(saeivPassengerState && saeivPassengerState.targetMinDistanceM);
           var missedAdvanceMultiplier = Number(SAEIV_STOP_MISSED_ADVANCE_DISTANCE_MULTIPLIER);
@@ -2704,7 +2738,7 @@ function applySaeivPassengerSatisfaction(data) {
           // An unfinished terminus cannot unload occupants by advancing the route.
           var hasPassedTarget = !reachedTerminusNow && stopNecessaryFar &&
             Number.isFinite(minSeenDistance) &&
-            minSeenDistance <= reachDistance &&
+            saeivPassengerState.targetZoneTouched === true &&
             targetDistance >= passThroughThreshold;
           if (
             (completedOnDeparture || hasPassedTarget) &&

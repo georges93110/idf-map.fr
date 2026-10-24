@@ -15,18 +15,17 @@
         // These are game XYZ, not map XY and not a snapped navigation node.
         var point = getSaeivStopExactWorldPoint(stop);
         if (!point || !Number.isFinite(point.h)) return off;
-        var yaw = Number(stop.stopHeading);
+        var yaw = saeivStopZoneHeading(stop);
         if (!Number.isFinite(yaw)) return off;
         yaw = ((yaw % 360) + 540) % 360 - 180;
         var vehicle = telemetryLastSignal ? { x: telemetryLastSignal.x, y: telemetryLastSignal.y, z: telemetryLastSignal.z } : null;
         var radius = started ? Math.max(SAEIV_STOP_REACH_DISTANCE, SAEIV_STOP_DWELL_REACH_DISTANCE) : SAEIV_STOP_REACH_DISTANCE;
-        var distance = worldPointDistance(vehicle, point);
         return {
           type: "nativeStopMarker", version: 1, enabled: true,
           stopKey: String(saeiv.selectedKey || "") + ":" + index + ":" + String(stop.uid || ""),
           world: { x: point.x, y: point.h, z: point.y, yawDegrees: yaw },
           radiusM: radius,
-          inZone: Number.isFinite(distance) && distance <= radius
+          inZone: saeivStopZoneContains(vehicle,stop,radius)
         };
       }
       function syncNativeStopMarker(force, saeiv) {

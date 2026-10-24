@@ -1031,7 +1031,9 @@
             : secondsOfDayToTimestampMs(((absolute % 1440) + 1440) % 1440 * 60, saeivGameClockLastSourceTsMs);
           var shift = sameEpoch ? (correction - prev.correction) * 60000
             : Number.isFinite(saeivGameClockLastSourceTsMs) ? resolved - saeivGameClockLastSourceTsMs : 0;
-          rebaseSaeivServiceClock(shift);
+          // Real-time schedules do not follow changes to the game's clock.
+          if(typeof saeivTimeSystem==="undefined"||normalizeSaeivTimeSystem(saeivTimeSystem)!==SAEIV_TIME_SYSTEM_IRL)
+            rebaseSaeivServiceClock(shift);
           saeivNativeGameClock = { epoch: src.gameTimeClockEpoch, absolute: absolute, correction: correction, timestamp: resolved };
           saeivGameClockNowMs = resolved;
           saeivGameClockLastSourceTsMs = resolved;
@@ -1057,16 +1059,19 @@
         return false;
       }
       function getSaeivNowTimestampMs() {
+        // Deliberate departure waiting belongs to this service, also in Convoy.
+        // Solo corrections are cancelled by the acknowledged native jump; Convoy keeps a local offset.
+        var waitMs=saeivRouteState?(Number(saeivRouteState.departureWaitClockOffsetMs)||0):0;
         if (normalizeSaeivTimeSystem(saeivTimeSystem) === SAEIV_TIME_SYSTEM_IRL) {
           var now = Date.now() - saeivIrlPauseTotalMs;
           if (saeivIrlPauseStartAtMs > 0) {
             now -= (Date.now() - saeivIrlPauseStartAtMs);
           }
-          return now;
+          return now+waitMs;
         }
         var simNow = Number(saeivGameClockNowMs);
-        if (Number.isFinite(simNow) && simNow > 0) return simNow;
-        return Date.now();
+        if (Number.isFinite(simNow) && simNow > 0) return simNow+waitMs;
+        return Date.now()+waitMs;
       }
       function formatSaeivTimeForSelect(ms) {
         var date = new Date(ms);
@@ -1169,12 +1174,12 @@
         var routeStartAt = Number(saeivRouteState && saeivRouteState.departureAtMs) || Number(saeivRouteSelectedAtMs);
         if (!Number.isFinite(routeStartAt) || routeStartAt <= 0) return Number.NaN;
         var cumulatedMinutes = 0;
-        // `nextStopTime` = temps vers l'arret suivant.
+        // Native GPS seconds from this stop to the next one.
         // Scheduled departures: add the preceding stop-to-stop segments [0..idx-1].
         for (var i = 0; i < idx; i += 1) {
-          var segmentMinutes = Number(list[i] && list[i].nextStopTime);
-          if (!Number.isFinite(segmentMinutes) || segmentMinutes <= 0) continue;
-          cumulatedMinutes += segmentMinutes;
+          var seconds = list[i] && list[i].nextStopDurationS;
+          if (typeof seconds !== "number" || !Number.isFinite(seconds) || seconds < 0) return Number.NaN;
+          cumulatedMinutes += seconds / 60;
         }
         return routeStartAt + getSaeivRouteClockShiftMs() + Math.round(cumulatedMinutes * 60000);
       }
@@ -1337,11 +1342,9 @@
         }
         return out;
       }
-      function pickSaeivPassengerSpawnCount(passengersMin, passengersMax, nowTsMs) {
+      function getSaeivPassengerSpawnRange(passengersMin, passengersMax, percentage) {
         var minVal = Math.max(0, Math.round(Number(passengersMin) || 0));
         var maxVal = Math.max(minVal, Math.round(Number(passengersMax) || 0));
-        var timeRule = getSaeivPassengerTimeRule(nowTsMs);
-        var percentage = timeRule ? timeRule.percentage : (isSaeivPeakPassengerTime(nowTsMs) ? 100 : 25);
         // Calibrate 25/100 to the former off-peak/peak bands. Interpolate both
         // ends, so intermediate demand is neither a second multiplier nor a binary switch.
         var lowMin = minVal, lowMax = maxVal, highMin = minVal, highMax = maxVal;
@@ -1363,7 +1366,12 @@
           spawnMin = lowMin + (highMin - lowMin) * blend;
           spawnMax = lowMax + (highMax - lowMax) * blend;
         }
-        return pickRandomIntegerInRange(Math.round(spawnMin), Math.round(spawnMax));
+        return {min:Math.round(spawnMin),max:Math.round(spawnMax)};
+      }
+      function pickSaeivPassengerSpawnCount(passengersMin, passengersMax, nowTsMs) {
+        var timeRule=getSaeivPassengerTimeRule(nowTsMs);
+        var range=getSaeivPassengerSpawnRange(passengersMin,passengersMax,timeRule?timeRule.percentage:(isSaeivPeakPassengerTime(nowTsMs)?100:25));
+        return pickRandomIntegerInRange(range.min,range.max);
       }
       function computeSaeivPassengersAtStopValue(config, stopIndex, lastIndex, stopEntry) {
         var cfg = config && typeof config === "object" ? config : saeivPassengerDefaults;
@@ -1475,6 +1483,7 @@
           targetUid: uid,
           departureArmed: false,
           targetMinDistanceM: Number.POSITIVE_INFINITY,
+          targetZoneTouched: false,
           lastRequestRollAtMs: 0,
           lastBoardStepAtMs: 0,
           lastAlightStepAtMs: 0
@@ -1497,6 +1506,7 @@
         saeivPassengerState.targetUid = uid;
         saeivPassengerState.departureArmed = false;
         saeivPassengerState.targetMinDistanceM = Number.POSITIVE_INFINITY;
+        saeivPassengerState.targetZoneTouched = false;
         saeivPassengerState.lastRequestRollAtMs = 0;
         saeivPassengerState.lastBoardStepAtMs = 0;
         saeivPassengerState.lastAlightStepAtMs = 0;
@@ -1720,6 +1730,7 @@
           (completed && view.flowComplete === true && view.alightingDone >= view.alightingTotal) ||
           (view.native === true && view.fresh === true && view.zoneTouched === true &&
            opts.inReach === true && opts.isStopped === true));
+        if (opts.inReach === true || (view.native === true && view.fresh === true && view.zoneTouched === true)) state.targetZoneTouched = true;
         if (opts.inReach === true && opts.isStopped === true) state.departureArmed = true;
         if (completed) {
           saeivStopServedLog[stopIndex] = true;

@@ -80,3 +80,36 @@ conserve le modèle d'accès du relais existant ; il n'ajoute pas d'authentifica
 
 Tests : `telemetry/tests/admin_convoy.test.cjs` couvre l'isolation, les abonnements,
 la cadence, les données périmées et les déconnexions avec des WebSockets réels.
+
+
+## Diagnostic du proxy WebSocket
+
+Le client utilise `wss://panel.idf-map.fr/idfmap/ws/native/`. Le serveur Node peut être prêt
+sur son port (`WS_PORT`, `PORT`, ou 9377 par défaut) alors que cette URL sécurisée
+renvoie une page Apache de maintenance. Un HTTP 200 avec du HTML ou un HTTP 503
+pendant la négociation WebSocket ne constitue pas une connexion au relais :
+la réponse attendue est HTTP 101 avec passage au protocole WebSocket.
+
+Dans `game.log`, `unavailable:http-200` ou `unavailable:http-503` identifie ce cas.
+Les erreurs DNS/TLS sont distinguées par leur code, sans journaliser le contenu
+de la page ni les informations de connexion. Les tentatives continuent toutes
+les trois secondes ; une cause identique ne répète plus le couple
+`connecting` / `unavailable`. Le résumé périodique conserve l'état du relais.
+
+Pour rétablir le service, vérifier la destination du proxy du VirtualHost HTTPS
+de `panel.idf-map.fr`, sa prise en charge de l'upgrade WebSocket et les règles de
+maintenance qui peuvent intercepter `/idfmap/ws/native/` avant ce proxy.
+La destination doit être l'hôte et le port réels de l'application Node (son
+`/health` identifie le service `idfmap-ws`). Corriger/redémarrer le proxy nécessite
+un accès à cet hébergement ; compiler la DLL ou publier le site statique ne
+modifie pas cette configuration. Le client conserve WSS et la validation TLS.
+
+Une panne du relais ne suspend pas IDF-RP : le service local, les passagers,
+le SAEIV et les acquittements HTML restent indépendants. Le site abandonne les
+échantillons destinés au panel pendant la panne et conserve seulement le plus
+récent lorsqu'il est connecté ; la préparation se fait hors du traitement des
+paquets locaux, au maximum à la cadence d'envoi. Les appels de télémétrie ne
+peuvent plus annuler le délai de reconnexion. Une ouverture restée bloquée est
+fermée après 4,5 secondes ; les tentatives reprennent en arrière-plan. Au retour
+du relais, un état frais est envoyé. La protection contre une perte réelle du
+pont local ou du HTML reste active.
