@@ -1,6 +1,11 @@
 // Nearby Convoy doors use a bounded pneumatic effect. Original vehicle-bank
 // sounds are not replaced. Playback belongs to one page selected by the bridge.
 var convoyDoorAudio = { voices: new Map(), seen: new Map(), noise: null, timer: null };
+// Match convoy/protocol.cjs: current relays assign opaque native identities;
+// Steam IDs remain supported for older sessions.
+function convoyAudioPlayer(value) {
+  return typeof value === 'string' && (/^native:[0-9a-f]{32}$/.test(value) || /^7656119\d{10}$/.test(value));
+}
 function convoyDoorMix(pose, data, fresh) {
   if (!fresh || !pose || !data || data.paused || !data.audioCameraAvailable) return { gain: 0, pan: 0 };
   var dx = pose.x - data.audioCameraX, dy = pose.y - data.audioCameraY, dz = pose.z - data.audioCameraZ;
@@ -23,6 +28,7 @@ function tickConvoyDoorAudio() {
   convoyDoorAudio.voices.forEach(function (v, key) {
     if (now >= v.until || now - state.stamp >= 1500 || !state.telemetry || state.telemetry.paused) { stopConvoyDoorVoice(key); return; }
     var mix = v.clip ? convoyBusClipMix(v.pose,v.doors,state.telemetry,now-state.stamp<1500) : convoyDoorMix(v.pose, state.telemetry, now - state.stamp < 1500);
+    if (!mix.gain) { stopConvoyDoorVoice(key); return; }
     var master = nativeGameAudio.available && now - nativeGameAudio.stamp < 2000 ? getGlobalAudioVolumeFactor() : 0;
     v.gain.gain.setTargetAtTime(mix.gain * master * (v.level === undefined ? 1 : v.level), state.context.currentTime, .04);
     if(v.clip && v.filter)v.filter.frequency.setTargetAtTime(mix.cutoff,state.context.currentTime,.04);
@@ -37,7 +43,7 @@ function receiveNativeConvoyAudio(m) {
   if (!m.pose || !['x', 'y', 'z'].every(function (k) { return Number.isFinite(m.pose[k]) && Math.abs(m.pose[k]) <= 16000000; })) return false;
   if (m.action === 'position') { s.voices.forEach(function (v) { if (v.player === m.player) { v.pose = m.pose; v.doors=m.doors||v.doors; } }); return true; }
   if (m.action === 'clip') return receiveConvoyBusClip(m);
-  if (m.action !== 'door' || !/^\d{17,20}$/.test(m.player) || typeof m.id !== 'string' || m.id.length > 128 ||
+  if (m.action !== 'door' || !convoyAudioPlayer(m.player) || typeof m.id !== 'string' || m.id.length > 128 ||
       ![0, 1].includes(m.door) || typeof m.opening !== 'boolean') return false;
   s.seen.forEach(function (at, id) { if (now - at > 6000) s.seen.delete(id); });
   var id = m.player + ':' + m.id; if (s.seen.has(id)) return false;
@@ -121,7 +127,7 @@ function convoyBusClipMix(pose,doors,data,fresh) {
 }
 function receiveConvoyBusClip(m) {
   var s=convoyDoorAudio,a=m.audio,now=Date.now(),state=busSpatialAudio;
-  if(!/^\d{17,20}$/.test(m.player)||typeof m.id!=='string'||m.id.length>256||!a||
+  if(!convoyAudioPlayer(m.player)||typeof m.id!=='string'||m.id.length>256||!a||
       typeof a.voice!=='string'||!/^[a-zA-Z0-9_.:-]{1,128}$/.test(a.voice)||!['play','stop'].includes(a.action))return false;
   var key=m.player+':clip:'+a.voice;
   s.seen.forEach(function(at,id){if(now-at>6000)s.seen.delete(id);});
@@ -156,9 +162,11 @@ function receiveConvoyBusClip(m) {
     var offset=a.offset+(Date.now()-now)/1000,buffer=values[0];
     if(Date.now()-now>3000||offset>=Math.min(buffer.duration,a.duration)||c.state!=='running'||
         !state.telemetry||state.telemetry.paused||Date.now()-state.stamp>=1500){stopConvoyDoorVoice(key);return;}
+    // The listener or bus may have left the zone during asynchronous loading.
+    tickConvoyDoorAudio();if(s.voices.get(key)!==v)return;
     var source=c.createBufferSource();v.source=source;source.buffer=buffer;source.connect(filter);
     source.onended=function(){if(s.voices.get(key)===v)stopConvoyDoorVoice(key);};
-    tickConvoyDoorAudio();source.start(0,offset);source.stop(c.currentTime+Math.min(buffer.duration,a.duration)-offset);
+    source.start(0,offset);source.stop(c.currentTime+Math.min(buffer.duration,a.duration)-offset);
   }).catch(function(){if(s.voices.get(key)===v)stopConvoyDoorVoice(key);});
   return true;
 }
