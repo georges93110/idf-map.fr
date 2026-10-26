@@ -293,6 +293,8 @@
       }
 
       function ensurePipShell(doc) {
+        // Detached widget windows keep the same final audio bus as the game UI.
+        if (window.IDFGameAudio && doc.defaultView) doc.defaultView.IDFGameAudio = window.IDFGameAudio;
         if (!doc.getElementById("idfPipStyle")) {
           var style = doc.createElement("style");
           style.id = "idfPipStyle";

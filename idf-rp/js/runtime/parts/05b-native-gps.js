@@ -52,6 +52,7 @@
         if(points.length>128){nativeGpsStatus={status:"too_many_stops",count:points.length};return null;}
         var payload={type:"nativeGpsDestination",version:usePassages?3:2,enabled:true,firstStop:index+1,
           moverStops:moverStops,stopKey:String(saeivRouteState.selectedKey)+":"+index+":"+String(stops[index].uid||"")+(saeivRouteState.started?"":":approach"),points:points};
+        if(typeof isSaeivNextStopOptional==='function'&&isSaeivNextStopOptional())payload.optionalFirst=true;
         if(usePassages)payload.stopPoints=stopPoints;
         return payload;
       }

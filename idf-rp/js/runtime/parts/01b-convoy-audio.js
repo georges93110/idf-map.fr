@@ -75,7 +75,7 @@ function receiveNativeConvoyAudio(m) {
     envelope.gain.exponentialRampToValueAtTime(.035, t + duration * .75); envelope.gain.linearRampToValueAtTime(0, t + duration);
     gain.gain.value = mix.gain * getGlobalAudioVolumeFactor(); if (pan) pan.pan.value = mix.pan;
     source.connect(filter); filter.connect(envelope); envelope.connect(gain);
-    if (pan) { gain.connect(pan); pan.connect(c.destination); } else gain.connect(c.destination);
+    if (pan) { gain.connect(pan); pan.connect(nativeAudioDestination(c)); } else gain.connect(nativeAudioDestination(c));
     var voice = { source: source, filter: filter, envelope: envelope, gain: gain, pan: pan, pose: m.pose, player: m.player, until: now + 1700 };
     s.voices.set(key, voice); source.onended = function () { if (s.voices.get(key) === voice) stopConvoyDoorVoice(key); };
     source.start(); source.stop(t + duration);
@@ -147,7 +147,7 @@ function receiveConvoyBusClip(m) {
   try{c=state.context||(state.context=new Context());}catch(_){return false;}
   var filter=c.createBiquadFilter(),gain=c.createGain(),pan=c.createStereoPanner?c.createStereoPanner():null;
   filter.type='lowpass';filter.frequency.value=mix.cutoff;filter.connect(gain);
-  if(pan){gain.connect(pan);pan.connect(c.destination);}else gain.connect(c.destination);
+  if(pan){gain.connect(pan);pan.connect(nativeAudioDestination(c));}else gain.connect(nativeAudioDestination(c));
   var boost=a.category==='routeAnnouncement'?4:a.category==='shortcutAnnouncement'?1.5:a.category==='announcement'?2:1;
   var v={source:null,filter:filter,gain:gain,pan:pan,pose:m.pose,doors:m.doors,player:m.player,clip:true,
     level:a.level*boost,until:now+(a.duration-a.offset)*1000+2000};

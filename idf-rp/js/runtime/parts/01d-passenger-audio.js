@@ -47,7 +47,7 @@ function tickPassengerAmbience(ready) {
       if(!passengerCabinReady()||!passengerCrowdLevel(s.onboard)){stopPassengerAmbience();return;}
       v.gain=c.createGain();v.gain.gain.value=0;
       v.source=c.createBufferSource();v.source.buffer=buffer;v.source.loop=true;
-      v.source.connect(v.gain);v.gain.connect(c.destination);
+      v.source.connect(v.gain);v.gain.connect(nativeAudioDestination(c));
       v.source.start(0,Math.random()*buffer.duration);
       tickPassengerAmbience(true);
     }).catch(function(){if(s.ambience===v){stopPassengerAmbience();s.retryAt=Date.now()+30000;}});

@@ -406,7 +406,7 @@ var saeivLumiplanJourney = new LumiplanJourney();
           applyRuntimeAudioVolume(saeivStopRequestAudioState.audio, volume);
         }
         if (saeivServiceAcceptAudio) {
-          applyRuntimeAudioVolume(saeivServiceAcceptAudio, 1 / Math.max(1, Number(SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR) || 1));
+          applyRuntimeAudioVolume(saeivServiceAcceptAudio, .5 / Math.max(1, Number(SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR) || 1));
         }
         if (saeivGlobalAudioState && typeof saeivGlobalAudioState === "object") {
           saeivGlobalAudioState.volumeMultiplier = getSaeivGlobalAudioVolumeMultiplier(saeivGlobalAudioState.folderName);
@@ -603,7 +603,7 @@ var saeivLumiplanJourney = new LumiplanJourney();
         saeivRouteAudio.playing = true;
         saeivRouteAudio.currentClipName = nextClip;
         saeivRouteAudio.currentClipEndedHooks = [];
-        var finished = false, pending = false, retryAt = 0, mediaRetries = 0, started = false;
+        var finished = false, pending = false, retryAt = 0, mediaRetries = 0, started = false, moveBackSent = false, validationReminderSent = false;
         function current() { return !finished && token === saeivRouteAudio.playbackToken && saeivRouteAudio.audio === audio; }
         function failed(error) {
           if (!current()) return;
@@ -628,13 +628,35 @@ var saeivLumiplanJourney = new LumiplanJourney();
           try { Promise.resolve(audio.play()).then(function () { pending = false; }, failed); }
           catch (error) { failed(error); }
         };
+        var announcementFile = nextClip;
+        if (next.globalUrl) { try { announcementFile = decodeURIComponent(String(next.globalUrl).split(/[?#]/)[0].split('/').pop()); } catch (_) {} }
+        function requestValidationReminder(ended) {
+          if(!current()||!started||validationReminderSent||(audio.paused&&!ended)||!canPlaySaeivRouteAudio())return;
+          var title = /valid/i.test(nextClip) ? nextClip : announcementFile;
+          var duration = Number(audio.duration), position = Number(audio.currentTime);
+          if(!/valid/i.test(title)||!Number.isFinite(duration)||duration<=0||!Number.isFinite(position)||position<duration*.75)return;
+          if(typeof nativePassengerValidationAnnouncement==="function")validationReminderSent=nativePassengerValidationAnnouncement(title)===true;
+        }
         audio.onplaying = function () {
           if (!current() || started) return;
           started = true;
           if (typeof next.onStarted === "function") next.onStarted();
         };
+        // Decoded Web Audio has no timeupdate event. The 50 ms route tick uses
+        // actual playback time, so pauses/loading never advance this trigger.
+        audio.saeivProgress = function () {
+          requestValidationReminder();
+          if (!current() || !started || moveBackSent || audio.paused || !canPlaySaeivRouteAudio() || !/fond/i.test(nextClip)) return;
+          var duration = Number(audio.duration), position = Number(audio.currentTime);
+          if (Number.isFinite(duration) && duration > 0 && Number.isFinite(position) && position >= duration * .75 &&
+              typeof nativePassengerMoveBackAnnouncement === "function") {
+            moveBackSent = nativePassengerMoveBackAnnouncement(nextClip) === true;
+          }
+        };
         audio.onended = function () {
           if (!current()) return;
+          // A short clip or busy UI can end between two progress ticks.
+          requestValidationReminder(true);
           finished = true;
           saeivRouteAudio.playing = false;
           saeivRouteAudio.audio = null;
@@ -667,6 +689,7 @@ var saeivLumiplanJourney = new LumiplanJourney();
       function finishSaeivServiceAcceptAudio(token) {
         if (token !== saeivServiceAcceptAudioToken) return;
         saeivServiceAcceptAudio = null;
+        saeivServiceAcceptPending = null;
         if (saeivServiceAcceptAudioReleaseTimer) {
           clearTimeout(saeivServiceAcceptAudioReleaseTimer);
           saeivServiceAcceptAudioReleaseTimer = 0;
@@ -680,7 +703,7 @@ var saeivLumiplanJourney = new LumiplanJourney();
         }, Math.max(0, saeivServiceAcceptAudioReleaseAtMs - Date.now()));
       }
       function isSaeivServiceAcceptAudioDelayActive() {
-        if (saeivServiceAcceptAudio) return true;
+        if (saeivServiceAcceptPending || saeivServiceAcceptAudio) return true;
         var releaseAt = Number(saeivServiceAcceptAudioReleaseAtMs);
         return Number.isFinite(releaseAt) && releaseAt > Date.now();
       }
@@ -701,53 +724,79 @@ var saeivLumiplanJourney = new LumiplanJourney();
         waitLoop();
         return true;
       }
-      function playSaeivServiceAcceptAudio() {
-        var token = ++saeivServiceAcceptAudioToken;
-        if (saeivServiceAcceptAudioReleaseTimer) {
-          clearTimeout(saeivServiceAcceptAudioReleaseTimer);
-          saeivServiceAcceptAudioReleaseTimer = 0;
-        }
-        if (saeivServiceAcceptAudio) {
-          try { saeivServiceAcceptAudio.pause(); saeivServiceAcceptAudio.src = ""; } catch (err0) {}
-        }
+      function cancelSaeivServiceAcceptAudio() {
+        ++saeivServiceAcceptAudioToken;
+        saeivServiceAcceptPending = null;
+        if (saeivServiceAcceptAudioReleaseTimer) clearTimeout(saeivServiceAcceptAudioReleaseTimer);
+        saeivServiceAcceptAudioReleaseTimer = 0;
+        var audio = saeivServiceAcceptAudio;
         saeivServiceAcceptAudio = null;
+        if (audio) { try { audio.pause(); audio.src = ""; } catch (_) {} }
         saeivServiceAcceptAudioReleaseAtMs = 0;
         resolveSaeivServiceAcceptAudioWaiters();
+      }
+      function playSaeivServiceAcceptAudio() {
+        cancelSaeivServiceAcceptAudio();
         var url = getSaeivNetworkSoundUrl("start_line");
-        if (!url) return { ok: true };
         var routeKey = String(saeivRouteState && saeivRouteState.selectedKey || "");
+        if (!url || !routeKey) return { ok: true };
+        var p = { token: saeivServiceAcceptAudioToken, routeKey: routeKey, url: url,
+          selectedAt: saeivRouteSelectedAtMs, generation: nativeGameModeGeneration,
+          requestedAt: Date.now(), ready: false, playing: false, retryAt: 0 };
+        saeivServiceAcceptPending = p;
         createSaeivServiceAcceptAudioWaitPromise();
-        // Hold destination speech while the bounded lookup is pending.
-        saeivServiceAcceptAudioReleaseAtMs = Date.now() + 4000;
         probeSaeivSoundFileAvailability(url).then(function (exists) {
-          if (token !== saeivServiceAcceptAudioToken) return;
-          if (!exists || routeKey !== String(saeivRouteState && saeivRouteState.selectedKey || "")) {
-            saeivServiceAcceptAudioReleaseAtMs = 0;
-            resolveSaeivServiceAcceptAudioWaiters();
-            return;
-          }
-          var audio = createBusSpatialAudio(url, "serviceSelection");
-          setBusAudioLevel(audio, 1 / Math.max(1, Number(SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR) || 1));
-          try { audio.currentTime = Math.max(0, Number(SAEIV_SERVICE_ACCEPT_AUDIO_START_OFFSET_SEC) || 0); } catch (err1) {}
-          saeivServiceAcceptAudio = audio;
-          saeivServiceAcceptAudioReleaseAtMs = 0;
-          var finished = false;
-          var finish = function () {
-            if (finished) return;
-            finished = true;
-            finishSaeivServiceAcceptAudio(token);
-          };
-          audio.onended = finish;
-          audio.onerror = finish;
-          var promise = audio.play();
-          if (promise && typeof promise.catch === "function") promise.catch(finish);
+          if (saeivServiceAcceptPending !== p) return;
+          if (!exists) { cancelSaeivServiceAcceptAudio(); return; }
+          p.ready = true;
+          syncSaeivServiceAcceptAudio();
         }).catch(function () {
-          if (token !== saeivServiceAcceptAudioToken) return;
-          saeivServiceAcceptAudio = null;
-          saeivServiceAcceptAudioReleaseAtMs = 0;
-          resolveSaeivServiceAcceptAudioWaiters();
+          if (saeivServiceAcceptPending === p) cancelSaeivServiceAcceptAudio();
         });
         return { ok: true };
+      }
+      function syncSaeivServiceAcceptAudio() {
+        var p = saeivServiceAcceptPending;
+        if (!p) return;
+        if (p.token !== saeivServiceAcceptAudioToken || normalizeGameMode(currentGameMode) !== "bus" ||
+            p.generation !== nativeGameModeGeneration || p.selectedAt !== saeivRouteSelectedAtMs ||
+            p.routeKey !== String(saeivRouteState && saeivRouteState.selectedKey || "")) {
+          cancelSaeivServiceAcceptAudio(); return;
+        }
+        var audio = saeivServiceAcceptAudio;
+        // Require a driving sample newer than selection, not the last camera
+        // state retained behind the desktop. Do not use the route-audio gate:
+        // destination speech deliberately waits for this chime to finish.
+        var ready = p.ready && !managerState.visible && !telemetryPaused && telemetryConnected &&
+          telemetryLastPacketAt > p.requestedAt && Date.now() - telemetryLastPacketAt < 1000 &&
+          busAudioReady({ followMaster: true, kind: "announcement" });
+        if (!ready) {
+          if (audio && (p.playing || !audio.paused)) { try { audio.pause(); } catch (_) {} }
+          return;
+        }
+        if (!audio) {
+          // Same speaker position and spatial filtering as speech.
+          // Compensate its x2 speech gain to retain the existing chime level.
+          audio = createBusSpatialAudio(p.url, "announcement");
+          setBusAudioLevel(audio, .5 / Math.max(1, Number(SAEIV_SERVICE_ACCEPT_AUDIO_VOLUME_DIVISOR) || 1));
+          try { audio.currentTime = Math.max(0, Number(SAEIV_SERVICE_ACCEPT_AUDIO_START_OFFSET_SEC) || 0); } catch (_) {}
+          saeivServiceAcceptAudio = audio;
+          audio.onended = audio.onerror = function () {
+            if (saeivServiceAcceptPending === p) finishSaeivServiceAcceptAudio(p.token);
+          };
+        }
+        if (p.playing || !audio.paused || Date.now() < p.retryAt) return;
+        p.playing = true;
+        function failed(error) {
+          p.playing = false;
+          if (saeivServiceAcceptPending !== p) return;
+          if (error && ["AbortError", "AudioDataTimeout", "NotAllowedError"].includes(error.name)) {
+            p.retryAt = Date.now() + 250; return;
+          }
+          finishSaeivServiceAcceptAudio(p.token);
+        }
+        try { Promise.resolve(audio.play()).then(function () { p.playing = false; }, failed); }
+        catch (error) { failed(error); }
       }
       function stopSaeivStopRequestAudioPlayback() {
         var audio = saeivStopRequestAudioState && saeivStopRequestAudioState.audio;
@@ -961,6 +1010,7 @@ var saeivLumiplanJourney = new LumiplanJourney();
         return playSaeivStopRequestAudioForCurrentTarget();
       }
       function syncSaeivAudioPauseState() {
+        syncSaeivServiceAcceptAudio();
         var audio = saeivRouteAudio.audio;
         if (!audio) { processSaeivRouteAudioQueue(); return; }
         if (!canPlaySaeivRouteAudio()) {
@@ -969,6 +1019,7 @@ var saeivLumiplanJourney = new LumiplanJourney();
           if (audio.saeivResume) audio.saeivResume();
           else audio.play().catch(function () {});
         }
+        if (audio.saeivProgress) audio.saeivProgress();
       }
       function syncWidgetsPauseState() {
         var isManagerVisible = (typeof managerState !== "undefined" && managerState.visible);
@@ -1837,7 +1888,11 @@ function tickSaeivAutomaticDestination() {
         var dx=Number(vehicle.x)-sx,dy=Number(vehicle.y)-sy,dz=Number(vehicle.z)-sz;
         if(![yaw,dx,dy,dz,reach].every(Number.isFinite))return false;
         var angle=yaw*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle),x=c*dx-s*dz,z=s*dx+c*dz;
-        return Math.abs(dy)<=4&&z>=-8&&z<=Math.max(8,reach)&&Math.abs(x)<=3+Math.max(0,z-6)*.5;
+        // Point 1 stays at the exact XML position. Point 2 is 24 m behind it.
+        // The connection is 3 m wide on each side, extended 8 m at either end.
+        // reach remains a legacy argument, not a different start/arrival zone.
+        var secondPointZ=24,extension=8;
+        return Math.abs(dy)<=4&&Math.abs(x)<=3&&z>=-extension&&z<=secondPointZ+extension;
       }
       function getSaeivRouteStartStopInfo(signal) {
         var out = {
@@ -1869,13 +1924,13 @@ function tickSaeivAutomaticDestination() {
         var idx = Math.floor(Number(index));
         var tail = Math.floor(Number(lastIndex));
         if (!Number.isFinite(idx) || !Number.isFinite(tail)) return false;
-        if (idx <= 0 || idx >= tail) return false;
+        if (idx < 0 || idx >= tail) return false;
         if (!saeivPassengerState || typeof saeivPassengerState !== "object") return false;
         if (Math.floor(Number(saeivPassengerState.targetIndex)) !== idx) return false;
         var entryUid = String(entry && entry.uid || "");
         var targetUid = String(saeivPassengerState.targetUid || "");
         if (entryUid && targetUid && entryUid !== targetUid) return false;
-        return saeivPassengerState.stopOptionalByPlan === true;
+        return typeof isSaeivNextStopOptional==="function"?isSaeivNextStopOptional():saeivPassengerState.stopOptionalByPlan === true;
       }
       function readSaeivSignalString(source, keys) {
         if (!source || typeof source !== "object" || !Array.isArray(keys)) return "";
@@ -2792,6 +2847,14 @@ function applySaeivPassengerSatisfaction(data) {
             Number.isFinite(minSeenDistance) &&
             saeivPassengerState.targetZoneTouched === true &&
             targetDistance >= passThroughThreshold;
+          // Passing an optional platform in an adjacent lane is legitimate.
+          // Require a close approach, matching elevation and increasing distance;
+          // a future empty stop must not advance from across the map.
+          var optionalPassed=!reachedTerminusNow&&typeof isSaeivNextStopOptional==='function'&&isSaeivNextStopOptional()&&
+            ((departing&&Number.isFinite(minSeenDistance)&&minSeenDistance<=40&&targetDistance>=minSeenDistance+12&&
+              targetDistance<=90&&Math.abs(vehiclePoint.y-targetEntry.point.y)<=4)||
+             saeivStopZoneContains(vehiclePoint,entries[targetIndex+1],reachDistance));
+          if(optionalPassed)completedOnDeparture=true;
           if (
             (completedOnDeparture || hasPassedTarget) &&
             (now - saeivLastStopAdvanceAt) >= SAEIV_STOP_ADVANCE_COOLDOWN_MS
@@ -2919,6 +2982,7 @@ function applySaeivPassengerSatisfaction(data) {
         };
       }
       function clearSaeivRouteSelection(options) {
+        cancelSaeivServiceAcceptAudio();
         saeivLumiplanJourney.reset(0);
         saeivBusService.reset();
         var opts = options && typeof options === "object" ? options : {};

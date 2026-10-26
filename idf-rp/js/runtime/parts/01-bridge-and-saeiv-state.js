@@ -1462,7 +1462,7 @@
           stopBoardingDone: 0,
           stopAlightingTotal: initialPlannedAlight,
           stopAlightingDone: 0,
-          plannedStopBoardingTotal: initialPlannedBoard,
+          plannedStopBoardingTotal: initialPlannedBoard,sharedOriginalDemand: initialPlannedBoard,
           plannedStopAlightingTotal: initialPlannedAlight,
           stopOptionalByPlan: stopOptionalByConfig,
           stopServiceProgressInitialized: false,
@@ -1551,6 +1551,7 @@
         saeivPassengerState.stopBoardingTotal = plannedBoard;
         saeivPassengerState.stopAlightingTotal = plannedAlight;
         saeivPassengerState.plannedStopBoardingTotal = plannedBoard;
+        saeivPassengerState.sharedOriginalDemand = plannedBoard;
         saeivPassengerState.plannedStopAlightingTotal = plannedAlight;
         saeivPassengerState.stopNecessary = computeSaeivStopNecessaryState(saeivPassengerState, plannedBoard, 0, saeivPassengerState.passengersInBus, isTerminusTarget);
         return true;

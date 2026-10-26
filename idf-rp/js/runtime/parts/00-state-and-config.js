@@ -405,7 +405,7 @@
       var NOTIFICATION_SCALE_DEFAULT = 75;
       var GLOBAL_AUDIO_VOLUME_MIN = 0;
       var GLOBAL_AUDIO_VOLUME_MAX = 100;
-      var GLOBAL_AUDIO_VOLUME_DEFAULT = 50;
+      var GLOBAL_AUDIO_VOLUME_DEFAULT = 35;
       var SAEIV_TIME_SYSTEM_STORAGE_KEY = "idf_game2_saeiv_time_system_v1";
       var SAEIV_TIME_SYSTEM_GAME = "game";
       var SAEIV_TIME_SYSTEM_IRL = "irl";
@@ -862,6 +862,7 @@
         currentClipEndedHooks: []
       };
       var saeivServiceAcceptAudio = null;
+      var saeivServiceAcceptPending = null;
       var saeivServiceAcceptAudioToken = 0;
       var saeivServiceAcceptAudioReleaseAtMs = 0;
       var saeivServiceAcceptAudioReleaseTimer = 0;

@@ -37,11 +37,15 @@
       <aside class="card sidebar"><h2>Paramètres d'affichage</h2><div class="field"><label for="route">Numéro de ligne <output id="routeOut">27</output></label><input id="route" type="text" maxlength="4" value="27"></div><div class="field"><label for="destination">Destination <output id="destOut">13 / 24</output></label><input id="destination" type="text" maxlength="24" value="Porte d'Ivry"></div><div class="field"><label for="color">Couleur des LEDs</label><div class="swatches"><button class="swatch active" data-color="orange" style="background:#ff8c21"></button><button class="swatch" data-color="yellow" style="background:#fff34b"></button><button class="swatch" data-color="white" style="background:#f4f7f8"></button><button class="swatch" data-color="blue" style="background:#39aee8"></button></div></div><div class="field"><label for="size">Taille <output id="sizeOut">100%</output></label><input id="size" type="range" min="70" max="100" value="100"></div><div class="field"><label for="speed">Vitesse de défilement <output id="speedOut">3.0 s</output></label><input id="speed" type="range" min="1" max="8" value="3"></div><div class="divider"></div><div class="row"><label class="toggle"><input id="routeBox" type="checkbox" checked> Afficher la ligne</label><label class="toggle"><input id="scanBox" type="checkbox" checked> Scanlines</label></div><div class="layers"><h2>Calques</h2><div class="layer active"><span class="dot"></span><div><b>Destination</b><small>Texte LED · amber</small></div><span class="drag">⠿</span></div><div class="layer"><span class="dot" style="background:#fff"></span><div><b>Ligne 27</b><small>Bloc numéro · blanc</small></div><span class="drag">⠿</span></div></div></aside>
     </div>
   </main>
+  <script src="./badge-index.js?v=agora-hidden-20261025"></script>
+  <script src="./badge-roll.js?v=agora-retarget-20261025"></script>
+  <script src="./frame-rate.js?v=20261025"></script>
+  <script src="./destination-scan.js?v=20261025"></script>
   <script>
 
 const $=s=>document.querySelector(s),output=$('#ledCanvas'),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d'),route=$('#route');
 const outputCtx=output.getContext('2d');
-let renderMode='simple',nightStripe='',texturePowered=false;
+let renderMode='simple',nightStripe='',texturePowered=false,textureHasText=false;
 output.width=1024;output.height=128;
 const tabs=document.createElement('div');tabs.className='toolbar';tabs.style.margin='0 0 16px';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Format du rendu');
 for(const [mode,label] of [['simple','Simple · 1024 × 128'],['advanced','Avancé · 2048 × 256']]){
@@ -86,7 +90,75 @@ $('.sidebar').append(layoutOptions);
 let blinkEpoch=performance.now();
 function partialVisible(){return $('#partial').checked&&(!$('#blink').checked||Math.floor((performance.now()-blinkEpoch)/Number($('#blinkMs').value))%2===0)}
 setInterval(()=>{if($('#partial').checked&&$('#blink').checked&&!running)draw()},80);
-let agoraLayout=false;
+let agoraLayout=false,destinationPowered=true;
+// Each native/Convoy screen owns its roller; a shared producer page must never
+// animate from the previous bus. Only the 211 x 128 badge moves.
+const badgeTracks=new Map(),badgeRollDuration=2500;
+let activeBadgeTrack=null,badgeAnimationFrame=0,renderRevision=0,externalBadgeFrames=false;
+const destinationTracks=new Map();let activeDestination=null;
+function signAnimating(){return !!activeBadgeTrack?.roll||!!activeDestination?.active;}
+function paintActiveDestination(){if(agoraLayout&&texturePowered&&activeDestination?.active)activeDestination.paint(outputCtx,performance.now(),renderMode==='advanced');}
+function selectDestination(context,generation,skip){
+ if(!agoraLayout||!texturePowered){destinationTracks.delete(context);activeDestination=null;return;}
+ let track=destinationTracks.get(context);
+ if(!track||track.generation!==generation){track=IDFAgoraDestination.create();track.generation=generation;destinationTracks.set(context,track);}
+ track.update(output,JSON.stringify([destinationPowered,girouetteText(dest.value)]),performance.now(),{skip,background:palette.background});activeDestination=track;
+ while(destinationTracks.size>128)destinationTracks.delete(destinationTracks.keys().next().value);
+ paintActiveDestination();
+}
+function currentBadgeState(){return {line:route.value,badge:$('#routeBox').checked&&!!route.value.trim()&&route.value.trim()!=='0',partial:$('#partial').checked,background:routeColor.value,foreground:palette.number,stripe:nightStripe};}
+function renderIndexedBadge(state){
+ const saved=currentBadgeState(),blink=$('#blink').checked;
+ try{
+  route.value=state.line;$('#routeBox').checked=state.badge!==false;$('#partial').checked=state.partial===true;
+  routeColor.value=state.background;palette.number=state.foreground;nightStripe=state.stripe||'';$('#blink').checked=false;
+  drawRoute();const image=badgeCanvas();image.getContext('2d').drawImage(canvas,0,0,211,128,0,0,211,128);return image;
+ }finally{
+  route.value=saved.line;$('#routeBox').checked=saved.badge;$('#partial').checked=saved.partial;
+  routeColor.value=saved.background;palette.number=saved.foreground;nightStripe=saved.stripe;$('#blink').checked=blink;
+ }
+}
+function badgeCanvas(){const c=document.createElement('canvas');c.width=211;c.height=128;return c;}
+function paintBadgeRoll(target,track,now){IDFAgoraBadgeRoll.paint(target,track,now);}
+const badgeRollFrame=badgeCanvas(),badgeRollCtx=badgeRollFrame.getContext('2d');
+function paintActiveBadge(){
+ if(!activeBadgeTrack?.roll||!agoraLayout||!texturePowered)return;
+ paintBadgeRoll(badgeRollCtx,activeBadgeTrack,performance.now());
+ for(const [x,y]of [[0,0],[1024,0],[0,128],[1024,128]])outputCtx.drawImage(badgeRollFrame,x,y);
+}
+function scheduleBadgeRoll(){
+ if(externalBadgeFrames||badgeAnimationFrame||!signAnimating())return;
+ badgeAnimationFrame=requestAnimationFrame(()=>{badgeAnimationFrame=0;if(IDFGirouetteFrameRate.due())draw();scheduleBadgeRoll();});
+}
+function resetActiveBadge(context){
+ cancelAnimationFrame(badgeAnimationFrame);badgeAnimationFrame=0;
+ activeBadgeTrack=null;badgeTracks.delete(context);activeDestination=null;destinationTracks.delete(context);
+}
+function selectBadgeTrack(context,signature,generation,skipAnimations,entries){
+ const previous=badgeTracks.get(context);
+ if(!agoraLayout||!texturePowered){resetActiveBadge(context);return;}
+ if(previous&&previous.signature===signature&&previous.generation===generation){
+  if(skipAnimations)IDFAgoraBadgeRoll.finish(previous);
+  activeBadgeTrack=previous;
+ }else{
+  const image=badgeCanvas();image.getContext('2d').drawImage(output,0,0,211,128,0,0,211,128);
+  const badgeState=currentBadgeState();
+  let track;
+  if(previous&&previous.generation===generation&&!skipAnimations){
+   track=previous;
+   IDFAgoraBadgeRoll.load(track,badgeState,entries,performance.now(),(step,last)=>last?image:renderIndexedBadge(step),IDFAgoraBadgeIndex);
+   track.signature=signature;
+  }else{
+   const blank={line:'0',badge:false},from=badgeCanvas();drawAgoraBadgeTexture(false,from.getContext('2d'));
+   track={signature,generation,image:skipAnimations?image:from,imageState:skipAnimations?badgeState:blank,roll:null,queue:[],badgeState:skipAnimations?badgeState:blank};
+   if(!skipAnimations&&badgeState.badge)IDFAgoraBadgeRoll.load(track,badgeState,entries,performance.now(),(step,last)=>last?image:renderIndexedBadge(step),IDFAgoraBadgeIndex);
+   else{track.image=image;track.imageState=badgeState;track.badgeState=badgeState;}
+  }
+  badgeTracks.delete(context);badgeTracks.set(context,track);activeBadgeTrack=track;
+  while(badgeTracks.size>128)badgeTracks.delete(badgeTracks.keys().next().value);
+ }
+ paintActiveBadge();++renderRevision;scheduleBadgeRoll();
+}
 // The partial-service stripe has two straight ends perpendicular to its axis.
 // Project the expanded number onto the stripe: one clear gap covers every digit,
 // including counters, without tracing the curved outline on either stripe end.
@@ -249,7 +321,7 @@ function drawRoute(){
  const normalizedRoute=normalizeGirouetteDashes(route.value);
  if(route.value!==normalizedRoute)route.value=normalizedRoute;
  if(agoraLayout){
-  if(!$('#routeBox').checked||!route.value.trim())drawAgoraBadgeTexture(false);
+  if(!$('#routeBox').checked||!route.value.trim()||route.value.trim()==='0')drawAgoraBadgeTexture(false);
   else drawAgoraPrintedBadge();
   return;
  }
@@ -288,9 +360,10 @@ function drawRoute(){
  ctx.restore();
 }
 function draw(){
+ ++renderRevision;
  output.style.imageRendering=agoraLayout?'auto':'pixelated';
- // Late callbacks must keep the display unlit, with only the empty Agora roller.
- if(!texturePowered){drawUnlitSign();return 0;}
+ // Only the destination loses power on an Agora; the printed roller persists.
+ if(!texturePowered||!textureHasText){drawUnlitSign();if(texturePowered){paintActiveDestination();paintActiveBadge();}return 0;}
  const width=drawSimple();
  outputCtx.fillStyle=palette.background;outputCtx.fillRect(0,0,output.width,output.height);
  outputCtx.drawImage(canvas,0,0);
@@ -302,6 +375,11 @@ function draw(){
    outputCtx.drawImage(canvas,1024,0);
    if(agoraLayout||$('#routeBox').checked)outputCtx.drawImage(canvas,0,0,211,128,1024,128,211,128);
  }
+ if(agoraLayout&&!destinationPowered){
+  outputCtx.fillStyle='#000000';outputCtx.fillRect(211,0,813,128);
+  if(renderMode==='advanced')outputCtx.fillRect(1235,0,813,128);
+ }
+ paintActiveDestination();paintActiveBadge();
  return width;
 }
 // Shared maximum-size destination layout. Cache it independently of
@@ -450,17 +528,43 @@ function girouetteText(value){
   .replace(/e\u0301/g,'é').replace(/E\u0301/g,'É').replace(/[\u0300-\u036f]/g,'');
 }
 function girouetteOutline(color){const c=String(color).replace('#','');const n=parseInt(c,16);return ((n>>16)*.2126+((n>>8)&255)*.7152+(n&255)*.0722)>127?'#000000':'#ffffff';}
-let textureKey='',textureUpdate=0;window.IDFGirouette={revision:0,ready:false,resumeVersion:1,resume:async state=>{textureKey='';return refreshGirouette(state);},update:refreshGirouette};
+let textureKey='',textureUpdate=0;
+window.IDFGirouette={revision:0,ready:false,resumeVersion:1,
+ setFrameRate:fps=>{
+  if(!IDFGirouetteFrameRate.set(fps))return false;
+  externalBadgeFrames=true;cancelAnimationFrame(badgeAnimationFrame);badgeAnimationFrame=0;return true;
+ },
+ get frameRate(){return IDFGirouetteFrameRate.fps;},
+ // The bridge samples the moving badge once per configured capture, avoiding
+ // two independent clocks and any extra 60/144-Hz browser redraw loop.
+ renderFrame:()=>{if(signAnimating())draw();return true;},
+ get renderRevision(){return renderRevision;},get animating(){return signAnimating();},
+ resume:async(state,options={})=>{
+  // Menus/LOD freeze the producer. Preserve every queued load and compensate
+  // for hidden time so returning to the bus does not silently skip the roller.
+  const previous=badgeTracks.get(String(options.context||'local'));
+  if(previous?.roll)previous.roll.start+=Math.max(0,Number(options.elapsedMs)||0);
+  destinationTracks.get(String(options.context||'local'))?.resume(options.elapsedMs);
+  textureKey='';return refreshGirouette(state,{...options,skipAnimations:false});
+ },
+ retainContexts:keys=>{const live=new Set(keys);for(const tracks of [badgeTracks,destinationTracks])for(const key of tracks.keys())if(!live.has(key))tracks.delete(key);},
+ update:refreshGirouette};
 // State arrives directly from the plugin's renderer, without a cross-origin localhost request.
-async function refreshGirouette(state){
+async function refreshGirouette(state,options={}){
  try{if(!state||typeof state.enabled!=='boolean')throw Error('Invalid girouette state');
-  const key=JSON.stringify(state);if(key===textureKey)return true;
+  const context=String(options.context||'local');
+  const key=JSON.stringify([context,state]);if(key===textureKey)return true;
   const update=++textureUpdate;
   agoraLayout=state.layout==='agora';
   const hasText=!!((state.badge!==false&&girouetteText(state.line).trim())||girouetteText(state.destination).trim());
-  texturePowered=state.enabled&&state.powered!==false&&hasText;
+  // An empty powered Agora still has a physical blank roller. Keep it as
+  // the starting image for the first service, and roll back to it on clear.
+  textureHasText=hasText;
+  destinationPowered=state.enabled&&state.powered!==false;
+  // Engine power affects LEDs, not the Agora's physical printed roller.
+  texturePowered=state.enabled&&(agoraLayout||destinationPowered)&&(hasText||agoraLayout);
   if(!texturePowered){
-   running=false;draw();
+   resetActiveBadge(context);running=false;draw();
    // Ready includes the blank roller on a cold start, without waiting for fonts.
    if(agoraLayout)await agoraBadgeTextureReady;
    if(update!==textureUpdate)return true;
@@ -469,14 +573,19 @@ async function refreshGirouette(state){
   await Promise.all([document.fonts.ready,document.fonts.load('normal 100px AgoraGirouette'),state.layout==='agora'?agoraBadgeTextureReady:true]);
   if(update!==textureUpdate)return true;
   agoraLayout=state.layout==='agora';
-  running=false;offset=0;route.value=state.enabled?girouetteText(state.line):'';dest.value=state.enabled?girouetteText(state.destination):'';
+  running=false;offset=0;route.value=state.enabled?girouetteText(state.line):'';dest.value=destinationPowered?girouetteText(state.destination):'';
   $('#routeBox').checked=!!state.enabled&&state.badge!==false&&!!state.line;$('#scanBox').checked=true;$('#wrap').checked=true;$('#partial').checked=state.partial===true;$('#blink').checked=false;
   $('#fontChoice').value='Girouette';$('#align').value='center';$('#size').value=100;
   const night=/^N\d+$/i.test(route.value.trim())||!!state.stripe;
   $('#routeColor').value=night?'#080080':(state.background||'#000000');palette.number=state.foreground||'#ffffff';palette.outline=girouetteOutline(palette.number);palette.text='#ff9c15';
   // The service supplies the line colour separately from the number colour.
   nightStripe=state.stripe||'';
-  draw();textureKey=key;window.IDFGirouette.ready=true;window.IDFGirouette.revision=state.revision;return true;
+  activeBadgeTrack=null;activeDestination=null;draw();
+  const signature=JSON.stringify([route.value,state.loadRevision,$('#routeBox').checked,$('#partial').checked,$('#routeColor').value,palette.number,nightStripe]);
+  const animationGeneration=state.animationGeneration??state.generation;
+  selectDestination(context,animationGeneration,options.skipAnimations===true);
+  selectBadgeTrack(context,signature,animationGeneration,options.skipAnimations===true,state.badgeIndex);
+  textureKey=key;window.IDFGirouette.ready=true;window.IDFGirouette.revision=state.revision;return true;
  }catch(e){window.IDFGirouette.error=String(e.message||e);return false;}
 }
 

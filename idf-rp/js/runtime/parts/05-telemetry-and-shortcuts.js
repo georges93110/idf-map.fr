@@ -3230,7 +3230,7 @@
         }
 
         schedulePccVoiceDropouts(finalGain, ctx, startAt, duration, baseVolume, filters);
-        finalGain.connect(ctx.destination);
+        finalGain.connect(nativeAudioDestination(ctx));
         source.onended = function () {
           if (pccVoiceActiveAudio === active) pccVoiceActiveAudio = null;
           if (typeof onEnded === "function") {
@@ -3275,7 +3275,7 @@
         gain.gain.value = baseVolume;
         registerPccVoiceGainControl(active, gain, volume, []);
         source.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(nativeAudioDestination(ctx));
         active.nodes.push(source);
         var startAt = Number.isFinite(Number(scheduledStartAt))
           ? Math.max(ctx.currentTime, Number(scheduledStartAt))
@@ -3355,7 +3355,7 @@
       function preparePccVoicePlainPlayback(src, volume) {
         return new Promise(function (resolve) {
           var audio = null;
-          try { audio = new Audio(src); } catch (err0) { audio = null; }
+          try { audio = nativeAudioMedia(new Audio(src)); } catch (err0) { audio = null; }
           if (!audio) {
             resolve(null);
             return;
@@ -3421,7 +3421,7 @@
         if (selectedFilters.length && playPccVoiceFilteredDataUrl(src, volume, selectedFilters)) return true;
         stopPccVoiceActiveAudio();
         var audio = null;
-        try { audio = new Audio(src); } catch (err0) { audio = null; }
+        try { audio = nativeAudioMedia(new Audio(src)); } catch (err0) { audio = null; }
         if (!audio) return false;
         try {
           audio.__pccVoiceVolume = volume;
@@ -3713,6 +3713,7 @@
           return;
         }
         telemetryWs = ws;
+        if(window.IDFGameAudio)window.IDFGameAudio.bind(ws);
         ws.onopen = function () {
           resetRawShortcutModifierState();
           nativeBusSettingsConnect();
@@ -3787,6 +3788,7 @@
           }
           var raw = null;
           try { raw = JSON.parse(event.data); } catch (err) { raw = null; }
+          if(window.IDFGameAudio && window.IDFGameAudio.receive(raw))return;
           if (raw && raw.type === "nativeCompatibilityBackend") {
             if (window.IDFRPCompatibility) window.IDFRPCompatibility.receive(raw);
             return;

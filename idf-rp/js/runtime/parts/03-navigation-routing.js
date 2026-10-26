@@ -2118,7 +2118,7 @@
               routeCurrentStopLabel = "Prochain arrêt";
             } else {
               if (Number.isFinite(routeDistanceToCurrentStopM)) {
-                routeCurrentStopLabel = routeDistanceToCurrentStopM <= SAEIV_STOP_REACH_DISTANCE
+                routeCurrentStopLabel = saeivStopZoneContains(telemetryLastSignal,displayEntry,SAEIV_STOP_REACH_DISTANCE)
                   ? "Arrêt actuel"
                   : "Prochain arrêt";
               } else {

@@ -113,3 +113,20 @@ peuvent plus annuler le délai de reconnexion. Une ouverture restée bloquée es
 fermée après 4,5 secondes ; les tentatives reprennent en arrière-plan. Au retour
 du relais, un état frais est envoyé. La protection contre une perte réelle du
 pont local ou du HTML reste active.
+
+
+## Populations partagées aux arrêts
+
+Le relais annonce `sharedStops: 1` et traite `convoy.service` pour les clients
+ayant la nouvelle DLL/bridge. Le service exact ou une portion précédente/courante/suivante identique dans le
+même ordre, la carte, la session native, les rosters mutuels et un écart inférieur
+à trois arrêts délimitent le partage. Les indices sont alignés sur la portion
+commune, indépendamment du début des deux lignes. Les triplets sont comparés
+sur les arrêts physiques et leur direction, sans les points de passage GPS.
+Les jetons de montée sont confirmés à la porte ; les descendants restent propres
+à chaque bus. Les réponses sont limitées à cinq envois par seconde par joueur.
+
+Cette fonction demande une mise à jour puis un redémarrage de ce serveur Node,
+ainsi que la publication du runtime HTML correspondant. Compiler le plugin seul
+ne met pas à jour le relais hébergé. Un ancien relais sans cette capacité conserve
+le fonctionnement local indépendant du plugin.

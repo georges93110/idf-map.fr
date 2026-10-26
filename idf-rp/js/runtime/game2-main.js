@@ -12,6 +12,7 @@
     "parts/01b-convoy-audio.js",
     "parts/01c-convoy-audio-catalog.js",
     "parts/01d-passenger-audio.js",
+    "parts/01e-desktop-music.js",
     "parts/02-saeiv-audio-and-dbus.js",
     "parts/03-navigation-routing.js",
     "parts/04-waze-bridge.js",
@@ -38,7 +39,7 @@
     hidden.textContent='.idf-plugin-suspended body,.idf-plugin-suspended body *{visibility:hidden!important;pointer-events:none!important}';document.head.appendChild(hidden);
   }
   runtime.parts = PARTS.slice();
-  runtime.version = "depots-native-20261023";
+  runtime.version = "shared-stop-neighbors-20261026";
 
   function currentScriptUrl() {
     if (document.currentScript && document.currentScript.src) {

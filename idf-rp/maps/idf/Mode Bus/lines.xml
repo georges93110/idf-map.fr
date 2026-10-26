@@ -156,94 +156,45 @@
 					<busstop uid="219" passengersMin="5" passengersMax="15" coefOn="75"/>
 					<busstop uid="220" passengersMin="3" passengersMax="6" coefOn="75"/>
 					<busstop uid="221" passengersMin="3" passengersMax="7" coefOn="75"/>
-					<busstop uid="222" passengersMin="0" passengersMax="0" coefOn="0"/>
+					<busstop uid="222" passengersMin="16" passengersMax="40" coefOn="35"/>
+
+					<busstop uid="284" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="285" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="286" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="287" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="288" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="289" passengersMin="9" passengersMax="17" coefOn="50"/>
+					<busstop uid="290" passengersMin="3" passengersMax="8" coefOn="75"/>
+					<busstop uid="291" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="292" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="293" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="294" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="295" passengersMin="1" passengersMax="3" coefOn="75"/>
+
+					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100"/>
+					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
 			<route uid="2">
-					<busstop uid="21" passengersMin="12" passengersMax="30" coefOn="75"/>
-					<busstop uid="13" passengersMin="0" passengersMax="2" coefOn="75"/>
-					<busstop uid="14" passengersMin="7" passengersMax="14" coefOn="75"/>
-					<busstop uid="76" passengersMin="0" passengersMax="3" coefOn="75"/>
-					<busstop uid="77" passengersMin="1" passengersMax="3" coefOn="75"/>
-					<busstop uid="78" passengersMin="0" passengersMax="3" coefOn="75"/>
-					<busstop uid="7" passengersMin="4" passengersMax="12" coefOn="75"/>
-					<busstop uid="209" passengersMin="2" passengersMax="5" coefOn="75"/>
-					<busstop uid="210" passengersMin="3" passengersMax="6" coefOn="75"/>
-					<busstop uid="211" passengersMin="1" passengersMax="3" coefOn="75"/>
-					<busstop uid="212" passengersMin="5" passengersMax="10" coefOn="75"/>
-					<busstop uid="213" passengersMin="5" passengersMax="10" coefOn="75"/>
-					<busstop uid="214" passengersMin="1" passengersMax="2" coefOn="75"/>
-					<busstop uid="215" passengersMin="2" passengersMax="3" coefOn="25"/>
-					<busstop uid="216" passengersMin="5" passengersMax="10" coefOn="25"/>
-					<busstop uid="217" passengersMin="4" passengersMax="8" coefOn="75"/>
-					<busstop uid="218" passengersMin="3" passengersMax="15" coefOn="75"/>
-					<busstop uid="219" passengersMin="5" passengersMax="15" coefOn="75"/>
-					<busstop uid="220" passengersMin="3" passengersMax="6" coefOn="75"/>
-					<busstop uid="221" passengersMin="3" passengersMax="7" coefOn="75"/>
-					<busstop uid="222" passengersMin="0" passengersMax="0" coefOn="0"/>
-			</route>
+					<busstop uid="244" passengersMin="7" passengersMax="25" coefOn="100"/>
+					<busstop uid="245" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="246" passengersMin="1" passengersMax="3" coefOn="50"/>
+					<busstop uid="248" passengersMin="4" passengersMax="8" coefOn="75"/>
+					<busstop uid="249" passengersMin="2" passengersMax="4" coefOn="75"/>
 
-			<route uid="3">
-					<busstop uid="7" passengersMin="4" passengersMax="12" coefOn="75"/>
-					<busstop uid="209" passengersMin="2" passengersMax="5" coefOn="75"/>
-					<busstop uid="210" passengersMin="3" passengersMax="6" coefOn="75"/>
-					<busstop uid="211" passengersMin="1" passengersMax="3" coefOn="75"/>
-					<busstop uid="212" passengersMin="5" passengersMax="10" coefOn="75"/>
-					<busstop uid="213" passengersMin="5" passengersMax="10" coefOn="75"/>
-					<busstop uid="214" passengersMin="1" passengersMax="2" coefOn="75"/>
-					<busstop uid="215" passengersMin="2" passengersMax="3" coefOn="25"/>
-					<busstop uid="216" passengersMin="5" passengersMax="10" coefOn="25"/>
-					<busstop uid="217" passengersMin="4" passengersMax="8" coefOn="75"/>
-					<busstop uid="218" passengersMin="3" passengersMax="15" coefOn="75"/>
-					<busstop uid="219" passengersMin="5" passengersMax="15" coefOn="75"/>
-					<busstop uid="220" passengersMin="3" passengersMax="6" coefOn="75"/>
-					<busstop uid="221" passengersMin="3" passengersMax="7" coefOn="75"/>
-					<busstop uid="222" passengersMin="0" passengersMax="0" coefOn="0"/>
-			</route>
+					<busstop uid="296" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="297" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="298" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="299" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="300" passengersMin="6" passengersMax="15" coefOn="45"/>
+					<busstop uid="301" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="302" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="303" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="304" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="305" passengersMin="1" passengersMax="3" coefOn="75"/>
 
-			<route uid="4">
-					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
-					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
-					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
-					<busstop uid="226" passengersMin="1" passengersMax="3" coefOn="75"/>
-					<busstop uid="227" passengersMin="7" passengersMax="13" coefOn="45"/>
-					<busstop uid="228" passengersMin="2" passengersMax="4" coefOn="40"/>
-					<busstop uid="229" passengersMin="2" passengersMax="10" coefOn="75"/>
-					<busstop uid="230" passengersMin="3" passengersMax="6" coefOn="75"/>
-					<busstop uid="231" passengersMin="2" passengersMax="5" coefOn="50"/>
-					<busstop uid="232" passengersMin="1" passengersMax="6" coefOn="60"/>
-					<busstop uid="233" passengersMin="2" passengersMax="6" coefOn="60"/>
-					<busstop uid="234" passengersMin="2" passengersMax="4" coefOn="50"/>
-					<busstop uid="235" passengersMin="5" passengersMax="8" coefOn="50"/>
-					<busstop uid="236" passengersMin="0" passengersMax="2" coefOn="20"/>
-					<busstop uid="84" passengersMin="0" passengersMax="0" coefOn="0"/>
-			</route>
-
-			<route uid="5">
-					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
-					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
-					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
-					<busstop uid="226" passengersMin="1" passengersMax="3" coefOn="75"/>
-					<busstop uid="227" passengersMin="7" passengersMax="13" coefOn="45"/>
-					<busstop uid="228" passengersMin="2" passengersMax="4" coefOn="40"/>
-					<busstop uid="229" passengersMin="2" passengersMax="10" coefOn="75"/>
-					<busstop uid="230" passengersMin="3" passengersMax="6" coefOn="75"/>
-					<busstop uid="231" passengersMin="2" passengersMax="5" coefOn="50"/>
-					<busstop uid="232" passengersMin="1" passengersMax="6" coefOn="60"/>
-					<busstop uid="233" passengersMin="2" passengersMax="6" coefOn="60"/>
-					<busstop uid="234" passengersMin="2" passengersMax="4" coefOn="50"/>
-					<busstop uid="235" passengersMin="5" passengersMax="8" coefOn="50"/>
-					<busstop uid="236" passengersMin="0" passengersMax="2" coefOn="20"/>
-					<busstop uid="84" passengersMin="7" passengersMax="30" coefOn="37"/>
-					<busstop uid="8" passengersMin="1" passengersMax="2" coefOn="50"/>
-					<busstop uid="9" passengersMin="2" passengersMax="4" coefOn="50"/>
-					<busstop uid="10" passengersMin="0" passengersMax="1" coefOn="25"/>
-					<busstop uid="11" passengersMin="7" passengersMax="20" coefOn="65"/>
-					<busstop uid="12" passengersMin="0" passengersMax="1" coefOn="25"/>
-					<busstop uid="22" passengersMin="0" passengersMax="0" coefOn="0"/>
-			</route>
-
-			<route uid="6">
 					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
 					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
 					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
@@ -270,19 +221,354 @@
 					<busstop uid="17" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="257">
-					<busstop uid="244" passengersMin="7" passengersMax="25" coefOn="100"/>
-					<busstop uid="245" passengersMin="1" passengersMax="2" coefOn="50"/>
-					<busstop uid="246" passengersMin="1" passengersMax="3" coefOn="50"/>
-					<busstop uid="248" passengersMin="4" passengersMax="8" coefOn="75"/>
-					<busstop uid="249" passengersMin="0" passengersMax="0" coefOn="0"/>
-			</route>
-
-			<route uid="258">
+			<route uid="3">
+					<busstop uid="21" passengersMin="12" passengersMax="30" coefOn="75"/>
+					<busstop uid="13" passengersMin="0" passengersMax="2" coefOn="75"/>
+					<busstop uid="14" passengersMin="7" passengersMax="14" coefOn="75"/>
+					<busstop uid="76" passengersMin="0" passengersMax="3" coefOn="75"/>
+					<busstop uid="77" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="78" passengersMin="0" passengersMax="3" coefOn="75"/>
+					<busstop uid="7" passengersMin="4" passengersMax="12" coefOn="75"/>
+					<busstop uid="209" passengersMin="2" passengersMax="5" coefOn="75"/>
+					<busstop uid="210" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="211" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="212" passengersMin="5" passengersMax="10" coefOn="75"/>
+					<busstop uid="213" passengersMin="5" passengersMax="10" coefOn="75"/>
+					<busstop uid="214" passengersMin="1" passengersMax="2" coefOn="75"/>
+					<busstop uid="215" passengersMin="2" passengersMax="3" coefOn="25"/>
+					<busstop uid="216" passengersMin="5" passengersMax="10" coefOn="25"/>
+					<busstop uid="217" passengersMin="4" passengersMax="8" coefOn="75"/>
+					<busstop uid="218" passengersMin="3" passengersMax="15" coefOn="75"/>
+					<busstop uid="219" passengersMin="5" passengersMax="15" coefOn="75"/>
+					<busstop uid="220" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="221" passengersMin="3" passengersMax="7" coefOn="75"/>
+					<busstop uid="222" passengersMin="16" passengersMax="40" coefOn="35"/>
+					<busstop uid="284" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="285" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="286" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="287" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="288" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="289" passengersMin="9" passengersMax="17" coefOn="50"/>
+					<busstop uid="290" passengersMin="3" passengersMax="8" coefOn="75"/>
+					<busstop uid="291" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="292" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="293" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="294" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="295" passengersMin="1" passengersMax="3" coefOn="75"/>
 					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100"/>
 					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50"/>
 					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50"/>
 					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="4" partiel="true">
+					<busstop uid="21" passengersMin="12" passengersMax="30" coefOn="75"/>
+					<busstop uid="13" passengersMin="0" passengersMax="2" coefOn="75"/>
+					<busstop uid="14" passengersMin="7" passengersMax="14" coefOn="75"/>
+					<busstop uid="76" passengersMin="0" passengersMax="3" coefOn="75"/>
+					<busstop uid="77" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="78" passengersMin="0" passengersMax="3" coefOn="75"/>
+					<busstop uid="7" passengersMin="4" passengersMax="12" coefOn="75"/>
+					<busstop uid="209" passengersMin="2" passengersMax="5" coefOn="75"/>
+					<busstop uid="210" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="211" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="212" passengersMin="5" passengersMax="10" coefOn="75"/>
+					<busstop uid="213" passengersMin="5" passengersMax="10" coefOn="75"/>
+					<busstop uid="214" passengersMin="1" passengersMax="2" coefOn="75"/>
+					<busstop uid="215" passengersMin="2" passengersMax="3" coefOn="25"/>
+					<busstop uid="216" passengersMin="5" passengersMax="10" coefOn="25"/>
+					<busstop uid="217" passengersMin="4" passengersMax="8" coefOn="75"/>
+					<busstop uid="218" passengersMin="3" passengersMax="15" coefOn="75"/>
+					<busstop uid="219" passengersMin="5" passengersMax="15" coefOn="75"/>
+					<busstop uid="220" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="221" passengersMin="3" passengersMax="7" coefOn="75"/>
+					<busstop uid="222" passengersMin="16" passengersMax="40" coefOn="35"/>
+					<busstop uid="284" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="285" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="286" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="287" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="288" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="289" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="5">
+					<busstop uid="7" passengersMin="4" passengersMax="12" coefOn="75"/>
+					<busstop uid="209" passengersMin="2" passengersMax="5" coefOn="75"/>
+					<busstop uid="210" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="211" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="212" passengersMin="5" passengersMax="10" coefOn="75"/>
+					<busstop uid="213" passengersMin="5" passengersMax="10" coefOn="75"/>
+					<busstop uid="214" passengersMin="1" passengersMax="2" coefOn="75"/>
+					<busstop uid="215" passengersMin="2" passengersMax="3" coefOn="25"/>
+					<busstop uid="216" passengersMin="5" passengersMax="10" coefOn="25"/>
+					<busstop uid="217" passengersMin="4" passengersMax="8" coefOn="75"/>
+					<busstop uid="218" passengersMin="3" passengersMax="15" coefOn="75"/>
+					<busstop uid="219" passengersMin="5" passengersMax="15" coefOn="75"/>
+					<busstop uid="220" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="221" passengersMin="3" passengersMax="7" coefOn="75"/>
+					<busstop uid="222" passengersMin="16" passengersMax="40" coefOn="35"/>
+					<busstop uid="284" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="285" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="286" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="287" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="288" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="289" passengersMin="9" passengersMax="17" coefOn="50"/>
+					<busstop uid="290" passengersMin="3" passengersMax="8" coefOn="75"/>
+					<busstop uid="291" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="292" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="293" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="294" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="295" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100"/>
+					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="6" partiel="true">
+					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
+					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
+					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="226" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="227" passengersMin="7" passengersMax="13" coefOn="45"/>
+					<busstop uid="228" passengersMin="2" passengersMax="4" coefOn="40"/>
+					<busstop uid="229" passengersMin="2" passengersMax="10" coefOn="75"/>
+					<busstop uid="230" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="231" passengersMin="2" passengersMax="5" coefOn="50"/>
+					<busstop uid="232" passengersMin="1" passengersMax="6" coefOn="60"/>
+					<busstop uid="233" passengersMin="2" passengersMax="6" coefOn="60"/>
+					<busstop uid="234" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="235" passengersMin="5" passengersMax="8" coefOn="50"/>
+					<busstop uid="236" passengersMin="0" passengersMax="2" coefOn="20"/>
+					<busstop uid="84" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="7">
+					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
+					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
+					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="226" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="227" passengersMin="7" passengersMax="13" coefOn="45"/>
+					<busstop uid="228" passengersMin="2" passengersMax="4" coefOn="40"/>
+					<busstop uid="229" passengersMin="2" passengersMax="10" coefOn="75"/>
+					<busstop uid="230" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="231" passengersMin="2" passengersMax="5" coefOn="50"/>
+					<busstop uid="232" passengersMin="1" passengersMax="6" coefOn="60"/>
+					<busstop uid="233" passengersMin="2" passengersMax="6" coefOn="60"/>
+					<busstop uid="234" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="235" passengersMin="5" passengersMax="8" coefOn="50"/>
+					<busstop uid="236" passengersMin="0" passengersMax="2" coefOn="20"/>
+					<busstop uid="84" passengersMin="7" passengersMax="30" coefOn="37"/>
+					<busstop uid="8" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="9" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="10" passengersMin="0" passengersMax="1" coefOn="25"/>
+					<busstop uid="11" passengersMin="7" passengersMax="20" coefOn="65"/>
+					<busstop uid="12" passengersMin="0" passengersMax="1" coefOn="25"/>
+					<busstop uid="22" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="8">
+					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
+					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
+					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="226" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="227" passengersMin="7" passengersMax="13" coefOn="45"/>
+					<busstop uid="228" passengersMin="2" passengersMax="4" coefOn="40"/>
+					<busstop uid="229" passengersMin="2" passengersMax="10" coefOn="75"/>
+					<busstop uid="230" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="231" passengersMin="2" passengersMax="5" coefOn="50"/>
+					<busstop uid="232" passengersMin="1" passengersMax="6" coefOn="60"/>
+					<busstop uid="233" passengersMin="2" passengersMax="6" coefOn="60"/>
+					<busstop uid="234" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="235" passengersMin="5" passengersMax="8" coefOn="50"/>
+					<busstop uid="236" passengersMin="0" passengersMax="2" coefOn="20"/>
+					<busstop uid="84" passengersMin="7" passengersMax="30" coefOn="37"/>
+					<busstop uid="8" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="9" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="10" passengersMin="0" passengersMax="1" coefOn="25"/>
+					<busstop uid="11" passengersMin="7" passengersMax="20" coefOn="65"/>
+					<busstop uid="12" passengersMin="0" passengersMax="1" coefOn="25"/>
+					<busstop uid="22" passengersMin="20" passengersMax="30" coefOn="10"/>
+					<busstop uid="15" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="16" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="17" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="9">
+					<busstop uid="300" passengersMin="6" passengersMax="15" coefOn="45"/>
+					<busstop uid="301" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="302" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="303" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="304" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="305" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
+					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
+					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="226" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="227" passengersMin="7" passengersMax="13" coefOn="45"/>
+					<busstop uid="228" passengersMin="2" passengersMax="4" coefOn="40"/>
+					<busstop uid="229" passengersMin="2" passengersMax="10" coefOn="75"/>
+					<busstop uid="230" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="231" passengersMin="2" passengersMax="5" coefOn="50"/>
+					<busstop uid="232" passengersMin="1" passengersMax="6" coefOn="60"/>
+					<busstop uid="233" passengersMin="2" passengersMax="6" coefOn="60"/>
+					<busstop uid="234" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="235" passengersMin="5" passengersMax="8" coefOn="50"/>
+					<busstop uid="236" passengersMin="0" passengersMax="2" coefOn="20"/>
+					<busstop uid="84" passengersMin="7" passengersMax="30" coefOn="37"/>
+					<busstop uid="8" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="9" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="10" passengersMin="0" passengersMax="1" coefOn="25"/>
+					<busstop uid="11" passengersMin="7" passengersMax="20" coefOn="65"/>
+					<busstop uid="12" passengersMin="0" passengersMax="1" coefOn="25"/>
+					<busstop uid="22" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="10" partiel="true" linename="114 (Dernier Service)">
+					<busstop uid="244" passengersMin="7" passengersMax="25" coefOn="100"/>
+					<busstop uid="245" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="246" passengersMin="1" passengersMax="3" coefOn="50"/>
+					<busstop uid="248" passengersMin="4" passengersMax="8" coefOn="75"/>
+					<busstop uid="249" passengersMin="2" passengersMax="4" coefOn="75"/>
+					<busstop uid="296" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="297" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="298" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="299" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="300" passengersMin="6" passengersMax="15" coefOn="45"/>
+					<busstop uid="301" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="302" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="303" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="304" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="305" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
+					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
+					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="226" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="227" passengersMin="7" passengersMax="13" coefOn="45"/>
+					<busstop uid="228" passengersMin="2" passengersMax="4" coefOn="40"/>
+					<busstop uid="229" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="11" partiel="true">
+					<busstop uid="244" passengersMin="7" passengersMax="25" coefOn="100"/>
+					<busstop uid="245" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="246" passengersMin="1" passengersMax="3" coefOn="50"/>
+					<busstop uid="248" passengersMin="4" passengersMax="8" coefOn="75"/>
+					<busstop uid="249" passengersMin="2" passengersMax="4" coefOn="75"/>
+					<busstop uid="296" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="297" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="298" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="299" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="300" passengersMin="6" passengersMax="15" coefOn="45"/>
+					<busstop uid="301" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="302" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="303" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="304" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="305" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
+					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
+					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="226" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="227" passengersMin="7" passengersMax="13" coefOn="45"/>
+					<busstop uid="228" passengersMin="2" passengersMax="4" coefOn="40"/>
+					<busstop uid="229" passengersMin="2" passengersMax="10" coefOn="75"/>
+					<busstop uid="230" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="231" passengersMin="2" passengersMax="5" coefOn="50"/>
+					<busstop uid="232" passengersMin="1" passengersMax="6" coefOn="60"/>
+					<busstop uid="233" passengersMin="2" passengersMax="6" coefOn="60"/>
+					<busstop uid="234" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="235" passengersMin="5" passengersMax="8" coefOn="50"/>
+					<busstop uid="236" passengersMin="0" passengersMax="2" coefOn="20"/>
+					<busstop uid="84" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="12">
+					<busstop uid="244" passengersMin="7" passengersMax="25" coefOn="100"/>
+					<busstop uid="245" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="246" passengersMin="1" passengersMax="3" coefOn="50"/>
+					<busstop uid="248" passengersMin="4" passengersMax="8" coefOn="75"/>
+					<busstop uid="249" passengersMin="2" passengersMax="4" coefOn="75"/>
+					<busstop uid="296" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="297" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="298" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="299" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="300" passengersMin="6" passengersMax="15" coefOn="45"/>
+					<busstop uid="301" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="302" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="303" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="304" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="305" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="223" passengersMin="10" passengersMax="35" coefOn="75"/>
+					<busstop uid="224" passengersMin="5" passengersMax="15" coefOn="95"/>
+					<busstop uid="225" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="226" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="227" passengersMin="7" passengersMax="13" coefOn="45"/>
+					<busstop uid="228" passengersMin="2" passengersMax="4" coefOn="40"/>
+					<busstop uid="229" passengersMin="2" passengersMax="10" coefOn="75"/>
+					<busstop uid="230" passengersMin="3" passengersMax="6" coefOn="75"/>
+					<busstop uid="231" passengersMin="2" passengersMax="5" coefOn="50"/>
+					<busstop uid="232" passengersMin="1" passengersMax="6" coefOn="60"/>
+					<busstop uid="233" passengersMin="2" passengersMax="6" coefOn="60"/>
+					<busstop uid="234" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="235" passengersMin="5" passengersMax="8" coefOn="50"/>
+					<busstop uid="236" passengersMin="0" passengersMax="2" coefOn="20"/>
+					<busstop uid="84" passengersMin="7" passengersMax="30" coefOn="37"/>
+					<busstop uid="8" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="9" passengersMin="2" passengersMax="4" coefOn="50"/>
+					<busstop uid="10" passengersMin="0" passengersMax="1" coefOn="25"/>
+					<busstop uid="11" passengersMin="7" passengersMax="20" coefOn="65"/>
+					<busstop uid="12" passengersMin="0" passengersMax="1" coefOn="25"/>
+					<busstop uid="22" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+			<route uid="13">
+					<busstop uid="289" passengersMin="9" passengersMax="17" coefOn="50"/>
+					<busstop uid="290" passengersMin="3" passengersMax="8" coefOn="75"/>
+					<busstop uid="291" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="292" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="293" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="294" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="295" passengersMin="1" passengersMax="3" coefOn="75"/>
+
+					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100"/>
+					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50"/>
+					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+
+	</line>
+
+	<line
+		uid="120"
+		linename="120"
+		reseau="RATP"
+		type="Urbaine"
+		color="#bea5c8"
+		textColor="#221f20"
+		validationSounds="Navigo"
+		passengerVariation="-2,2"
+		badgeImage="false"
+		prefixImage="/idf-rp/lumiplan/source/dist/modes/bus.svg">
+
+			<route uid="1">
+					<busstop uid="315" passengersMin="4" passengersMax="8" coefOn="75"/>
+					<busstop uid="249" passengersMin="2" passengersMax="4" coefOn="75"/>
+					<busstop uid="296" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="297" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="298" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="299" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="300" passengersMin="6" passengersMax="15" coefOn="45"/>
+			</route>
+
+			<route uid="2">
+					<busstop uid="289" passengersMin="9" passengersMax="17" coefOn="50"/>
+					<busstop uid="290" passengersMin="3" passengersMax="8" coefOn="75"/>
+					<busstop uid="291" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="292" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="293" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="294" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="295" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100"/>
 			</route>
 	</line>
 
@@ -304,10 +590,19 @@
 					<busstop uid="82" passengersMin="0" passengersMax="3" coefOn="85"/>
 					<busstop uid="40" passengersMin="3" passengersMax="12" coefOn="85"/>
 					<busstop uid="86" passengersMin="1" passengersMax="6" coefOn="85"/>
-					<busstop uid="42" passengersMin="0" passengersMax="0" coefOn="0"/>
+					<busstop uid="42" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="306" passengersMin="2" passengersMax="4" coefOn="75"/>
+					<busstop uid="307" passengersMin="2" passengersMax="4" coefOn="75"/>
+					<busstop uid="308" passengersMin="1" passengersMax="3" coefOn="50"/>
+					<busstop uid="309" passengersMin="0" passengersMax="0" coefOn="0"/>
+
 			</route>
 
 			<route uid="2">
+					<busstop uid="310" passengersMin="1" passengersMax="3" coefOn="100"/>
+					<busstop uid="311" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="312" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="313" passengersMin="1" passengersMax="3" coefOn="75"/>
 					<busstop uid="31" passengersMin="3" passengersMax="15" coefOn="75"/>
 					<busstop uid="85" passengersMin="1" passengersMax="6" coefOn="85"/>
 					<busstop uid="33" passengersMin="1" passengersMax="4" coefOn="85"/>
@@ -330,6 +625,7 @@
 		prefixImage="/idf-rp/lumiplan/source/dist/modes/bus.svg">
 
 			<route uid="1">
+					<busstop uid="314" passengersMin="2" passengersMax="5" coefOn="75"/>
 					<busstop uid="96" passengersMin="2" passengersMax="5" coefOn="75"/>
 					<busstop uid="97" passengersMin="4" passengersMax="10" coefOn="75"/>
 					<busstop uid="98" passengersMin="0" passengersMax="0" coefOn="0"/>
@@ -391,6 +687,7 @@
 					<busstop uid="83" passengersMin="5" passengersMax="12" coefOn="75"/>
 					<busstop uid="72" passengersMin="5" passengersMax="12" coefOn="85"/>
 					<busstop uid="31" passengersMin="16" passengersMax="32" coefOn="85"/>
+					<busstop uid="283" passengersMin="2" passengersMax="3" coefOn="85"/>
 					<busstop uid="33" passengersMin="2" passengersMax="3" coefOn="85"/>
 					<busstop uid="81" passengersMin="0" passengersMax="6" coefOn="85"/>
 					<busstop uid="35" passengersMin="1" passengersMax="5" coefOn="85"/>
@@ -473,7 +770,8 @@
 		validationSounds="Navigo"
 		passengerVariation="-2,2"
 		badgeImage="/idf-rp/images/service-badges/reseau_titus.png"
-		prefixImage="false">
+		prefixImage="false"
+		hideGirouetteAgoraAnim="true">
 
 			<route uid="1" linename="Titus 1">
 					<busstop uid="100" passengersMin="2" passengersMax="6" coefOn="100"/>
@@ -488,6 +786,27 @@
 					<busstop uid="206" passengersMin="0" passengersMax="4" coefOn="25"/>
 					<busstop uid="207" passengersMin="4" passengersMax="9" coefOn="25"/>
 					<busstop uid="208" passengersMin="0" passengersMax="0" coefOn="0"/>
+			</route>
+	</line>
+
+	<line
+		uid="10001"
+		linename="Navette de Nogent"
+		type="Urbaine"
+		badge="false"
+		color="#ffffff"
+		textColor="#221f20"
+		validationSounds="false"
+		passengerVariation="-2,2"
+		badgeImage="/idf-rp/images/service-badges/navette_nogent.png"
+		prefixImage="false">
+
+			<route uid="1">
+					<busstop uid="316" passengersMin="1" passengersMax="3" coefOn="100"/>
+					<busstop uid="317" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="318" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="319" passengersMin="1" passengersMax="3" coefOn="75"/>
+					<busstop uid="320" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 	</line>
 
@@ -583,7 +902,7 @@
 					<busstop uid="136" passengersMin="2" passengersMax="5" coefOn="75"/>
 					<busstop uid="254" passengersMin="2" passengersMax="5" coefOn="75"/>
 					<busstop uid="255" passengersMin="2" passengersMax="5" coefOn="75"/>
-					<busstop uid="256" passengersMin="0" passengersMax="0" coefOn="0"/>
+					<busstop uid="256" passengersMin="9" passengersMax="0" coefOn="0"/>
 			</route>
 
 			<route uid="2">
@@ -1916,7 +2235,7 @@
 
 	<line
 		uid="40000"
-		linename="Fictive"
+		linename="Autocars"
 		type="Autocars"
 		badge="false"
 		color="#005e2c"
@@ -1980,16 +2299,17 @@
 	</line>
 
 	<line
-		uid="40001"
-		linename="Express"
+		uid="40075"
+		linename="Express 75"
 		type="Autocars"
 		color="#6fb2e1"
 		textColor="#FFFFFF"
 		validationSounds="false"
 		passengerVariation="-2,2"
-		prefixImage="false">
+		prefixImage="false"
+		hideGirouetteAgoraAnim="true">
 
-			<route uid="1" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="Express 75">
+			<route uid="1" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="75">
 					<busstop uid="138" passengersMin="5" passengersMax="15" coefOn="100"/>
 					<busstop uid="139" passengersMin="5" passengersMax="15" coefOn="75"/>
 					<busstop uid="140" passengersMin="5" passengersMax="15" coefOn="75"/>
@@ -1999,25 +2319,49 @@
 					<busstop uid="144" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="2" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="Express 75">
+			<route uid="2" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="75">
 					<busstop uid="145" passengersMin="5" passengersMax="15" coefOn="100"/>
 					<busstop uid="146" passengersMin="5" passengersMax="15" coefOn="75"/>
 					<busstop uid="147" passengersMin="5" passengersMax="15" coefOn="75"/>
 					<busstop uid="138" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
+	</line>
 
-			<route uid="3" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="Express 77">
+	<line
+		uid="40077"
+		linename="Express 77"
+		type="Autocars"
+		color="#6fb2e1"
+		textColor="#FFFFFF"
+		validationSounds="false"
+		passengerVariation="-2,2"
+		prefixImage="false"
+		hideGirouetteAgoraAnim="true">
+
+			<route uid="1" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="77">
 					<busstop uid="148" passengersMin="5" passengersMax="15" coefOn="100"/>
 					<busstop uid="149" passengersMin="5" passengersMax="15" coefOn="7580"/>
 					<busstop uid="150" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="4" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="Express 77">
+			<route uid="2" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="77">
 					<busstop uid="151" passengersMin="5" passengersMax="15" coefOn="100"/>
 					<busstop uid="152" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
+	</line>
 
-			<route uid="5" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="Express 93">
+	<line
+		uid="40093"
+		linename="Express 93"
+		type="Autocars"
+		color="#6fb2e1"
+		textColor="#FFFFFF"
+		validationSounds="false"
+		passengerVariation="-2,2"
+		prefixImage="false"
+		hideGirouetteAgoraAnim="true">
+
+			<route uid="1" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="93">
 					<busstop uid="165" passengersMin="5" passengersMax="15" coefOn="100"/>
 					<busstop uid="166" passengersMin="5" passengersMax="15" coefOn="50"/>
 					<busstop uid="167" passengersMin="5" passengersMax="15" coefOn="50"/>
@@ -2035,7 +2379,7 @@
 					<busstop uid="179" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="6" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="Express 93">
+			<route uid="2" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="93">
 					<busstop uid="190" passengersMin="5" passengersMax="15" coefOn="100"/>
 					<busstop uid="191" passengersMin="5" passengersMax="15" coefOn="50"/>
 					<busstop uid="192" passengersMin="5" passengersMax="15" coefOn="50"/>
@@ -2048,8 +2392,20 @@
 					<busstop uid="199" passengersMin="5" passengersMax="15" coefOn="80"/>
 					<busstop uid="202" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
+	</line>
 
-			<route uid="7" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="Express 94">
+	<line
+		uid="40094"
+		linename="Express 94"
+		type="Autocars"
+		color="#6fb2e1"
+		textColor="#FFFFFF"
+		validationSounds="false"
+		passengerVariation="-2,2"
+		prefixImage="false"
+		hideGirouetteAgoraAnim="true">
+
+			<route uid="1" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="94">
 					<busstop uid="180" passengersMin="5" passengersMax="15" coefOn="100"/>
 					<busstop uid="181" passengersMin="5" passengersMax="15" coefOn="75"/>
 					<busstop uid="182" passengersMin="5" passengersMax="15" coefOn="75"/>
@@ -2057,7 +2413,7 @@
 					<busstop uid="184" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="8" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="Express 94">
+			<route uid="2" color="#6fb2e1" validationSounds="Navigo" reseau="RATP" linename="94">
 					<busstop uid="185" passengersMin="5" passengersMax="15" coefOn="100"/>
 					<busstop uid="186" passengersMin="5" passengersMax="15" coefOn="75"/>
 					<busstop uid="187" passengersMin="5" passengersMax="15" coefOn="75"/>
@@ -2077,9 +2433,10 @@
 		passengerVariation="-5,5"
 		reseau="RATP"
 		badgeImage="/idf-rp/lumiplan/source/dist/modes/bus_remplacement.svg"
+		girouetteOveride="Remplacement #RER#"
 		prefixImage="false">
 
-			<route uid="1" linename="RER A" badgeImage="/idf-rp/lumiplan/source/dist/lines/C01849.svg">
+			<route uid="1" linename="RER A" badgeImage="/idf-rp/lumiplan/source/dist/lines/C01849.svg" girouetteOveride="Remplacement #RER# A">
 					<busstop uid="265" passengersMin="25" passengersMax="40" coefOn="100"/>
 					<busstop uid="266" passengersMin="25" passengersMax="40" coefOn="75"/>
 					<busstop uid="267" passengersMin="25" passengersMax="40" coefOn="75"/>
@@ -2087,7 +2444,7 @@
 					<busstop uid="269" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="2" linename="RER A" badgeImage="/idf-rp/lumiplan/source/dist/lines/C01849.svg">
+			<route uid="2" linename="RER A" badgeImage="/idf-rp/lumiplan/source/dist/lines/C01849.svg" girouetteOveride="Remplacement #RER# A">
 					<busstop uid="269" passengersMin="25" passengersMax="40" coefOn="100"/>
 					<busstop uid="268" passengersMin="25" passengersMax="40" coefOn="75"/>
 					<busstop uid="270" passengersMin="25" passengersMax="40" coefOn="75"/>
@@ -2095,28 +2452,30 @@
 					<busstop uid="272" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="3" color="#af4f8d" linename="RER E" badgeImage="/idf-rp/lumiplan/source/dist/lines/C01853.svg">
+			<route uid="3" color="#af4f8d" linename="RER E" badgeImage="/idf-rp/lumiplan/source/dist/lines/C01853.svg" girouetteOveride="Remplacement #RER# E">
+					<busstop uid="289" passengersMin="25" passengersMax="40" coefOn="100"/>
 					<busstop uid="268" passengersMin="25" passengersMax="40" coefOn="75"/>
 					<busstop uid="273" passengersMin="25" passengersMax="40" coefOn="75"/>
 					<busstop uid="274" passengersMin="25" passengersMax="40" coefOn="75"/>
 					<busstop uid="275" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="4" color="#af4f8d" linename="RER E" badgeImage="/idf-rp/lumiplan/source/dist/lines/C01853.svg">
+			<route uid="4" color="#af4f8d" linename="RER E" badgeImage="/idf-rp/lumiplan/source/dist/lines/C01853.svg" girouetteOveride="Remplacement #RER# E">
 					<busstop uid="275" passengersMin="25" passengersMax="40" coefOn="100"/>
 					<busstop uid="274" passengersMin="25" passengersMax="40" coefOn="75"/>
 					<busstop uid="273" passengersMin="25" passengersMax="40" coefOn="75"/>
-					<busstop uid="268" passengersMin="0" passengersMax="0" coefOn="0"/>
+					<busstop uid="268" passengersMin="25" passengersMax="40" coefOn="75"/>
+					<busstop uid="300" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="5" color="#f3c043" textColor="#221f20" linename="Métro 1" badgeImage="/idf-rp/lumiplan/source/dist/lines/C02310.svg">
+			<route uid="5" color="#f3c043" textColor="#221f20" linename="Métro 1" badgeImage="/idf-rp/lumiplan/source/dist/lines/C02310.svg" girouetteOveride="Remplacement #Métro# 1">
 					<busstop uid="276" passengersMin="25" passengersMax="40" coefOn="100"/>
 					<busstop uid="277" passengersMin="25" passengersMax="40" coefOn="75"/>
 					<busstop uid="278" passengersMin="25" passengersMax="40" coefOn="75"/>
 					<busstop uid="279" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
-			<route uid="6" color="#f3c043" textColor="#221f20" linename="Métro 1" badgeImage="/idf-rp/lumiplan/source/dist/lines/C02310.svg">
+			<route uid="6" color="#f3c043" textColor="#221f20" linename="Métro 1" badgeImage="/idf-rp/lumiplan/source/dist/lines/C02310.svg" girouetteOveride="Remplacement #Métro# 1">
 					<busstop uid="280" passengersMin="25" passengersMax="40" coefOn="100"/>
 					<busstop uid="281" passengersMin="25" passengersMax="40" coefOn="75"/>
 					<busstop uid="282" passengersMin="25" passengersMax="40" coefOn="75"/>

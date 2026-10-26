@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Admin Map</title>
+  <script src="../js/native-audio-output.js?v=pcm-clock-20261026"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     html,
@@ -2905,7 +2906,7 @@
         stopSaeivRegVoiceAudio();
         saeivRegVoicePendingPlayback = null;
         let audio = null;
-        try { audio = new Audio(src); } catch (err0) { audio = null; }
+        try { audio = window.IDFGameAudio.media(new Audio(src)); } catch (err0) { audio = null; }
         if (!audio) return false;
         saeivRegVoiceActiveAudio = audio;
         const clear = function () {

@@ -1,3 +1,6 @@
+// All HTML effects stay upstream of this final output bus.
+function nativeAudioDestination(context) { return window.IDFGameAudio ? window.IDFGameAudio.output(context) : context.destination; }
+function nativeAudioMedia(audio) { return window.IDFGameAudio ? window.IDFGameAudio.media(audio) : audio; }
 // Short, damped early reflections from the bus walls. No feedback loop.
 function busVoiceReflections(record, context, url) {
   var pathname = ''; try { pathname = decodeURIComponent(new URL(url, window.location.href).pathname); } catch (_) {}
@@ -11,7 +14,7 @@ function busVoiceReflections(record, context, url) {
   });
 }
 function connectBusVoiceReflections(record) {
-  (record.reflections || []).forEach(function (r) { record.gain.connect(r.delay); r.gain.connect(record.pan || busSpatialAudio.context.destination); });
+  (record.reflections || []).forEach(function (r) { record.gain.connect(r.delay); r.gain.connect(record.pan || nativeAudioDestination(busSpatialAudio.context)); });
 }
 function disconnectBusVoiceReflections(record) {
   (record.reflections || []).forEach(function (r) { r.gain.disconnect(); });
@@ -26,6 +29,7 @@ function updateNativeGameAudio(data) {
   nativeGameAudio.seen=true; nativeGameAudio.stamp=Date.now();
   nativeGameAudio.available=data.audioMasterAvailable === true && Number.isFinite(data.audioMasterVolume) && data.audioMasterVolume >= 0 && data.audioMasterVolume <= 1;
   nativeGameAudio.volume=data.audioMasterVolume; nativeGameAudio.muted=data.audioMasterMuted === true;
+  if(typeof receiveDesktopMenuMusic === "function")receiveDesktopMenuMusic(data);
   if (getGlobalAudioVolumeFactor() !== before) {
     if(typeof syncSaeivRuntimeAudioVolumes === "function") syncSaeivRuntimeAudioVolumes();
     if(typeof syncPccVoiceActiveAudioVolume === "function") syncPccVoiceActiveAudioVolume();
@@ -305,8 +309,8 @@ function createBusSpatialAudio(url, kind) {
       record.gain = context.createGain(); record.gain.gain.value = state.seen ? 0 : 1;
       record.pan = context.createStereoPanner ? context.createStereoPanner() : null;
       record.filter.connect(record.gain);
-      if (record.pan) { record.gain.connect(record.pan); record.pan.connect(context.destination); }
-      else record.gain.connect(context.destination);
+      if (record.pan) { record.gain.connect(record.pan); record.pan.connect(nativeAudioDestination(context)); }
+      else record.gain.connect(nativeAudioDestination(context));
       var source = audio.idfSource || context.createMediaElementSource(audio);record.source = source;
       source.connect(record.filter);busVoiceReflections(record,context,url);connectBusVoiceReflections(record);record.connected = true;
     }
@@ -314,7 +318,7 @@ function createBusSpatialAudio(url, kind) {
     if (record.source) {
       // A captured media element cannot be uncaptured. Restore an audible
       // path on graph failure; still apply the ordinary distance gain.
-      record.source.disconnect(); record.source.connect(state.context.destination);
+      record.source.disconnect(); record.source.connect(nativeAudioDestination(state.context));
       record.direct = true; record.connected = true;
     }
     if (record.filter) record.filter.disconnect();
@@ -350,10 +354,10 @@ function createBusSpatialAudio(url, kind) {
   audio.pause=function(){if(record.cancelPlay)record.cancelPlay();return pauseNative();};
   function start() {
     if (record.source && !record.connected) {
-      if(record.direct) record.source.connect(state.context.destination);
+      if(record.direct) record.source.connect(nativeAudioDestination(state.context));
       else { record.source.connect(record.filter);record.filter.connect(record.gain);
-      if(record.pan){record.gain.connect(record.pan);record.pan.connect(state.context.destination);}
-      else record.gain.connect(state.context.destination); connectBusVoiceReflections(record); }
+      if(record.pan){record.gain.connect(record.pan);record.pan.connect(nativeAudioDestination(state.context));}
+      else record.gain.connect(nativeAudioDestination(state.context)); connectBusVoiceReflections(record); }
       record.connected = true;
     }
     state.active.add(record); updateBusSpatialRecord(record);

@@ -2,6 +2,7 @@
   "use strict";
   // XML attributes: color, textColor, validationSounds (pack name or false),
   // passengerVariation="min,max". All lines are visible in PCC.
+  // hideGirouetteAgoraAnim="true" skips transit prints, never the selected badge.
   // A route inherits its line's metadata; explicit route attributes override it.
   // reseau selects the sound pack. badgeImage and prefixImage are image URLs, or false to hide them.
   // badge=false + badgeImage: image only. badge=true + badgeImage: logo + chip.
@@ -98,6 +99,8 @@
     entry.reseau = network(attr(line, route, "reseau"));
     entry.badge = !/^(?:false|0)$/i.test(attr(line, route, "badge"));
     entry.badgeImage = image(attr(line, route, "badgeImage"));
+    entry.hideGirouetteAgoraAnim = /^(?:true|1)$/i.test(attr(line, null, "hideGirouetteAgoraAnim")) ||
+      /^(?:true|1)$/i.test(attr(line, route, "hideGirouetteAgoraAnim"));
     var prefix = attr(line, route, "prefixImage");
     entry.prefixImage = prefix ? image(prefix) : undefined;
     return entry;
@@ -121,6 +124,33 @@
       Array.prototype.forEach.call(line.querySelectorAll(":scope > route"), function (route) {
         add(routeLabel(route), read(line, route), false);
       });
+    });
+    // Several routes can share one physical print. Keep that print in transit
+    // if any route using it is visible. Absent variants retain the existing
+    // synthetic full/partial pair, with the same visibility as the known routes.
+    var routesByBadge = new Map();
+    lines.forEach(function (line) {
+      Array.prototype.forEach.call(line.querySelectorAll(":scope > route"), function (route) {
+        var entry = read(line, route);
+        if (entry.badge === false) return;
+        var partial = /^(?:true|1)$/i.test(text(route.getAttribute("partiel")));
+        [label(line), routeLabel(route)].filter(Boolean).forEach(function (name) {
+          var key = token(name), list = routesByBadge.get(key) || [];
+          list.push({partial: partial, hidden: entry.hideGirouetteAgoraAnim});
+          routesByBadge.set(key, list);
+        });
+      });
+    });
+    Object.keys(styles).forEach(function (name) {
+      var entry = styles[name], routes = routesByBadge.get(token(name)) || [];
+      entry.agoraHiddenVariants = ["full", "partial"].filter(function (variant) {
+        var matching = routes.filter(function (route) { return route.partial === (variant === "partial"); });
+        var candidates = matching.length ? matching : routes;
+        return candidates.length ? candidates.every(function (route) { return route.hidden; }) : entry.hideGirouetteAgoraAnim;
+      });
+      // Aliases may share a print with a visible route: use the aggregate,
+      // not the attributes of the first alias encountered.
+      entry.hideGirouetteAgoraAnim = entry.agoraHiddenVariants.length === 2;
     });
     return styles;
   }

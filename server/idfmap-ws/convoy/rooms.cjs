@@ -1,6 +1,7 @@
 'use strict';
 const crypto = require('node:crypto');
 const P = require('./protocol.cjs');
+const {ServiceStops,servicePlan}=require('./service-stops.cjs');
 const { StopCrowds } = require('./stops.cjs');
 const {DepotReservations}=require('./depots.cjs');
 
@@ -26,14 +27,16 @@ class ConvoyRooms {
     let room = this.rooms.get(roomKey);
     if (!room) {
       if (this.rooms.size >= this.maxRooms) return false;
-      room = { id: roomKey, epoch: crypto.randomUUID(), peers: new Map() }; this.rooms.set(roomKey, room);
+      room = { id: roomKey, epoch: crypto.randomUUID(), peers: new Map() };
+      room.services=new ServiceStops({now:this.now,compatible:(a,b)=>{const x=room.peers.get(a),y=room.peers.get(b);return !!(x&&y&&this.permitted(x,y));}});
+      this.rooms.set(roomKey, room);
     }
     // An active identity cannot be stolen by another connection. The old lease
     // must end or its socket close before a reconnect can replace it.
     if (room.peers.has(h.player) || room.peers.size >= P.LIMITS.peers || [...room.peers.values()].some(p => p.hello.clientId === h.clientId)) return false;
     const p = { peer, room, hello: h, seen: this.now(), state: null, sequence: 0, eventSequence: 0, visible: new Set(), sent: new Map(), pending: new Set(), lastEvents: new Set(), retired: new Set(), tokens: 40, tokenAt: this.now() };
     room.peers.set(h.player, p); this.peers.set(peer, p);
-    this.emit(peer, { type: 'convoy.welcome', version: P.VERSION, epoch: room.epoch, player: h.player });
+    this.emit(peer, { type: 'convoy.welcome', version: P.VERSION, epoch: room.epoch, player: h.player, sharedStops:1 });
     return true;
   }
   permitted(a, b) {
@@ -61,6 +64,13 @@ class ConvoyRooms {
     const p = this.peers.get(peer); if (!p || raw?.epoch !== p.room.epoch || !this.consume(p)) return false;
     if (raw.type === 'convoy.ping') { p.seen = this.now(); this.catalogue(p); this.emit(peer, { type: 'convoy.pong', version: 1, epoch: p.room.epoch, time: this.now() }); return true; }
     if (raw.type === 'convoy.leave') { this.leave(peer); return true; }
+    if(raw.type==='convoy.service'){
+      const plan=servicePlan(raw.plan);
+      if(raw.version!==1||plan===undefined||!p.state||raw.generation!==p.state.generation||p.state.profile==='none'||this.now()-(p.stateAt||0)>2500)return false;
+      p.seen=this.now();p.room.services.tick();
+      p.room.services.update(p.hello.player,plan,p.state.pose,p.state.doors,p.state.speed);
+      this.serviceResults(p.room);return true;
+    }
     if(raw.type==='convoy.depot.reserve'){
       if(!P.key(raw.request)||typeof raw.depot!=='string'||!/^[a-f0-9]{64}$/.test(raw.depot)||!Array.isArray(raw.positions)||!raw.positions.length||raw.positions.length>256||raw.positions.some(v=>!Array.isArray(v)||v.length!==5||v.some(x=>typeof x!=='number'||!Number.isFinite(x))||v.slice(0,3).some(x=>Math.abs(x)>5e6)||v.slice(3).some(x=>Math.abs(x)>Math.PI*2)))return false;
       if(crypto.createHash('sha256').update(JSON.stringify(raw.positions)).digest('hex')!==raw.depot)return false;
@@ -90,7 +100,7 @@ class ConvoyRooms {
         p.retired.add(p.state.generation); if (p.retired.size > 1024) { this.leave(peer); return false; }
         this.removeVisible(p); p.eventSequence = 0; p.lastEvents.clear(); this.releaseReservations(p);
       }
-      p.state = s; p.sequence = s.sequence; p.seen = this.now(); this.reconcile(p.room, p); return true;
+      p.state = s; p.stateAt=this.now(); p.sequence = s.sequence; p.seen = this.now(); this.reconcile(p.room, p); return true;
     }
     if (raw.type === 'convoy.event') {
       const e = P.event(raw); if (!e || !p.state || e.generation !== p.state.generation || e.sequence <= p.eventSequence || p.lastEvents.has(e.id)) return false;
@@ -138,7 +148,14 @@ class ConvoyRooms {
       q.sent.delete(p.hello.player); this.emit(q.peer, { type: 'convoy.remove', version: 1, epoch: p.room.epoch, player: p.hello.player, clientId: p.hello.clientId, instance: p.hello.instance });
     }
   }
+  serviceResults(room){
+    const now=this.now();if(room.serviceSentAt!==undefined&&now-room.serviceSentAt<200)return;room.serviceSentAt=now;
+    for(const result of room.services.results()){
+      const p=room.peers.get(result.id);if(p){const {id,...message}=result;this.emit(p.peer,{...message,epoch:room.epoch});}
+    }
+  }
   releaseReservations(p) {
+    p.room.services.remove(p.hello.player);
     this.crowds.release(p.room.epoch, p.hello.player);
   }
   leave(peer) {
@@ -150,6 +167,7 @@ class ConvoyRooms {
   }
   tick() {
     const now = this.now(); for (const [peer, p] of this.peers) if (now - p.seen >= P.LIMITS.leaseMs) this.leave(peer);
+    for(const room of this.rooms.values())room.services.tick();
     for (const viewer of this.peers.values()) for (const source of viewer.pending) this.reconcilePair(viewer, source, now);
   }
   close() { for (const peer of [...this.peers.keys()]) this.leave(peer); }

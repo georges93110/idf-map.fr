@@ -448,9 +448,9 @@
 
                   <div class="manager-scale-row">
                     <p class="manager-section-title">Volume des sons</p>
-                    <input id="overlayGlobalAudioVolume" type="range" min="0" max="100" step="1" value="50"
+                    <input id="overlayGlobalAudioVolume" type="range" min="0" max="100" step="1" value="35"
                       class="manager-scale-slider">
-                    <span id="overlayGlobalAudioVolumeValue" class="manager-scale-value">50%</span>
+                    <span id="overlayGlobalAudioVolumeValue" class="manager-scale-value">35%</span>
                   </div>
 
                   <label class="manager-toggle" for="overlayNotificationSoundsEnabled">
@@ -838,11 +838,12 @@
   <script defer src="js/core/game2-hooks.js"></script>
   <script defer src="js/i18n/game2-i18n.js"></script>
   <script defer src="../config/config.js"></script>
-  <script defer src="config/line-config.js?v=maps-20261020-fix1"></script>
+  <script defer src="config/line-config.js?v=agora-hidden-20261025"></script>
   <script defer src="js/html-scheduler-probe.js?v=game-log-diagnostics-20261019"></script>
   <script defer src="js/telemetry-connection.js?v=service-startup-20261024"></script>
   <script defer src="js/compatibility-status.js?v=1"></script>
-  <script defer src="js/runtime/game2-main.js?v=depots-native-20261023"></script>
+  <script defer src="js/native-audio-output.js?v=pcm-clock-20261026"></script>
+  <script defer src="js/runtime/game2-main.js?v=shared-stop-neighbors-20261026"></script>
 <!-- Global Loading Screen -->
   <div id="globalLoadingScreen" class="global-loading-screen">
     <div class="global-loading-content">

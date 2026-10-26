@@ -7,7 +7,23 @@ var nativePassengerLockedMission = "";
 var nativePassengerValidationKey = "";
 var nativePassengerValidationEpoch = null;
 var nativePassengerValidationCount = 0;
+var nativePassengerFareAudio = null;
 var nativePassengerSelectionSerial = 0;
+// Only real local playback calls this; previews and other Convoy buses do not.
+function nativePassengerMoveBackAnnouncement(title) {
+  if(!/fond/i.test(String(title||""))||!saeivRouteState||saeivRouteState.started!==true||
+     normalizeGameMode(currentGameMode)!=="bus"||!telemetryWs||telemetryWs.readyState!==1)return false;
+  var mission=nativePassengerMissionKey();if(!mission)return false;
+  syncNativePassengers(true);
+  try{telemetryWs.send(JSON.stringify({type:"nativePassengerCommand",version:1,action:"moveBack",missionKey:mission,title:String(title).slice(0,512)}));return true;}catch(_){return false;}
+}
+function nativePassengerValidationAnnouncement(title) {
+  if(!/valid/i.test(String(title||""))||!saeivRouteState||saeivRouteState.started!==true||
+     normalizeGameMode(currentGameMode)!=="bus"||!telemetryWs||telemetryWs.readyState!==1)return false;
+  var mission=nativePassengerMissionKey();if(!mission)return false;
+  syncNativePassengers(true);
+  try{telemetryWs.send(JSON.stringify({type:"nativePassengerCommand",version:1,action:"validate",missionKey:mission,title:String(title).slice(0,512)}));return true;}catch(_){return false;}
+}
 function nativePassengerMissionKey() {
   if (!saeivRouteState || !saeivRouteState.selectedKey) return "";
   // Selection owns the actors. Starting service must not recreate the crowd.
@@ -50,6 +66,47 @@ function nativePassengerNextPlan(stops,index,mission) {
     world:{x:point.x,y:point.h,z:point.y,yawDegrees:((yaw%360)+540)%360-180},
     radiusM:Math.max(SAEIV_STOP_REACH_DISTANCE,SAEIV_STOP_DWELL_REACH_DISTANCE)};
 }
+// Only the imminent stop can be dispensable. A stale or unconfirmed shared
+// population must never hide a required stop, especially an onboard exit.
+function isSaeivNextStopOptional() {
+  var route=saeivRouteState,state=saeivPassengerState;
+  if(!route||!state||route.started!==true||state.targetIndex!==route.targetIndex||
+     route.targetIndex>=route.stops.length-1)return false;
+  var m=nativePassengerStatus,s=m&&m.snapshot;
+  if(nativePassengersExpected()){
+    if(!m||m.status!=="active"||m.stopKey!==nativePassengerStopKey()||m.missionKey!==nativePassengerMissionKey()||
+       Date.now()-nativePassengerReceivedAt>=1500||!m.ready||!s||!s.lease)return false;
+    if(s.alight>s.alightDone||s.board>s.boardDone)return false;
+    if(m.sharing&&m.sharing.active)return !m.sharing.pending&&m.sharing.covered===true;
+    return true;
+  }
+  return state.plannedStopBoardingTotal<=state.stopBoardingDone&&state.plannedStopAlightingTotal<=state.stopAlightingDone;
+}
+function sharedPassengerStopTriplets(stops) {
+  var identities=stops.map(function(stop){
+    var p=getSaeivStopExactWorldPoint(stop),yaw=saeivStopZoneHeading(stop);
+    if(!p||![p.x,p.y,p.h,yaw].every(Number.isFinite))return null;
+    // Physical platforms and their direction, independent of line number,
+    // destination, GPS passage overrides and the service's starting ordinal.
+    return [String(stop.uid||''),p.x,p.y,p.h,((yaw%360)+360)%360];
+  });
+  return identities.map(function(current,i){
+    return i>0&&i+1<identities.length&&identities[i-1]&&current&&identities[i+1]?
+      JSON.stringify([identities[i-1],current,identities[i+1]]):null;
+  });
+}
+function sharedPassengerServiceMetadata(stops,index) {
+  var route=saeivRouteState,state=saeivPassengerState;
+  if(route.sharedServiceStops!==stops||route.sharedServiceSelection!==route.selectedKey){route.sharedServiceStops=stops;route.sharedServiceSelection=route.selectedKey;route.sharedServiceKey=JSON.stringify([route.selectedKey,stops.map(function(s){
+    var p=getSaeivStopExactWorldPoint(s),via=typeof getSaeivStopGpsOverrideWorldPoint==='function'?getSaeivStopGpsOverrideWorldPoint(s):null;
+    return [String(s.uid||''),p&&p.x,p&&p.y,p&&p.h,saeivStopZoneHeading(s),via];
+  })]);route.sharedServiceTriplets=sharedPassengerStopTriplets(stops);}
+  var first=Math.max(0,index-2);
+  return {key:route.sharedServiceKey,index:index,last:stops.length-1,
+    segment:{first:first,tokens:route.sharedServiceTriplets.slice(first,Math.min(stops.length,index+3))},
+    demand:Math.max(0,Math.min(500,Math.floor(Number(state.sharedOriginalDemand===undefined?state.plannedStopBoardingTotal:state.sharedOriginalDemand)||0)))};
+}
+
 function buildNativePassengerPayload() {
   var off = {type:"nativePassengers",version:2,enabled:false};
   var key=nativePassengerStopKey(),mission=nativePassengerMissionKey();
@@ -63,7 +120,7 @@ function buildNativePassengerPayload() {
   var count=function(v){return Math.max(0,Math.min(500,Math.floor(Number(v)||0)));};
   return {type:"nativePassengers",version:2,enabled:true,missionKey:mission,stopKey:key,
     preview:saeivRouteState.started!==true,terminal:saeivRouteState.started===true&&index===stops.length-1,
-    nextStop:nativePassengerNextPlan(stops,index,mission),
+    nextStop:nativePassengerNextPlan(stops,index,mission),service:sharedPassengerServiceMetadata(stops,index),
     // A late browser callback is not an SCS pause. The DLL checks its live
     // SDK state again before every physical transfer, in every camera.
     running:!telemetryPaused,
@@ -107,6 +164,17 @@ function receiveNativePassengerStatus(message) {
     if(validTotal(s.board,s.boardDone))saeivPassengerState.plannedStopBoardingTotal=s.board;
     if(validTotal(s.alight,s.alightDone))saeivPassengerState.plannedStopAlightingTotal=s.alight;
   }
+  if(s.fareVersion===1 && Number.isSafeInteger(s.farePassSounds) && s.farePassSounds>=0 && Number.isSafeInteger(s.fareErrorSounds) && s.fareErrorSounds>=0){
+    var key=String(s.epoch)+":"+message.missionKey,previous=nativePassengerFareAudio;
+    var accepted=previous&&previous.key===key?Math.max(0,s.farePassSounds-previous.accepted):0;
+    var rejected=previous&&previous.key===key?Math.max(0,s.fareErrorSounds-previous.rejected):0;
+    nativePassengerFareAudio={key:key,accepted:Math.max(previous&&previous.key===key?previous.accepted:0,s.farePassSounds),rejected:Math.max(previous&&previous.key===key?previous.rejected:0,s.fareErrorSounds)};
+    if(message.ready&&s.lease){
+      if(accepted)playSaeivBoardingValidationSound(accepted,"Pass");
+      if(rejected)playSaeivBoardingValidationSound(rejected,"Error");
+    }
+    return;
+  }
   if(nativePassengerValidationKey!==message.stopKey||nativePassengerValidationEpoch!==s.epoch){
     nativePassengerValidationKey=message.stopKey;nativePassengerValidationEpoch=s.epoch;
     nativePassengerValidationCount=s.validations; // Do not replay historical beeps after refresh/restart.
@@ -126,10 +194,12 @@ function nativePassengerServiceView(key) {
     var pending=saeivBusService.snapshot();pending.native=true;pending.nativeStatus=m?m.status:"connecting";
     pending.flowComplete=false;pending.ready=false;pending.particles=[];return pending;
   }
+  var sharedPending=m.sharing&&m.sharing.active&&saeivRouteState.targetIndex<saeivRouteState.stops.length-1&&
+    (m.sharing.pending||(!m.sharing.covered&&s.board<=s.boardDone));
   return {version:2,key:key,native:true,nativeStatus:fresh?(s.unplaced?"capacity_exceeded":s.failed?"model_error":"active"):"suspended",
     fresh:fresh,zoneTouched:s.zoneTouched===true,inBus:s.onboard,boardingTotal:s.board,boardingDone:s.boardDone,alightingTotal:s.alight,alightingDone:s.alightDone,
     waiting:s.waiting,entryNeedsOpen:s.boardDone<s.board&&s.onboard<s.capacity,exitNeedsOpen:s.alightDone<s.alight,
-    leftBehind:s.flowComplete?Math.max(0,s.board-s.boardDone):0,flowComplete:!!(fresh&&s.flowComplete),ready:!!(fresh&&s.serviceReady),
+    leftBehind:s.flowComplete?Math.max(0,s.board-s.boardDone):0,flowComplete:!!(fresh&&!sharedPending&&s.flowComplete),ready:!!(fresh&&!sharedPending&&s.serviceReady),
     active:!s.serviceReady,entry:s.entry?"open":"closed",exit:s.exit?"open":"closed",particles:fresh&&Array.isArray(s.particles)?s.particles:[],
     capacity:s.capacity,seated:s.seated,standing:s.standing,exitMiddle:s.exitMiddle,exitRear:s.exitRear};
 }

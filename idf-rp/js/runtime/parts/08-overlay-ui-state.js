@@ -146,11 +146,12 @@
         if (n > GLOBAL_AUDIO_VOLUME_MAX) n = GLOBAL_AUDIO_VOLUME_MAX;
         return n;
       }
+      function getNativeGameMasterVolumeFactor() {
+        return nativeGameAudio.seen && nativeGameAudio.available && !nativeGameAudio.muted && Date.now()-nativeGameAudio.stamp < 2000
+          ? nativeGameAudio.volume : 0;
+      }
       function getGlobalAudioVolumeFactor() {
-        // Plugin gain is independent from, and multiplied by, the game's master.
-        if (nativeGameAudio.seen) return nativeGameAudio.available && !nativeGameAudio.muted && Date.now()-nativeGameAudio.stamp < 2000
-          ? nativeGameAudio.volume * clampGlobalAudioVolumePercent(globalAudioVolumePercent) / 100 : 0;
-        return 0;
+        return getNativeGameMasterVolumeFactor() * clampGlobalAudioVolumePercent(globalAudioVolumePercent) / 100;
       }
       function updateSliderFill(slider) {
         if (!slider) return;

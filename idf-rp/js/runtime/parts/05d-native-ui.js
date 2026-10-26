@@ -275,6 +275,12 @@ function syncNativeBusCompletion(s){
 }
 
 // COACH63: active service or "Sans voyageur", same native TOBJ targets.
+function nativeGirouetteBadgeIndex(){
+ return Object.keys(window.LINE_STYLES||{}).filter(function(n){return /^[A-Z]{0,3}\d+[A-Z]?$/i.test(n)&&window.LINE_STYLES[n].badge!==false;}).map(function(n){
+  var entry=window.LINE_STYLES[n],hex=function(c){return c&&c.length===4?'#'+c.slice(1).split('').map(function(v){return v+v;}).join(''):c;};
+  return {line:n,background:hex(entry[0]),foreground:/^N\d+$/i.test(n)?'#ffffff':hex(entry[1]),hideGirouetteAgoraAnim:entry.hideGirouetteAgoraAnim===true,hiddenVariants:entry.agoraHiddenVariants||[]};
+ });
+}
 function buildNativeGirouetteMessage(s){
  var bus=normalizeGameMode(currentGameMode)==='bus';
  var selected=bus&&!!s.selected&&s.routeCompleted!==true&&!!saeivRouteState&&!!saeivRouteState.lineUid;
@@ -287,6 +293,6 @@ function buildNativeGirouetteMessage(s){
  var override=route?String((route.girouetteOveride!=null?route.girouetteOveride:line.girouetteOveride)||'').trim():'';
  return {type:'nativeGirouette',protocol:1,generation:nativeGameModeGeneration,enabled:bus,
    line:route?String(style.label||number).replace(/\s*\(provisoire\)/gi,'').trim():'',destination:route?(override||(last?String(last.name||last.stop&&last.stop.name||''):String(s.routeName||'')).replace(/\s*\(provisoire\)/gi,'').trim()):'Sans voyageur',
-   badge:!!route&&!override&&line.badge!==false,partial:!!route&&route.partiel===true,stripe:style.stripe||'',
+   badgeIndex:nativeGirouetteBadgeIndex(),badge:!!route&&!override&&line.badge!==false,partial:!!route&&route.partiel===true,stripe:style.stripe||'',
    background:style.background||'#000000',foreground:style.foreground||'#ffffff'};
 }

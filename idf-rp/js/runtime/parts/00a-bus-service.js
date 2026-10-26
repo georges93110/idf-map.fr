@@ -115,26 +115,40 @@ var IDFBusService = (function () {
 var saeivBusService = new IDFBusService.Service();
 var saeivBoardingValidationAudio = null;
 var saeivBoardingValidationToken = 0;
-function playSaeivBoardingValidationSound(boarded) {
+var saeivBoardingValidationQueue = [];
+var saeivBoardingValidationBusy = false;
+function playSaeivBoardingValidationSound(boarded, outcome) {
   if (boarded <= 0 || typeof Audio !== "function" || saeivPassengerValidationSoundsEnabled !== true) return;
   var config = getActiveSaeivLineAudioConfig();
   if (!config.validationSoundPack || config.validationSoundsAllowed === false) return;
-  var roll = Math.random(); // 20% no validation, 1% rejected, 79% accepted.
-  if (roll >= 0.8) return;
-  var url = buildSaeivBusSoundUrl("validations", config.validationSoundPack, roll < 0.01 ? "Error" : "Pass");
-  if (!url) return;
-  var token = ++saeivBoardingValidationToken;
-  var routeKey = String(saeivRouteState && saeivRouteState.selectedKey || "");
-  probeSaeivSoundFileAvailability(url).then(function (exists) {
-    if (!exists || token !== saeivBoardingValidationToken || saeivPassengerValidationSoundsEnabled !== true) return;
-    if (routeKey !== String(saeivRouteState && saeivRouteState.selectedKey || "")) return;
-    var active = getActiveSaeivLineAudioConfig();
-    if (active.validationSoundsAllowed === false || active.validationSoundPack !== config.validationSoundPack) return;
-    if (saeivBoardingValidationAudio) saeivBoardingValidationAudio.pause();
-    saeivBoardingValidationAudio = createBusSpatialAudio(url, "validator");
-    setBusAudioLevel(saeivBoardingValidationAudio, 0.5);
-    saeivBoardingValidationAudio.play().catch(function () {});
-  }).catch(function () {});
+  var key = String(saeivRouteState && saeivRouteState.selectedKey || "");
+  for (var i=0;i<Math.min(256,boarded);i++) {
+    var result=outcome;
+    if (result!=="Pass" && result!=="Error") {
+      // Legacy DLL fallback only. Current DLLs send each person's actual outcome.
+      var roll=Math.random();result=roll<.70?"Pass":roll<.73?"Error":"";
+    }
+    if(result && saeivBoardingValidationQueue.length<256)
+      saeivBoardingValidationQueue.push({result:result,pack:config.validationSoundPack,key:key});
+  }
+  processSaeivBoardingValidationQueue();
+}
+function processSaeivBoardingValidationQueue() {
+  if(saeivBoardingValidationBusy)return;
+  var next=saeivBoardingValidationQueue.shift();if(!next)return;
+  var valid=function(){var current=getActiveSaeivLineAudioConfig();return saeivPassengerValidationSoundsEnabled===true &&
+    next.key===String(saeivRouteState&&saeivRouteState.selectedKey||"") && current.validationSoundsAllowed!==false && current.validationSoundPack===next.pack;};
+  if(!valid()){processSaeivBoardingValidationQueue();return;}
+  var url=buildSaeivBusSoundUrl("validations",next.pack,next.result);
+  if(!url){processSaeivBoardingValidationQueue();return;}
+  var token=++saeivBoardingValidationToken,finished=false;saeivBoardingValidationBusy=true;
+  var finish=function(){if(finished)return;finished=true;saeivBoardingValidationBusy=false;saeivBoardingValidationAudio=null;processSaeivBoardingValidationQueue();};
+  probeSaeivSoundFileAvailability(url).then(function(exists){
+    if(!exists||token!==saeivBoardingValidationToken||!valid()){finish();return;}
+    var audio=createBusSpatialAudio(url,"validator");saeivBoardingValidationAudio=audio;
+    setBusAudioLevel(audio,.5);audio.onended=audio.onerror=finish;
+    try{Promise.resolve(audio.play()).catch(finish);}catch(_){finish();}
+  }).catch(finish);
 }
 function getSaeivBusServiceKey() {
   if (!saeivRouteState || saeivRouteState.started !== true || !saeivPassengerState) return "";
