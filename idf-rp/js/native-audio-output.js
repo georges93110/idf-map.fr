@@ -25,11 +25,50 @@
     root.addEventListener('pagehide', () => { for (const audio of widgetMedia) { audio.pause(); root.IDFGameAudio.releaseMedia(audio); } widgetMedia.clear(); });
     return;
   } } catch (_) {}
-  const url = new URL('native-audio-worklet.js?v=pcm-clock-20261026', document.currentScript.src).href;
+  const url = new URL('native-audio-worklet.js?v=pcm-worker-20261026', document.currentScript.src).href;
+  const workerUrl = new URL('native-audio-worker.js?v=pcm-worker-20261026', document.currentScript.src).href;
   const records = new Map(), mediaSources = new WeakMap();
   let socket = null, managed = false, ready = false, mediaContext = null;
+  let transport = null, transportReady = false, transportToken = '', transportFailed = false;
+  function routeTransport(record) {
+    if (!record.node?.port) return;
+    const useWorker = !!(transport && transportReady);
+    if (record.workerTransport === useWorker) return;
+    record.workerTransport = useWorker;
+    if (useWorker) {
+      const channel = new MessageChannel();
+      transport.postMessage({ type: 'stream', id: record.id, generation: record.generation, port: channel.port1 }, [channel.port1]);
+      record.node.port.postMessage({ type: 'transport', port: channel.port2 }, [channel.port2]);
+    } else record.node.port.postMessage({ type: 'transport', port: null });
+  }
+  function configureTransport() {
+    // Old bridges keep the original PCM path. Never route through a worker
+    // without a private grant from this page's existing native audio owner.
+    if (!transportToken || !ready || !socket?.url) {
+      transport?.postMessage({ type: 'configure', url: '', token: '' }); return;
+    }
+    if (!transport && !transportFailed && root.Worker && root.MessageChannel) {
+      try {
+        transport = new Worker(workerUrl);
+        transport.onmessage = e => {
+          if (e.data?.type !== 'ready') return;
+          transportReady = e.data.ready === true; for (const r of records.values()) routeTransport(r);
+        };
+        transport.onerror = () => {
+          transportFailed = true; transport?.terminate(); transport = null; transportReady = false;
+          for (const r of records.values()) routeTransport(r);
+        };
+      } catch (_) { transportFailed = true; }
+    }
+    if (transport) { const endpoint = new URL(socket.url); endpoint.pathname = '/idf-rp/native-audio'; endpoint.search = ''; endpoint.hash = '';
+      transport.postMessage({ type: 'configure', url: endpoint.href, token: transportToken }); }
+  }
   function reset(id) {
     if (socket?.readyState !== 1 || !ready) return;
+    if (transport && transportReady) {
+      const record = Array.from(records.values()).find(r => r.id === id);
+      transport.postMessage({ type: 'reset', id, generation: record?.generation }); return;
+    }
     const packet = new ArrayBuffer(24), bytes = new Uint8Array(packet), data = new DataView(packet);
     bytes.set([73,68,70,80,67,77,48,49]); data.setUint32(8, id, true); data.setUint32(20, 48000, true);
     try { socket.send(packet); } catch (_) {}
@@ -96,6 +135,7 @@
     records.set(context, record); state(record);
     context.addEventListener('statechange', () => {
       if (context.state !== 'closed') return;
+      transport?.postMessage({ type: 'remove', id });
       reset(id); record.node?.port?.close(); record.node?.disconnect(); record.sink?.disconnect(); input.disconnect(); local.disconnect(); records.delete(context);
     });
     (async function () {
@@ -117,7 +157,7 @@
         // of 48 kHz, starving native playback every half-second. A zero-output
         // worklet is automatically pulled on the real audio clock (default
         // interactive latency), while local remains silent in native mode.
-        input.connect(node); state(record);
+        input.connect(node); state(record); routeTransport(record);
       } catch (error) {
         if (context.state !== 'closed') { try { legacyCapture(record); } catch (e) { console.error('[IDF-RP] Native audio capture unavailable', e); } }
       }
@@ -143,14 +183,16 @@
   function receive(message) {
     if (message?.type !== 'nativeAudioStatus' || message.protocol !== 1) return false;
     managed = message.supported === true; ready = managed && message.ready === true;
+    transportToken = typeof message.transportToken === 'string' ? message.transportToken : '';
+    configureTransport();
     for (const record of records.values()) state(record);
     return true;
   }
   function bind(connection) {
-    socket = connection; ready = false; for (const record of records.values()) state(record);
-    connection?.addEventListener('close', () => { if (socket !== connection) return; ready = false; for (const r of records.values()) state(r); });
+    socket = connection; ready = false; transportToken = ''; configureTransport(); for (const record of records.values()) state(record);
+    connection?.addEventListener('close', () => { if (socket !== connection) return; ready = false; configureTransport(); for (const r of records.values()) state(r); });
   }
   root.IDFGameAudio = { output, media, releaseMedia: element => mediaSources.get(element)?.disconnect(), receive, bind,
-    status: () => ({ managed, ready, contexts: records.size, localGains: Array.from(records.values(), r => r.local.gain.value) }) };
-  root.addEventListener('pagehide', () => { reset(0); ready = false; for (const r of records.values()) state(r); });
+    status: () => ({ managed, ready, workerTransport: transportReady, contexts: records.size, localGains: Array.from(records.values(), r => r.local.gain.value) }) };
+  root.addEventListener('pagehide', () => { reset(0); transport?.terminate(); transport = null; transportReady = false; ready = false; for (const r of records.values()) state(r); });
 })(window);

@@ -116,27 +116,39 @@ function tickPassengerCabinAudio() {
 }
 window.addEventListener('pagehide',resetPassengerCabinAudio);
 
-// Independent player's footsteps. The DLL advances this serial only after real
-// grounded displacement, so standing against a wall never produces footsteps.
-var nativeWalkAudio = {step:null,stamp:0,active:false,voices:new Set()};
+// Independent player's footsteps. The DLL emits contacts from the same phase
+// as the visible feet, driven by real grounded displacement, including crouching.
+var nativeWalkAudio = {step:null,stamp:0,active:false,voices:new Set(),warmed:false};
 function stopNativeWalkAudio() {
   nativeWalkAudio.voices.forEach(function(audio){audio.pause();audio.src='';});
   nativeWalkAudio.voices.clear();nativeWalkAudio.active=false;
 }
 function receiveNativeWalkAudio(data) {
   var state=nativeWalkAudio,now=Date.now(),step=data&&data.walkSteps;
-  var ready=!!(data&&data.walkActive===true&&!data.paused&&data.audioCameraAvailable&&
+  var ready=!!(data&&data.walkActive===true&&!data.paused&&
+    (typeof data.walkAudioAvailable==='boolean'?data.walkAudioAvailable:data.audioCameraAvailable)&&
     data.passengerEffectsEnabled!==false&&Number.isSafeInteger(step)&&step>=0&&
     nativeGameAudio.available&&now-nativeGameAudio.stamp<2000&&getGlobalAudioVolumeFactor()>0);
-  var play=ready&&state.active&&state.step!==null&&step>state.step&&step-state.step<=3&&now-state.stamp<600;
+  var fresh=data&&(data.walkStepAgeMs===undefined||(Number.isFinite(data.walkStepAgeMs)&&data.walkStepAgeMs>=0&&data.walkStepAgeMs<200));
+  var play=ready&&fresh&&state.active&&state.step!==null&&step>state.step&&step-state.step<=3&&now-state.stamp<600;
   state.step=Number.isSafeInteger(step)?step:null;state.stamp=now;
   if(!ready){stopNativeWalkAudio();return;}state.active=true;
+  // Decode the six short samples once, before the first contact. No late burst
+  // on page reconnect; existing shared cache remains bounded.
+  if(!state.warmed&&typeof busSpatialAudio!=='undefined'&&typeof fetchBusDecodedClip==='function'){
+    var Context=window.AudioContext||window.webkitAudioContext;
+    if(Context){
+      if(!busSpatialAudio.context)busSpatialAudio.context=new Context();
+      state.warmed=true;resumeBusAudioContext();
+      for(var n=1;n<=6;n++)fetchBusDecodedClip(new URL('sounds/passengers/step-lino-'+n+'.wav',window.location.href).href,busSpatialAudio.context).catch(function(){});
+    }
+  }
   if(!play)return;
   // At most one fresh step per packet; never replay accumulated steps after a
   // reconnect or delayed page load. Use IDF-RP's own existing clips, no TM assets.
   if(state.voices.size>=2){var oldest=state.voices.values().next().value;oldest.pause();oldest.src='';state.voices.delete(oldest);}
   var audio=createBusSpatialAudio('sounds/passengers/step-lino-'+(step%6+1)+'.wav','nativeWalkStep');
-  state.voices.add(audio);setBusAudioLevel(audio,data.walkRunning ? .48 : .34);
+  state.voices.add(audio);setBusAudioLevel(audio,data.walkCrouched ? .20 : data.walkRunning ? .48 : .34);
   var done=function(){state.voices.delete(audio);};
   audio.addEventListener('ended',done);audio.addEventListener('error',done);
   var promise=audio.play();if(promise&&promise.catch)promise.catch(done);

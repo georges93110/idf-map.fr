@@ -1,6 +1,7 @@
 'use strict';
 // Wire data only. Never accepts engine pointers, executable code, asset paths or URLs.
 const VERSION = 1;
+const PASSENGER_APPEARANCES = 297; // Stable appearance IDs; keep the native catalogue in sync.
 const LIMITS = Object.freeze({ peers: 128, passengers: 256, bytes: 196608, enterM: 200, leaveM: 230, fullM: 80, audioM: 60, leaseMs: 6000 });
 const key = v => typeof v === 'string' && /^[a-zA-Z0-9_.:-]{1,128}$/.test(v);
 const steam = v => typeof v === 'string' && /^7656119\d{10}$/.test(v);
@@ -67,21 +68,23 @@ function passenger(v) {
   // is the fixed stop/departure frame, never the sender's collision contact.
   if(object(v)&&v.actionSequence!==undefined){
     const anchor=pose(v.anchor);
-    if(!key(v.id)||!integer(v.model,0,103)||!integer(v.seat,-1,255)||!integer(v.door,0,2)||
+    if(!key(v.id)||!integer(v.model,0,PASSENGER_APPEARANCES-1)||!integer(v.seat,-1,255)||!integer(v.door,0,2)||
        !['waiting','approach','enter','toPlace','resident','toExit','leave','outside','returning'].includes(v.stage)||
        !integer(v.actionSequence,1,0xffffffff)||!integer(v.progress,0,4)||!integer(v.queue,0,63)||
        (v.progressPermille!==undefined&&(!integer(v.progressPermille,0,1000)||Math.floor(v.progressPermille/250)!==v.progress))||
        !integer(v.animation,1,3)||!integer(v.standingVariant,0,6)||!integer(v.seatedVariant,0,2)||
        !finite(v.walkSpeed,4)||v.walkSpeed<0||!anchor||v.pose!==undefined||v.space!==undefined||
        (['toPlace','resident','toExit','leave'].includes(v.stage)&&v.seat<0)||
+       (v.validator!==undefined&&!integer(v.validator,0,7))||
+        (v.gesture!==undefined&&(!integer(v.gesture,0,31)||(v.gesture&&v.seat<0)))||
        (v.validation!==undefined&&(!integer(v.validation,1,7)||v.seat<0||v.door!==2||v.stage!==(v.validation===7?'toPlace':'toExit'))))return null;
     return {id:v.id,model:v.model,seat:v.seat,door:v.door,stage:v.stage,actionSequence:v.actionSequence,
       progress:v.progress,queue:v.queue,animation:v.animation,standingVariant:v.standingVariant,
       seatedVariant:v.seatedVariant,walkSpeed:v.walkSpeed,anchor,
       ...(v.progressPermille!==undefined?{progressPermille:v.progressPermille}:{}),
-      ...(v.validation!==undefined?{validation:v.validation}:{})};
+      ...(v.validation!==undefined?{validation:v.validation}:{}),...(v.validator!==undefined?{validator:v.validator}:{}),...(v.gesture!==undefined?{gesture:v.gesture}:{})};
   }
-  if (!object(v) || !key(v.id) || !integer(v.model, 0, 255) || !integer(v.seat, -1, 255) || !integer(v.door, 0, 2) ||
+  if (!object(v) || !key(v.id) || !integer(v.model, 0, PASSENGER_APPEARANCES-1) || !integer(v.seat, -1, 255) || !integer(v.door, 0, 2) ||
       !['waiting', 'approach', 'enter', 'toPlace', 'resident', 'toExit', 'leave', 'outside', 'returning'].includes(v.stage) ||
       !['bus', 'world'].includes(v.space) || !integer(v.animation, 0, 255) || !finite(v.phase, 86400)) return null;
   const at = pose(v.pose, v.space === 'bus'); if (!at) return null;
@@ -133,7 +136,9 @@ function busAudio(v) {
       !['routeAnnouncement','shortcutAnnouncement','announcement','validator'].includes(v.category) ||
       !finite(v.offset,180) || v.offset < 0 || !finite(v.duration,180) || v.duration <= v.offset ||
       !finite(v.level,1) || v.level < 0) return null;
-  return {action:'play',voice:v.voice,clip:v.clip,category:v.category,offset:v.offset,duration:v.duration,level:v.level};
+  if(v.source!==undefined&&(!Array.isArray(v.source)||v.source.length!==3||!v.source.every(n=>finite(n,30))))return null;
+  return {action:'play',voice:v.voice,clip:v.clip,category:v.category,offset:v.offset,duration:v.duration,level:v.level,
+    ...(v.category==='validator'&&v.source?{source:v.source.slice()}: {})};
 }
 function event(v) {
   if (!object(v) || v.type !== 'convoy.event' || v.version !== VERSION || !key(v.epoch) || !key(v.generation) || !key(v.id) ||
@@ -148,4 +153,4 @@ function decode(data) {
     const v = JSON.parse(data); return object(v) ? v : null; } catch { return null; }
 }
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z); }
-module.exports = { VERSION, LIMITS, key, steam, player, nativePlayer, integer, pose, hello, member, sign, lumiplan, passenger, snapshot, moverStops, busAudio, event, decode, distance };
+module.exports = { VERSION, PASSENGER_APPEARANCES, LIMITS, key, steam, player, nativePlayer, integer, pose, hello, member, sign, lumiplan, passenger, snapshot, moverStops, busAudio, event, decode, distance };

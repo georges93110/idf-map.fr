@@ -174,7 +174,7 @@
 					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100"/>
 					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50"/>
 					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50"/>
-					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0"/>
+					<busstop uid="331" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
 			<route uid="2">
@@ -258,7 +258,7 @@
 					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100"/>
 					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50"/>
 					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50"/>
-					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0"/>
+					<busstop uid="331" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
 			<route uid="4" partiel="true">
@@ -322,7 +322,7 @@
 					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100"/>
 					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50"/>
 					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50"/>
-					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0"/>
+					<busstop uid="331" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
 			<route uid="6" partiel="true">
@@ -533,7 +533,7 @@
 					<busstop uid="250" passengersMin="5" passengersMax="17" coefOn="100"/>
 					<busstop uid="251" passengersMin="1" passengersMax="2" coefOn="50"/>
 					<busstop uid="252" passengersMin="1" passengersMax="2" coefOn="50"/>
-					<busstop uid="253" passengersMin="0" passengersMax="0" coefOn="0"/>
+					<busstop uid="331" passengersMin="0" passengersMax="0" coefOn="0"/>
 			</route>
 
 	</line>

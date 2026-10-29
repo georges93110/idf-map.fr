@@ -18,6 +18,7 @@ class AgoraSaeiv {
   if(p.type==='saeiv:catalog'){this.catalogue=Array.isArray(p.payload?.routes)?p.payload.routes:[];return;}
   if(p.type==='saeiv:state'){
    const old=this.state;this.state=p.payload||{};this.at=this.now();
+   if(this.audio>=this.audioItems().length)this.audio=0;
    if(old.routeSelected&&!this.state.routeSelected&&this.page!=='waiting'){this.line='';this.service='';this.message(['SERVICE TERMINE','PRISE SERVICE']);}
    if(this.state.routeCompleted&&!old.routeCompleted)this.message(['SERVICE TERMINE','TOUS DESCENDUS']);
    return;
@@ -31,6 +32,12 @@ class AgoraSaeiv {
   }
  }
  routes(){const l=this.line;const exact=this.catalogue.filter(r=>r.lineUid===l||r.lineUidRaw===l);return exact.length?exact:this.catalogue.filter(r=>text(r.lineNumber)===text(l));}
+ audioItems(){
+  const ratp=/(^|\/)RATP(?:%20|\s|\/|$)/i.test(this.state.globalAudioFolderPath||'');
+  return (this.state.globalAudioLabels||[]).map((label,index)=>({label,index}))
+   .filter(v=>!ratp||/\(Ancien\)/i.test(v.label))
+   .map(v=>({...v,label:ratp?v.label.replace(/\s*\(Ancien\)\s*/ig,' ').trim():v.label}));
+ }
  choose(delta){
   const list=this.page==='line'?[...new Set(this.catalogue.map(r=>String(r.lineUidRaw||r.lineUid)))]:[...new Set(this.routes().map(r=>String(r.routeUid)))];
   if(!list.length)return;const field=this.page==='line'?'line':'service';const i=list.indexOf(this[field]);this[field]=list[(i+delta+list.length)%list.length];
@@ -56,7 +63,7 @@ class AgoraSaeiv {
    return k==='valid'&&!!this[page];
   }
   if(page==='confirm'||page==='end')return k==='valid';
-  if(k==='up'||k==='down'||k==='valid')return page!=='audio'||(this.state.globalAudioLabels?.length||0)>0;
+  if(k==='up'||k==='down'||k==='valid')return page!=='audio'||this.audioItems().length>0;
   return ['mission','0','1','3','test'].includes(k);
  }
  press(k){
@@ -109,14 +116,14 @@ class AgoraSaeiv {
   if(k==='3'){this.page='audio';this.audio=0;this.post('saeiv:request_state');return;}
   if(k==='test'){this.message(['####################','####################']);return;}
   if(k==='up'||k==='down'){
-   if(this.page==='audio'){const n=this.state.globalAudioLabels?.length||0;if(n)this.audio=(this.audio+(k==='up'?1:-1)+n)%n;}
+   if(this.page==='audio'){const n=this.audioItems().length;if(n)this.audio=(this.audio+(k==='up'?1:-1)+n)%n;}
    else{const pages=['home','stop','schedule','destination'];this.page=pages[(pages.indexOf(this.page)+(k==='up'?1:3))%4];}
    return;
   }
   if(k==='valid'){
    if(this.page==='audio'){
-    if(!this.state.globalAudioLabels?.[this.audio])return;
-    this.post('saeiv:action',{action:'saeiv-native-diffusion-slot-'+(this.audio+1),diffusionSlot:this.audio+1,selectedLineUid:this.state.selectedLineUid||'',selectedRouteUid:this.state.selectedRouteUid||'',globalAudioFolderPath:this.state.globalAudioFolderPath||''});return;
+    const item=this.audioItems()[this.audio];if(!item)return;
+    this.post('saeiv:action',{action:'saeiv-native-diffusion-slot-'+(item.index+1),diffusionSlot:item.index+1,selectedLineUid:this.state.selectedLineUid||'',selectedRouteUid:this.state.selectedRouteUid||'',globalAudioFolderPath:this.state.globalAudioFolderPath||''});return;
    }
    if(this.page==='home'&&this.state.routeSelected&&!this.state.routeStarted&&!this.state.routeCompleted){if(this.state.routeCanStart)this.command('start_route');else this.message(['SERVICE ACCEPTE','REJOINDRE LE DEPART']);return;}
    this.page='home';
@@ -133,7 +140,7 @@ class AgoraSaeiv {
   if(this.page==='confirm')return ['VALIDER LE SERVICE ?',fit(this.line,4)+' '+fit(this.service,3)+' VOITURE '+this.vehicle];
   if(this.page==='end')return ['TERMINER SERVICE ?','VALID:OUI ANNUL:NON'];
   const s=this.state;if(!this.at||this.now()-this.at>6500)return ['LIAISON SAEIV','EN ATTENTE'];
-  if(this.page==='audio')return ['ANNONCES '+(this.audio+1),s.globalAudioLabels?.[this.audio]||'AUCUNE ANNONCE'];
+  if(this.page==='audio')return ['ANNONCES '+(this.audio+1),this.audioItems()[this.audio]?.label||'AUCUNE ANNONCE'];
   if(!s.routeSelected)return ['BONJOUR, APPUYER','SUR PRISE SERVICE'];
   if(s.routeCompleted)return ['SERVICE TERMINE','ANNUL:FIN SERVICE'];
   if(this.page==='destination')return ['DESTINATION',s.terminusStopName||s.audioStopNames?.at(-1)||s.routeName||''];

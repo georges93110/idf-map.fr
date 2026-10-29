@@ -2712,4 +2712,12 @@
 		<location>2716.69;5.37665;-1740.58;-0.303782;0.000634193</location>
 		<gareroutiere>true</gareroutiere>
 	</busstop>
+
+	<busstop>
+		<id>331</id>
+		<name>Château de Vincennes</name>
+		<zone></zone>
+		<requestStop>false</requestStop>
+		<location>-757.71;14.78;488.34;1.58563;0.000497341</location>
+	</busstop>
 </busstops>

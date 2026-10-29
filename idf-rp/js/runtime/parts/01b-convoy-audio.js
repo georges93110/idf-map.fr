@@ -8,10 +8,11 @@ function convoyAudioPlayer(value) {
 }
 function convoyDoorMix(pose, data, fresh) {
   if (!fresh || !pose || !data || data.paused || !data.audioCameraAvailable) return { gain: 0, pan: 0 };
-  var dx = pose.x - data.audioCameraX, dy = pose.y - data.audioCameraY, dz = pose.z - data.audioCameraZ;
+  var world=Number.isFinite(data.audioWorldX),prefix=world?'audioWorld':'audioCamera';
+  var dx = pose.x - data[prefix+'X'], dy = pose.y - data[prefix+'Y'], dz = pose.z - data[prefix+'Z'];
   var d = Math.hypot(dx, dy, dz);
   if (!Number.isFinite(d) || d >= 60) return { gain: 0, pan: 0 };
-  var right = dx * data.audioCameraRightX + dy * data.audioCameraRightY + dz * data.audioCameraRightZ;
+  var right = dx * data[prefix+'RightX'] + dy * data[prefix+'RightY'] + dz * data[prefix+'RightZ'];
   return { gain: (data.audioCameraInside ? .55 : 1) * Math.min(1, (60 - d) / 10) / (1 + Math.pow(d / 8, 2)),
     pan: Number.isFinite(right) ? Math.max(-.95, Math.min(.95, right / Math.max(1, d))) : 0 };
 }
@@ -27,7 +28,7 @@ function tickConvoyDoorAudio() {
   var state = busSpatialAudio, now = Date.now();
   convoyDoorAudio.voices.forEach(function (v, key) {
     if (now >= v.until || now - state.stamp >= 1500 || !state.telemetry || state.telemetry.paused) { stopConvoyDoorVoice(key); return; }
-    var mix = v.clip ? convoyBusClipMix(v.pose,v.doors,state.telemetry,now-state.stamp<1500) : convoyDoorMix(v.pose, state.telemetry, now - state.stamp < 1500);
+    var mix = v.clip ? convoyBusClipMix(v.pose,v.doors,state.telemetry,now-state.stamp<1500,v.validatorSource) : convoyDoorMix(v.pose, state.telemetry, now - state.stamp < 1500);
     if (!mix.gain) { stopConvoyDoorVoice(key); return; }
     var master = nativeGameAudio.available && now - nativeGameAudio.stamp < 2000 ? getGlobalAudioVolumeFactor() : 0;
     v.gain.gain.setTargetAtTime(mix.gain * master * (v.level === undefined ? 1 : v.level), state.context.currentTime, .04);
@@ -112,15 +113,21 @@ function attachConvoyBusAudio(audio,record) {
     var clip=convoyClipId(audio.currentSrc||audio.src),duration=audio.duration,offset=audio.currentTime||0;
     if(!clip||!Number.isFinite(duration)||duration<=offset||duration>180)return;
     var id=window.crypto.randomUUID();
-    if(send({action:'play',voice:id,clip:clip,category:record.kind,duration:duration,offset:offset,level:record.base}))voice=id;
+    if(send({action:'play',voice:id,clip:clip,category:record.kind,duration:duration,offset:offset,level:record.base,
+      source:record.kind==='validator'?record.validatorSource:undefined}))voice=id;
   });
   ['pause','ended','error','emptied'].forEach(function(name){audio.addEventListener(name,function(){
     if(!voice || (name!=='error' && audio.paused===false && !audio.ended))return;
     send({action:'stop',voice:voice});voice='';
   });});
 }
-function convoyBusClipMix(pose,doors,data,fresh) {
-  var mix=convoyDoorMix(pose,data,fresh);
+function convoyBusClipMix(pose,doors,data,fresh,source) {
+  var point=pose;
+  if(pose&&Array.isArray(source)&&source.length===3&&source.every(Number.isFinite)&&Number.isFinite(pose.yaw)){
+    var angle=pose.yaw*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle);
+    point={x:pose.x+c*source[0]+s*source[2],y:pose.y+source[1],z:pose.z-s*source[0]+c*source[2]};
+  }
+  var mix=convoyDoorMix(point,data,fresh);
   var open=Math.max(0,Math.min(1,Number((doors||[])[0])||0));
   mix.gain*=.035+.765*Math.sqrt(open);mix.cutoff=650+17350*open;
   return mix;
@@ -138,7 +145,8 @@ function receiveConvoyBusClip(m) {
       !['routeAnnouncement','shortcutAnnouncement','announcement','validator'].includes(a.category)||
       !Number.isFinite(a.offset)||a.offset<0||!Number.isFinite(a.duration)||a.duration<=a.offset||a.duration>180||
       !Number.isFinite(a.level)||a.level<0||a.level>1)return false;
-  var mix=convoyBusClipMix(m.pose,m.doors,state.telemetry,now-state.stamp<1500);
+  if(a.source!==undefined&&(!Array.isArray(a.source)||a.source.length!==3||!a.source.every(function(n){return Number.isFinite(n)&&Math.abs(n)<=30;})))return false;
+  var mix=convoyBusClipMix(m.pose,m.doors,state.telemetry,now-state.stamp<1500,a.source);
   if(!mix.gain||!nativeGameAudio.available||now-nativeGameAudio.stamp>=2000)return false;
   var Context=window.AudioContext||window.webkitAudioContext;if(!Context)return false;
   stopConvoyDoorVoice(key);
@@ -149,7 +157,7 @@ function receiveConvoyBusClip(m) {
   filter.type='lowpass';filter.frequency.value=mix.cutoff;filter.connect(gain);
   if(pan){gain.connect(pan);pan.connect(nativeAudioDestination(c));}else gain.connect(nativeAudioDestination(c));
   var boost=a.category==='routeAnnouncement'?4:a.category==='shortcutAnnouncement'?1.5:a.category==='announcement'?2:1;
-  var v={source:null,filter:filter,gain:gain,pan:pan,pose:m.pose,doors:m.doors,player:m.player,clip:true,
+  var v={source:null,filter:filter,gain:gain,pan:pan,pose:m.pose,doors:m.doors,player:m.player,clip:true,validatorSource:a.source,
     level:a.level*boost,until:now+(a.duration-a.offset)*1000+2000};
   s.voices.set(key,v);tickConvoyDoorAudio();
   if(!s.timer)s.timer=setInterval(tickConvoyDoorAudio,100);

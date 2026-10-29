@@ -16,7 +16,7 @@ class StopCrowds {
     stop = { id: stopId, pose: { ...position }, seen: this.now(), revision: 1, people: new Map() };
     for (let n = 0; n < count; ++n) {
       const id = crypto.createHash('sha256').update(`${room}:${stopId}:${n}`).digest('hex').slice(0, 24);
-      stop.people.set(id, { id, model: parseInt(id.slice(0, 8), 16) % 104, reservedBy: null, generation: null, until: 0, boarded: false });
+      stop.people.set(id, { id, model: (parseInt(crypto.createHash('sha256').update(`${room}:${stopId}`).digest('hex').slice(0, 8), 16) + n * 37) % P.PASSENGER_APPEARANCES, reservedBy: null, generation: null, until: 0, boarded: false });
     }
     stops.set(stopId, stop); return stop;
   }

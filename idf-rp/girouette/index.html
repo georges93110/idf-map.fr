@@ -87,8 +87,16 @@ const syncRoute=colorField('Fond du numéro',routeColor.value,v=>routeColor.valu
 const layoutOptions=document.createElement('div');layoutOptions.className='field';
 layoutOptions.innerHTML='<label for="align">Alignement du texte</label><select id="align"><option value="center">Centré</option><option value="left">À gauche</option><option value="right">À droite</option></select><label class="toggle"><input type="checkbox" id="wrap" checked> Retours à la ligne automatiques</label><label class="toggle"><input type="checkbox" id="partial"> Service partiel — diagonale</label><label class="toggle"><input type="checkbox" id="blink" checked> Faire clignoter la diagonale</label><label for="blinkMs">Durée de chaque phase (ms)</label><input id="blinkMs" type="range" min="300" max="2000" step="100" value="800"><output id="blinkOut">800 ms</output>';
 $('.sidebar').append(layoutOptions);
-let blinkEpoch=performance.now();
-function partialVisible(){return $('#partial').checked&&(!$('#blink').checked||Math.floor((performance.now()-blinkEpoch)/Number($('#blinkMs').value))%2===0)}
+let animationPaused=false,animationPauseAt=0,animationPausedMs=0;
+function animationNow(){return (animationPaused?animationPauseAt:performance.now())-animationPausedMs;}
+function pauseSignAnimation(paused){
+ if(paused===animationPaused)return;
+ const now=performance.now();
+ if(paused)animationPauseAt=now;else animationPausedMs+=Math.max(0,now-animationPauseAt);
+ animationPaused=paused;
+}
+let blinkEpoch=animationNow();
+function partialVisible(){return $('#partial').checked&&(!$('#blink').checked||Math.floor((animationNow()-blinkEpoch)/Number($('#blinkMs').value))%2===0)}
 setInterval(()=>{if($('#partial').checked&&$('#blink').checked&&!running)draw()},80);
 let agoraLayout=false,destinationPowered=true;
 // Each native/Convoy screen owns its roller; a shared producer page must never
@@ -96,13 +104,13 @@ let agoraLayout=false,destinationPowered=true;
 const badgeTracks=new Map(),badgeRollDuration=2500;
 let activeBadgeTrack=null,badgeAnimationFrame=0,renderRevision=0,externalBadgeFrames=false;
 const destinationTracks=new Map();let activeDestination=null;
-function signAnimating(){return !!activeBadgeTrack?.roll||!!activeDestination?.active;}
-function paintActiveDestination(){if(agoraLayout&&texturePowered&&activeDestination?.active)activeDestination.paint(outputCtx,performance.now(),renderMode==='advanced');}
+function signAnimating(){return !animationPaused&&(!!activeBadgeTrack?.roll||!!activeDestination?.active);}
+function paintActiveDestination(){if(agoraLayout&&texturePowered&&activeDestination?.active)activeDestination.paint(outputCtx,animationNow(),renderMode==='advanced');}
 function selectDestination(context,generation,skip){
  if(!agoraLayout||!texturePowered){destinationTracks.delete(context);activeDestination=null;return;}
  let track=destinationTracks.get(context);
  if(!track||track.generation!==generation){track=IDFAgoraDestination.create();track.generation=generation;destinationTracks.set(context,track);}
- track.update(output,JSON.stringify([destinationPowered,girouetteText(dest.value)]),performance.now(),{skip,background:palette.background});activeDestination=track;
+ track.update(output,JSON.stringify([destinationPowered,girouetteText(dest.value)]),animationNow(),{skip,background:palette.background});activeDestination=track;
  while(destinationTracks.size>128)destinationTracks.delete(destinationTracks.keys().next().value);
  paintActiveDestination();
 }
@@ -123,7 +131,7 @@ function paintBadgeRoll(target,track,now){IDFAgoraBadgeRoll.paint(target,track,n
 const badgeRollFrame=badgeCanvas(),badgeRollCtx=badgeRollFrame.getContext('2d');
 function paintActiveBadge(){
  if(!activeBadgeTrack?.roll||!agoraLayout||!texturePowered)return;
- paintBadgeRoll(badgeRollCtx,activeBadgeTrack,performance.now());
+ paintBadgeRoll(badgeRollCtx,activeBadgeTrack,animationNow());
  for(const [x,y]of [[0,0],[1024,0],[0,128],[1024,128]])outputCtx.drawImage(badgeRollFrame,x,y);
 }
 function scheduleBadgeRoll(){
@@ -146,12 +154,12 @@ function selectBadgeTrack(context,signature,generation,skipAnimations,entries){
   let track;
   if(previous&&previous.generation===generation&&!skipAnimations){
    track=previous;
-   IDFAgoraBadgeRoll.load(track,badgeState,entries,performance.now(),(step,last)=>last?image:renderIndexedBadge(step),IDFAgoraBadgeIndex);
+   IDFAgoraBadgeRoll.load(track,badgeState,entries,animationNow(),(step,last)=>last?image:renderIndexedBadge(step),IDFAgoraBadgeIndex);
    track.signature=signature;
   }else{
    const blank={line:'0',badge:false},from=badgeCanvas();drawAgoraBadgeTexture(false,from.getContext('2d'));
    track={signature,generation,image:skipAnimations?image:from,imageState:skipAnimations?badgeState:blank,roll:null,queue:[],badgeState:skipAnimations?badgeState:blank};
-   if(!skipAnimations&&badgeState.badge)IDFAgoraBadgeRoll.load(track,badgeState,entries,performance.now(),(step,last)=>last?image:renderIndexedBadge(step),IDFAgoraBadgeIndex);
+   if(!skipAnimations&&badgeState.badge)IDFAgoraBadgeRoll.load(track,badgeState,entries,animationNow(),(step,last)=>last?image:renderIndexedBadge(step),IDFAgoraBadgeIndex);
    else{track.image=image;track.imageState=badgeState;track.badgeState=badgeState;}
   }
   badgeTracks.delete(context);badgeTracks.set(context,track);activeBadgeTrack=track;
@@ -497,12 +505,12 @@ document.querySelectorAll('.template').forEach(t=>t.onclick=()=>{
  Object.assign(palette,{text:colors[currentColor],number:'#fffef4',outline:'#000000',background:'#000000',inactive:'#0d100e'});
  for(const key of Object.keys(palette))colorControls[key](palette[key]);
  $('#routeColor').value=t.dataset.background||(currentColor==='yellow'?'#238ab4':'#dd2444');syncRoute($('#routeColor').value);
- $('#partial').checked=t.dataset.partial==='true';$('#blink').checked=true;blinkEpoch=performance.now();
+ $('#partial').checked=t.dataset.partial==='true';$('#blink').checked=true;blinkEpoch=animationNow();
  $('#fontChoice').value='Girouette';$('#align').value='center';$('#wrap').checked=true;$('#routeBox').checked=true;$('#scanBox').checked=true;$('#size').value=100;
  document.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('active',x.dataset.color===currentColor));update();
 });
-function frame(now){if(!running)return;let w=draw();const space=813;offset=(offset+Math.min(50,now-last)*$('#speed').value*.025)%(space+w+24);last=now;requestAnimationFrame(frame)}
-$('#animateBtn').onclick=()=>{if(running||!dest.value)return;offset=0;running=true;last=performance.now();requestAnimationFrame(frame)};
+function frame(now){if(!running)return;now=animationNow();let w=draw();const space=813;offset=(offset+Math.min(50,now-last)*$('#speed').value*.025)%(space+w+24);last=now;requestAnimationFrame(frame)}
+$('#animateBtn').onclick=()=>{if(running||!dest.value)return;offset=0;running=true;last=animationNow();requestAnimationFrame(frame)};
 $('#stopBtn').onclick=()=>{running=false;offset=0;draw()};
 $('#fullscreenBtn').onclick=()=>$('#sign').requestFullscreen?.();
 const save=document.createElement('button');save.className='btn';save.textContent='Exporter PNG';$('.toolbar').append(save);
@@ -543,8 +551,10 @@ window.IDFGirouette={revision:0,ready:false,resumeVersion:1,
   // Menus/LOD freeze the producer. Preserve every queued load and compensate
   // for hidden time so returning to the bus does not silently skip the roller.
   const previous=badgeTracks.get(String(options.context||'local'));
-  if(previous?.roll)previous.roll.start+=Math.max(0,Number(options.elapsedMs)||0);
-  destinationTracks.get(String(options.context||'local'))?.resume(options.elapsedMs);
+  if(!animationPaused){
+   if(previous?.roll)previous.roll.start+=Math.max(0,Number(options.elapsedMs)||0);
+   destinationTracks.get(String(options.context||'local'))?.resume(options.elapsedMs);
+  }
   textureKey='';return refreshGirouette(state,{...options,skipAnimations:false});
  },
  retainContexts:keys=>{const live=new Set(keys);for(const tracks of [badgeTracks,destinationTracks])for(const key of tracks.keys())if(!live.has(key))tracks.delete(key);},
@@ -552,6 +562,7 @@ window.IDFGirouette={revision:0,ready:false,resumeVersion:1,
 // State arrives directly from the plugin's renderer, without a cross-origin localhost request.
 async function refreshGirouette(state,options={}){
  try{if(!state||typeof state.enabled!=='boolean')throw Error('Invalid girouette state');
+  pauseSignAnimation(state.animationsPaused===true);
   const context=String(options.context||'local');
   const key=JSON.stringify([context,state]);if(key===textureKey)return true;
   const update=++textureUpdate;

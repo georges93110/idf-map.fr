@@ -117,6 +117,42 @@ var saeivBoardingValidationAudio = null;
 var saeivBoardingValidationToken = 0;
 var saeivBoardingValidationQueue = [];
 var saeivBoardingValidationBusy = false;
+// Largest declared percentages have priority. Below 100, share the remainder
+// among unspecified weights, otherwise top up the smallest. Above 100, trim
+// the smallest first (80+40 -> 80+20). Keep all four outcome families separate.
+function saeivValidationWeights(files) {
+  var rows=files.map(function(file){var m=String(file).match(/^(Pass|Error)(_Ticket)?(?:_(.*))?\.mp3$/i);
+    if(!m)return null;var n=m[3]===undefined?NaN:Number(m[3].replace(',','.'));
+    return {file:file,declared:Number.isFinite(n)&&n>=0?n:null,weight:0};
+  }).filter(Boolean).sort(function(a,b){return (b.declared||0)-(a.declared||0)||a.file.localeCompare(b.file);});
+  var left=100;
+  rows.forEach(function(r){if(r.declared!==null){r.weight=Math.min(left,r.declared);left-=r.weight;}});
+  var unknown=rows.filter(function(r){return r.declared===null;});
+  if(unknown.length)unknown.forEach(function(r){r.weight=left/unknown.length;});
+  else if(rows.length)rows[rows.length-1].weight+=left;
+  return rows;
+}
+function saeivValidationFiles(pack,outcome) {
+  var prefix='sounds/bus/validations/'+pack+'/',files=[];
+  if(typeof convoyClipCatalog==='object')Object.keys(convoyClipCatalog).forEach(function(id){
+    var path=convoyClipCatalog[id];if(typeof path!=='string'||path.indexOf(prefix)!==0)return;
+    var file=path.slice(prefix.length),m=file.match(/^(Pass|Error)(_Ticket)?(?:_[a-z0-9.,+-]+)?\.mp3$/i);
+    if(m&&(m[1]+(m[2]||'')).toLowerCase()===outcome.toLowerCase()&&files.indexOf(file)<0)files.push(file);
+  });
+  if(!files.length)files.push(outcome+'.mp3');
+  return files;
+}
+function saeivValidationPool(pack,outcome) {
+  return Promise.all(saeivValidationFiles(pack,outcome).map(function(file){var url=buildSaeivBusSoundUrl('validations',pack,file.slice(0,-4));
+    return Promise.resolve(probeSaeivSoundFileAvailability(url)).then(function(ok){return ok?file:null;}).catch(function(){return null;});
+  })).then(function(found){return saeivValidationWeights(found.filter(Boolean));});
+}
+function saeivValidationPick(rows,roll) {
+  if(rows.length===1)return rows[0].file;
+  var point=Math.max(0,Math.min(.999999999,roll===undefined?Math.random():roll))*100;
+  for(var i=0;i<rows.length;i++){point-=rows[i].weight;if(point<0)return rows[i].file;}
+  return '';
+}
 function playSaeivBoardingValidationSound(boarded, outcome) {
   if (boarded <= 0 || typeof Audio !== "function" || saeivPassengerValidationSoundsEnabled !== true) return;
   var config = getActiveSaeivLineAudioConfig();
@@ -139,12 +175,11 @@ function processSaeivBoardingValidationQueue() {
   var valid=function(){var current=getActiveSaeivLineAudioConfig();return saeivPassengerValidationSoundsEnabled===true &&
     next.key===String(saeivRouteState&&saeivRouteState.selectedKey||"") && current.validationSoundsAllowed!==false && current.validationSoundPack===next.pack;};
   if(!valid()){processSaeivBoardingValidationQueue();return;}
-  var url=buildSaeivBusSoundUrl("validations",next.pack,next.result);
-  if(!url){processSaeivBoardingValidationQueue();return;}
   var token=++saeivBoardingValidationToken,finished=false;saeivBoardingValidationBusy=true;
   var finish=function(){if(finished)return;finished=true;saeivBoardingValidationBusy=false;saeivBoardingValidationAudio=null;processSaeivBoardingValidationQueue();};
-  probeSaeivSoundFileAvailability(url).then(function(exists){
-    if(!exists||token!==saeivBoardingValidationToken||!valid()){finish();return;}
+  saeivValidationPool(next.pack,next.result).then(function(pool){
+    var file=saeivValidationPick(pool),url=file&&buildSaeivBusSoundUrl('validations',next.pack,file.slice(0,-4));
+    if(!url||token!==saeivBoardingValidationToken||!valid()){finish();return;}
     var audio=createBusSpatialAudio(url,"validator");saeivBoardingValidationAudio=audio;
     setBusAudioLevel(audio,.5);audio.onended=audio.onerror=finish;
     try{Promise.resolve(audio.play()).catch(finish);}catch(_){finish();}

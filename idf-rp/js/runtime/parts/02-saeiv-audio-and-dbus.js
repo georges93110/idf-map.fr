@@ -481,13 +481,19 @@ var saeivLumiplanJourney = new LumiplanJourney();
         var folder=getSaeivGlobalAudioFolderNameForCurrentState();
         var family=String(folder||"RATP").replace(/\s*\([^)]*\)\s*$/, "").trim().toLowerCase();
         var list=typeof nativeBusSettingsState!=="undefined"&&nativeBusSettingsState.current&&nativeBusSettingsState.current.announcements;
+        // ICS belongs to the Agora. Keep the general catalogue untouched for
+        // other vehicles; resolve the old recording before applying the label.
+        var legacy=family==='ratp', cleanLegacy=function(s){return String(s||'').replace(/\s*\(Ancien\)\s*/ig,' ').trim();};
+        var clips=saeivGlobalAudioState.key===folder?saeivGlobalAudioState.urls.map(function(url,i){return {label:saeivGlobalAudioState.labels[i],url:url};}).filter(function(a){return !legacy||/\(Ancien\)/i.test(a.label);}):[];
         return [1,2,3,4].map(function(number){
           var bound=(Array.isArray(list)?list:[]).filter(function(a){return a.key&&(a.key.vk===48+number||a.key.vk===96+number)&&String(a.family).toLowerCase()===family;})
             .sort(function(a,b){return (a.key.mods||0)-(b.key.mods||0);})[0];
-          if(bound&&/^sounds\/bus\/voix_bus\/annonces\/[^.][^\\]*\.mp3$/i.test(bound.path)&&bound.path.split("/").indexOf("..")<0)
-            return {label:bound.label,url:bound.path.split("/").map(encodeURIComponent).join("/")};
-          var index=number-1;
-          return saeivGlobalAudioState.key===folder&&saeivGlobalAudioState.urls[index]?{label:saeivGlobalAudioState.labels[index],url:saeivGlobalAudioState.urls[index]}:null;
+          if(bound&&/^sounds\/bus\/voix_bus\/annonces\/[^.][^\\]*\.mp3$/i.test(bound.path)&&bound.path.split("/").indexOf("..")<0){
+            if(!legacy)return {label:bound.label,url:bound.path.split("/").map(encodeURIComponent).join("/")};
+            var old=clips.find(function(a){return cleanLegacy(a.label).toLowerCase()===cleanLegacy(bound.label).toLowerCase();});
+            if(old)return {label:cleanLegacy(old.label),url:old.url};
+          }
+          var chosen=clips[number-1];return chosen?{label:legacy?cleanLegacy(chosen.label):chosen.label,url:chosen.url}:null;
         });
       }
       function applySaeivGlobalAudioStateToPayload(payload) {
@@ -823,8 +829,8 @@ var saeivLumiplanJourney = new LumiplanJourney();
         if (!safeName || /^(?:false|true|0|1)$/i.test(safeName)) return "";
         if (["arret_demande", "validations", "pcc", "start_line"].indexOf(category) < 0) return "";
         if (category === "validations") {
-          if (clip !== "Pass" && clip !== "Error") return "";
-          return "./sounds/bus/validations/" + encodeURIComponent(safeName) + "/" + clip + ".mp3";
+          if (!/^(?:Pass|Error)(?:_Ticket)?(?:_[a-z0-9.,+-]+)?$/i.test(String(clip))) return "";
+          return "./sounds/bus/validations/" + encodeURIComponent(safeName) + "/" + encodeURIComponent(clip) + ".mp3";
         }
         return "./sounds/bus/" + category + "/" + encodeURIComponent(safeName) + ".mp3";
       }

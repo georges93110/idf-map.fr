@@ -9,6 +9,66 @@ var nativePassengerValidationEpoch = null;
 var nativePassengerValidationCount = 0;
 var nativePassengerFareAudio = null;
 var nativePassengerSelectionSerial = 0;
+var nativePassengerValidationFiles = null;
+function nativePassengerValidationAudio() {
+  var config=typeof getActiveSaeivLineAudioConfig==='function'?getActiveSaeivLineAudioConfig():{};
+  var pack=config.validationSoundsAllowed===false?'':config.validationSoundPack;
+  if(!pack||typeof buildSaeivBusSoundUrl!=='function'||typeof probeSaeivSoundFileAvailability!=='function'){
+    nativePassengerValidationFiles=null;return {pass:false,error:false};
+  }
+  var outcomes=['Pass','Error','Pass_Ticket','Error_Ticket'];
+  var urls=outcomes.map(function(outcome){return saeivValidationFiles(pack,outcome);});
+  var key=JSON.stringify([nativePassengerMissionKey(),pack,urls]),record=nativePassengerValidationFiles,now=Date.now();
+  if(!record||record.key!==key){record=nativePassengerValidationFiles={key:key,pass:false,error:false,pending:false,checkAt:0};}
+  if(!record.pending&&now>=record.checkAt){
+    record.pending=true;record.checkAt=now+30000;
+    Promise.all(outcomes.map(function(outcome){return saeivValidationPool(pack,outcome).then(function(pool){return pool.length>0;});})).then(function(found){
+      if(nativePassengerValidationFiles!==record)return;
+      record.pending=false;record.pass=found[0]===true;record.error=found[1]===true;
+      record.passTicket=found[2]===true;record.errorTicket=found[3]===true;
+      syncNativePassengers(true);
+    });
+  }
+  var enabled=typeof saeivPassengerValidationSoundsEnabled==='undefined'||saeivPassengerValidationSoundsEnabled===true;
+  return {pass:enabled&&record.pass,error:enabled&&record.error,passTicket:enabled&&!!record.passTicket,errorTicket:enabled&&!!record.errorTicket,playback:true};
+}
+var nativeValidationPlayback=new Map();
+function playNativeValidationRequests(message) {
+  var s=message.snapshot,key=String(s.epoch)+':'+message.missionKey,alive=new Set();
+  function ack(r,state){if(!telemetryWs||telemetryWs.readyState!==1||nativePassengerMissionKey()!==r.mission)return;
+    telemetryWs.send(JSON.stringify({type:'nativePassengerCommand',version:1,action:'validationPlayback',missionKey:r.mission,actor:r.actor,token:r.token,state:state}));}
+  (Array.isArray(s.validationRequests)?s.validationRequests:[]).slice(0,256).forEach(function(v){
+    if(!Array.isArray(v)||![4,7].includes(v.length)||!v.slice(0,4).every(Number.isInteger)||v[0]<1||v[1]<1||v[2]<1||v[2]>2||v[3]<0||v[3]>7)return;
+    if(v.length===7&&!v.slice(4).every(function(n){return Number.isFinite(n)&&Math.abs(n)<30;}))return;
+    var position=(Array.isArray(s.validationPositions)?s.validationPositions:[]).find(function(p){return Array.isArray(p)&&p.length===5&&p[0]===v[0]&&p[1]===v[1]&&p.slice(2).every(function(n){return Number.isFinite(n)&&Math.abs(n)<30;});});
+    var reader=position?position.slice(2):v.length===7?v.slice(4):null;
+    var id=key+':'+v[0]+':'+v[1];alive.add(id);var r=nativeValidationPlayback.get(id);
+    if(r){if(Date.now()>r.deadline&&!r.finished){r.finished=true;if(r.audio)r.audio.pause();}if(Date.now()-r.ackAt>=300){r.ackAt=Date.now();ack(r,r.finished?2:1);}return;}
+    r={mission:message.missionKey,actor:v[0],token:v[1],ackAt:Date.now(),deadline:Date.now()+120000,finished:false,audio:null};nativeValidationPlayback.set(id,r);ack(r,1);
+    var config=getActiveSaeivLineAudioConfig(),pack=config.validationSoundPack;
+    var outcome=v[2]===2?'Error':'Pass';if(v[3]>=2&&v[3]<=4)outcome+='_Ticket';
+    var finish=function(){r.finished=true;try{ack(r,2);}catch(_){}};
+    if(!pack||config.validationSoundsAllowed===false||saeivPassengerValidationSoundsEnabled!==true){finish();return;}
+    saeivValidationPool(pack,outcome).then(function(pool){
+      if(nativeValidationPlayback.get(id)!==r||r.mission!==nativePassengerMissionKey())return;
+      var file=saeivValidationPick(pool);if(!file){finish();return;}
+      var audio=r.audio=createBusSpatialAudio(buildSaeivBusSoundUrl('validations',pack,file.slice(0,-4)),'validator');
+      if(reader&&typeof busSpatialAudio!=='undefined'){
+        var spatial=busSpatialAudio.records.get(audio);if(spatial)spatial.validatorSource=reader;
+      }
+      setBusAudioLevel(audio,.5);audio.onended=audio.onerror=finish;
+      try{Promise.resolve(audio.play()).catch(finish);}catch(_){finish();}
+    }).catch(finish);
+  });
+  // The 1.5-second physical gesture does not chop the tail of a longer beep.
+  nativeValidationPlayback.forEach(function(r,id){if(!alive.has(id)&&(r.finished||r.mission!==message.missionKey||Date.now()>r.deadline)){
+    nativeValidationPlayback.delete(id);if(r.audio){r.audio.onended=r.audio.onerror=null;r.audio.pause();}
+  }});
+}
+function clearNativeValidationPlayback(){
+  nativeValidationPlayback.forEach(function(r){if(r.audio){r.audio.onended=r.audio.onerror=null;r.audio.pause();}});
+  nativeValidationPlayback.clear();
+}
 // Only real local playback calls this; previews and other Convoy buses do not.
 function nativePassengerMoveBackAnnouncement(title) {
   if(!/fond/i.test(String(title||""))||!saeivRouteState||saeivRouteState.started!==true||
@@ -119,6 +179,7 @@ function buildNativePassengerPayload() {
   var state=saeivPassengerState,capacity=getSaeivActiveCapacityState(saeivVehicleName);
   var count=function(v){return Math.max(0,Math.min(500,Math.floor(Number(v)||0)));};
   return {type:"nativePassengers",version:2,enabled:true,missionKey:mission,stopKey:key,
+    validationAudio:nativePassengerValidationAudio(),
     preview:saeivRouteState.started!==true,terminal:saeivRouteState.started===true&&index===stops.length-1,
     nextStop:nativePassengerNextPlan(stops,index,mission),service:sharedPassengerServiceMetadata(stops,index),
     // A late browser callback is not an SCS pause. The DLL checks its live
@@ -148,6 +209,7 @@ function receiveNativePassengerStatus(message) {
   if(typeof receivePassengerCabinAudio==='function')receivePassengerCabinAudio(message);
   window.GAME2_MANAGER.nativePassengerStatus=message;
   var s=message.snapshot;
+  if(!s||s.validationPlayback!==true||message.missionKey!==nativePassengerMissionKey()||saeivRouteState.started!==true)clearNativeValidationPlayback();
   if(message.status!=="active"||!s||message.stopKey!==nativePassengerStopKey()||message.missionKey!==nativePassengerMissionKey()||saeivRouteState.started!==true)return;
   nativePassengerLockedMission=message.missionKey;
   // Missed exits are carried into this stop by the DLL. Adopt its totals before
@@ -164,6 +226,7 @@ function receiveNativePassengerStatus(message) {
     if(validTotal(s.board,s.boardDone))saeivPassengerState.plannedStopBoardingTotal=s.board;
     if(validTotal(s.alight,s.alightDone))saeivPassengerState.plannedStopAlightingTotal=s.alight;
   }
+  if(s.validationPlayback===true&&!s.windowTransfer){if(message.ready&&s.lease)playNativeValidationRequests(message);return;}
   if(s.fareVersion===1 && Number.isSafeInteger(s.farePassSounds) && s.farePassSounds>=0 && Number.isSafeInteger(s.fareErrorSounds) && s.fareErrorSounds>=0){
     var key=String(s.epoch)+":"+message.missionKey,previous=nativePassengerFareAudio;
     var accepted=previous&&previous.key===key?Math.max(0,s.farePassSounds-previous.accepted):0;

@@ -51,7 +51,8 @@ function busAudioReady(record) {
   var a = nativeGameAudio, s = busSpatialAudio;
   if (record.kind === "previewAnnouncement" || record.kind === "serviceSelection") return a.seen && a.available && Date.now()-a.stamp<2000;
   return a.seen && a.available && Date.now()-a.stamp < 2000 && s.seen &&
-    Date.now()-s.stamp < 1500 && s.telemetry && s.telemetry.audioCameraAvailable && !s.telemetry.paused;
+    Date.now()-s.stamp < 1500 && s.telemetry && (record.kind === "nativeWalkStep" && typeof s.telemetry.walkAudioAvailable === "boolean"
+      ? s.telemetry.walkAudioAvailable : s.telemetry.audioCameraAvailable) && !s.telemetry.paused;
 }
 function reportBusAudio(record, event, error) {
   var s=busSpatialAudio, a=nativeGameAudio, now=Date.now();
@@ -94,14 +95,21 @@ function resumeBusAudioContext() {
     state.resumeWarned = true;
   }); } catch (error) { console.warn("[Bus audio] Audio context unavailable", error); }
 }
-function busSpatialMix(kind, data) {
+function busSpatialMix(kind, data, validatorSource) {
+  if(kind==="nativeWalkStep"){
+    var available=data&&(typeof data.walkAudioAvailable==="boolean"?data.walkAudioAvailable:data.audioCameraAvailable);
+    if(!available||data.paused||!data.walkActive||data.passengerEffectsEnabled===false)return {gain:0,cutoff:14000,pan:0};
+    var distance=Number.isFinite(data.walkAudioDistance)?Math.max(0,data.walkAudioDistance):1.7;
+    return {gain:1/(1+Math.pow(Math.max(0,distance-1.7)/2.2,2)),cutoff:14000,
+      pan:Number.isFinite(data.walkAudioPan)?Math.max(-.9,Math.min(.9,data.walkAudioPan)):0};
+  }
   if (!data || !data.audioCameraAvailable || data.paused) return { gain: 0, cutoff: 650, pan: 0 };
-  if(kind==="nativeWalkStep")return {gain:data.walkActive===true&&data.passengerEffectsEnabled!==false?1:0,cutoff:14000,pan:0};
   var inside = data.audioCameraInside === true;
   var source = inside && kind !== "validator" ? "audioAnnouncement" : "audioFrontDoor";
-  var dx = data[source + "X"] - data.audioCameraX;
-  var dy = data[source + "Y"] - data.audioCameraY;
-  var dz = data[source + "Z"] - data.audioCameraZ;
+  var reader=kind==='validator'&&Array.isArray(validatorSource)&&validatorSource.length===3&&validatorSource.every(Number.isFinite)?validatorSource:null;
+  var dx = (reader?reader[0]:data[source + "X"]) - data.audioCameraX;
+  var dy = (reader?reader[1]:data[source + "Y"]) - data.audioCameraY;
+  var dz = (reader?reader[2]:data[source + "Z"]) - data.audioCameraZ;
   var distance = Math.hypot(dx, dy, dz);
   if (!Number.isFinite(distance)) return { gain: 0, cutoff: 650, pan: 0 };
   var opening = Math.max(0, Math.min(1, Number(data.busEntryDoorPosition) || 0));
@@ -118,7 +126,7 @@ function updateBusSpatialRecord(record) {
   var state = busSpatialAudio;
   // Keep ordinary playback for an older DLL. Once native support was seen,
   // stale/disconnected camera data must never keep sounding at full volume.
-  var mix = (record.kind === "previewAnnouncement" || record.kind === "serviceSelection") ? {gain:1,cutoff:20000,pan:0} : state.seen ? busSpatialMix(record.kind, Date.now() - state.stamp < 1500 ? state.telemetry : null) : { gain: 1, cutoff: 20000, pan: 0 };
+  var mix = (record.kind === "previewAnnouncement" || record.kind === "serviceSelection") ? {gain:1,cutoff:20000,pan:0} : state.seen ? busSpatialMix(record.kind, Date.now() - state.stamp < 1500 ? state.telemetry : null,record.validatorSource) : { gain: 1, cutoff: 20000, pan: 0 };
   if(record.kind==='passengerStep')
     mix=typeof passengerCabinMix==='function'&&typeof passengerCabinReady==='function'&&passengerCabinReady()
       ?passengerCabinMix(record.kind,record.passenger,state.telemetry):{gain:0,cutoff:10000,pan:0};
@@ -129,7 +137,9 @@ function updateBusSpatialRecord(record) {
   if (record.gain) {
     record.audio.volume = Math.max(0, Math.min(1, volume));
     var t = state.context.currentTime;
-    record.gain.gain.setTargetAtTime(mix.gain * boost, t, .075);
+    if(record.kind==="nativeWalkStep"&&!record.walkMixSet){
+      record.gain.gain.setValueAtTime(mix.gain*boost,t);record.walkMixSet=true;
+    }else record.gain.gain.setTargetAtTime(mix.gain * boost, t, .075);
     record.filter.frequency.setTargetAtTime(mix.cutoff, t, .075);
     if (record.pan) record.pan.pan.setTargetAtTime(mix.pan, t, .075);
   } else record.audio.volume = Math.max(0, Math.min(1, volume * mix.gain * boost));
@@ -139,11 +149,11 @@ function updateBusSpatialAudioTelemetry(raw) {
   updateNativeGameAudio(data);
   if (!data || typeof data.audioCameraAvailable !== "boolean") return;
   var filtered = {};
-  Object.keys(data).forEach(function (key) { if (/^audio/.test(key) || key === "paused" || key === "busEntryDoorPosition" || key === "passengerEffectsEnabled" || /^walk(?:Active|Steps|Running)$/.test(key)) filtered[key] = data[key]; });
+  Object.keys(data).forEach(function (key) { if (/^audio/.test(key) || key === "paused" || key === "busEntryDoorPosition" || key === "passengerEffectsEnabled" || /^walk(?:Active|Steps|Running|Crouched|StepAgeMs|AudioAvailable|AudioDistance|AudioPan)$/.test(key)) filtered[key] = data[key]; });
   busSpatialAudio.stamp = Number.isFinite(data.audioCameraTimestamp) ? Math.min(Date.now(), data.audioCameraTimestamp) : Date.now();
   filtered.audioCameraTimestamp = busSpatialAudio.stamp;
   busSpatialAudio.telemetry = filtered; busSpatialAudio.seen = true;
-  if (filtered.audioCameraAvailable && !filtered.paused) resumeBusAudioContext();
+  if ((filtered.audioCameraAvailable || filtered.walkAudioAvailable) && !filtered.paused) resumeBusAudioContext();
   tickBusAudio();
   if(typeof tickPassengerCabinAudio==='function')tickPassengerCabinAudio();
   if(typeof receiveNativeWalkAudio==='function')receiveNativeWalkAudio(data);

@@ -3,11 +3,15 @@
 class IDFPCMCapture extends AudioWorkletProcessor {
   constructor() {
     super(); this.enabled = false; this.seq = 0; this.pending = 0; this.generation = 0;
+    this.transport = null;
     this.position = 0; this.previous = null; this.used = 0; this.buffer = new Float32Array(2048);
     this.port.onmessage = e => {
       if (e.data?.type === 'capture') {
         this.enabled = !!e.data.enabled; this.generation = e.data.generation; this.used = 0; this.position = 0; this.previous = null;
-      } else if (e.data?.type === 'ack') this.pending = Math.max(0, this.pending - 1);
+      } else if (e.data?.type === 'transport') {
+        this.transport?.close(); this.transport = e.data.port || null; this.pending = 0;
+        if (this.transport) this.transport.onmessage = e => { if (e.data?.type === 'ack') this.pending = Math.max(0, this.pending - 1); };
+      } else if (e.data?.type === 'ack' && !this.transport) this.pending = Math.max(0, this.pending - 1);
     };
   }
   sample(left, right) {
@@ -19,7 +23,7 @@ class IDFPCMCapture extends AudioWorkletProcessor {
     // A gap in sequence resets the receiving jitter buffer, never replays it.
     if (this.pending < 6) {
       const buffer = this.buffer.buffer;
-      this.port.postMessage({ seq: this.seq, pcm: buffer, time: currentTime, generation: this.generation }, [buffer]);
+      (this.transport || this.port).postMessage({ seq: this.seq, pcm: buffer, time: currentTime, generation: this.generation }, [buffer]);
       this.buffer = new Float32Array(2048); ++this.pending;
     }
     this.used = 0;
