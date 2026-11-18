@@ -21,17 +21,17 @@ Sources locales uniquement : aucun déploiement ni push n'est effectué par les 
 3. Conserver `data/player_stats.sqlite`, ou définir `DB_PATH` vers la base existante. La migration conserve les tables et les données de télémétrie et de lignes.
 4. Configurer le fichier de démarrage de l'hébergeur sur **`server.js`**, puis démarrer avec `npm start` ou `node server.js`. `WS_PORT` (ou `PORT`) vaut 9377 par défaut. L'écoute utilise `0.0.0.0` pour les hébergements en conteneur ; `WS_HOST=127.0.0.1` permet une écoute locale si le proxy est sur le même hôte.
 5. Le proxy de `panel.idf-map.fr` doit transmettre l'upgrade WebSocket de `/idfmap/ws/native/` au serveur. Le chemin intégral et `/` après suppression du préfixe sont acceptés.
-6. Déployer aussi les fichiers modifiés du site, dont `idf-rp/js/runtime/game2-main.js` et les parties de son runtime. La DLL ne publie pas le site.
+6. Déployer les outils web modifiés sur le site, notamment la carte d’administration et ses dépendances. Le runtime du plugin est embarqué dans le core et ne se déploie plus sur le site. La DLL ne publie pas le site.
 
 Les messages historiques de télémétrie, PCC et widgets restent relayés. Les messages `convoy.*` ne passent jamais dans ce relais global : ils sont filtrés par session, liste native des participants, compatibilité des ressources et distance.
 
 ## Annonces audio (convoy.4)
 
-Mettre à jour le site (runtime et `01c-convoy-audio-catalog.js`), le relais (`convoy/protocol.cjs`) et la DLL/runtime chez les joueurs. Aucun déploiement automatique n'est effectué ici. L'ancien relais ignore les nouveaux événements d'annonces.
+Mettre à jour le relais (`convoy/protocol.cjs`) et le core chez les joueurs. Le runtime et son catalogue audio sont embarqués dans le core. Aucun déploiement automatique n'est effectué ici. L'ancien relais ignore les nouveaux événements d'annonces.
 
 Les annonces de destination, d'arrêts, les annonces manuelles et les sons de validation/arrêt demandé sont émis au démarrage réel du son local. Les aperçus des paramètres, le bip de prise de service et les communications PCC restent privés. Les clips sont identifiés par un catalogue d'ID stables : aucun fichier ni URL arbitraire n'est reçu d'un joueur. La lecture tient compte de la distance (60 m maximum), de l'ouverture de la porte avant, du volume natif et de la pause ; une interruption ou une déconnexion arrête le son. Les événements anciens ne sont pas rejoués lors d'une reconnexion.
 
-Le catalogue se régénère avec `telemetry/tools/convoy_audio_catalog.cjs` à chaque compilation ; publier aussi sa version du site après ajout de sons. Le catalogue contient actuellement 177 fichiers approuvés.
+Le catalogue audio du plugin est généré lors de la préparation des ressources du core. L'index des annonces consultables sur la carte publique est distinct et reste généré par `scripts/build_fis_manifests.mjs` sur le site.
 
 `data/player_stats.sqlite` a été remis à zéro localement, avec sauvegarde séparée. Il contient le schéma complet et aucune statistique. Pour remplacer une base de production, arrêter le service puis sauvegarder l'ancienne base avec ses éventuels fichiers WAL/SHM avant installation ; ne pas écraser une base active.
 
@@ -127,6 +127,6 @@ Les jetons de montée sont confirmés à la porte ; les descendants restent prop
 à chaque bus. Les réponses sont limitées à cinq envois par seconde par joueur.
 
 Cette fonction demande une mise à jour puis un redémarrage de ce serveur Node,
-ainsi que la publication du runtime HTML correspondant. Compiler le plugin seul
+ainsi que la distribution du core contenant le runtime correspondant. Compiler le plugin seul
 ne met pas à jour le relais hébergé. Un ancien relais sans cette capacité conserve
 le fonctionnement local indépendant du plugin.

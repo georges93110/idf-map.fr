@@ -569,6 +569,7 @@
 
     function buildWazeUrl() {
       const url = new URL('../../gps_mini.html', location.href);
+      url.search = location.search;
       url.searchParams.set('waze_app', '');
       if (isHostDevMapMode()) url.searchParams.set('devmap', '1');
       return url.href;

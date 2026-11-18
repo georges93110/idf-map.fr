@@ -10587,7 +10587,7 @@
       } catch {}
     }
     function buildWazeModeUrl(){
-      const next = new URL("./idf-rp/widgets/waze.html", location.href);
+      const next = new URL("./idf-rp/widgets/apps/waze/index.html", location.href);
       if (SELECTED_VERSION) next.searchParams.set("version", SELECTED_VERSION);
       next.searchParams.set("bridge", "1");
       return next.toString();
