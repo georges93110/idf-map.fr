@@ -537,7 +537,24 @@ function girouetteText(value){
 }
 function girouetteOutline(color){const c=String(color).replace('#','');const n=parseInt(c,16);return ((n>>16)*.2126+((n>>8)&255)*.7152+(n&255)*.0722)>127?'#000000':'#ffffff';}
 let textureKey='',textureUpdate=0;
+let captureCanvas=null;
 window.IDFGirouette={revision:0,ready:false,resumeVersion:1,
+ frameCaptureVersion:1,
+ captureFrame:(scale=1,previousRevision=null)=>{
+  if(scale!==1&&scale!==.5)throw Error('Invalid sign capture scale');
+  window.IDFGirouette.renderFrame();
+  const result={revision:renderRevision,animating:signAnimating()};
+  if(previousRevision===renderRevision)return result;
+  let source=output;
+  if(scale!==1){
+   captureCanvas??=document.createElement('canvas');
+   const width=output.width*scale,height=output.height*scale;
+   if(captureCanvas.width!==width||captureCanvas.height!==height){captureCanvas.width=width;captureCanvas.height=height;}
+   const context=captureCanvas.getContext('2d');context.clearRect(0,0,width,height);context.drawImage(output,0,0,width,height);source=captureCanvas;
+  }
+  result.png=source.toDataURL('image/png').slice('data:image/png;base64,'.length);
+  return result;
+ },
  setFrameRate:fps=>{
   if(!IDFGirouetteFrameRate.set(fps))return false;
   externalBadgeFrames=true;cancelAnimationFrame(badgeAnimationFrame);badgeAnimationFrame=0;return true;

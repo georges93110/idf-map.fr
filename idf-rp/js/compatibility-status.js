@@ -4,7 +4,8 @@
     mode: 'Menus Bus', hud: 'HUD', gps: 'GPS', models: 'Modèles et passagers',
     textures: 'Textures et écrans HTML', saeiv: 'Interaction SAEIV', horn: 'Klaxons', audio: 'Réglages audio' });
   const readingLabels = Object.freeze({ language: 'Langue du jeu', convoyIdentity: 'Identification du Convoi', convoyVehicles: 'Véhicules du Convoi', convoyDoors: 'Portes des véhicules du Convoi',
-    console: 'Commandes console', graphics: 'Qualité graphique', convoyJoin: 'Connexion au Convoi IDF', trafficSafety: 'Protection du trafic' });
+    console: 'Commandes console', graphics: 'Qualité graphique', convoyJoin: 'Connexion au Convoi IDF', trafficSafety: 'Protection du trafic',
+    walk: 'Marche', passengerTraffic: 'Trafic et passagers', busLaneChange: 'Dépassement des bus', trafficControl: 'Contrôle du trafic' });
   let node, lastText = '', expiry;
   function normalize(message) {
     if (!message || message.type !== 'nativeCompatibilityBackend' || message.protocol !== 1 ||

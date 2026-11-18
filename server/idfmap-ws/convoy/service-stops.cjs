@@ -22,7 +22,7 @@ class ServiceStops{
  constructor({now=Date.now,compatible=()=>true}={}){this.now=now;this.compatible=compatible;this.actors=new Map();this.pools=new Map();this.serial=0;}
  update(id,plan,pose,doors,speed){
   const old=this.actors.get(id);
-  if(!plan){if(old)this.remove(id);return;}
+  if(!plan||plan.last<3){if(old)this.remove(id);return;}
   const same=old&&old.plan.run===plan.run&&old.plan.index===plan.index&&old.plan.service===plan.service;
   const actor={id,plan,pose,doors,speed,at:this.now(),arrived:same?old.arrived:0,pool:same?old.pool:null};
   if(plan.atStop&&P.distance(pose,plan.pose)<=40&&Math.abs(pose.y-plan.pose.y)<=4&&Math.abs(speed)<.2&&doors.some(x=>x>=.5))actor.arrived=actor.arrived||this.now()+1;

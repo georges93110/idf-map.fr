@@ -2277,8 +2277,12 @@
 
   <script src="../js/runtime/parts/01a-bus-spatial-audio.js?v=bus-coach-2"></script>
   <script src="../config/line-config.js?v=route-assets-20261020"></script>
+  <script src="saeiv-locale.js"></script>
   <script>
     (() => {
+      const saeivLocale = IdfSaeivLocale.create(new URLSearchParams(location.search).get("language"));
+      const saeivText = saeivLocale.t;
+      saeivLocale.bind(document);
       // Local IDF bridge: automatic endpoint discovery.
       const SAEIV_REG_PANEL_WS_URL = "wss://panel.idf-map.fr/idfmap/ws/native/";
       const WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
@@ -2606,13 +2610,13 @@
         const isEndService = hasActiveServiceRoute(payload);
         serviceCompleteMenuBtnEl.setAttribute(
           "aria-label",
-          isEndService ? "Fin de service" : "Prise de service complete"
+          isEndService ? saeivText("Fin de service") : saeivText("Prise de service complete")
         );
         serviceCompleteMenuBtnEl.setAttribute("data-service-mode", isEndService ? "end" : "start");
         if (serviceCompleteMenuLabelEl) {
           serviceCompleteMenuLabelEl.innerHTML = isEndService
-            ? "Fin de service"
-            : "Prise de service<br>complète";
+            ? saeivText("Fin de service")
+            : saeivText("Prise de service<br>complète");
         }
       }
 
@@ -2698,7 +2702,7 @@
         if (!targetDoc) return;
         targetDoc.head.innerHTML = "";
         const titleEl = targetDoc.createElement("title");
-        titleEl.textContent = document.title || "Ecran SAEIV";
+        titleEl.textContent = document.title || saeivText("Ecran SAEIV");
         targetDoc.head.appendChild(titleEl);
         document.querySelectorAll("style, link[rel='stylesheet']").forEach((node) => {
           targetDoc.head.appendChild(node.cloneNode(true));
@@ -2719,7 +2723,7 @@
         if (pipDrawerEl) pipDrawerEl.hidden = hideDrawer;
         if (pipToggleBtnEl) {
           pipToggleBtnEl.hidden = hideDrawer;
-          pipToggleBtnEl.textContent = pipHudWindow ? "Quitter PIP" : "Mode PIP";
+          pipToggleBtnEl.textContent = pipHudWindow ? saeivText("Quitter PIP") : saeivText("Mode PIP");
         }
         if (pipHostNoticeEl) {
           const showHostNotice = isHostWithPipOpen;
@@ -2730,7 +2734,7 @@
         }
         if (pipHostQuitBtnEl) {
           pipHostQuitBtnEl.hidden = !isHostWithPipOpen;
-          pipHostQuitBtnEl.textContent = "Quitter PIP";
+          pipHostQuitBtnEl.textContent = saeivText("Quitter PIP");
         }
         if (hideDrawer) setPipDrawerOpen(false);
         updatePipAudioStopButton();
@@ -3446,15 +3450,15 @@
         callRegBtnEl.disabled = !SAEIV_REG_CALL_ENABLED || safeState === "sending" || (!busy && !available);
         callRegBtnEl.setAttribute("aria-disabled", callRegBtnEl.disabled ? "true" : "false");
         callRegBtnEl.dataset.callRegAvailable = available ? "true" : "false";
-        callRegBtnEl.title = !SAEIV_REG_CALL_ENABLED ? "Appel REG temporairement desactive" : (!busy && !available ? "Aucun CRIV connecte sur cette ligne" : "");
+        callRegBtnEl.title = !SAEIV_REG_CALL_ENABLED ? saeivText("Appel REG temporairement desactive") : (!busy && !available ? saeivText("Aucun CRIV connecte sur cette ligne") : "");
         const labelEl = callRegBtnEl.querySelector("span");
-        if (labelEl) labelEl.textContent = "APPEL REG";
+        if (labelEl) labelEl.textContent = saeivText("APPEL REG");
       }
 
       function flashCallRegButtonLabel(label, delayMs = 1600) {
         setCallRegButtonState("");
         window.setTimeout(() => {
-          if (!callRegRecording && !callRegStartInProgress) setCallRegButtonState("", "APPEL REG");
+          if (!callRegRecording && !callRegStartInProgress) setCallRegButtonState("", saeivText("APPEL REG"));
         }, Math.max(250, Number(delayMs) || 1600));
       }
 
@@ -3600,7 +3604,7 @@
         if (!callRegHoldActive) {
           callRegStartInProgress = false;
           stopCallRegMediaStream(stream);
-          setCallRegButtonState("", "APPEL REG");
+          setCallRegButtonState("", saeivText("APPEL REG"));
           return;
         }
         const mimeType = pickCallRegRecorderMimeType();
@@ -3689,7 +3693,7 @@
           finishCallRegRecording(cancelled === true);
           return;
         }
-        if (!callRegStartInProgress) setCallRegButtonState("", "APPEL REG");
+        if (!callRegStartInProgress) setCallRegButtonState("", saeivText("APPEL REG"));
       }
 
       function sanitizeLineCode(raw) {
@@ -4216,8 +4220,8 @@
         const agentVehicle = `${padServiceTriple(serviceSelectedRouteUid)}-${padServiceTriple(serviceSelectedVehicleNumber)}`;
         const terminus = parseServiceRouteTerminus(routeInfo && routeInfo.name);
         const mission = buildServiceMissionInitials(terminus);
-        if (serviceAcceptLineEl) serviceAcceptLineEl.textContent = `Ligne : ${lineLabel}`;
-        if (serviceAcceptAgentVehicleEl) serviceAcceptAgentVehicleEl.textContent = `Agent-Voiture : ${agentVehicle}`;
+        if (serviceAcceptLineEl) serviceAcceptLineEl.textContent = `${saeivText("Ligne")} : ${lineLabel}`;
+        if (serviceAcceptAgentVehicleEl) serviceAcceptAgentVehicleEl.textContent = `${saeivText("Agent-Voiture :")} ${agentVehicle}`;
         if (serviceAcceptMissionEl) serviceAcceptMissionEl.textContent = `Mission : ${mission}`;
       }
 
@@ -4346,10 +4350,10 @@
         if (serviceStepLabelEl) {
           serviceStepLabelEl.textContent =
             serviceCompleteStep === "vehicle"
-              ? "N° VOITURE"
+              ? saeivText("N° VOITURE")
               : (serviceCompleteStep === "route"
-                ? "N° AGENT"
-                : (serviceCompleteStep === "matricule" ? "N° MATRICULE" : "LIGNE"));
+                ? saeivText("N° AGENT")
+                : (serviceCompleteStep === "matricule" ? saeivText("N° MATRICULE") : saeivText("LIGNE")));
         }
         if (serviceLineInputEl) {
           const maxLength = serviceCompleteStep === "vehicle"
@@ -4359,10 +4363,10 @@
           serviceLineInputEl.setAttribute(
             "aria-label",
             serviceCompleteStep === "vehicle"
-              ? "Numero voiture"
+              ? saeivText("Numero voiture")
               : (serviceCompleteStep === "route"
-                ? "Numero agent"
-                : (serviceCompleteStep === "matricule" ? "Numero matricule" : "Ligne"))
+                ? saeivText("Numero agent")
+                : (serviceCompleteStep === "matricule" ? saeivText("Numero matricule") : saeivText("Ligne")))
           );
         }
         setServiceLineInputValue(options.value || "");
@@ -4923,7 +4927,7 @@
           updateDiffusionScrollButtons(0);
           const empty = document.createElement("div");
           empty.className = "diffusion-empty";
-          empty.textContent = "AUCUN FICHIER AUDIO DISPONIBLE";
+          empty.textContent = saeivText("AUCUN FICHIER AUDIO DISPONIBLE");
           diffusionGridEl.appendChild(empty);
           return;
         }
@@ -4945,7 +4949,7 @@
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "diffusion-btn";
-          btn.textContent = item.label;
+          btn.textContent = saeivLocale.announcement(item.label);
           btn.dataset.diffusionSlot = String(item.slot);
           btn.dataset.diffusionLabel = item.label;
           btn.dataset.diffusionUrl = String(item.url || "");
@@ -5031,6 +5035,12 @@
       }
 
       function renderState(payload) {
+        if (saeivLocale.setLanguage(payload?.language || payload?.lang || saeivLocale.language)) {
+          if (serviceLineInputEl) serviceLineInputEl.setAttribute("aria-label", saeivText(
+            serviceCompleteStep === "vehicle" ? "Numero voiture" : serviceCompleteStep === "route" ? "Numero agent" : serviceCompleteStep === "matricule" ? "Numero matricule" : "Ligne"));
+          if (serviceStepLabelEl) serviceStepLabelEl.textContent = saeivText(
+            serviceCompleteStep === "vehicle" ? "N° VOITURE" : serviceCompleteStep === "route" ? "N° AGENT" : serviceCompleteStep === "matricule" ? "N° MATRICULE" : "LIGNE");
+        }
         if (payload && payload.busAudioTelemetry) updateBusSpatialAudioTelemetry(payload.busAudioTelemetry);
         const data = withDevGlobalAudioFallback(payload);
         latestStatePayload = data;
@@ -5051,7 +5061,7 @@
           setLineMainCodeDisplay("", "");
           if (lineStopEl) lineStopEl.textContent = "";
           if (lineRefTimeEl) lineRefTimeEl.textContent = "00:00";
-          if (lineRefStopEl) lineRefStopEl.textContent = "Arrêt";
+          if (lineRefStopEl) lineRefStopEl.textContent = saeivText("Arrêt");
           resetLineRefMeta();
           if (stopAEl) stopAEl.textContent = "";
           if (stopBEl) stopBEl.textContent = "";
@@ -5108,7 +5118,7 @@
           setLineMainCodeDisplay("", "");
           if (lineStopEl) lineStopEl.textContent = "";
           if (lineRefTimeEl) lineRefTimeEl.textContent = "00:00";
-          if (lineRefStopEl) lineRefStopEl.textContent = "Arrêt";
+          if (lineRefStopEl) lineRefStopEl.textContent = saeivText("Arrêt");
           resetLineRefMeta();
           if (stopAEl) stopAEl.textContent = "";
           if (stopBEl) stopBEl.textContent = "";
@@ -5153,7 +5163,7 @@
         const hasStopBeforeBottomDot = (displayIndex - 2) >= 0;
         const lineCode = buildLineMainCode(data);
         const routeNumber = resolveHudRouteUid(data);
-        const currentStop = String(linkedCurrent || data.stopName || data.stopLabel || "Arrêt").trim() || "Arrêt";
+        const currentStop = String(linkedCurrent || data.stopName || data.stopLabel || saeivText("Arrêt")).trim() || saeivText("Arrêt");
         const terminusStop = String(
           data.terminusStopName ||
             data.terminus ||

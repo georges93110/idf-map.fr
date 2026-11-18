@@ -3,11 +3,13 @@
 (function(root){
 'use strict';
 const SCOPE='idf_game_widget_bridge_v1';
+const Locale=root.IdfSaeivLocale||(typeof require==='function'?require('./saeiv-locale.js'):null);
 const text=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
 const fit=(v,n)=>text(v).replace(/['’ʼ]/g,' ').slice(0,n).padEnd(n,' ');
 const initials=v=>text(v).split(/[^A-Z0-9]+/).filter(Boolean).map(w=>w[0]).join('').slice(0,3);
 class AgoraSaeiv {
- constructor(send,now=Date.now){this.send=send;this.now=now;this.state={};this.catalogue=[];this.page='home';this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.resume='home';this.pending=null;this.notice=['',''];this.noticeAt=0;this.clock='';this.power=true;this.at=0;this.audio=0;}
+ constructor(send,now=Date.now){this.locale=Locale.create();this.send=send;this.now=now;this.state={};this.catalogue=[];this.page='home';this.line='';this.service='';this.vehicle='';this.matricule='';this.expectedMatricule='';this.resume='home';this.pending=null;this.notice=['',''];this.noticeAt=0;this.clock='';this.power=true;this.at=0;this.audio=0;}
+ t(value){return this.locale.t(value);}
  post(type,extra={}){this.send({scope:SCOPE,channel:'saeiv',clientId:'native_agora',payload:{sourceId:'game',type,...extra}});}
  request(){this.post('saeiv:request_state');this.post('saeiv:catalog_request');}
  message(lines,resume='home'){this.resume=resume;this.notice=lines;this.noticeAt=this.now()+3500;this.page='notice';}
@@ -17,18 +19,18 @@ class AgoraSaeiv {
   const p=m.payload;
   if(p.type==='saeiv:catalog'){this.catalogue=Array.isArray(p.payload?.routes)?p.payload.routes:[];return;}
   if(p.type==='saeiv:state'){
-   const old=this.state;this.state=p.payload||{};this.at=this.now();
+   const old=this.state;this.state=p.payload||{};this.locale.setLanguage(this.state.language||this.state.lang||this.locale.language);this.at=this.now();
    if(this.audio>=this.audioItems().length)this.audio=0;
-   if(old.routeSelected&&!this.state.routeSelected&&this.page!=='waiting'){this.line='';this.service='';this.message(['SERVICE TERMINE','PRISE SERVICE']);}
-   if(this.state.routeCompleted&&!old.routeCompleted)this.message(['SERVICE TERMINE','TOUS DESCENDUS']);
+   if(old.routeSelected&&!this.state.routeSelected&&this.page!=='waiting'){this.line='';this.service='';this.message([this.t('SERVICE TERMINE'),this.t('PRISE SERVICE')]);}
+   if(this.state.routeCompleted&&!old.routeCompleted)this.message([this.t('SERVICE TERMINE'),this.t('TOUS DESCENDUS')]);
    return;
   }
   if(p.type==='saeiv:action_result'&&this.pending?.action===p.action){
    this.pending=null;
-   if(!p.ok){if(p.action==='start_route'&&this.state.routeSelected&&!this.state.routeCanStart){this.message(['SERVICE ACCEPTE','REJOINDRE LE DEPART']);this.request();return;}this.message([p.action==='start_route'?'DEPART NON AUTORISE':p.action==='clear_route'?'FIN NON VALIDEE':'SERVICE INDISPONIBLE',p.action==='start_route'?'REJOINDRE LE DEPART':'REESSAYER']);this.request();return;}
-   if(p.action==='select_route'){if(p.canStart===true&&!p.started&&!p.alreadyStarted){this.command('start_route');return;}this.message(['SERVICE ACCEPTE',p.started||p.alreadyStarted?'VALID : SUIVI':'REJOINDRE LE DEPART']);this.post('saeiv:request_state');return;}
+   if(!p.ok){if(p.action==='start_route'&&this.state.routeSelected&&!this.state.routeCanStart){this.message([this.t('SERVICE ACCEPTE'),this.t('REJOINDRE LE DEPART')]);this.request();return;}this.message([p.action==='start_route'?this.t('DEPART NON AUTORISE'):p.action==='clear_route'?this.t('FIN NON VALIDEE'):this.t('SERVICE INDISPONIBLE'),p.action==='start_route'?this.t('REJOINDRE LE DEPART'):this.t('REESSAYER')]);this.request();return;}
+   if(p.action==='select_route'){if(p.canStart===true&&!p.started&&!p.alreadyStarted){this.command('start_route');return;}this.message([this.t('SERVICE ACCEPTE'),p.started||p.alreadyStarted?this.t('VALID : SUIVI'):this.t('REJOINDRE LE DEPART')]);this.post('saeiv:request_state');return;}
    if(p.action==='clear_route'){this.line='';this.service='';}
-   this.message([p.action==='clear_route'?'SERVICE TERMINE':'SERVICE ACCEPTE','VALID : SUIVI']);this.post('saeiv:request_state');
+   this.message([p.action==='clear_route'?this.t('SERVICE TERMINE'):this.t('SERVICE ACCEPTE'),this.t('VALID : SUIVI')]);this.post('saeiv:request_state');
   }
  }
  routes(){const l=this.line;const exact=this.catalogue.filter(r=>r.lineUid===l||r.lineUidRaw===l);return exact.length?exact:this.catalogue.filter(r=>text(r.lineNumber)===text(l));}
@@ -80,19 +82,19 @@ class AgoraSaeiv {
    if(k==='valid'){
     if(!this[field])return;
     if(field==='line'){
-     if(!this.routes().length){this.message(['LIGNE INCONNUE','VERIFIER LA SAISIE'],'line');return;}
+     if(!this.routes().length){this.message([this.t('LIGNE INCONNUE'),this.t('VERIFIER LA SAISIE')],'line');return;}
      this.validated('line');this.page='vehicle';this.vehicle=String(Math.floor(Math.random()*30)+1);return;
     }
     if(field==='vehicle'){
-     if(!/^\d+$/.test(this.vehicle)||Number(this.vehicle)<1||Number(this.vehicle)>30){this.message(['VOITURE INCORRECTE','SAISIR DE 1 A 30'],'vehicle');return;}
+     if(!/^\d+$/.test(this.vehicle)||Number(this.vehicle)<1||Number(this.vehicle)>30){this.message([this.t('VOITURE INCORRECTE'),this.t('SAISIR DE 1 A 30')],'vehicle');return;}
      this.validated('vehicle');this.page='service';this.service='';return;
     }
     if(field==='service'){
      const matches=this.routes().filter(r=>String(r.routeUid)===this.service);
-     if(matches.length!==1){this.message([matches.length?'LIGNE AMBIGUE':'SERVICE INCONNU','VERIFIER LA SAISIE'],'service');return;}
+     if(matches.length!==1){this.message([matches.length?this.t('LIGNE AMBIGUE'):this.t('SERVICE INCONNU'),this.t('VERIFIER LA SAISIE')],'service');return;}
      this.validated('route');this.expectedMatricule=this.matriculeDefault();this.matricule=this.expectedMatricule;this.page='matricule';return;
     }
-    if(this.matricule!==this.expectedMatricule){this.message(['MATRICULE INCORRECT','VERIFIER LA SAISIE'],'matricule');return;}
+    if(this.matricule!==this.expectedMatricule){this.message([this.t('MATRICULE INCORRECT'),this.t('VERIFIER LA SAISIE')],'matricule');return;}
     this.validated('matricule');this.page='confirm';
    }
    return;
@@ -101,7 +103,7 @@ class AgoraSaeiv {
    if(k==='cancel'){this.page='matricule';return;}
    if(k==='valid'){
     const matches=this.routes().filter(r=>String(r.routeUid)===this.service);
-    if(matches.length!==1){this.message(['SERVICE INDISPONIBLE','VERIFIER LA SAISIE'],'service');return;}
+    if(matches.length!==1){this.message([this.t('SERVICE INDISPONIBLE'),this.t('VERIFIER LA SAISIE')],'service');return;}
     this.command('select_route',{lineUid:matches[0].lineUid,routeUid:matches[0].routeUid});
    }
    return;
@@ -125,29 +127,29 @@ class AgoraSaeiv {
     const item=this.audioItems()[this.audio];if(!item)return;
     this.post('saeiv:action',{action:'saeiv-native-diffusion-slot-'+(item.index+1),diffusionSlot:item.index+1,selectedLineUid:this.state.selectedLineUid||'',selectedRouteUid:this.state.selectedRouteUid||'',globalAudioFolderPath:this.state.globalAudioFolderPath||''});return;
    }
-   if(this.page==='home'&&this.state.routeSelected&&!this.state.routeStarted&&!this.state.routeCompleted){if(this.state.routeCanStart)this.command('start_route');else this.message(['SERVICE ACCEPTE','REJOINDRE LE DEPART']);return;}
+   if(this.page==='home'&&this.state.routeSelected&&!this.state.routeStarted&&!this.state.routeCompleted){if(this.state.routeCanStart)this.command('start_route');else this.message([this.t('SERVICE ACCEPTE'),this.t('REJOINDRE LE DEPART')]);return;}
    this.page='home';
   }
  }
  displayLines(){return this.lines().map(s=>fit(s,20));}
  lines(){
   if(!this.power)return ['',''];
-  if(this.pending&&this.now()-this.pending.at>7000){this.pending=null;this.message(['LIAISON INTERROMPUE','REESSAYER']);}
+  if(this.pending&&this.now()-this.pending.at>7000){this.pending=null;this.message([this.t('LIAISON INTERROMPUE'),this.t('REESSAYER')]);}
   if(this.page==='notice'&&this.now()>=this.noticeAt)this.page=this.resume;
   if(this.page==='notice')return this.notice;
-  if(this.page==='waiting')return ['TRANSMISSION SAEIV','PATIENTEZ...'];
-  if(['line','vehicle','service','matricule'].includes(this.page))return [({line:'LIGNE',vehicle:'VOITURE',service:'SERVICE',matricule:'MATRICULE'})[this.page],this[this.page].slice(-19)+(this.now()%1000<500?'_':' ')];
-  if(this.page==='confirm')return ['VALIDER LE SERVICE ?',fit(this.line,4)+' '+fit(this.service,3)+' VOITURE '+this.vehicle];
-  if(this.page==='end')return ['TERMINER SERVICE ?','VALID:OUI ANNUL:NON'];
-  const s=this.state;if(!this.at||this.now()-this.at>6500)return ['LIAISON SAEIV','EN ATTENTE'];
-  if(this.page==='audio')return ['ANNONCES '+(this.audio+1),this.audioItems()[this.audio]?.label||'AUCUNE ANNONCE'];
-  if(!s.routeSelected)return ['BONJOUR, APPUYER','SUR PRISE SERVICE'];
-  if(s.routeCompleted)return ['SERVICE TERMINE','ANNUL:FIN SERVICE'];
+  if(this.page==='waiting')return [this.t('TRANSMISSION SAEIV'),this.t('PATIENTEZ...')];
+  if(['line','vehicle','service','matricule'].includes(this.page))return [({line:this.t('LIGNE'),vehicle:this.t('VOITURE'),service:'SERVICE',matricule:this.t('MATRICULE')})[this.page],this[this.page].slice(-19)+(this.now()%1000<500?'_':' ')];
+  if(this.page==='confirm')return [this.t('VALIDER LE SERVICE ?'),fit(this.line,4)+' '+fit(this.service,3)+this.t(' VOITURE ')+this.vehicle];
+  if(this.page==='end')return [this.t('TERMINER SERVICE ?'),this.t('VALID:OUI ANNUL:NON')];
+  const s=this.state;if(!this.at||this.now()-this.at>6500)return [this.t('LIAISON SAEIV'),this.t('EN ATTENTE')];
+  if(this.page==='audio')return [this.t('ANNONCES ')+(this.audio+1),this.locale.announcement(this.audioItems()[this.audio]?.label)||this.t('AUCUNE ANNONCE')];
+  if(!s.routeSelected)return [this.t('BONJOUR, APPUYER'),this.t('SUR PRISE SERVICE')];
+  if(s.routeCompleted)return [this.t('SERVICE TERMINE'),this.t('ANNUL:FIN SERVICE')];
   if(this.page==='destination')return ['DESTINATION',s.terminusStopName||s.audioStopNames?.at(-1)||s.routeName||''];
-  if(this.page==='stop')return [s.vehicleAtStop?'A L ARRET':'PROCHAIN ARRET',s.stopName||s.audioStopNames?.[s.audioCurrentIndex]||''];
+  if(this.page==='stop')return [s.vehicleAtStop?this.t('A L ARRET'):this.t('PROCHAIN ARRET'),s.stopName||s.audioStopNames?.[s.audioCurrentIndex]||''];
   if(this.page==='schedule'){
    const delay=Number(s.routeLastStopDelayMinutes),hasDelay=s.routeLastStopDelayMinutes!=null&&Number.isFinite(delay);
-   return ['HORAIRE '+(s.refTime||'--:--'),hasDelay?'ECART '+(delay>0?'+':'')+Math.round(delay)+' MIN':s.routeStarted?'SERVICE EN COURS':'VALID: DEPART'];
+   return [this.t('HORAIRE ')+(s.refTime||'--:--'),hasDelay?this.t('ECART ')+(delay>0?'+':'')+Math.round(delay)+' MIN':s.routeStarted?this.t('SERVICE EN COURS'):this.t('VALID: DEPART')];
   }
   const time=this.clock||String(s.refTime||'--:--');
   return [fit(s.lineNumber||s.selectedLineUid,4)+' '+fit(s.selectedRouteUid,3)+' '+fit(time.replace(':',''),4)+' --- '+fit(s.zone||'',2),
@@ -181,7 +183,8 @@ const controller=new AgoraSaeiv(m=>{
 const ctx=document.getElementById('lcd').getContext('2d');
 function draw(){
  const lines=controller.displayLines();
- for(const button of document.querySelectorAll('.hit'))button.disabled=!controller.canPress(button.dataset.key);
+ document.documentElement.lang=controller.locale.language;
+ for(const button of document.querySelectorAll('.hit')){button.disabled=!controller.canPress(button.dataset.key);button.setAttribute('aria-label',controller.t(button.dataset.label));}
  const key=lines.join('\n');if(key===last)return;last=key;
  ctx.clearRect(0,0,1280,220);ctx.fillStyle='rgb(8,12,2)';
  for(let row=0;row<2;row++)for(let col=0;col<20;col++){
@@ -192,7 +195,7 @@ function draw(){
 }
 window.IDFAgoraNative={ready:true,revision:0,receive(m){controller.receive(m);draw();},setPower(on,clock){controller.power=on;controller.clock=clock||'';draw();}};
 window.AgoraICS={trigger(k){controller.press(k);draw();},getState:()=>({page:controller.page,line:controller.line,service:controller.service,vehicle:controller.vehicle,matricule:controller.matricule,lines:controller.lines(),state:controller.state})};
-for(const [key,label,x,y,w,h] of KEYS){const b=document.createElement('button');b.className='hit';b.dataset.key=key;b.setAttribute('aria-label',label);b.style.cssText=`left:${x/20.48}%;top:${y/10.24}%;width:${w/20.48}%;height:${h/10.24}%`;b.addEventListener('click',()=>window.AgoraICS.trigger(key));document.getElementById('buttons').append(b);}
+for(const [key,label,x,y,w,h] of KEYS){const b=document.createElement('button');b.className='hit';b.dataset.key=key;b.dataset.label=label;b.setAttribute('aria-label',controller.t(label));b.style.cssText=`left:${x/20.48}%;top:${y/10.24}%;width:${w/20.48}%;height:${h/10.24}%`;b.addEventListener('click',()=>window.AgoraICS.trigger(key));document.getElementById('buttons').append(b);}
 window.addEventListener('message',e=>{if(e.origin===location.origin)window.IDFAgoraNative.receive(e.data);});
 window.addEventListener('keydown',e=>{let k=/^\d$/.test(e.key)?e.key:({Enter:'valid',Backspace:'erase',ArrowUp:'up',ArrowDown:'down'})[e.key];if(k){e.preventDefault();window.AgoraICS.trigger(k);}});
 setInterval(draw,100);draw();

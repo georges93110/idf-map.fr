@@ -179,6 +179,7 @@ function buildNativePassengerPayload() {
   var state=saeivPassengerState,capacity=getSaeivActiveCapacityState(saeivVehicleName);
   var count=function(v){return Math.max(0,Math.min(500,Math.floor(Number(v)||0)));};
   return {type:"nativePassengers",version:2,enabled:true,missionKey:mission,stopKey:key,
+    restore:saeivRouteState.resumePassengers||null,
     validationAudio:nativePassengerValidationAudio(),
     preview:saeivRouteState.started!==true,terminal:saeivRouteState.started===true&&index===stops.length-1,
     nextStop:nativePassengerNextPlan(stops,index,mission),service:sharedPassengerServiceMetadata(stops,index),
@@ -206,6 +207,10 @@ function syncNativePassengers(force) {
 function receiveNativePassengerStatus(message) {
   if(!message||message.protocol!==2)return;
   nativePassengerStatus=message;nativePassengerReceivedAt=Date.now();
+  if(saeivRouteState&&saeivRouteState.resumePassengers&&message.snapshot&&message.missionKey===nativePassengerMissionKey()&&message.snapshot.resumeTicket===saeivRouteState.resumePassengers.ticket){
+    if(saeivPassengerState)saeivPassengerState.nativeMissedExitCounter={epoch:message.snapshot.epoch,units:message.snapshot.missedExitUnits||0};
+    delete saeivRouteState.resumePassengers;
+  }
   if(typeof receivePassengerCabinAudio==='function')receivePassengerCabinAudio(message);
   window.GAME2_MANAGER.nativePassengerStatus=message;
   var s=message.snapshot;

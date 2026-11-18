@@ -47,7 +47,7 @@ class ConvoyRooms {
   catalogue(viewer) {
     for(const q of viewer.room.peers.values()) if(this.permitted(viewer,q)&&q.state&&['bluebus','solaris','agora','evadys'].includes(q.state.profile))
       this.emit(viewer.peer,{type:'convoy.bus',version:1,epoch:viewer.room.epoch,player:q.hello.player,clientId:q.hello.clientId,
-        instance:q.hello.instance,generation:q.state.generation,profile:q.state.profile,pose:q.state.pose,sequence:q.sequence,
+        instance:q.hello.instance,generation:q.state.generation,profile:q.state.profile,pose:q.state.pose,sequence:q.sequence,service:q.state.service,
         ...(q.state.moverStops!==undefined?{moverStops:q.state.moverStops}:{})});
   }
   observer(p) {

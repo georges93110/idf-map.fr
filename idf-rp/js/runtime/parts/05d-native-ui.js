@@ -205,7 +205,7 @@ function receiveNativeGameMode(m){
   if(nativeGameModeGeneration!==key||!nativeGameModeApplied){
     // A generation is accepted only after the clear and mode application
     // finish. If either throws, no ACK is sent and stale bus packets stay blocked.
-    if(nativeGameModeGeneration!==key)clearSaeivRouteSelection();
+    if(nativeGameModeGeneration!==key){nativeServiceGenerationClear=true;try{clearSaeivRouteSelection();}finally{nativeServiceGenerationClear=false;}}
     setGameMode(m.mode==="bus"?GAME_MODES.BUS:GAME_MODES.FREE,{clearRuntimeSession:false});
     nativeGameModeGeneration=key;nativeGameModeApplied=true;
     try { localStorage.setItem("idf_native_mode_generation_v1",key); } catch(err) {}

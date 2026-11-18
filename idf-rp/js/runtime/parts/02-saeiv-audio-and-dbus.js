@@ -2197,7 +2197,12 @@ function applySaeivPassengerSatisfaction(data) {
         if (!Number.isFinite(passengerCountVariationMax)) passengerCountVariationMax = 0;
         var payload = {
           lumiplan: saeivLumiplanJourney.snapshot(),
-          lang: "fr",
+          lang: (function () {
+            var state = typeof telemetryLastSignal === "object" && telemetryLastSignal || {};
+            var raw = state.raw || state.data || state;
+            if (typeof raw.saeivPreviewFrench === "boolean") return raw.saeivPreviewFrench ? "fr" : "en";
+            return /^fr(?:$|[-_])/i.test(String((state.gameContext || raw.gameContext || {}).language || "")) ? "fr" : "en";
+          })(),
           canUseFeature: true,
           selected: false,
           lineSelected: false,
@@ -2988,6 +2993,7 @@ function applySaeivPassengerSatisfaction(data) {
         };
       }
       function clearSaeivRouteSelection(options) {
+        if(typeof nativeServiceDiscardCurrent==='function')nativeServiceDiscardCurrent();
         cancelSaeivServiceAcceptAudio();
         saeivLumiplanJourney.reset(0);
         saeivBusService.reset();
@@ -3052,7 +3058,7 @@ function applySaeivPassengerSatisfaction(data) {
       }
       function startSaeivSelectedRoute() {
         if (!saeivRouteState || typeof saeivRouteState !== "object") {
-          return { ok: false, error: "Aucune ligne selectionnee." };
+          return { ok: false, error: "Aucune ligne sélectionnée." };
         }
         if (saeivRouteState.started === true) {
           return Object.assign({ ok: true, alreadyStarted: true }, buildRouteRuntimeSummary());
@@ -3106,7 +3112,7 @@ function applySaeivPassengerSatisfaction(data) {
         if (!entries.length) {
           return {
             ok: false,
-            error: "Aucun arret valide pour cette route."
+            error: "Aucun arrêt valide pour cette route."
           };
         }
         saeivBusService.reset();
@@ -3164,6 +3170,7 @@ function applySaeivPassengerSatisfaction(data) {
         saeivRouteSuffixCache = new Map();
         saeivNominalSegmentDistanceCache = new Map();
         var lineAudioConfig = resolveSaeivLineAudioConfig(line, route, null);
+        if(typeof nativeServiceDiscardCurrent==='function')nativeServiceDiscardCurrent();
         saeivRouteState = {
           selectedKey: selectedKey,
           lineUid: String(line.uid || ""),

@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <meta name="description" content="Mentions legales"/>
+  <meta name="description" content="Mentions légales du site IDF-MAP : éditeur, hébergement et confidentialité."/>
   <meta property="og:locale" content="fr_FR"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="Ile-de-France Map"/>
-  <meta property="og:title" content="Ile-de-France Map - Mentions legales"/>
-  <meta property="og:description" content="Mentions legales"/>
+  <meta property="og:title" content="IDF-MAP — Mentions légales"/>
+  <meta property="og:description" content="Éditeur, hébergement et confidentialité du site IDF-MAP."/>
   <meta property="og:url" content="https://idf-map.fr/mentions_legales.html"/>
   <meta property="og:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Ile-de-France Map - Mentions legales"/>
-  <meta name="twitter:description" content="Mentions legales"/>
+  <meta name="twitter:title" content="IDF-MAP — Mentions légales"/>
+  <meta name="twitter:description" content="Éditeur, hébergement et confidentialité du site IDF-MAP."/>
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
   <script src="config/theme-init.js"></script>
   <style>
@@ -85,7 +85,7 @@
       window.setTimeout(reveal, 7000);
     })();
   </script>
-  <title>Mentions legales</title>
+  <title>Mentions légales — IDF-MAP</title>
   <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
   <style>
     .legal-wrap{
@@ -118,9 +118,29 @@
       color:#f4f4f4;
     }
     .legal-text{
-      margin:0 0 4px;
+      margin:0 0 10px;
       color:#c9c9c9;
       line-height:1.6;
+      overflow-wrap:anywhere;
+    }
+    .legal-details{
+      margin-top:16px;
+      padding-top:14px;
+      border-top:1px solid #2f2f2f;
+    }
+    .legal-details > summary{
+      color:#ececec;
+      font-weight:600;
+      line-height:1.5;
+      cursor:pointer;
+    }
+    .legal-details > summary:focus-visible{
+      outline:2px solid #9ad3a3;
+      outline-offset:4px;
+      border-radius:3px;
+    }
+    .legal-details[open] > summary{
+      margin-bottom:12px;
     }
     .legal-sep{
       border:0;
@@ -158,33 +178,27 @@
 </head>
 <body data-bg-opacity="0.22" data-bg-overlay-top="0.74" data-bg-overlay-bottom="0.92">
   <main class="legal-wrap">
-    <section class="legal-card" aria-labelledby="legalTitle">
-      <h1 class="legal-title" id="legalTitle" data-i18n="legal_page_title">Mentions legales</h1>
-      <hr class="legal-sep" aria-hidden="true"/>
+    <section class="legal-card" id="legalContent" aria-labelledby="legalTitle" lang="fr">
+      <h1 class="legal-title" id="legalTitle" data-legal-en="Legal notice">Mentions légales</h1>
 
-      <h2 class="legal-section-title" data-i18n="legal_editor_heading">Editeur du site</h2>
-      <p class="legal-text">Georges93</p>
-      <p class="legal-text"><a class="legal-link" id="legalEmailLink" href="#">georges93110@gmail.com</a><span class="legal-copy-toast" id="legalEmailCopied" aria-live="polite"></span></p>
-      <p class="legal-text legal-action-row">
-        <a id="legalDiscordLink" class="legal-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Discord</a>
-      </p>
+      <h2 class="legal-section-title" data-legal-en="Publisher and contact">Éditeur et contact</h2>
+      <p class="legal-text"><strong>Georges93</strong> <span data-legal-en="(pseudonym)">(pseudonyme)</span><br/><a class="legal-link" id="legalEmailLink" href="mailto:georges93110@gmail.com">georges93110@gmail.com</a><span class="legal-copy-toast" id="legalEmailCopied" aria-live="polite"></span></p>
+      <p class="legal-text" data-legal-only="en" hidden>The publisher resides in France. These legal notices are governed by French law, subject to any applicable mandatory rules.</p>
+      <p class="legal-text"><span data-legal-en="The publisher wishes to keep their legal identity private under the conditions set out in ">L’éditeur souhaite préserver la confidentialité de son identité civile dans les conditions prévues par l’</span><a class="legal-link" href="https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000049568614" target="_blank" rel="noopener noreferrer" data-legal-en="Article 1-1(II) of the French Law of 21 June 2004">article 1-1, II de la loi du 21 juin 2004</a>.</p>
 
-      <hr class="legal-sep" aria-hidden="true"/>
+      <h2 class="legal-section-title" data-legal-en="Hosting">Hébergement</h2>
+      <p class="legal-text"><strong>GitHub, Inc.</strong> — GitHub Pages<br/>88 Colin P. Kelly Jr. Street<br/>San Francisco, CA 94107, <span data-legal-en="United States">États-Unis</span><br/><a id="legalHostingLink" class="legal-link" href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">https://pages.github.com/</a></p>
 
-      <h2 class="legal-section-title" data-i18n="legal_hosting_heading">Hebergement</h2>
-      <p class="legal-text">GitHub, Inc.</p>
-      <p class="legal-text">88 Colin P Kelly Jr St</p>
-      <p class="legal-text">San Francisco, CA 94107</p>
-      <p class="legal-text" data-i18n="legal_hosting_country">Etats-Unis</p>
-      <p class="legal-text">
-        <span data-i18n="legal_hosting_site_label">Site</span>:
-        <a id="legalHostingLink" class="legal-link" href="#" target="_blank" rel="noopener noreferrer">pages.github.com</a>
-      </p>
+      <h2 class="legal-section-title" data-legal-en="Personal data">Données personnelles</h2>
+      <p class="legal-text"><span data-legal-en="For personal data processed by the publisher, you may exercise your rights of access, rectification, erasure, restriction and objection under the GDPR by contacting ">Pour les données traitées par l’éditeur, vous pouvez exercer vos droits d’accès, de rectification, d’effacement, de limitation et d’opposition dans les conditions prévues par le RGPD, à l’adresse </span><a class="legal-link" href="mailto:georges93110@gmail.com">georges93110@gmail.com</a><span data-legal-en=". You may also lodge a complaint with France’s data protection authority, the ">. Vous pouvez également adresser une réclamation à la </span><a class="legal-link" href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener noreferrer">CNIL</a>.</p>
 
-      <hr class="legal-sep" aria-hidden="true"/>
-
-      <h2 class="legal-section-title">Mise a jour du site</h2>
-      <p class="legal-text" id="legalLastUpdateText">Ce site a ete mis a jour le : indisponible</p>
+      <details class="legal-details" id="confidentialite">
+        <summary data-legal-en="Data use, external services and cookies">Données utilisées, services externes et cookies</summary>
+        <p class="legal-text"><span data-legal-en="GitHub records visitors’ IP addresses to keep its service secure. Its ">GitHub enregistre l’adresse IP des visiteurs pour la sécurité de son service. Sa </span><a class="legal-link" href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer" data-legal-en="privacy policy">politique de confidentialité</a><span data-legal-en=" explains how this data is used and retained, and describes your rights."> précise l’utilisation et la conservation de ces données ainsi que vos droits.</span></p>
+        <p class="legal-text"><span data-legal-en="Some fonts, images and videos, along with tools used to display the map, come from external services. Loading them sends these services your IP address and connection information. Some processing takes place outside the European Union; ">Certaines polices, images et vidéos, ainsi que des outils d’affichage de la carte, proviennent de services externes. Leur chargement transmet à ces services votre adresse IP et des informations de connexion. Certains traitements ont lieu hors de l’Union européenne ; la </span><a class="legal-link" href="https://policies.google.com/privacy?hl=fr" data-legal-en-href="https://policies.google.com/privacy?hl=en" target="_blank" rel="noopener noreferrer" data-legal-en="Google’s privacy policy">politique de confidentialité de Google</a><span data-legal-en=" explains the processing carried out by its services."> précise ceux qui concernent ses services.</span></p>
+        <p class="legal-text" data-legal-en="Your browser stores your language, display and map preferences until you change or delete them. It also stores temporary data for your browsing session. You can clear this information in your browser settings.">Le navigateur mémorise vos préférences de langue, d’affichage et de carte jusqu’à leur modification ou leur suppression. Il conserve aussi des données temporaires liées à la session de navigation. Vous pouvez effacer ces informations dans ses paramètres.</p>
+        <p class="legal-text"><span data-legal-en="The site embeds YouTube videos, whose player may place cookies in your browser. Your consent is required before non-essential advertising or tracking cookies are used. ">Le site intègre des vidéos YouTube, dont le lecteur peut déposer des cookies dans votre navigateur. Votre accord est nécessaire avant l’utilisation de cookies publicitaires ou de suivi non indispensables. </span><a class="legal-link" href="https://www.cnil.fr/fr/cookies-et-autres-traceurs/que-dit-la-loi" target="_blank" rel="noopener noreferrer" data-legal-en="Learn about cookies from the CNIL">Comprendre les cookies avec la CNIL</a>.</p>
+      </details>
     </section>
   </main>
 
@@ -199,32 +213,49 @@
       function lang() {
         return String(document.documentElement.getAttribute("lang") || "fr").toLowerCase().slice(0, 2);
       }
-      function t(key, fallback) {
-        const i18n = window.I18N || {};
-        const code = lang();
-        const fromLang = i18n[code] && i18n[code][key];
-        if (typeof fromLang === "string" && fromLang) return fromLang;
-        const fromFr = i18n.fr && i18n.fr[key];
-        if (typeof fromFr === "string" && fromFr) return fromFr;
-        return fallback;
+      function renderLegalLanguage() {
+        const content = document.getElementById("legalContent");
+        if (!content) return;
+        const code = lang() === "fr" ? "fr" : "en";
+        content.setAttribute("lang", code);
+        content.querySelectorAll("[data-legal-only]").forEach((element) => {
+          element.hidden = element.dataset.legalOnly !== code;
+        });
+        content.querySelectorAll("[data-legal-en]").forEach((element) => {
+          if (!element.hasAttribute("data-legal-fr")) {
+            element.dataset.legalFr = element.textContent;
+          }
+          const text = code === "fr" ? element.dataset.legalFr : element.dataset.legalEn;
+          if (element.textContent !== text) element.textContent = text;
+        });
+        content.querySelectorAll("[data-legal-en-href]").forEach((element) => {
+          if (!element.hasAttribute("data-legal-fr-href")) {
+            element.dataset.legalFrHref = element.getAttribute("href");
+          }
+          const href = code === "fr" ? element.dataset.legalFrHref : element.dataset.legalEnHref;
+          element.setAttribute("href", href);
+        });
+        const title = code === "fr" ? "Mentions légales — IDF-MAP" : "Legal notice — IDF-MAP";
+        const description = code === "fr"
+          ? "Mentions légales du site IDF-MAP : éditeur, hébergement et confidentialité."
+          : "IDF-MAP legal notice: publisher, hosting and privacy.";
+        const toast = document.getElementById("legalEmailCopied");
+        if (toast?.classList.contains("is-visible")) toast.textContent = copiedLabelByLang();
+        document.title = title;
+        const metadata = [
+          ['meta[name="description"]', description],
+          ['meta[property="og:title"]', title],
+          ['meta[property="og:description"]', description],
+          ['meta[property="og:locale"]', code === "fr" ? "fr_FR" : "en_GB"],
+          ['meta[name="twitter:title"]', title],
+          ['meta[name="twitter:description"]', description]
+        ];
+        metadata.forEach(([selector, value]) => {
+          document.querySelector(selector)?.setAttribute("content", value);
+        });
       }
       function copiedLabelByLang() {
-        const code = lang();
-        const labels = {
-          fr: "Copié !",
-          en: "Copied!",
-          es: "Copiado!",
-          de: "Kopiert!",
-          pl: "Skopiowano!",
-          pt: "Copiado!",
-          nl: "Gekopieerd!",
-          it: "Copiato!",
-          ru: "Скопировано!",
-          zh: "已复制！",
-          ko: "복사됨!",
-          ja: "コピーしました！"
-        };
-        return labels[code] || labels.fr;
+        return lang() === "fr" ? "Copié !" : "Copied!";
       }
       function showEmailCopiedToast() {
         const toast = document.getElementById("legalEmailCopied");
@@ -266,6 +297,7 @@
         });
       }
       function render() {
+        renderLegalLanguage();
         const links = window.SITE_LINKS && typeof window.SITE_LINKS === "object"
           ? window.SITE_LINKS
           : {};
@@ -278,7 +310,7 @@
         const email = String(legal.email || "").trim();
         const emailLink = document.getElementById("legalEmailLink");
         if (emailLink && email) {
-          emailLink.href = "#";
+          emailLink.href = "mailto:" + email;
           emailLink.textContent = email;
           emailLink.dataset.emailValue = email;
           if (emailLink.dataset.copyBound !== "1") {
@@ -289,7 +321,7 @@
               if (!value) return;
               copyToClipboard(value).then(() => {
                 showEmailCopiedToast();
-              }).catch(() => {});
+              }).catch(() => { window.location.href = "mailto:" + value; });
             });
           }
         }
@@ -316,14 +348,10 @@
             hostingLink.href = hostingUrl;
             hostingLink.textContent = hostingUrl;
           } else {
-            hostingLink.href = "#";
+            hostingLink.href = "https://pages.github.com/";
           }
         }
-        document.querySelectorAll("[data-i18n]").forEach((el) => {
-          const key = el.getAttribute("data-i18n");
-          if (!key) return;
-          el.textContent = t(key, el.textContent);
-        });
+
       }
       render();
       new MutationObserver(render).observe(document.documentElement, {
@@ -360,17 +388,17 @@
         ];
         const months = [
           "Janvier",
-          "Fevrier",
+          "Février",
           "Mars",
           "Avril",
           "Mai",
           "Juin",
           "Juillet",
-          "Aout",
+          "Août",
           "Septembre",
           "Octobre",
           "Novembre",
-          "Decembre"
+          "Décembre"
         ];
         const dayName = days[date.getUTCDay()];
         const dayNumber = date.getUTCDate();
@@ -386,10 +414,10 @@
       if (!output) return;
       const parsedDate = parseLastUpdateUtc(window.LAST_UPDATE);
       if (!parsedDate) {
-        output.textContent = "Ce site a ete mis a jour le : indisponible";
+        output.textContent = "Date de dernière mise à jour du site : indisponible.";
         return;
       }
-      output.textContent = `Ce site a ete mis a jour le : ${formatFrenchDateUtc(parsedDate)}`;
+      output.textContent = `Dernière mise à jour du site : ${formatFrenchDateUtc(parsedDate)} UTC.`;
     })();
   </script>
   <script>

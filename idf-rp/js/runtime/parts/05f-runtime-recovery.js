@@ -1,5 +1,5 @@
 // Recovery data lives in the local bridge, independently of this WebView process.
-// Never restore across native epochs/revisions (game/profile/mode/vehicle change).
+// Cross-session recovery requires the separate save fingerprint and native confirmation protocol.
 var nativeRuntimeRestoring=false,nativeRuntimeResumeGeneration="",nativeRuntimeMessage=null;
 var nativeRuntimeCheckpointAt=0,nativeRuntimeCheckpointText="",nativeRuntimeCheckpointState="",nativeRuntimePauseClock=null;
 var nativeRuntimeSlots={
@@ -59,8 +59,14 @@ function nativeRuntimeVisibility(hidden){
   }
 }
 function nativeRuntimeCapture(){
+  if(saeivRouteState&&!saeivRouteState.resumeId)saeivRouteState.resumeId=typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(36).slice(2);
   var fields={};Object.keys(nativeRuntimeSlots).forEach(function(k){fields[k]=nativeRuntimeSlots[k].get();});
-  return {route:saeivRouteState,fields:fields,announced:Array.from(saeivAnnouncedStopUids),
+  var status=typeof nativePassengerStatus==='undefined'?null:nativePassengerStatus,s=status&&status.snapshot,passengers=null;
+  if(s&&status.missionKey===nativePassengerMissionKey()&&status.stopKey===nativePassengerStopKey()&&Array.isArray(s.resumePeople)&&s.resumePeople.length===s.onboard){
+    passengers={people:s.resumePeople,validations:s.validations||0,missedExitUnits:s.missedExitUnits||0,missedExitPassengers:s.missedExitPassengers||0};
+    if(fields.saeivPassengerState)fields.saeivPassengerState=Object.assign({},fields.saeivPassengerState,{passengersInBus:s.onboard,stopBoardingDone:s.boardDone,stopAlightingDone:s.alightDone});
+  }
+  return {nativePassengers:passengers,route:saeivRouteState,fields:fields,announced:Array.from(saeivAnnouncedStopUids),
     announcementEnds:Array.from(saeivStopAnnounceEndedAtByUid),stopRequestPlayed:Array.from(saeivStopRequestAudioPlayedSegments),
     journey:Object.assign({},saeivLumiplanJourney),service:Object.assign({},saeivBusService,{nativeView:null}),
     clock:getSaeivNowTimestampMs()};
@@ -111,4 +117,63 @@ function receiveNativeRuntimeResume(m){
   receiveNativeGameMode(nativeRuntimeMessage);
   syncNativeRuntimeCheckpoint(true);
   return true;
+}
+
+var nativeServiceResumeDone=0,nativeServiceGenerationClear=false;
+function nativeServiceResumeAck(m,action,valid){
+  if(telemetryWs&&telemetryWs.readyState===1)telemetryWs.send(JSON.stringify({type:'nativeServiceResumeAck',protocol:1,generation:nativeGameModeGeneration,id:m.id,action:action,valid:valid}));
+}
+function nativeServiceCanResume(d){
+  if(!d||!d.route||!d.fields||!Array.isArray(d.route.stops)||!d.route.started||d.fields.saeivRouteCompletedAtMs)return false;
+  var count=Number(d.fields.saeivPassengerState&&d.fields.saeivPassengerState.passengersInBus)||0;
+  if(count>0&&(!d.nativePassengers||!Array.isArray(d.nativePassengers.people)||d.nativePassengers.people.length!==count))return false;
+  var line=dbusLines.find(function(l){return String(l.uid)===String(d.route.lineUid);});
+  var route=line&&line.routes.find(function(r){return String(r.uid)===String(d.route.routeUid);});
+  if(!route)return false;
+  var current=getRouteStopEntries(route),saved=d.route.stops;
+  // A changed physical stop or stop order is a different journey.
+  if(saved.length<2||saved.length>current.length)return false;
+  return current.some(function(_,offset){return offset+saved.length<=current.length&&saved.every(function(s,i){
+    var c=current[offset+i];
+    return c&&String(c.uid)===String(s.uid)&&c.point&&s.point&&['x','y','z'].every(function(axis){
+      return Number.isFinite(Number(c.point[axis]))&&Number.isFinite(Number(s.point[axis]))&&Math.abs(Number(c.point[axis])-Number(s.point[axis]))<1;
+    });
+  });});
+}
+function receiveServiceResume(m){
+  if(!m||m.protocol!==1||m.generation!==nativeGameModeGeneration||!Number.isInteger(m.id))return false;
+  if(m.action==='discard'){
+    if(saeivRouteState&&saeivRouteState.resumeId===m.run)clearSaeivRouteSelection();return true;
+  }
+  var d=m.checkpoint&&m.checkpoint.data;
+  if(m.action==='prepare'){
+    nativeServiceResumeAck(m,'prepared',nativeServiceCanResume(d)&&(!saeivRouteState||saeivRouteState.resumeId===d.route.resumeId));return true;
+  }
+  if(m.action!=='restore'&&m.action!=='continue')return false;
+  if(nativeServiceResumeDone===m.id){nativeServiceResumeAck(m,'restored',true);return true;}
+  if(!nativeServiceCanResume(d))return false;
+  if(saeivRouteState){
+    if(saeivRouteState.resumeId!==d.route.resumeId)return false;
+    nativeServiceResumeDone=m.id;nativeServiceResumeAck(m,'restored',true);return true;
+  }
+  var c=JSON.parse(JSON.stringify(m.checkpoint)),token=(Math.floor(Math.random()*0xffffffff)>>>0)||1;
+  c.generation=nativeGameModeGeneration;c.token=token;
+  c.data.fields.nativeCompletionToken=token;
+  c.data.route.nativePassengerKey=String(c.data.route.selectedKey)+':resume:'+m.id;
+  c.data.fields.nativePassengerLockedMission='';c.data.fields.nativePassengerValidationKey='';
+  c.data.fields.nativePassengerValidationEpoch=0;c.data.fields.nativePassengerValidationCount=0;
+  if(c.data.nativePassengers)c.data.route.resumePassengers=Object.assign({ticket:m.id},c.data.nativePassengers);
+  var now=getSaeivNowTimestampMs(),clock=saeivGameClockNowMs,lastSource=saeivGameClockLastSourceTsMs,nativeClock=saeivNativeGameClock;
+  nativeRuntimeResumeGeneration='';
+  if(!receiveNativeRuntimeResume({protocol:1,generation:nativeGameModeGeneration,token:token,checkpoint:c}))return false;
+  saeivGameClockNowMs=clock;saeivGameClockLastSourceTsMs=lastSource;saeivNativeGameClock=nativeClock;
+  var delta=Number(now)-Number(d.clock);if(Number.isFinite(delta)&&delta)rebaseSaeivServiceClock(delta);
+  nativeRuntimePauseClock=null;saeivBusService.lastTime=null;
+  if(saeivPassengerSatisfaction)saeivPassengerSatisfaction.delayAt=0;
+  nativeServiceResumeDone=m.id;
+  syncSaeivExternalState(true);syncNativePassengers(true);syncNativeRuntimeCheckpoint(true);nativeServiceResumeAck(m,'restored',true);return true;
+}
+function nativeServiceDiscardCurrent(){
+  if(nativeServiceGenerationClear||!saeivRouteState||!saeivRouteState.resumeId||!telemetryWs||telemetryWs.readyState!==1)return;
+  telemetryWs.send(JSON.stringify({type:'nativeServiceTerminal',protocol:1,generation:nativeGameModeGeneration,run:saeivRouteState.resumeId}));
 }
