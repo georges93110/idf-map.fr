@@ -5061,12 +5061,14 @@
 Object.assign(window.I18N.fr, {
   home_idfrp_intro: "Vos missions de bus prennent vie dans Euro Truck Simulator 2.",
   home_idfrp_features: "Choisissez votre ligne, prenez votre service et transportez vos passagers. Gestion de l'horaire, passagers animés, girouettes et bien d'autres vous accompagnent au fil des arrêts, en solo comme en mode convoi.",
-  home_idfrp_future: "Un plugin dédié au bus aujourd’hui, avec d'autres métiers et encore plus d’immersion prévues pour la suite. Aucune date de sortie officielle pour le moment, mais ça arrive bientôt !",
+  home_idfrp_available: "IDF-RP est maintenant disponible ! Rejoignez notre serveur Discord pour télécharger le plugin.",
+  home_idfrp_download_discord: "Rejoindre Discord pour télécharger",
   home_idfrp_video_error: "La vidéo est momentanément indisponible."
 });
 Object.assign(window.I18N.en, {
   home_idfrp_intro: "Bring your bus missions to life in Euro Truck Simulator 2.",
   home_idfrp_features: "Choose a line, start your service and carry your passengers. Timetable management, animated passengers, destination displays and more accompany you from stop to stop, solo or in Convoy mode.",
-  home_idfrp_future: "A plugin dedicated to buses today, with other jobs and even more immersion planned for the future. No official release date yet, but it is coming soon!",
+  home_idfrp_available: "IDF-RP is now available! Join our Discord server to download the plugin.",
+  home_idfrp_download_discord: "Join Discord to download",
   home_idfrp_video_error: "The video is temporarily unavailable."
 });

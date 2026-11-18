@@ -1660,7 +1660,12 @@
                 <h1 data-home-system-name>IDF-RP</h1>
                 <p data-i18n="home_idfrp_intro">Vos missions de bus prennent vie dans Euro Truck Simulator 2.</p>
                 <p data-i18n="home_idfrp_features">Choisissez votre ligne, prenez votre service et transportez vos passagers. Gestion de l'horaire, passagers animés, girouettes et bien d'autres vous accompagnent au fil des arrêts, en solo comme en mode convoi.</p>
-                <p data-i18n="home_idfrp_future">Un plugin dédié au bus aujourd’hui, avec d'autres métiers et encore plus d’immersion prévues pour la suite. Aucune date de sortie officielle pour le moment, mais ça arrive bientôt !</p>
+                <p data-i18n="home_idfrp_available">IDF-RP est maintenant disponible ! Rejoignez notre serveur Discord pour télécharger le plugin.</p>
+                <a id="homeIdfrpDiscordBtn" class="home-cta home-cta-small home-cta-discord"
+                  href="https://discord.gg/5xDM99G67s" data-offsite-key="discord"
+                  target="_blank" rel="noopener noreferrer">
+                  <span data-i18n="home_idfrp_download_discord">Rejoindre Discord pour télécharger</span>
+                </a>
               </div>
               <figure class="home-idfrp-media">
                 <div class="home-idfrp-video-frame">
@@ -1844,6 +1849,7 @@
       const homeConvoyPlayerCount = document.getElementById("homeConvoyPlayerCount");
       const homeConvoyPlayerLabel = document.getElementById("homeConvoyPlayerLabel");
       const homeDiscordBtn = document.getElementById("homeDiscordBtn");
+      const homeIdfrpDiscordBtn = document.getElementById("homeIdfrpDiscordBtn");
       const homeYoutubeBtn = document.getElementById("homeYoutubeBtn");
       const homeCategoryButtons = Array.from(document.querySelectorAll("[data-home-category]"));
       const homeCategoryPanels = Array.from(document.querySelectorAll("[data-home-category-panel]"));
@@ -3141,6 +3147,7 @@
         applyOffsiteHref(homeManualDepsLink);
         applyOffsiteHref(homeManualMapDownloadLink);
         applyOffsiteHref(homeDiscordBtn);
+        applyOffsiteHref(homeIdfrpDiscordBtn);
         applyOffsiteHref(homeYoutubeBtn);
         if (homeDownloadModalCloseBtn) {
           homeDownloadModalCloseBtn.setAttribute("aria-label", t("close", "Fermer"));
