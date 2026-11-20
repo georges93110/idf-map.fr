@@ -412,7 +412,7 @@ h1,.choice-title,.server-players strong { font-family: "Barlow Condensed",Inter,
 }
 .folds {
   display: grid; grid-template-rows: auto minmax(0,1fr); height: clamp(360px,78svh,960px);
-  overflow: hidden;
+  overflow: hidden; touch-action: pan-y pinch-zoom;
 }
 .choice-bar {
   display: grid; grid-template-columns: var(--tab-columns);
@@ -459,7 +459,7 @@ h1,.choice-title,.server-players strong { font-family: "Barlow Condensed",Inter,
 .leaf {
   --inset: clamp(18px,2.5vw,44px);
   position: absolute; inset: 0; display: flex; flex-direction: column;
-  padding: var(--inset); overflow: auto; overscroll-behavior: contain;
+  padding: var(--inset); overflow: auto; overscroll-behavior: contain; touch-action: pan-y pinch-zoom;
   scrollbar-color: #68686d #1b1b1d;
   background: linear-gradient(0deg,#0b0b0dfc 0%,#0c0c0eeb 18%,#0c0c0ea6 48%,#0c0c0e1f 78%,transparent);
 }
@@ -1355,14 +1355,15 @@ window.CINEMA_LABELS = (() => {
     const hasVideoGuide = language === "fr";
     guideFormats.hidden = !hasVideoGuide;
     if (panel !== "download") videoFormat.checked = true;
-    const showVideo = hasVideoGuide && panel === "download" && videoFormat.checked;
-    $("#written-guide").hidden = showVideo;
-    $("#video-guide").hidden = !showVideo;
+    const videoSelected = hasVideoGuide && videoFormat.checked;
+    const showVideo = videoSelected && panel === "download";
+    $("#written-guide").hidden = videoSelected;
+    $("#video-guide").hidden = !videoSelected;
     const currentPlayer = tutorialEmbed.querySelector("iframe");
     if (!showVideo) {
       loadingFade?.cancel();
       currentPlayer?.remove();
-      videoLoading.hidden = true;
+      videoLoading.hidden = !videoSelected;
       return;
     }
     if (currentPlayer) {
@@ -1436,7 +1437,8 @@ window.CINEMA_LABELS = (() => {
   const tabList = $(".choice-bar");
   const tabs = all(".choice-bar [role=tab]");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let panelAnimations = [];
+  let slide = null;
+  let slideFrame = 0;
 
   tabList.addEventListener("keydown", event => {
     const current = tabs.indexOf(event.target);
@@ -1477,35 +1479,76 @@ window.CINEMA_LABELS = (() => {
       default: return "";
     }
   }
-  function showPanel(active, previous) {
-    for (const animation of panelAnimations) {
-      animation.onfinish = null;
-      animation.cancel();
-    }
-    panelAnimations = [];
-    const outgoing = folds.find(fold => fold.dataset.family === panelFamilies[previous]);
-    const slide = outgoing && outgoing !== active && !reducedMotion.matches;
+  function displayPanels(neighbor) {
     for (const fold of folds) {
-      fold.hidden = fold !== active && !(slide && fold === outgoing);
-      fold.inert = fold !== active;
+      const active = fold.dataset.family === panelFamilies[panel];
+      fold.hidden = !active && fold.dataset.family !== panelFamilies[neighbor];
+      fold.inert = !active;
     }
     for (const section of all("[data-panel]")) {
-      section.hidden = section.dataset.panel !== panel && !(slide && section.dataset.panel === previous);
+      section.hidden = section.dataset.panel !== panel && section.dataset.panel !== neighbor;
     }
-    if (!slide || previous !== "download") syncTutorial();
-    if (!slide) return;
-    const step = folds.indexOf(active) > folds.indexOf(outgoing) ? 100 : -100;
-    const timing = {duration: 340, easing: "cubic-bezier(.22,.75,.2,1)"};
-    const incomingSlide = active.animate([{transform: "translateX(" + step + "%)"}, {transform: "none"}], timing);
-    const outgoingSlide = outgoing.animate([{transform: "none"}, {transform: "translateX(" + -step + "%)"}], timing);
-    panelAnimations = [incomingSlide, outgoingSlide];
-    outgoingSlide.onfinish = () => {
-      outgoing.hidden = true;
-      panelAnimations = [];
-      if (previous === "download") syncTutorial();
-    };
   }
-  function syncRoute() {
+  function clearSlide() {
+    cancelAnimationFrame(slideFrame);
+    if (!slide) return;
+    slide.outgoing.style.removeProperty("transform");
+    slide.incoming.style.removeProperty("transform");
+    slide = null;
+  }
+  function positionSlide(progress) {
+    slide.progress = progress;
+    const step = slide.direction * 100;
+    slide.outgoing.style.transform = "translateX(" + (-step * progress) + "%)";
+    slide.incoming.style.transform = "translateX(" + (step * (1 - progress)) + "%)";
+  }
+  function prepareSlide(from, to) {
+    cancelAnimationFrame(slideFrame);
+    if (slide?.from !== from || slide.to !== to) {
+      const start = slide?.to === from && slide.from === to ? 1 - slide.progress : 0;
+      clearSlide();
+      const outgoing = folds.find(f => f.dataset.family === panelFamilies[from]);
+      const incoming = folds.find(f => f.dataset.family === panelFamilies[to]);
+      slide = {from, to, outgoing, incoming, direction: Math.sign(folds.indexOf(incoming) - folds.indexOf(outgoing))};
+      positionSlide(start);
+    }
+    displayPanels(panel === from ? to : from);
+  }
+  function finishSlide() {
+    const leavingDownload = slide.from === "download" && slide.to === panel;
+    clearSlide();
+    displayPanels();
+    if (leavingDownload) syncTutorial();
+  }
+  function settleSlide(end) {
+    cancelAnimationFrame(slideFrame);
+    const start = slide.progress;
+    const started = performance.now();
+    const duration = reducedMotion.matches ? 0 : 140 + 200 * Math.abs(end - start);
+    const tick = now => {
+      const time = duration ? Math.max(0, Math.min(1, (now - started) / duration)) : 1;
+      positionSlide(start + (end - start) * (1 - (1 - time) ** 3));
+      if (time < 1) {
+        slideFrame = requestAnimationFrame(tick);
+        return;
+      }
+      finishSlide();
+    };
+    slideFrame = requestAnimationFrame(tick);
+  }
+  function showPanel(previous, fromWheel) {
+    if (!previous || panelFamilies[previous] === panelFamilies[panel] || reducedMotion.matches) {
+      clearSlide();
+      displayPanels();
+      syncTutorial();
+      return;
+    }
+    prepareSlide(previous, panel);
+    if (previous !== "download") syncTutorial();
+    if (fromWheel) glideWheelTo(slide.direction, true);
+    else settleSlide(1);
+  }
+  function syncRoute(fromWheel = false) {
     if (["#telechargement", "#accueil"].includes(location.hash.toLowerCase())) {
       history.replaceState(history.state, "", location.href.split("#")[0]);
     } else if (location.hash.toLowerCase() === "#convoi/guide") {
@@ -1514,13 +1557,16 @@ window.CINEMA_LABELS = (() => {
     const next = routePanel(location.hash) || routePanel("#accueil");
     if (next === panel) return;
     const previous = panel;
+    if (!fromWheel || reducedMotion.matches) stopWheelGlide();
+    touch = null;
+    if (wheelMode === "pan") wheelMode = "committed";
     if (previous === "convoy") stopStatus();
     panel = next;
     const family = panelFamilies[panel];
     const active = folds.find(fold => fold.dataset.family === family);
     const selectedTab = document.getElementById(active.getAttribute("aria-labelledby"));
     const focusInTabList = tabList.contains(document.activeElement);
-    showPanel(active, previous);
+    showPanel(previous, fromWheel);
     tabs.forEach(tab => {
       const selected = tab === selectedTab;
       tab.setAttribute("aria-selected", String(selected));
@@ -1531,53 +1577,158 @@ window.CINEMA_LABELS = (() => {
     if (previous) (focusInTabList ? selectedTab : section.querySelector("h1")).focus({preventScroll:true});
     if (panel === "convoy") startStatus();
   }
-  function navigate(hash) {
+  function navigate(hash, fromWheel = false) {
     if (location.hash !== hash) history.pushState(null, "", hash || location.href.split("#")[0]);
-    syncRoute();
+    syncRoute(fromWheel);
   }
 
   const destinations = $("#destinations");
+  const wheelThreshold = 260;
+  const wheelTravel = wheelThreshold / 0.45;
   let wheelDistance = 0;
-  let lastWheelTime = -Infinity;
-  let wheelDirection = 0;
-  let wheelHandled = false;
-  let wheelStarted = 0;
+  let wheelMode = "";
+  let wheelTimer;
+  let wheelGlide = null;
+
+  function neighborTab(distance) {
+    const current = tabs.findIndex(tab => tab.getAttribute("aria-selected") === "true");
+    return distance ? tabs[current + Math.sign(distance)] : null;
+  }
+  function previewNeighbor(distance, fullTravel) {
+    const tab = neighborTab(distance);
+    if (!tab) {
+      if (slide?.from === panel) {
+        clearSlide();
+        displayPanels();
+      }
+      return null;
+    }
+    if (!reducedMotion.matches) {
+      const next = routePanel(tab.getAttribute("href"));
+      if (slide?.from !== panel || slide.to !== next) prepareSlide(panel, next);
+      cancelAnimationFrame(slideFrame);
+      positionSlide(Math.min(1, Math.abs(distance) / fullTravel));
+    }
+    return tab;
+  }
+  function stopWheelGlide() {
+    if (wheelGlide) cancelAnimationFrame(wheelGlide.frame);
+    wheelGlide = null;
+  }
+  function glideWheelTo(target, committed = false) {
+    if (reducedMotion.matches) {
+      stopWheelGlide();
+      if (slide?.from === panel) finishSlide();
+      return;
+    }
+    if (!wheelGlide && !slide && !target) return;
+    const position = slide ? slide.direction * slide.progress : 0;
+    if (!wheelGlide) {
+      wheelGlide = {position, velocity: 0, time: performance.now(), frame: requestAnimationFrame(advanceWheel)};
+    }
+    if (committed) wheelGlide.position = position;
+    wheelGlide.target = target;
+    wheelGlide.committed = committed;
+  }
+  function advanceWheel(now) {
+    const motion = wheelGlide;
+    const dt = Math.max(0, now - motion.time);
+    motion.time += dt;
+    // A critically damped spring preserves speed between notches and when returning to rest.
+    const rate = .021;
+    const offset = motion.position - motion.target;
+    const slope = motion.velocity + rate * offset;
+    const decay = Math.exp(-rate * dt);
+    const remaining = (offset + slope * dt) * decay;
+    motion.velocity = (motion.velocity - rate * slope * dt) * decay;
+    const done = reducedMotion.matches || remaining * offset < 0 ||
+      (Math.abs(remaining) < .0001 && Math.abs(motion.velocity) < .000002);
+    motion.position = done ? motion.target : motion.target + remaining;
+    if (motion.committed) {
+      positionSlide(Math.min(1, Math.max(0, motion.position * slide.direction)));
+      if (done) finishSlide();
+    } else {
+      previewNeighbor(reducedMotion.matches ? 0 : motion.position, 1);
+    }
+    if (done) wheelGlide = null;
+    else motion.frame = requestAnimationFrame(advanceWheel);
+  }
+  function endWheel() {
+    if (wheelMode === "pan") glideWheelTo(0);
+    wheelDistance = 0;
+    wheelMode = "";
+  }
   destinations.addEventListener("wheel", event => {
-    if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (touch || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
     const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
     const delta = horizontal ? event.deltaX : event.deltaY;
     if (!delta) return;
-    const direction = Math.sign(delta);
-    const now = event.timeStamp;
-    if (now - lastWheelTime > 200 || direction !== wheelDirection) {
-      wheelDistance = 0;
-      wheelHandled = false;
-      wheelStarted = now;
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(endWheel, 210);
+    if (!wheelMode) {
+      const leaf = event.target.closest(".leaf");
+      const scrollsGuide = !horizontal && leaf && (delta < 0 ? leaf.scrollTop > 1 : leaf.scrollTop + leaf.clientHeight < leaf.scrollHeight - 1);
+      wheelMode = scrollsGuide ? "native" : "pan";
+      // A second gesture can catch a panel while it is returning to rest.
+      wheelDistance = slide?.from === panel ? slide.direction * slide.progress * wheelTravel : 0;
     }
-    lastWheelTime = now;
-    wheelDirection = direction;
-    if (wheelHandled) return;
-
-    const leaf = event.target.closest(".leaf");
-    if (!horizontal && leaf && (direction < 0 ? leaf.scrollTop > 1 : leaf.scrollTop + leaf.clientHeight < leaf.scrollHeight - 1)) {
-      // Keep the whole gesture in the guide, including its momentum at the edge.
-      wheelHandled = true;
+    if (wheelMode === "native") return;
+    if (wheelMode === "committed" || slide?.to === panel) {
+      wheelMode = "committed";
+      event.preventDefault();
       return;
     }
-    const current = tabs.findIndex(tab => tab.getAttribute("aria-selected") === "true");
-    const next = tabs[current + direction];
-    if (!next) return;
-    if (now - wheelStarted > 320) {
-      wheelDistance = 0;
-      wheelStarted = now;
-    }
     const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? destinations.clientHeight : 1;
-    wheelDistance += Math.abs(delta) * unit;
-    if (wheelDistance < 260) return;
+    wheelDistance = Math.max(-wheelThreshold, Math.min(wheelThreshold, wheelDistance + delta * unit));
+    const next = neighborTab(wheelDistance);
+    if (!next) {
+      wheelDistance = 0;
+      glideWheelTo(0);
+      return;
+    }
     event.preventDefault();
-    wheelHandled = true;
-    navigate(next.getAttribute("href"));
+    if (Math.abs(wheelDistance) >= wheelThreshold) {
+      wheelMode = "committed";
+      navigate(next.getAttribute("href"), true);
+    } else glideWheelTo(wheelDistance / wheelTravel);
   }, {passive:false});
+
+  let touch = null;
+  destinations.addEventListener("pointerdown", event => {
+    if (event.pointerType !== "touch" || !event.isPrimary || slide?.to === panel || wheelMode) return;
+    touch = {id: event.pointerId, x: event.clientX, y: event.clientY, horizontal: false};
+  });
+  destinations.addEventListener("pointermove", event => {
+    if (touch?.id !== event.pointerId) return;
+    const dx = touch.x - event.clientX;
+    if (!touch.horizontal) {
+      const dy = touch.y - event.clientY;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 8) return;
+      if (Math.abs(dx) <= Math.abs(dy)) { touch = null; return; }
+      touch.horizontal = true;
+      stopWheelGlide();
+      destinations.setPointerCapture(event.pointerId);
+      touch.offset = slide?.from === panel ? slide.direction * slide.progress * destinations.clientWidth : 0;
+    }
+    previewNeighbor(dx + touch.offset, destinations.clientWidth);
+  });
+  function endTouch(event) {
+    if (touch?.id !== event.pointerId) return;
+    const gesture = touch;
+    touch = null;
+    if (!gesture.horizontal) return;
+    if (event.type === "pointerup") {
+      const distance = gesture.x - event.clientX + gesture.offset;
+      const next = previewNeighbor(distance, destinations.clientWidth);
+      if (next && Math.abs(distance) >= Math.min(140, destinations.clientWidth * .3)) {
+        navigate(next.getAttribute("href"));
+        return;
+      }
+    }
+    if (slide?.from === panel) settleSlide(0);
+  }
+  destinations.addEventListener("pointerup", endTouch);
+  destinations.addEventListener("pointercancel", endTouch);
 
   document.addEventListener("click", event => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
