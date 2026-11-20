@@ -3268,6 +3268,69 @@
       }
     };
 
+    const mapNoticeByLang = {
+      fr: {
+        map_dbus_scope: "Cette liste répertorie les lignes de bus sur {dbus} et non celles du plugin {plugin}.",
+        map_release_warning: "Attention",
+        map_release_message: "Cette carte interactive n’est pas à jour. Elle affiche actuellement la carte de la version {loaded}, tandis que la dernière version disponible est la {latest}. Veuillez patienter jusqu’à sa mise à jour pour consulter la carte de la dernière version."
+      },
+      en: {
+        map_dbus_scope: "This list shows bus routes for {dbus}, not those for the {plugin} plugin.",
+        map_release_warning: "Outdated map",
+        map_release_message: "This interactive map shows version {loaded}. The latest release is {latest}. Please check back after the interactive map has been updated."
+      },
+      es: {
+        map_dbus_scope: "Esta lista muestra las líneas de autobús de {dbus}, no las del plugin {plugin}.",
+        map_release_warning: "Atención",
+        map_release_message: "Este mapa interactivo no está actualizado. Muestra la versión {loaded} y la última disponible es la {latest}. Espera a que se actualice para consultar el mapa más reciente."
+      },
+      de: {
+        map_dbus_scope: "Diese Liste zeigt die Buslinien von {dbus}. Die Linien des Plugins {plugin} sind hier nicht enthalten.",
+        map_release_warning: "Hinweis",
+        map_release_message: "Diese interaktive Karte zeigt Version {loaded}. Die neueste verfügbare Version ist {latest}. Sobald die Karte aktualisiert wurde, kannst du hier die aktuelle Version ansehen."
+      },
+      pl: {
+        map_dbus_scope: "Ta lista zawiera linie autobusowe z {dbus}, a nie z wtyczki {plugin}.",
+        map_release_warning: "Uwaga",
+        map_release_message: "Ta interaktywna mapa jest nieaktualna. Wyświetla wersję {loaded}, a najnowsza dostępna wersja to {latest}. Poczekaj na aktualizację mapy, aby zobaczyć najnowszą wersję."
+      },
+      pt: {
+        map_dbus_scope: "Esta lista apresenta as linhas de autocarro do {dbus}, não as do plugin {plugin}.",
+        map_release_warning: "Atenção",
+        map_release_message: "Este mapa interativo está desatualizado. Apresenta a versão {loaded}, mas a versão mais recente é a {latest}. Aguarde a atualização para consultar o mapa mais recente."
+      },
+      nl: {
+        map_dbus_scope: "Deze lijst toont de buslijnen van {dbus}. De lijnen van de plug-in {plugin} staan hier niet in.",
+        map_release_warning: "Let op",
+        map_release_message: "Deze interactieve kaart is verouderd. Je ziet versie {loaded}, terwijl de nieuwste versie {latest} is. Zodra de kaart is bijgewerkt, kun je hier de nieuwste versie bekijken."
+      },
+      it: {
+        map_dbus_scope: "Questo elenco mostra le linee di autobus di {dbus}, non quelle del plugin {plugin}.",
+        map_release_warning: "Attenzione",
+        map_release_message: "Questa mappa interattiva non è aggiornata. Mostra la versione {loaded}, mentre l’ultima disponibile è la {latest}. Attendi l’aggiornamento per consultare la mappa più recente."
+      },
+      ru: {
+        map_dbus_scope: "В списке указаны автобусные маршруты {dbus}. Маршруты плагина {plugin} в него не входят.",
+        map_release_warning: "Внимание",
+        map_release_message: "Интерактивная карта устарела. Сейчас показана версия {loaded}, а последняя доступная версия — {latest}. Дождитесь обновления, чтобы посмотреть актуальную карту."
+      },
+      zh: {
+        map_dbus_scope: "此列表仅显示 {dbus} 的公交线路，不包含 {plugin} 插件的线路。",
+        map_release_warning: "注意",
+        map_release_message: "此交互式地图尚未更新。当前显示的是 {loaded} 版，最新版本为 {latest}。请在地图更新后查看最新版本。"
+      },
+      ko: {
+        map_dbus_scope: "이 목록은 {dbus}의 버스 노선을 보여 줍니다. {plugin} 플러그인의 노선은 포함되지 않습니다.",
+        map_release_warning: "안내",
+        map_release_message: "현재 대화형 지도는 {loaded} 버전이며 최신 버전은 {latest}입니다. 최신 지도를 보려면 지도가 업데이트될 때까지 기다려 주세요."
+      },
+      ja: {
+        map_dbus_scope: "この一覧は {dbus} のバス路線を掲載しています。{plugin} プラグインの路線は含まれていません。",
+        map_release_warning: "ご注意",
+        map_release_message: "このインタラクティブマップはまだ更新されていません。現在の表示はバージョン {loaded} で、最新版は {latest} です。最新版の地図を確認するには、地図の更新をお待ちください。"
+      },
+    };
+
     const faqDefaultsByLang = {
       fr: {
         faq_page_title: "FAQ",
@@ -3283,7 +3346,7 @@
         faq_q_contribute: "Est-ce que je peux aider pour la map ?",
         faq_a_contribute: "Oui, les contributions sont toujours appréciées. Si vous souhaitez apporter votre aide, contactez @georges93 sur Discord afin de voir comment vous pouvez contribuer efficacement au projet.",
         faq_q_install_help: "J'ai besoin d'aide pour l'installation / j'ai un problème",
-        faq_a_install_help: "En cas de difficulté technique ou de souci lors de l'installation, rejoignez le serveur Discord pour obtenir de l'aide et échanger avec la communauté.",
+        faq_a_install_help: "En cas de difficulté technique ou de souci lors de l’installation, demandez de l’aide dans le salon #support du serveur Discord.",
         faq_join_discord_link: "Rejoindre le Discord"
       },
       en: {
@@ -3300,7 +3363,7 @@
         faq_q_contribute: "Can I help with the map?",
         faq_a_contribute: "Yes, contributions are always appreciated. If you would like to help, contact @georges93 on Discord to discuss how you can contribute effectively to the project.",
         faq_q_install_help: "I need installation help / I have an issue",
-        faq_a_install_help: "If you have a technical issue or installation problem, join the Discord server to get help and talk with the community.",
+        faq_a_install_help: "If you run into a technical issue or need help with installation, ask in the #support channel on our Discord server.",
         faq_join_discord_link: "Join Discord"
       },
       es: {
@@ -3317,7 +3380,7 @@
         faq_q_contribute: "¿Puedo ayudar con el mapa?",
         faq_a_contribute: "Sí, las contribuciones siempre son bienvenidas. Si quieres ayudar, contacta con @georges93 en Discord para ver cómo puedes contribuir de forma eficaz al proyecto.",
         faq_q_install_help: "Necesito ayuda para la instalación / tengo un problema",
-        faq_a_install_help: "Si tienes una dificultad técnica o un problema durante la instalación, únete al servidor de Discord para obtener ayuda e intercambiar con la comunidad.",
+        faq_a_install_help: "Si tienes problemas técnicos o necesitas ayuda con la instalación, pregunta en el canal #support de nuestro servidor de Discord.",
         faq_join_discord_link: "Unirse a Discord"
       },
       de: {
@@ -3334,7 +3397,7 @@
         faq_q_contribute: "Kann ich bei der Karte helfen?",
         faq_a_contribute: "Ja, Beiträge sind immer willkommen. Wenn du helfen möchtest, kontaktiere @georges93 auf Discord, um zu sehen, wie du effektiv zum Projekt beitragen kannst.",
         faq_q_install_help: "Ich brauche Hilfe bei der Installation / ich habe ein Problem",
-        faq_a_install_help: "Bei technischen Schwierigkeiten oder Installationsproblemen tritt dem Discord-Server bei, um Hilfe zu erhalten und dich mit der Community auszutauschen.",
+        faq_a_install_help: "Bei technischen Fragen oder Problemen mit der Installation hilft dir der Kanal #support auf unserem Discord-Server.",
         faq_join_discord_link: "Discord beitreten"
       },
       pl: {
@@ -3351,7 +3414,7 @@
         faq_q_contribute: "Czy mogę pomóc przy mapie?",
         faq_a_contribute: "Tak, wkład społeczności jest zawsze mile widziany. Jeśli chcesz pomóc, skontaktuj się z @georges93 na Discordzie, aby ustalić, jak skutecznie możesz wesprzeć projekt.",
         faq_q_install_help: "Potrzebuję pomocy z instalacją / mam problem",
-        faq_a_install_help: "W przypadku trudności technicznych lub problemu podczas instalacji dołącz do serwera Discord, aby uzyskać pomoc i porozmawiać ze społecznością.",
+        faq_a_install_help: "W razie problemów technicznych lub trudności z instalacją poproś o pomoc na kanale #support na naszym serwerze Discord.",
         faq_join_discord_link: "Dołącz do Discorda"
       },
       pt: {
@@ -3368,7 +3431,7 @@
         faq_q_contribute: "Posso ajudar no mapa?",
         faq_a_contribute: "Sim, contribuições são sempre bem-vindas. Se quiser ajudar, entre em contato com @georges93 no Discord para ver como você pode contribuir de forma eficaz com o projeto.",
         faq_q_install_help: "Preciso de ajuda para instalar / tenho um problema",
-        faq_a_install_help: "Em caso de dificuldade técnica ou problema durante a instalação, entre no servidor do Discord para receber ajuda e conversar com a comunidade.",
+        faq_a_install_help: "Se tiver dificuldades técnicas ou problemas durante a instalação, peça ajuda no canal #support do nosso servidor do Discord.",
         faq_join_discord_link: "Entrar no Discord"
       },
       nl: {
@@ -3385,7 +3448,7 @@
         faq_q_contribute: "Kan ik helpen met de map?",
         faq_a_contribute: "Ja, bijdragen worden altijd gewaardeerd. Als je wilt helpen, neem dan contact op met @georges93 op Discord om te bekijken hoe je effectief aan het project kunt bijdragen.",
         faq_q_install_help: "Ik heb hulp nodig met de installatie / ik heb een probleem",
-        faq_a_install_help: "Bij technische problemen of installatiemoeilijkheden kun je de Discord-server joinen om hulp te krijgen en met de community te praten.",
+        faq_a_install_help: "Vraag bij technische problemen of installatieproblemen om hulp in het kanaal #support op onze Discord-server.",
         faq_join_discord_link: "Word lid van Discord"
       },
       it: {
@@ -3402,7 +3465,7 @@
         faq_q_contribute: "Posso aiutare con la mappa?",
         faq_a_contribute: "Sì, i contributi sono sempre apprezzati. Se vuoi dare una mano, contatta @georges93 su Discord per vedere come puoi contribuire efficacemente al progetto.",
         faq_q_install_help: "Ho bisogno di aiuto per l'installazione / ho un problema",
-        faq_a_install_help: "In caso di difficoltà tecniche o problemi durante l'installazione, entra nel server Discord per ricevere aiuto e confrontarti con la community.",
+        faq_a_install_help: "Se hai difficoltà tecniche o problemi durante l’installazione, chiedi aiuto nel canale #support del nostro server Discord.",
         faq_join_discord_link: "Unisciti a Discord"
       },
       ru: {
@@ -3419,7 +3482,7 @@
         faq_q_contribute: "Могу ли я помочь с картой?",
         faq_a_contribute: "Да, вклад сообщества всегда приветствуется. Если вы хотите помочь, свяжитесь с @georges93 в Discord, чтобы обсудить, как вы можете эффективно участвовать в проекте.",
         faq_q_install_help: "Мне нужна помощь с установкой / у меня проблема",
-        faq_a_install_help: "Если у вас возникли технические трудности или проблема при установке, присоединяйтесь к серверу Discord, чтобы получить помощь и пообщаться с сообществом.",
+        faq_a_install_help: "Если возникли технические трудности или проблемы с установкой, обратитесь за помощью в канал #support на нашем сервере Discord.",
         faq_join_discord_link: "Присоединиться к Discord"
       },
       zh: {
@@ -3436,7 +3499,7 @@
         faq_q_contribute: "我可以帮助这个地图项目吗？",
         faq_a_contribute: "可以，我们一直欢迎贡献。如果你希望参与，请在 Discord 联系 @georges93，讨论你可以如何高效地帮助项目。",
         faq_q_install_help: "我需要安装帮助 / 我遇到了问题",
-        faq_a_install_help: "如果你在安装过程中遇到技术问题或其他困难，请加入 Discord 服务器获取帮助，并与社区交流。",
+        faq_a_install_help: "如果遇到技术问题或安装困难，请前往我们 Discord 服务器的 #support 频道寻求帮助。",
         faq_join_discord_link: "加入 Discord"
       },
       ko: {
@@ -3453,7 +3516,7 @@
         faq_q_contribute: "맵 제작을 도울 수 있나요?",
         faq_a_contribute: "네, 기여는 언제나 환영합니다. 도움을 주고 싶다면 Discord에서 @georges93에게 연락해 프로젝트에 효과적으로 기여할 방법을 확인해 주세요.",
         faq_q_install_help: "설치 도움이 필요해요 / 문제가 있어요",
-        faq_a_install_help: "기술적인 문제나 설치 중 오류가 있다면 Discord 서버에 참여해 도움을 받고 커뮤니티와 소통해 주세요.",
+        faq_a_install_help: "기술적인 문제나 설치 중 어려움이 있다면 Discord 서버의 #support 채널에 도움을 요청하세요.",
         faq_join_discord_link: "Discord 참여하기"
       },
       ja: {
@@ -3470,7 +3533,7 @@
         faq_q_contribute: "このマップ制作を手伝えますか？",
         faq_a_contribute: "はい、貢献はいつでも歓迎しています。手伝いたい場合は、Discordで @georges93 に連絡し、プロジェクトに効果的に参加する方法を確認してください。",
         faq_q_install_help: "インストールの助けが必要です / 問題があります",
-        faq_a_install_help: "技術的な問題やインストール時のトラブルがある場合は、Discordサーバーに参加してサポートを受け、コミュニティと情報交換してください。",
+        faq_a_install_help: "技術的な問題やインストールでお困りの場合は、Discord サーバーの #support チャンネルでご相談ください。",
         faq_join_discord_link: "Discordに参加"
       }
     };
@@ -4659,6 +4722,8 @@
     Object.keys(i18n).forEach((lang) => {
       const table = i18n[lang];
       if (!table || typeof table !== "object") return;
+
+      Object.assign(table, mapNoticeByLang[lang] || mapNoticeByLang.fr);
 
       Object.entries(aliasMap).forEach(([target, alias]) => {
         const current = table[target];

@@ -1598,6 +1598,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       box-shadow:-16px 0 50px rgba(0,0,0,.55);
     }
     #settingsPanel .dbus-content{
+      zoom:.95;
       padding:12px;
       display:block;
       min-height:0;
@@ -1707,17 +1708,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    #settingsPanel .settings-legend-exp{
-      margin-left:auto;
-      flex:0 0 auto;
-    }
-    #settingsPanel .settings-legend-switch{
-      margin-left:8px;
-      flex:0 0 auto;
-    }
-    #settingsPanel .settings-legend-item-toggle{
-      grid-column:1 / -1;
-    }
     #settingsPanel .lang-menu{
       position:static;
       top:auto;
@@ -1730,55 +1720,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
       background:transparent;
       box-shadow:none;
       display:block !important;
-    }
-    #settingsPanel .settings-map-version-row{
-      display:flex;
-      align-items:center;
-    }
-    #settingsPanel .settings-map-reset-row{
-      display:flex;
-      align-items:center;
-      margin-top:8px;
-    }
-    #settingsPanel .settings-map-version-select{
-      width:100%;
-      max-width:100%;
-      min-height:38px;
-      border:1px solid var(--border);
-      border-radius:10px;
-      background:var(--panel2);
-      color:var(--text);
-      font-size:13px;
-      font-weight:600;
-      padding:8px 10px;
-      outline:none;
-    }
-    #settingsPanel .settings-map-reset-btn{
-      width:100%;
-      min-height:38px;
-      border:1px solid #4a2b2b;
-      border-radius:10px;
-      background:#261818;
-      color:#ffd7d7;
-      font-size:13px;
-      font-weight:600;
-      padding:8px 10px;
-      cursor:pointer;
-      transition:background .15s ease,border-color .15s ease,color .15s ease;
-    }
-    #settingsPanel .settings-map-reset-btn:hover{
-      background:#3a2020;
-      border-color:#6a3a3a;
-      color:#ffe8e8;
-    }
-    #settingsPanel .settings-map-reset-btn:focus{
-      border-color:#9a5454;
-      box-shadow:0 0 0 2px rgba(154,84,84,.2);
-      outline:none;
-    }
-    #settingsPanel .settings-map-version-select:focus{
-      border-color:#6f6f6f;
-      box-shadow:0 0 0 2px rgba(111,111,111,.2);
     }
     #dbusPanel .dbus-header .dbus-close,
     #settingsPanel .dbus-header .dbus-close{
@@ -1905,6 +1846,26 @@ svg.leaflet-image-layer.leaflet-interactive path {
       margin-top:10px;
       flex:0 0 auto;
     }
+    .map-scope-note {
+      flex: none; margin: 10px 16px 4px; padding: 2px 0 2px 11px;
+      border-inline-start: 2px solid #ffc26a; color: #dddde1; font-size: .86rem; line-height: 1.45;
+    }
+    .map-scope-note a { color: #fafafa; font-weight: 650; text-underline-offset: .17em }
+    #mapReleaseNotice {
+      position: fixed; inset: var(--site-header-h) 0 0; height: fit-content; z-index: 1750;
+      max-height: calc(100svh - var(--site-header-h) - 20px); overflow-y: auto;
+      width: min(28rem,calc(100% - 36px)); box-sizing: border-box; padding: 23px; margin: auto;
+      color: #f3f3f5; background: #1b1b1e; border: 1px solid #45454b; border-radius: 8px;
+    }
+    .map-notice-shade { display: none }
+    #mapReleaseNotice[open] + .map-notice-shade {
+      display: block; position: fixed; inset: var(--site-header-h) 0 0; z-index: 1700;
+      pointer-events: none; background: rgb(8 8 10 / 66%);
+    }
+    #mapReleaseNotice h2 { margin: 0 0 12px; color: #ffc26a; font: 700 1.55rem/1.1 "Barlow Condensed",sans-serif }
+    #mapReleaseNotice p { margin: 0; font-size: .95rem; line-height: 1.6 }
+    #mapReleaseNotice form { display: flex; justify-content: end; margin-top: 20px }
+    #mapReleaseNotice button { padding: 8px 22px; border: 0; border-radius: 4px; background: #ececef; color: #19191c; font: inherit; font-weight: 650; cursor: pointer }
     #dbusPanel .dbus-layout{
       flex:1 1 auto;
       min-height:0;
@@ -4591,13 +4552,10 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
 .page-live-telemetry .viewer { min-height: 250px; flex: 1; border-radius: 7px; box-shadow: none }
 .page-map { height: 100svh; overflow: hidden }
 .page-map .mast { position: fixed; inset: 0 0 auto; z-index: 1800; background: #161618 }
-.page-map #map { top: var(--site-header-h); bottom: 26px }
-.page-map .site-footer { position: fixed; inset: auto 0 0; z-index: 1400; min-height: 26px; background: #101012 }
-.page-map .watermark { bottom: 30px }
+.page-map #map { top: var(--site-header-h); bottom: 0 }
 .page-map :is(.search-input,.dbus-panel,.settings-panel,.search-panel,.line-preview-panel) {
   color: #f0f0f2; background-color: #19191c; border-color: var(--page-border); border-radius: 7px;
 }
-.maps-app-mode .page-map .site-footer { display: none }
 .maps-app-mode .page-map #map { inset: 0 }
 @keyframes page-in { from { transform: translateY(5px); opacity: .6 } to { transform: none; opacity: 1 } }
 @media (prefers-reduced-motion: no-preference) {
@@ -4644,7 +4602,7 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
         </div>
       </header>
 
-  <div id="map"></div>
+  <div id="map" data-packaged-version="0.1.6"></div>
 
   <script src="config/config.js"></script>
   <div class="map-topbar" id="topBar">
@@ -4733,7 +4691,7 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
       </div>
       <div class="top-actions">
         <button id="btnDbus" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Lignes DBus World" title="Lignes DBus World">
-          <img id="btnDbusLogo" class="dbus-icon-logo" src="map_files/website/Overlays/bus_logo_idfm.png" alt="" aria-hidden="true"/>
+          <img id="btnDbusLogo" class="dbus-icon-logo" alt="" aria-hidden="true"/>
         </button>
         <button id="btnSettings" class="btn icon-btn" type="button" aria-expanded="false" aria-label="Parametres" title="Parametres">
           <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -4790,6 +4748,7 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
         </a>
         <button type="button" class="line-preview-close dbus-close" id="dbusPanelClose" aria-label="Fermer">&times;</button>
       </div>
+      <p id="dbusScopeNote" class="map-scope-note">Cette liste répertorie les lignes de bus sur <a href="https://dbusworld.com/" target="_blank" rel="noopener noreferrer">DBus World</a> et non celles du plugin <a href="./#idfrp">IDF-RP</a>.</p>
       <div class="dbus-layout">
         <div class="dbus-box dbus-lines-box">
           <div class="dbus-box-title" id="dbusLinesTitle">Lignes</div>
@@ -4846,31 +4805,6 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
         <button type="button" class="line-preview-close dbus-close" id="settingsPanelClose" aria-label="Fermer">&times;</button>
       </div>
       <div class="dbus-content">
-        <div class="settings-category">
-          <h3 class="settings-group-title" id="settingsWebCategoryTitle">PAGE WEB</h3>
-          <section class="settings-sec">
-            <h4 class="settings-title" id="settingsAnimationsTitle">General</h4>
-            <div class="dbus-filters">
-              <label class="dbus-switch">
-                <span class="dbus-switch-label" id="settingsAnimationsLabel">Animations des menus</span>
-                <input type="checkbox" id="settingsAnimationsToggle" checked>
-              </label>
-              <label class="dbus-switch" id="settingsTranslateStopsRow">
-                <span class="dbus-switch-label" id="settingsTranslateStopsLabel">Traduire les arrêts</span>
-                <input type="checkbox" id="settingsTranslateStopsToggle">
-              </label>
-            </div>
-            <div class="settings-map-reset-row">
-              <button type="button" id="settingsResetDefaultsBtn" class="settings-map-reset-btn">Réinitialiser les paramètres</button>
-            </div>
-          </section>
-          <section class="settings-sec" id="settingsMapVersionSection" hidden>
-            <h4 class="settings-title" id="settingsMapVersionTitle">Version de la carte</h4>
-            <div class="settings-map-version-row">
-              <select id="settingsMapVersionSelect" class="settings-map-version-select"></select>
-            </div>
-          </section>
-        </div>
         <div class="settings-category" id="settingsDbusCategory">
           <h3 class="settings-group-title" id="settingsDbusCategoryTitle">PANNEAU DE LIGNES DBUS</h3>
           <section class="settings-sec">
@@ -4879,6 +4813,10 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
               <label class="dbus-switch">
                 <span class="dbus-switch-label" id="settingsCenterLineLabel">Centrer sur la ligne sélectionnée</span>
                 <input type="checkbox" id="settingsCenterLineToggle" checked>
+              </label>
+              <label class="dbus-switch" id="settingsTranslateStopsRow">
+                <span class="dbus-switch-label" id="settingsTranslateStopsLabel">Traduire les arrêts</span>
+                <input type="checkbox" id="settingsTranslateStopsToggle">
               </label>
             </div>
           </section>
@@ -4948,22 +4886,19 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
               <img class="settings-legend-icon" data-overlay-src="parking_ico.png" alt="" aria-hidden="true"/>
               <span class="settings-legend-label" id="settingsLegendParkingLabel">Parking</span>
             </div>
-            <div class="settings-legend-item settings-legend-item-toggle" id="settingsBusStopsRow">
-              <div class="settings-legend-item-main">
-                <img class="settings-legend-icon" data-overlay-src="bus_logo_idfm.png" alt="" aria-hidden="true"/>
-                <span class="settings-legend-label" id="settingsLegendBusStopsLabel">Arrêts de bus</span>
-                <span class="lang-toggle-badge settings-legend-exp" id="settingsLegendBusStopsBadge">Expérimental</span>
-              </div>
-              <label class="dbus-switch settings-legend-switch">
-                <span class="dbus-switch-label" id="settingsLegendBusStopsToggleLabel">Afficher</span>
-                <input type="checkbox" id="settingsBusStopsToggle">
-              </label>
-            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <dialog id="mapReleaseNotice" aria-labelledby="mapReleaseTitle" aria-describedby="mapReleaseText">
+    <h2 id="mapReleaseTitle">Attention</h2>
+    <p id="mapReleaseText"></p>
+    <form method="dialog"><button type="submit" autofocus>OK</button></form>
+  </dialog>
+
+  <div class="map-notice-shade" aria-hidden="true"></div>
 
   <div id="dbusStopPanel" class="dbus-stop-panel">
     <div class="dbus-header">
@@ -5131,6 +5066,643 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 </script>
+  <script>
+(() => {
+  const CACHE_KEY = "idf_actualites_sheet_cache_v1";
+  const DEFAULT_SHEET_NAME = "actualites";
+  const UPDATE_CHANNEL_ID = "998922374504267786";
+  const DEVLOG_CHANNEL_ID = "998922258791804988";
+
+  function normalizeHeader(raw) {
+    return String(raw || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+  function firstNonEmpty(obj, keys) {
+    for (const key of keys) {
+      const value = String(obj[key] ?? "").trim();
+      if (value) return value;
+    }
+    return "";
+  }
+  function collectMessageTranslations(row) {
+    const byLang = {};
+    const entries = Object.entries(row || {}).map(([key, value]) => ({
+      key: normalizeHeader(key),
+      value: String(value ?? "").trim()
+    }));
+    const pickByLocale = (code) => {
+      const target = `message_${code}`;
+      const exact = entries.find((entry) => entry.key === target && entry.value);
+      if (exact) return exact.value;
+      const prefixed = entries.find((entry) => entry.key.startsWith(`${target}_`) && entry.value);
+      if (prefixed) return prefixed.value;
+      const compact = entries.find((entry) => entry.key === `message${code}` && entry.value);
+      if (compact) return compact.value;
+      const fuzzy = entries.find((entry) => /^message/.test(entry.key) && new RegExp(`(?:_|^)${code}(?:_|$)`).test(entry.key) && entry.value);
+      if (fuzzy) return fuzzy.value;
+      return "";
+    };
+
+    const base = firstNonEmpty(row, ["message_fr", "message", "content", "contenu", "texte"]);
+    if (base) byLang.fr = base;
+
+    const locales = ["en", "es", "de", "pl", "pt", "nl", "it", "ru", "zh", "ko", "ja"];
+    locales.forEach((code) => {
+      const value = pickByLocale(code);
+      if (value) byLang[code] = value;
+    });
+    return byLang;
+  }
+  function pickLocalizedMessage(byLang, localeCode) {
+    const map = byLang && typeof byLang === "object" ? byLang : {};
+    const code = String(localeCode || "fr").toLowerCase().slice(0, 2);
+    if (map[code]) return map[code];
+    if (map.fr) return map.fr;
+    if (map.en) return map.en;
+    const first = Object.values(map).find((value) => String(value || "").trim());
+    return String(first || "");
+  }
+
+  function readCache(maxAgeMs) {
+    try {
+      const raw = sessionStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return null;
+      const savedAt = Number(parsed.savedAt || 0);
+      if (!savedAt || Date.now() - savedAt > maxAgeMs) return null;
+      return Array.isArray(parsed.rows) ? parsed.rows : null;
+    } catch {
+      return null;
+    }
+  }
+  function writeCache(rows) {
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), rows }));
+    } catch {}
+  }
+
+  function parseGvizResponse(payload) {
+    const text = String(payload || "").trim();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);?\s*$/);
+    if (match && match[1]) return JSON.parse(match[1]);
+    if (text.startsWith("{") && text.endsWith("}")) return JSON.parse(text);
+    throw new Error("Invalid Google Sheet response");
+  }
+
+  function mapGvizTableToRows(data) {
+    const table = data && data.table && typeof data.table === "object" ? data.table : {};
+    const cols = Array.isArray(table.cols) ? table.cols : [];
+    const rows = Array.isArray(table.rows) ? table.rows : [];
+
+    let headers = cols.map((col, index) => {
+      const normalized = normalizeHeader(col && (col.label || col.id || ""));
+      return normalized || `col_${index}`;
+    });
+
+    const labelsMissing = cols.length > 0 && cols.every((col) => !String(col && col.label || "").trim());
+    const headersAreGeneric = headers.every((key) => /^col_\d+$/.test(key));
+
+    let rowStartIndex = 0;
+    if ((labelsMissing || headersAreGeneric) && rows.length) {
+      const firstCells = Array.isArray(rows[0] && rows[0].c) ? rows[0].c : [];
+      const candidateHeaders = firstCells.map((cell, index) => {
+        const value = cell && typeof cell === "object" && "v" in cell ? cell.v : "";
+        const normalized = normalizeHeader(value);
+        return normalized || `col_${index}`;
+      });
+      const nonGenericCount = candidateHeaders.filter((key) => !/^col_\d+$/.test(key)).length;
+      if (nonGenericCount >= 2) {
+        headers = candidateHeaders;
+        rowStartIndex = 1;
+      }
+    }
+
+    const uniqueHeaders = [];
+    const seen = {};
+    headers.forEach((key, index) => {
+      const base = key || `col_${index}`;
+      const count = Number(seen[base] || 0);
+      seen[base] = count + 1;
+      uniqueHeaders.push(count ? `${base}_${count + 1}` : base);
+    });
+
+    return rows
+      .slice(rowStartIndex)
+      .map((row) => {
+        const cells = Array.isArray(row && row.c) ? row.c : [];
+        const out = {};
+        uniqueHeaders.forEach((key, index) => {
+          const cell = cells[index];
+          out[key] = cell && typeof cell === "object" && "v" in cell ? cell.v : "";
+        });
+        return out;
+      })
+      .filter((rowObj) => Object.values(rowObj).some((value) => String(value || "").trim()));
+  }
+
+
+  function buildSheetUrl(spreadsheetId, gid, sheetName) {
+    const id = encodeURIComponent(spreadsheetId);
+    const params = new URLSearchParams();
+    if (sheetName) {
+      params.set("sheet", sheetName);
+    } else {
+      params.set("gid", String(gid || "0"));
+    }
+    params.set("tqx", "out:json");
+    return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?${params.toString()}`;
+  }
+
+  async function fetchSheetRows(url, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const text = await response.text();
+      const parsed = parseGvizResponse(text);
+      return mapGvizTableToRows(parsed);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  function normalizeLinkToken(raw) {
+    return String(raw || "").trim().replace(/[\u0448\u0428]/g, "@");
+  }
+
+  function toHttpUrl(raw) {
+    const value = normalizeLinkToken(raw);
+    if (!value) return "";
+    const lower = value.toLowerCase();
+    if (lower === "x" || lower === "-" || lower === "none" || lower === "n/a") return "";
+    try {
+      const url = new URL(value);
+      if (url.protocol === "http:" || url.protocol === "https:") return url.toString();
+      return "";
+    } catch {
+      if (!value.includes(".")) return "";
+      try {
+        const normalized = new URL(`https://${value.replace(/^\/+/, "")}`);
+        if (normalized.protocol === "http:" || normalized.protocol === "https:") return normalized.toString();
+        return "";
+      } catch {
+        return "";
+      }
+    }
+  }
+
+  function extractUrls(raw) {
+    const value = String(raw || "");
+    if (!value) return [];
+    const matches = value.match(/https?:\/\/[^\s"']+/g) || [];
+    return matches
+      .map((url) => url.replace(/[>*),.;\\]+$/, "").replace(/&+$/, ""))
+      .map((url) => toHttpUrl(url))
+      .filter(Boolean);
+  }
+
+  function uniqueUrls(urls) {
+    const seen = new Set();
+    const out = [];
+    urls.forEach((url) => {
+      const key = String(url || "").trim();
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      out.push(key);
+    });
+    return out;
+  }
+
+  function isImageUrl(url) {
+    const lower = String(url || "").toLowerCase();
+    if (!lower) return false;
+    if (/\.(png|jpe?g|gif|webp|avif|bmp)(\?|$)/.test(lower)) return true;
+
+    return false;
+  }
+  function parseDiscordChannelId(rawUrl) {
+    const value = toHttpUrl(rawUrl);
+    if (!value) return "";
+    try {
+      const url = new URL(value);
+      const parts = String(url.pathname || "").split("/").filter(Boolean);
+      if (parts.length >= 3 && parts[0] === "channels") return String(parts[2] || "");
+      return "";
+    } catch {
+      return "";
+    }
+  }
+
+  function stripDiscordTokens(raw) {
+    return String(raw || "")
+      .replace(/\r\n/g, "\n")
+      .replace(/(?:<|&lt;)a?:[^:<>&\s]+:\d+(?:>|&gt;)/gi, "")
+      .replace(/:warning:/gi, "")
+      .replace(/<@&\d+>/g, "")
+      .replace(/<@!?\d+>/g, "")
+      .replace(/<#\d+>/g, "")
+      .replace(/@everyone/gi, "")
+      .replace(/@here/gi, "");
+  }
+
+  function cleanMessage(raw) {
+    const text = stripDiscordTokens(raw);
+    const filtered = text
+      .split("\n")
+      .filter((line) => !/^\s*https?:\/\/\S+\s*$/.test(line))
+      .join("\n")
+      .replace(/\\/g, "")
+      .trim();
+    return filtered;
+  }
+
+  function stripDiscordDecor(raw) {
+    return stripDiscordTokens(raw)
+      .replace(/^\s*>+\s?/, "")
+      .replace(/\\-/g, "-")
+      .replace(/[*_`#]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+  function parseUpdateMessage(raw) {
+    const normalized = stripDiscordTokens(raw).replace(/\\-/g, "-");
+    const lines = normalized
+      .split("\n")
+      .map((line) => String(line || "").trim())
+      .filter(Boolean);
+
+    const toPlain = (line) => String(line || "")
+      .replace(/^\s*>+\s?/, "")
+      .replace(/[*_`]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const toMarkerLine = (line) => String(line || "")
+      .replace(/\*\*/g, "")
+      .replace(/__/g, "")
+      .replace(/`/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const toSearch = (line) => String(line || "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+    const toSearchLatin = (line) => String(line || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const cleanText = (line) => toPlain(line).replace(/^[-*]\s+/, "").trim();
+    const isUrl = (line) => /^https?:\/\//i.test(String(line || "").trim());
+
+    const minVersionMarkers = [
+      /version du jeu minimale/,
+      /minimum game version/,
+      /version minima del juego/,
+      /mindestspielversion/,
+      /minimalna wersja gry/,
+      /versao minima do jogo/,
+      /minimale spelversie/,
+      /versione minima del gioco/,
+      /минимальная версия игры/,
+      /最低游戏版本/,
+      /최소 게임 버전/,
+      /最小ゲームバージョン/
+    ];
+    const recommendedVersionMarkers = [
+      /version du jeu recommandee/,
+      /recommended game version/,
+      /version recomendada del juego/,
+      /empfohlene spielversion/,
+      /zalecana wersja gry/,
+      /versao recomendada do jogo/,
+      /aanbevolen spelversie/,
+      /versione del gioco consigliata/,
+      /рекомендуемая версия игры/,
+      /推荐游戏版本/,
+      /권장 게임 버전/,
+      /推奨ゲームバージョン/
+    ];
+    const extractAfterColon = (plain) => {
+      const match = String(plain || "").match(/[:：]\s*(.+)$/);
+      return match && match[1] ? match[1].trim() : "";
+    };
+
+    const isDlcHeader = (plain, markerLine) => {
+      if (!plain || isUrl(plain)) return false;
+      if (/^(?:>\s*)?[-*]\s+/.test(markerLine || "")) return false;
+      return /dlc/i.test(plain);
+    };
+    const isContentHeader = (plain, search, searchLatin, markerLine) => {
+      if (!plain || isUrl(plain)) return false;
+      if (/^(?:>\s*)?[-*]\s+/.test(markerLine || "")) return false;
+      const latinPatterns = [
+        /contenu de la mise/,
+        /update content/,
+        /contenido (?:de la actualizacion|actualizado)/,
+        /update-inhalte/,
+        /aktualizacja zawartosci/,
+        /conteudo da atualizacao/,
+        /update-inhoud/,
+        /aggiornamento dei contenuti/,
+        /contenuto dell.?aggiornamento/,
+        /содержани[ея] обновлен/,
+        /обновление контента/
+      ];
+      if (latinPatterns.some((pattern) => pattern.test(searchLatin || ""))) return true;
+      return /更新内容|업데이트 내용|アップデート内容/.test(search || "");
+    };
+    const isLinkHeader = (plain, search) => {
+      if (!plain || isUrl(plain)) return false;
+      if (/^(lien|link|enlace)\b/i.test(plain)) return true;
+      if (/^(ссылка|链接|링크|リンク)\b/i.test(plain)) return true;
+      if (/^\*\*\s*(lien|link|enlace|ссылка|链接|링크|リンク)/i.test(plain)) return true;
+      return /^enlace\b|^ссылка\b|^链接|^링크|^リンク/.test(search || "");
+    };
+    const isFooterLine = (search) => {
+      return /(merci de suivre|please follow|sigue las instrucciones|bitte folgen|postepuj zgodnie|siga as instrucoes|volg de instructies|segui le istruzioni|следуйте инструкциям|请按照|안내 사항|指示に従って)/i.test(search || "");
+    };
+
+    let version = "";
+    let minVersion = "";
+    let recommendedVersion = "";
+    const dlc = [];
+    const dlcLineIndexes = new Set();
+    const contentItems = [];
+
+    lines.forEach((line) => {
+      const plain = toPlain(line);
+      const search = toSearch(plain);
+      const searchLatin = toSearchLatin(plain);
+      const markerLine = toMarkerLine(line);
+
+      const isMinVersionLine = minVersionMarkers.some((pattern) => pattern.test(searchLatin) || pattern.test(search));
+      const isRecommendedVersionLine = recommendedVersionMarkers.some((pattern) => pattern.test(searchLatin) || pattern.test(search));
+      if (!minVersion && isMinVersionLine) minVersion = extractAfterColon(plain);
+      if (!recommendedVersion && isRecommendedVersionLine) recommendedVersion = extractAfterColon(plain);
+
+      const isGameVersionMeta = isMinVersionLine || isRecommendedVersionLine;
+      if (!version && !isGameVersionMeta && !isDlcHeader(plain, markerLine) && !isContentHeader(plain, search, searchLatin, markerLine)) {
+        const versionPatterns = [
+          /(?:version|versi[oó]n|versione|wersja)\s+v?\s*([0-9][0-9a-zA-Z._-]*)/i,
+          /версия\s+v?\s*([0-9][0-9a-zA-Z._-]*)/i,
+          /版本\s*v?\s*([0-9][0-9a-zA-Z._-]*)/i,
+          /버전\s*v?\s*([0-9][0-9a-zA-Z._-]*)/i,
+          /バージョン\s*v?\s*([0-9][0-9a-zA-Z._-]*)/i
+        ];
+        for (const pattern of versionPatterns) {
+          const match = plain.match(pattern);
+          if (match && match[1]) {
+            version = match[1].trim();
+            break;
+          }
+        }
+      }
+    });
+
+    let dlcStart = -1;
+    let contentStart = -1;
+    for (let i = 0; i < lines.length; i += 1) {
+      const plain = toPlain(lines[i]);
+      const search = toSearch(plain);
+      const searchLatin = toSearchLatin(plain);
+      const markerLine = toMarkerLine(lines[i]);
+      if (dlcStart < 0 && isDlcHeader(plain, markerLine)) dlcStart = i;
+      if (contentStart < 0 && isContentHeader(plain, search, searchLatin, markerLine)) contentStart = i;
+    }
+
+    if (dlcStart >= 0) {
+      for (let i = dlcStart + 1; i < lines.length; i += 1) {
+        const plain = toPlain(lines[i]);
+        const search = toSearch(plain);
+        const searchLatin = toSearchLatin(plain);
+        const markerLine = toMarkerLine(lines[i]);
+        if (contentStart >= 0 && i >= contentStart) break;
+        if (isContentHeader(plain, search, searchLatin, markerLine) || isLinkHeader(plain, search) || isFooterLine(searchLatin) || isFooterLine(search)) break;
+
+        const bullet = markerLine.match(/^(?:>\s*)?[-*]\s+(.+)$/);
+        if (!bullet || !bullet[1]) continue;
+        const text = cleanText(bullet[1]);
+        if (!text) continue;
+        dlc.push(text);
+        dlcLineIndexes.add(i);
+      }
+    }
+
+    if (contentStart >= 0) {
+      for (let i = contentStart + 1; i < lines.length; i += 1) {
+        const plain = toPlain(lines[i]);
+        const search = toSearch(plain);
+        const searchLatin = toSearchLatin(plain);
+        const markerLine = toMarkerLine(lines[i]);
+        if (isLinkHeader(plain, search) || isFooterLine(searchLatin) || isFooterLine(search) || isDlcHeader(plain, markerLine)) break;
+        if (isUrl(plain)) continue;
+
+        const sub = markerLine.match(/^>\s*[-*]\s+(.+)$/);
+        if (sub && sub[1]) {
+          const text = cleanText(sub[1]);
+          if (text) contentItems.push({ text, level: 1 });
+          continue;
+        }
+        const top = markerLine.match(/^[-*]\s+(.+)$/);
+        if (top && top[1]) {
+          const text = cleanText(top[1]);
+          if (text) contentItems.push({ text, level: 0 });
+          continue;
+        }
+        if (plain && contentItems.length && !isContentHeader(plain, search, searchLatin, markerLine)) {
+          const last = contentItems[contentItems.length - 1];
+          last.text = `${last.text} ${plain}`.trim();
+        }
+      }
+    }
+
+    if (!contentItems.length) {
+      for (let i = 0; i < lines.length; i += 1) {
+        if (dlcLineIndexes.has(i)) continue;
+        const plain = toPlain(lines[i]);
+        const search = toSearch(plain);
+        const searchLatin = toSearchLatin(plain);
+        const markerLine = toMarkerLine(lines[i]);
+        if (!plain || isUrl(plain)) continue;
+        if (isDlcHeader(plain, markerLine) || isContentHeader(plain, search, searchLatin, markerLine) || isLinkHeader(plain, search) || isFooterLine(searchLatin) || isFooterLine(search)) continue;
+
+        const sub = markerLine.match(/^>\s*[-*]\s+(.+)$/);
+        if (sub && sub[1]) {
+          const text = cleanText(sub[1]);
+          if (text) contentItems.push({ text, level: 1 });
+          continue;
+        }
+        const top = markerLine.match(/^[-*]\s+(.+)$/);
+        if (top && top[1]) {
+          const text = cleanText(top[1]);
+          if (text) contentItems.push({ text, level: 0 });
+        }
+      }
+    }
+
+    return {
+      versionMap: version || "",
+      title: `Mise-à-jour Version ${version || "X"}`,
+      minVersion,
+      recommendedVersion,
+      dlc,
+      content: contentItems.map((entry) => entry.text),
+      contentItems
+    };
+  }
+  function parseDevLogMessage(raw) {
+    const parsed = parseUpdateMessage(raw);
+    if (Array.isArray(parsed.content) && parsed.content.length) return parsed;
+
+    const normalized = stripDiscordTokens(raw).replace(/\\-/g, "-");
+    const lines = normalized
+      .split("\n")
+      .map((line) => stripDiscordDecor(line).replace(/^[-*]\s+/, "").trim())
+      .filter(Boolean)
+      .filter((line) => !/^https?:\/\//i.test(line))
+      .filter((line) => !/^(developpement|développement)\s+de\s+la\s+version\b/i.test(line))
+      .filter((line) => !/^(version du jeu|dlc requis|contenu de la mise[-\sàa]*jour|lien|merci de suivre)\b/i.test(line));
+
+    parsed.content = lines;
+    return parsed;
+  }
+  function hasParsedUpdateData(parsed) {
+    if (!parsed || typeof parsed !== "object") return false;
+    if (String(parsed.versionMap || "").trim()) return true;
+    if (Array.isArray(parsed.contentItems) && parsed.contentItems.length) return true;
+    if (Array.isArray(parsed.content) && parsed.content.length) return true;
+    return false;
+  }
+  function parseTableMessageByKind(tableKind, raw) {
+    if (tableKind === "devlog") return parseDevLogMessage(raw);
+    return parseUpdateMessage(raw);
+  }
+
+  function parseDateToTimestamp(raw) {
+    if (raw instanceof Date && Number.isFinite(raw.getTime())) return raw.getTime();
+    const value = String(raw || "").trim();
+    if (!value) return 0;
+    const gviz = value.match(/^Date\(([^)]+)\)$/i);
+    if (gviz && gviz[1]) {
+      const parts = gviz[1].split(",").map((part) => Number(String(part || "").trim()));
+      if (parts.length >= 3 && parts.slice(0, 3).every((num) => Number.isFinite(num))) {
+        const [year, monthIndex, day, hour = 0, minute = 0, second = 0] = parts;
+        const dt = new Date(year, monthIndex, day, hour, minute, second);
+        if (Number.isFinite(dt.getTime())) return dt.getTime();
+      }
+    }
+    const m = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) {
+      const day = Number(m[1]);
+      const month = Number(m[2]);
+      const year = Number(m[3]);
+      const dt = new Date(year, month - 1, day);
+      return Number.isFinite(dt.getTime()) ? dt.getTime() : 0;
+    }
+    const dt = new Date(value);
+    return Number.isFinite(dt.getTime()) ? dt.getTime() : 0;
+  }
+  function parseDiscordSnowflakeTimestamp(raw) {
+    const value = String(raw || "").trim();
+    if (!/^\d{17,20}$/.test(value)) return 0;
+    try {
+      const discordEpoch = 1420070400000n;
+      const id = BigInt(value);
+      const ts = Number((id >> 22n) + discordEpoch);
+      return Number.isFinite(ts) ? ts : 0;
+    } catch {
+      return 0;
+    }
+  }
+  function actualiteFromRow(row, index) {
+    const messageId = firstNonEmpty(row, ["message_id", "messageid", "id", "post_id"]);
+    const date = firstNonEmpty(row, ["date", "created_at", "posted_at"]);
+    const messagesByLang = collectMessageTranslations(row);
+    const messageRaw = pickLocalizedMessage(messagesByLang, "fr") || firstNonEmpty(row, ["message", "content", "contenu", "texte"]);
+    const imagesRaw = firstNonEmpty(row, ["images", "image", "media"]);
+    const sourceLink = firstNonEmpty(row, ["lien", "link", "url"]);
+    const channelId = parseDiscordChannelId(sourceLink);
+    const isUpdateChannel = channelId === UPDATE_CHANNEL_ID;
+    const isDevLogChannel = channelId === DEVLOG_CHANNEL_ID;
+    const tableKind = isUpdateChannel ? "update" : (isDevLogChannel ? "devlog" : "");
+    const useTable = !!tableKind;
+
+    const attachments = extractUrls(imagesRaw);
+    const fromImagesCol = attachments.filter(isImageUrl);
+    const messagesPool = Object.values(messagesByLang).filter((value) => String(value || "").trim());
+    const fromMessages = messagesPool
+      .flatMap((value) => extractUrls(value))
+      .filter(isImageUrl);
+    const fromMessage = extractUrls(messageRaw).filter(isImageUrl);
+    const images = uniqueUrls([...fromImagesCol, ...fromMessages, ...fromMessage]);
+    const message = cleanMessage(messageRaw);
+    const update = useTable ? parseTableMessageByKind(tableKind, messageRaw) : null;
+    if (isDevLogChannel && !update?.versionMap) return null;
+    const timestamp = parseDiscordSnowflakeTimestamp(messageId) || parseDateToTimestamp(date) || (Date.now() - index);
+
+    return {
+      messageId,
+      sourceLink: toHttpUrl(sourceLink),
+      attachments,
+      date,
+      messageRaw,
+      messagesByLang,
+      message,
+      images,
+      channelId,
+      tableKind,
+      specialUpdate: useTable,
+      update,
+      timestamp
+    };
+  }
+
+
+  async function loadRows(fallback) {
+    const cfg = window.SITE_LINKS?.actualites?.sheet;
+    if (!cfg?.spreadsheet_id) return fallback();
+    const cached = readCache(Math.max(60000, Number(cfg.cache_ms) || 180000));
+    if (cached?.length) return cached;
+    try {
+      const url = buildSheetUrl(cfg.spreadsheet_id, cfg.gid, cfg.sheet_name || DEFAULT_SHEET_NAME);
+      const rows = await fetchSheetRows(url, Math.max(3000, Number(cfg.timeout_ms) || 10000));
+      if (!rows.length) return fallback();
+      writeCache(rows);
+      return rows;
+    } catch {
+      return readCache(Infinity) || fallback();
+    }
+  }
+
+  function latestMapRelease(rows) {
+    let latest = null;
+    for (const [index, row] of rows.entries()) {
+      if (parseDiscordChannelId(firstNonEmpty(row, ["lien","link","url"])) !== UPDATE_CHANNEL_ID) continue;
+      const item = actualiteFromRow(row, index);
+      const version = item?.update?.versionMap?.match(/^(\d+\.\d+\.\d+)[a-z]*$/i);
+      if (version && (!latest || item.timestamp > latest.timestamp)) {
+        latest = {version:version[1], timestamp:item.timestamp};
+      }
+    }
+    return latest?.version || "";
+  }
+
+  window.IdfNews = {
+    loadRows, mapGvizTableToRows, latestMapRelease, actualiteFromRow, pickLocalizedMessage,
+    parseTableMessageByKind, hasParsedUpdateData, cleanMessage, stripDiscordDecor,
+    uniqueUrls, extractUrls, isImageUrl
+  };
+})();
+
+</script>
   <script src="config/translations.js"></script>
   <script src="config/site-nav.js"></script>
   <script src="idf-rp/config/line-config.js?v=route-assets-20261020"></script>
@@ -5187,12 +5759,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   }
   let LANG = detectInitialLang();
   const MAP_BUS_UI_ENABLED = true;
+  const DBUS_STOP_ICONS_ENABLED = false;
   const MAP_POPUP_ROUTE_ENABLED = false;
   const STOP_TYPE_TRANSLATION_KEY = "idf_translate_stop_types";
   const UI_ANIMATIONS_KEY = "idf_ui_animations";
   const LINE_PREVIEW_LAYOUT_KEY = "idf_line_preview_layout";
   const CENTER_ON_LINE_SELECT_KEY = "idf_center_on_line_select";
-  const DBUS_STOP_ICONS_KEY = "idf_dbus_stop_icons";
   const DBUS_NAVIGATION_TYPE_KEY = "idf_dbus_navigation_type";
   const DBUS_FILTER_SCHOOL_KEY = "idf_dbus_filter_school";
   const DBUS_FILTER_FICTIVE_KEY = "idf_dbus_filter_fictive";
@@ -5212,7 +5784,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     const stored = localStorage.getItem(STOP_TYPE_TRANSLATION_KEY);
     return stored === "1" || stored === "true";
   })();
-  let UI_ANIMATIONS = (() => {
+  const UI_ANIMATIONS = (() => {
     const stored = localStorage.getItem(UI_ANIMATIONS_KEY);
     return !(stored === "0" || stored === "false");
   })();
@@ -5223,10 +5795,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   let CENTER_ON_LINE_SELECT = (() => {
     const stored = localStorage.getItem(CENTER_ON_LINE_SELECT_KEY);
     return !(stored === "0" || stored === "false");
-  })();
-  let DBUS_STOP_ICONS_ENABLED = (() => {
-    const stored = localStorage.getItem(DBUS_STOP_ICONS_KEY);
-    return stored === "1" || stored === "true";
   })();
   let DBUS_NAVIGATION_TYPE = (() => {
     const stored = String(localStorage.getItem(DBUS_NAVIGATION_TYPE_KEY) || "").toLowerCase().trim();
@@ -5561,15 +6129,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     }
     if (apply) applyI18N();
   }
-  function setUiAnimationsEnabled(enabled, { persist = true } = {}) {
-    UI_ANIMATIONS = !!enabled;
-    document.body.classList.toggle("animations-off", !UI_ANIMATIONS);
-    if (persist) {
-      localStorage.setItem(UI_ANIMATIONS_KEY, UI_ANIMATIONS ? "1" : "0");
-    }
-    const toggle = document.getElementById("settingsAnimationsToggle");
-    if (toggle) toggle.checked = UI_ANIMATIONS;
-  }
   function isLinePreviewHorizontal(){
     return LINE_PREVIEW_LAYOUT === LINE_PREVIEW_LAYOUTS.HORIZONTAL;
   }
@@ -5601,17 +6160,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     }
     const toggle = document.getElementById("settingsCenterLineToggle");
     if (toggle) toggle.checked = CENTER_ON_LINE_SELECT;
-  }
-  function setDbusStopIconsEnabled(enabled, { persist = true, apply = true } = {}) {
-    DBUS_STOP_ICONS_ENABLED = !!enabled;
-    if (persist) {
-      localStorage.setItem(DBUS_STOP_ICONS_KEY, DBUS_STOP_ICONS_ENABLED ? "1" : "0");
-    }
-    const toggle = document.getElementById("settingsBusStopsToggle");
-    if (toggle) toggle.checked = DBUS_STOP_ICONS_ENABLED;
-    if (apply && typeof renderDbusStopsLayer === "function") {
-      try { renderDbusStopsLayer(); } catch {}
-    }
   }
   function isDbusGpsNavigationMode(){
     return DBUS_NAVIGATION_TYPE !== DBUS_NAVIGATION_TYPES.LEGACY;
@@ -5688,36 +6236,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         if (name) name.textContent = langLabel(option.dataset.lang);
       });
     }
-    const settingsWebCategoryTitle = document.getElementById("settingsWebCategoryTitle");
-    if (settingsWebCategoryTitle) settingsWebCategoryTitle.textContent = t("settings_web_category");
     const settingsDbusCategoryTitle = document.getElementById("settingsDbusCategoryTitle");
     if (settingsDbusCategoryTitle) settingsDbusCategoryTitle.textContent = t("settings_dbus_category");
-    const settingsMapVersionTitle = document.getElementById("settingsMapVersionTitle");
-    if (settingsMapVersionTitle) settingsMapVersionTitle.textContent = t("settings_map_version");
-    const settingsMapVersionSelect = document.getElementById("settingsMapVersionSelect");
-    if (settingsMapVersionSelect) {
-      const label = t("settings_map_version");
-      settingsMapVersionSelect.setAttribute("aria-label", label);
-      settingsMapVersionSelect.title = label;
-    }
-    const settingsResetDefaultsBtn = document.getElementById("settingsResetDefaultsBtn");
-    if (settingsResetDefaultsBtn) {
-      const label = t("settings_reset_defaults_button");
-      settingsResetDefaultsBtn.textContent = label;
-      settingsResetDefaultsBtn.setAttribute("aria-label", label);
-      settingsResetDefaultsBtn.title = label;
-    }
-    const settingsAnimationsTitle = document.getElementById("settingsAnimationsTitle");
-    if (settingsAnimationsTitle) settingsAnimationsTitle.textContent = t("settings_animations_title");
-    const settingsAnimationsLabel = document.getElementById("settingsAnimationsLabel");
-    if (settingsAnimationsLabel) settingsAnimationsLabel.textContent = t("settings_animations_toggle");
-    const settingsAnimationsToggle = document.getElementById("settingsAnimationsToggle");
-    if (settingsAnimationsToggle) {
-      const label = t("settings_animations_toggle");
-      settingsAnimationsToggle.setAttribute("aria-label", label);
-      settingsAnimationsToggle.title = label;
-      settingsAnimationsToggle.checked = !!UI_ANIMATIONS;
-    }
     const settingsTranslateStopsLabel = document.getElementById("settingsTranslateStopsLabel");
     if (settingsTranslateStopsLabel) settingsTranslateStopsLabel.textContent = t("translate_stop_types");
     const settingsTranslateStopsRow = document.getElementById("settingsTranslateStopsRow");
@@ -5810,19 +6330,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     if (settingsLegendTollLabel) settingsLegendTollLabel.textContent = t("icon_toll");
     const settingsLegendParkingLabel = document.getElementById("settingsLegendParkingLabel");
     if (settingsLegendParkingLabel) settingsLegendParkingLabel.textContent = t("icon_parking");
-    const settingsLegendBusStopsLabel = document.getElementById("settingsLegendBusStopsLabel");
-    if (settingsLegendBusStopsLabel) settingsLegendBusStopsLabel.textContent = t("settings_legend_bus_stops");
-    const settingsLegendBusStopsToggleLabel = document.getElementById("settingsLegendBusStopsToggleLabel");
-    if (settingsLegendBusStopsToggleLabel) settingsLegendBusStopsToggleLabel.textContent = t("settings_legend_bus_stops_toggle");
-    const settingsLegendBusStopsBadge = document.getElementById("settingsLegendBusStopsBadge");
-    if (settingsLegendBusStopsBadge) settingsLegendBusStopsBadge.textContent = t("experimental");
-    const settingsBusStopsToggle = document.getElementById("settingsBusStopsToggle");
-    if (settingsBusStopsToggle) {
-      const label = t("settings_legend_bus_stops");
-      settingsBusStopsToggle.setAttribute("aria-label", label);
-      settingsBusStopsToggle.title = label;
-      settingsBusStopsToggle.checked = !!DBUS_STOP_ICONS_ENABLED;
-    }
     const settingsSortTitle = document.getElementById("settingsSortTitle");
     if (settingsSortTitle) settingsSortTitle.textContent = t("settings_category_sort");
     const dbusSortLabel = document.getElementById("dbusSortLabel");
@@ -5837,71 +6344,44 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     if (settingsSortModes) settingsSortModes.setAttribute("aria-label", t("settings_category_sort"));
     const dbusSortModes = document.getElementById("dbusSortModes");
     if (dbusSortModes) dbusSortModes.setAttribute("aria-label", t("settings_category_sort"));
-    if (typeof window.updateMapVersionSettingsUI === "function") {
-      try { window.updateMapVersionSettingsUI(); } catch {}
-    }
     if (typeof window.updateWatermarkVersionLabel === "function") {
       try { window.updateWatermarkVersionLabel(); } catch {}
     }
   }
   function setLang(lang, {persist=true, apply=true} = {}){
-    const previousLang = LANG;
     if (!SUPPORTED.has(lang)) lang = "fr";
     LANG = lang;
-    const langChanged = previousLang !== LANG;
     if (persist) localStorage.setItem("idf_lang", lang);
     document.documentElement.setAttribute("lang", lang);
     if (LANG === "fr" && TRANSLATE_STOP_TYPES) {
       setStopTypeTranslation(false, { persist: true, apply: false });
     }
-    if (typeof isLinePreviewOpen === "function" && isLinePreviewOpen()) {
-      try { currentSelectedKey = ""; } catch {}
-      try { currentSelectedLineUid = ""; } catch {}
-      if (typeof hideAllRoutes === "function") {
-        try { hideAllRoutes(); } catch {}
-      }
-      if (typeof hideLinePreview === "function") {
-        try { hideLinePreview(); } catch {}
-      }
-      document.getElementById("dbusList")?.querySelectorAll(".dbus-item").forEach(it => {
-        it.classList.remove("active");
-        it.style.outline = "none";
-      });
-      if (typeof renderSelectedChip === "function") {
-        try { renderSelectedChip(); } catch {}
-      }
-    }
     if (apply) applyI18N();
-    if (langChanged) {
-      const dbusPanelEl = document.getElementById("dbusPanel");
-      const dbusStopPanelEl = document.getElementById("dbusStopPanel");
-      const isDbusPanelOpenNow = !!dbusPanelEl && getComputedStyle(dbusPanelEl).display !== "none" && !dbusPanelEl.classList.contains("is-closing");
-      const isDbusStopOpenNow = !!dbusStopPanelEl && getComputedStyle(dbusStopPanelEl).display !== "none" && !dbusStopPanelEl.classList.contains("is-closing");
-      if (isDbusPanelOpenNow || isDbusStopOpenNow) {
-        try {
-          if (typeof closeDbusPanel === "function") closeDbusPanel();
-          else throw new Error("closeDbusPanel_unavailable");
-        } catch {
-          if (dbusPanelEl) {
-            dbusPanelEl.classList.remove("is-open", "is-closing");
-            dbusPanelEl.style.display = "none";
-            dbusPanelEl.setAttribute("aria-hidden", "true");
-          }
-          if (dbusStopPanelEl) {
-            dbusStopPanelEl.classList.remove("is-open", "is-closing");
-            dbusStopPanelEl.style.display = "none";
-            dbusStopPanelEl.setAttribute("aria-hidden", "true");
-          }
-          const btnDbusEl = document.getElementById("btnDbus");
-          if (btnDbusEl) btnDbusEl.setAttribute("aria-expanded", "false");
-        }
-      }
-    }
     if (typeof updateUiOverlays === "function") {
       try { updateUiOverlays(); } catch {}
     }
   }
+  function mapNoticeParts(template, values) {
+    return template.split(/(\{\w+\})/).map(part => values[part] || part);
+  }
+  function translateMapNotices() {
+    const note = document.getElementById("dbusScopeNote");
+    const [dbus, plugin] = [note.querySelector('a[target]'),note.querySelector('a[href="./#idfrp"]')];
+    note.replaceChildren(...mapNoticeParts(t("map_dbus_scope"), {"{dbus}":dbus, "{plugin}":plugin}));
+    const dialog = document.getElementById("mapReleaseNotice");
+    document.getElementById("mapReleaseTitle").textContent = t("map_release_warning");
+    if (!dialog.dataset.latest) return;
+    const versions = {};
+    for (const key of ["loaded","latest"]) {
+      const strong = document.createElement("strong");
+      strong.textContent = dialog.dataset[key];
+      versions["{" + key + "}"] = strong;
+    }
+    document.getElementById("mapReleaseText").replaceChildren(...mapNoticeParts(t("map_release_message"), versions));
+  }
+
     function applyI18N(){
+    translateMapNotices();
     renderSiteNav();
     const routeTitleFn = (typeof translateRouteTitle === "function")
       ? translateRouteTitle
@@ -6301,12 +6781,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     if (isSettingsOpen()) closeSettingsPanel();
     else openSettingsPanel();
   });
-  const settingsAnimationsToggleEl = document.getElementById("settingsAnimationsToggle");
-  if (settingsAnimationsToggleEl) {
-    settingsAnimationsToggleEl.addEventListener("change", () => {
-      setUiAnimationsEnabled(settingsAnimationsToggleEl.checked);
-    });
-  }
   const settingsTranslateStopsToggleEl = document.getElementById("settingsTranslateStopsToggle");
   if (settingsTranslateStopsToggleEl) {
     settingsTranslateStopsToggleEl.addEventListener("change", () => {
@@ -6333,17 +6807,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       setDbusNavigationType(btn.dataset.navType);
     });
   });
-  const settingsBusStopsToggleEl = document.getElementById("settingsBusStopsToggle");
-  if (settingsBusStopsToggleEl) {
-    settingsBusStopsToggleEl.addEventListener("change", () => {
-      setDbusStopIconsEnabled(settingsBusStopsToggleEl.checked);
-    });
-  }
-  setUiAnimationsEnabled(UI_ANIMATIONS, { persist: false });
+  document.body.classList.toggle("animations-off", !UI_ANIMATIONS);
   setLinePreviewLayout(LINE_PREVIEW_LAYOUT, { persist: false });
   setCenterOnLineSelectEnabled(CENTER_ON_LINE_SELECT, { persist: false });
   setDbusNavigationType(DBUS_NAVIGATION_TYPE, { persist: false, apply: false });
-  setDbusStopIconsEnabled(DBUS_STOP_ICONS_ENABLED, { persist: false, apply: false });
   setLang(LANG, {persist:false, apply:true});
   </script>
 
@@ -6362,77 +6829,31 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     const DEV_GRAPH = QS.has("dev_graph");
     const NEXT_VERSION_MODE = QS.has("nextversion");
     const UBER_EATS_MAP_EMBED_MODE = QS.has("uber_eats_app");
-    const NEXT_VERSION_BASE_VERSION = "website";
     const DEV_NAV_POINTS_DEBUG = DEV_MODE || DEV_GRAPH;
     const DEV_NAV_BRIDGES_DEBUG = DEV_GRAPH || QS.has("dev_bridges");
     const MAP_FILES_ROOT = "./map_files";
-    const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
-    function parseVersion(value){
-        var mapName = String(value || "").trim();
-        if (/^(website|0\.1\.6a)$/i.test(mapName)) return {raw:"website",major:0,minor:1,patch:6,suffix:"a"};
-        if (/^(IDF-RP|Dev)$/i.test(mapName)) return {raw:"IDF-RP",major:1,minor:0,patch:0,suffix:""};
-      const match = VERSION_PATTERN.exec(String(value || "").trim());
-      if (!match) return null;
-      return {
-        raw: `${parseInt(match[1], 10)}.${parseInt(match[2], 10)}.${parseInt(match[3], 10)}${match[4].toLowerCase()}`,
-        major: parseInt(match[1], 10),
-        minor: parseInt(match[2], 10),
-        patch: parseInt(match[3], 10),
-        suffix: match[4].toLowerCase()
-      };
+    function latestMapFolder(versions) {
+      const parts = name => name.split(".").map(Number);
+      return versions.filter(name => typeof name === "string" && /^\d+\.\d+\.\d+$/.test(name))
+        .sort((left, right) => {
+          const a = parts(left), b = parts(right);
+          return b[0] - a[0] || b[1] - a[1] || b[2] - a[2];
+        })[0];
     }
-    function compareVersions(a, b){
-      if (a.major !== b.major) return a.major - b.major;
-      if (a.minor !== b.minor) return a.minor - b.minor;
-      if (a.patch !== b.patch) return a.patch - b.patch;
-      return a.suffix.localeCompare(b.suffix);
-    }
-    function loadVersionsFromManifestSync(root){
+    function readMapFolder() {
       try {
-        const xhr = new XMLHttpRequest();
-        xhr.open("GET", `${root}/versions.json`, false);
-        xhr.send(null);
-        if (xhr.status < 200 || xhr.status >= 300) return [];
-        const data = JSON.parse(xhr.responseText);
-        if (Array.isArray(data)) {
-          return data.map(v => String(v || "").trim()).filter(Boolean);
+        const request = new XMLHttpRequest();
+        request.open("GET", MAP_FILES_ROOT + "/versions.json", false);
+        request.send();
+        if (request.status === 200) {
+          const manifest = JSON.parse(request.responseText);
+          const latest = latestMapFolder(Array.isArray(manifest) ? manifest : manifest.versions || []);
+          if (latest) return latest;
         }
-        if (data && Array.isArray(data.versions)) {
-          return data.versions.map(v => String(v || "").trim()).filter(Boolean);
-        }
-        return [];
-      } catch {
-        return [];
-      }
+      } catch {}
+      return document.getElementById("map").dataset.packagedVersion;
     }
-    function loadVersionsFromDirectorySync(root){
-      return [];
-    }
-    function selectLatestVersion(candidates){
-      const parsed = [...new Set(candidates)]
-        .map(parseVersion)
-        .filter(Boolean);
-      if (!parsed.length) return null;
-      parsed.sort(compareVersions);
-      return parsed[parsed.length - 1].raw;
-    }
-    function getSortedAvailableVersions(candidates){
-      const byRaw = new Map();
-      candidates.forEach((candidate) => {
-        const parsed = parseVersion(candidate);
-        if (parsed) byRaw.set(parsed.raw, parsed);
-      });
-      return [...byRaw.values()]
-        .sort((a, b) => compareVersions(b, a))
-        .map(v => v.raw);
-    }
-    const forcedVersion = String(QS.get("version") || QS.get("v") || "").trim();
-    const parsedForcedVersion = parseVersion(forcedVersion);
-    const manifestVersions = loadVersionsFromManifestSync(MAP_FILES_ROOT);
-    const dirVersions = [];
-    const AVAILABLE_MAP_VERSIONS = getSortedAvailableVersions([...manifestVersions, ...dirVersions]);
-    const latestVersion = selectLatestVersion(AVAILABLE_MAP_VERSIONS);
-    const SELECTED_VERSION = NEXT_VERSION_MODE ? NEXT_VERSION_BASE_VERSION : (parsedForcedVersion ? parsedForcedVersion.raw : latestVersion);
+    const SELECTED_VERSION = readMapFolder();
     if (QS.has("version") || QS.has("v")) {
       try {
         const cleanUrl = new URL(location.href);
@@ -6441,29 +6862,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         history.replaceState(null, "", cleanUrl.toString());
       } catch {}
     }
-    const DATA_BASE = `${MAP_FILES_ROOT}/${SELECTED_VERSION || "website"}`;
-    const DEV_DATA_BASE = `${MAP_FILES_ROOT}/IDF-RP`;
-    const OVERLAY_BASE = `${MAP_FILES_ROOT}/website/Overlays`;
-    const TILE_BASE = `${MAP_FILES_ROOT}/website/Tiles`;
-    const DEV_TILE_BASE = `${MAP_FILES_ROOT}/website/Dev/Tiles`;
+    const DATA_BASE = `${MAP_FILES_ROOT}/${SELECTED_VERSION}`;
+    const OVERLAY_BASE = `${DATA_BASE}/Overlays`;
+    const TILE_BASE = `${DATA_BASE}/Tiles`;
+    const DEV_TILE_BASE = `${DATA_BASE}/Dev/Tiles`;
     const TRANSPARENT_TILE_URL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-    const DBUS_BASE = `${MAP_FILES_ROOT}/website/Dbus%20World%20Lines`;
+    const DBUS_BASE = `${DATA_BASE}/Dbus%20World%20Lines`;
     const dataPath = (file) => `${DATA_BASE}/${file}`;
     const overlayPath = (file) => `${OVERLAY_BASE}/${file}`;
     function mapFileCandidatePaths(file){
       const clean = String(file || "").replace(/^\/+/, "").replace(/^(?:DBus|Mode(?:%20| )Bus)\//i, "Mode%20Bus/");
-      // Public DBus XML is independent of IDFRP and its in-game GPS.
-      // Route geometry uses the website navigation nodes at map_files/.
-      if (/^(?:nav_graph|nav_bridges|nav_stop_links|traffic_areas)\.json$/.test(clean)) return [`${MAP_FILES_ROOT}/${clean}`];
+      if (/^(?:nav_graph|nav_bridges|nav_stop_links|traffic_areas|uber_eats_restaurants)\.json$/.test(clean)) return [`${MAP_FILES_ROOT}/${clean}`];
       if (clean.startsWith("Mode%20Bus/")) return [`${DBUS_BASE}/${clean.slice("Mode%20Bus/".length)}`];
-      if (/^(?:CentreCommerciaux|Monuments|Countries)\.json$/.test(clean)) return [`${MAP_FILES_ROOT}/website/${clean}`];
-      const useIdfRp = NEXT_VERSION_MODE || (SELECTED_VERSION || "website") === "IDF-RP";
-      if (clean === "uber_eats_restaurants.json") {
-        return useIdfRp ? [`${DEV_DATA_BASE}/${clean}`, `${MAP_FILES_ROOT}/${clean}`] : [`${MAP_FILES_ROOT}/${clean}`];
-      }
-      const paths = useIdfRp ? [`${DEV_DATA_BASE}/${clean}`] : [`${DATA_BASE}/${clean}`];
-      paths.push(`${MAP_FILES_ROOT}/website/${clean}`);
-      return [...new Set(paths)];
+      return [dataPath(clean)];
     }
     async function fetchMapFile(file, options){
       let lastResponse = null;
@@ -6481,100 +6892,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       if (lastResponse) return lastResponse;
       throw lastError || new Error(`Map file load failed: ${String(file || "")}`);
     }
-    function updateMapVersionSettingsUI(){
-      const section = document.getElementById("settingsMapVersionSection");
-      const title = document.getElementById("settingsMapVersionTitle");
-      const select = document.getElementById("settingsMapVersionSelect");
-      if (title && typeof t === "function") title.textContent = t("settings_map_version");
-      if (!section || !select) return;
-      if (!AVAILABLE_MAP_VERSIONS.length) {
-        section.hidden = true;
-        select.innerHTML = "";
-        return;
-      }
-      section.hidden = false;
-      if (select.dataset.versionsHash !== AVAILABLE_MAP_VERSIONS.join("|")) {
-        select.innerHTML = "";
-        AVAILABLE_MAP_VERSIONS.forEach((version) => {
-          const option = document.createElement("option");
-          option.value = version;
-          option.textContent = version;
-          select.appendChild(option);
-        });
-        select.dataset.versionsHash = AVAILABLE_MAP_VERSIONS.join("|");
-      }
-      const currentVersion = (SELECTED_VERSION && AVAILABLE_MAP_VERSIONS.includes(SELECTED_VERSION))
-        ? SELECTED_VERSION
-        : AVAILABLE_MAP_VERSIONS[0];
-      select.value = currentVersion;
-      if (typeof t === "function") {
-        const label = t("settings_map_version");
-        select.setAttribute("aria-label", label);
-        select.title = label;
-      }
-    }
     function updateWatermarkVersionLabel(){
       const labelEl = document.getElementById("watermarkVersionLabel");
       if (!labelEl) return;
-      const currentVersion = (SELECTED_VERSION && AVAILABLE_MAP_VERSIONS.includes(SELECTED_VERSION))
-        ? SELECTED_VERSION
-        : (AVAILABLE_MAP_VERSIONS[0] || "");
-      const prefix = (typeof t === "function") ? t("settings_map_version") : "Map version";
-      labelEl.textContent = currentVersion ? `${prefix}: ${currentVersion}` : prefix;
-      const isOutdated = !!(currentVersion && latestVersion && currentVersion !== latestVersion);
-      labelEl.classList.toggle("is-outdated", isOutdated);
+      labelEl.textContent = t("settings_map_version") + ": " + SELECTED_VERSION;
       labelEl.removeAttribute("title");
       labelEl.setAttribute("aria-label", labelEl.textContent);
     }
     window.updateWatermarkVersionLabel = updateWatermarkVersionLabel;
-    window.updateMapVersionSettingsUI = updateMapVersionSettingsUI;
-    updateMapVersionSettingsUI();
     updateWatermarkVersionLabel();
-    const settingsMapVersionSelectEl = document.getElementById("settingsMapVersionSelect");
-    if (settingsMapVersionSelectEl && !settingsMapVersionSelectEl.dataset.boundMapVersion) {
-      settingsMapVersionSelectEl.dataset.boundMapVersion = "1";
-      settingsMapVersionSelectEl.addEventListener("change", () => {
-        const nextParsed = parseVersion(settingsMapVersionSelectEl.value);
-        if (!nextParsed || nextParsed.raw === SELECTED_VERSION) return;
-        try {
-          const nextUrl = new URL(location.href);
-          nextUrl.searchParams.set("version", nextParsed.raw);
-          if (window.sharedHeader?.startPageTransition) {
-            window.sharedHeader.startPageTransition();
-          } else if (window.sharedHeader?.showPageLoader) {
-            window.sharedHeader.showPageLoader({ persist: true });
-          }
-          location.assign(nextUrl.toString());
-        } catch {}
-      });
-    }
-    const settingsResetDefaultsBtnEl = document.getElementById("settingsResetDefaultsBtn");
-    if (settingsResetDefaultsBtnEl && !settingsResetDefaultsBtnEl.dataset.boundResetDefaults) {
-      settingsResetDefaultsBtnEl.dataset.boundResetDefaults = "1";
-      settingsResetDefaultsBtnEl.addEventListener("click", () => {
-        const confirmLabel = (typeof t === "function")
-          ? t("settings_reset_defaults_confirm")
-          : "Réinitialiser tous les paramètres sauvegardés ?";
-        if (!window.confirm(confirmLabel)) return;
-        try {
-          const keysToRemove = [];
-          for (let i = 0; i < localStorage.length; i += 1) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith("idf_")) keysToRemove.push(key);
-          }
-          keysToRemove.forEach((key) => localStorage.removeItem(key));
-        } catch {}
-        try {
-          const nextUrl = new URL(location.href);
-          nextUrl.searchParams.delete("version");
-          nextUrl.searchParams.delete("v");
-          location.assign(nextUrl.toString());
-        } catch {
-          location.reload();
-        }
-      });
-    }
-
     const watermarkLogo = document.getElementById("watermarkLogo");
     if (watermarkLogo) watermarkLogo.src = overlayPath("idf_logo.png");
     const siteTopbarLogo = document.getElementById("siteTopbarLogo");
@@ -6701,7 +7027,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       updateWhenIdle:false,updateWhenZooming:true,keepBuffer:3
     };
     L.tileLayer(`${TILE_BASE}/{z}/{x}/{y}.png`, baseTileLayerOptions).addTo(map);
-    if (NEXT_VERSION_MODE || (SELECTED_VERSION || "website") === "IDF-RP") {
+    if (NEXT_VERSION_MODE) {
       L.tileLayer(`${DEV_TILE_BASE}/{z}/{x}/{y}.png`, {
         ...baseTileLayerOptions,
         errorTileUrl: TRANSPARENT_TILE_URL
@@ -6750,6 +7076,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     let TileMapInfo;
     const tileInfoReady = fetchMapFile("TileMapInfo.json").then(r=>{ if(!r.ok) throw new Error('TileMapInfo'); return r.json(); }).then(info => (TileMapInfo = info));
+    if (!window.IDF_MAPS_APP_MODE && window.self === window.top && !QS.has("closed")) {
+      async function publishedNewsRows() {
+        const response = await fetch("actualites.html");
+        if (!response.ok) return [];
+        const html = await response.text();
+        const snapshot = html.match(/<script\b[^>]*\bid="published-feed"[^>]*>([\s\S]*?)<\/script>/i);
+        return snapshot ? IdfNews.mapGvizTableToRows(JSON.parse(snapshot[1])) : [];
+      }
+      Promise.all([tileInfoReady, IdfNews.loadRows(publishedNewsRows)]).then(([, rows]) => {
+        const latest = IdfNews.latestMapRelease(rows);
+        if (!latest || latest === SELECTED_VERSION) return;
+        const notice = document.getElementById("mapReleaseNotice");
+        notice.dataset.loaded = SELECTED_VERSION;
+        notice.dataset.latest = latest;
+        translateMapNotices();
+        document.getElementById("watermarkVersionLabel")?.classList.add("is-outdated");
+        const outside = event => {
+          if (!notice.contains(event.target) && !event.composedPath().includes($siteTopBar)) notice.close();
+        };
+        document.addEventListener("click", outside, true);
+        notice.addEventListener("close", () => document.removeEventListener("click", outside, true), {once:true});
+        notice.addEventListener("keydown", event => {
+          if (event.key === "Escape") {
+            event.stopPropagation();
+            notice.close();
+          }
+        });
+        notice.show();
+      }).catch(error => console.warn("Map release check", error));
+    }
     const OX = parseFloat(QS.get('ox') ?? '0');
     const OY = parseFloat(QS.get('oy') ?? '0');
     const SX = parseFloat(QS.get('sx') ?? '1');
@@ -12721,7 +13077,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         event.stopPropagation();
       });
       document.addEventListener("click", (event) => {
-        if ($devNavDebugMenu.hidden) return;
+        if ($devNavDebugMenu.hidden || event.composedPath().includes($siteTopBar)) return;
         const target = event.target;
         if (target instanceof Node && !$devNavDebugRow.contains(target)) {
           setDevNavDebugMenuOpen(false);
@@ -17941,7 +18297,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     document.addEventListener('click', (e) => {
       const target = e.target;
       if (!(target instanceof Element)) return;
-      const path = (typeof e.composedPath === "function") ? e.composedPath() : [];
+      const path = e.composedPath();
+      if (path.includes($siteTopBar)) return;
       const clickInSearch = path.includes($searchPanel)
         || path.includes($search)
         || ((!!$searchPanel && $searchPanel.contains(target)) || target === $search);
@@ -18123,13 +18480,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       }
     });
     </script>
-  <footer class="site-footer">
-        <small>
-          <span><span data-t="footer_copyright">Copyright</span> © <span id="copyright-year"></span> Île-de-France Map</span>
-          <span aria-hidden="true">·</span>
-          <a href="mentions_legales.html" data-page="mentions_legales" data-t="nav_mentions_legales">Mentions légales</a>
-        </small>
-      </footer>
 <script>
 // Short labels for the cinematic home. Guides and project descriptions use the site's dictionary.
 window.CINEMA_LABELS = (() => {
@@ -18583,7 +18933,8 @@ window.CINEMA_LABELS = (() => {
   all("[data-offsite-key]").forEach(el => {
     if (links[el.dataset.offsiteKey]) el.href = links[el.dataset.offsiteKey];
   });
-  $("#copyright-year").textContent = new Date().getFullYear();
+  const copyrightYear = $("#copyright-year");
+  if (copyrightYear) copyrightYear.textContent = new Date().getFullYear();
   window.IDFSite = { tr };
   language = localLanguage();
   syncLanguage();

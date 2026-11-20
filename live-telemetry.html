@@ -616,13 +616,10 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
 .page-live-telemetry .viewer { min-height: 250px; flex: 1; border-radius: 7px; box-shadow: none }
 .page-map { height: 100svh; overflow: hidden }
 .page-map .mast { position: fixed; inset: 0 0 auto; z-index: 1800; background: #161618 }
-.page-map #map { top: var(--site-header-h); bottom: 26px }
-.page-map .site-footer { position: fixed; inset: auto 0 0; z-index: 1400; min-height: 26px; background: #101012 }
-.page-map .watermark { bottom: 30px }
+.page-map #map { top: var(--site-header-h); bottom: 0 }
 .page-map :is(.search-input,.dbus-panel,.settings-panel,.search-panel,.line-preview-panel) {
   color: #f0f0f2; background-color: #19191c; border-color: var(--page-border); border-radius: 7px;
 }
-.maps-app-mode .page-map .site-footer { display: none }
 .maps-app-mode .page-map #map { inset: 0 }
 @keyframes page-in { from { transform: translateY(5px); opacity: .6 } to { transform: none; opacity: 1 } }
 @media (prefers-reduced-motion: no-preference) {
@@ -1329,7 +1326,8 @@ window.CINEMA_LABELS = (() => {
   all("[data-offsite-key]").forEach(el => {
     if (links[el.dataset.offsiteKey]) el.href = links[el.dataset.offsiteKey];
   });
-  $("#copyright-year").textContent = new Date().getFullYear();
+  const copyrightYear = $("#copyright-year");
+  if (copyrightYear) copyrightYear.textContent = new Date().getFullYear();
   window.IDFSite = { tr };
   language = localLanguage();
   syncLanguage();

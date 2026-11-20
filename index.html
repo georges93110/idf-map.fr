@@ -438,6 +438,7 @@ h1,.choice-title,.server-players strong { font-family: "Barlow Condensed",Inter,
   text-wrap: balance; overflow-wrap: anywhere;
 }
 .fold {
+  grid-area: 2 / 1;
   position: relative; min-width: 0; min-height: 0; overflow: hidden;
   isolation: isolate; background: #202023;
 }
@@ -566,6 +567,11 @@ h1[tabindex]:focus { outline: none }
   font-size: clamp(.98rem,1.18vw,1.2rem); text-align: start;
 }
 .plugin-download svg { width: 1.1em; height: 1.1em; flex: none }
+.leaf .plugin-download[aria-disabled=true] { background: #57575c; color: #f1f1f3; cursor: wait }
+@keyframes plugin-download-arrow {
+  0%, 100% { transform: translateY(-2px) }
+  55% { transform: translateY(2px) }
+}
 .leaf > [data-panel=convoy] { flex: 1 0 auto; margin-top: 0 }
 [data-panel=convoy] {
   display: grid; grid-template-columns: minmax(0,1fr) min(48%,34rem);
@@ -611,7 +617,7 @@ h1[tabindex]:focus { outline: none }
 }
 @media (prefers-reduced-motion: no-preference) {
   .fold-image { animation: reveal-picture .45s var(--ease) both }
-  .leaf > section { animation: slide-panel .3s var(--ease) both }
+  .plugin-download[aria-disabled=true] .download-arrow { animation: plugin-download-arrow .65s ease-in-out infinite }
   .guide-content > :not([hidden]) { animation: reveal-detail .25s var(--ease) both }
 }
 @keyframes reveal-picture {
@@ -679,7 +685,7 @@ h1[tabindex]:focus { outline: none }
       <header class="mast">
         <a class="monogram" href="" aria-label="Île-de-France Map — Accueil"><img src="images/idf_logo.png" width="500" height="202" alt="Île-de-France Map"></a>
         <nav class="site-nav" data-label="nav_label" aria-label="Navigation du site">
-          <a href="" data-t="nav_accueil">Accueil</a>
+          <a href="" data-t="nav_accueil" aria-current="page">Accueil</a>
           <a href="actualites.html" data-page="actualites" data-t="nav_actualites">Actualités</a>
           <a href="map.html" data-page="map" data-t="nav_carte_interactive">Carte interactive</a>
           <a href="faq.html" data-page="faq" data-t="nav_faq">FAQ</a>
@@ -787,7 +793,8 @@ h1[tabindex]:focus { outline: none }
                   </div>
                   <p class="rp-intro" data-t="home_idfrp_intro">Vos missions de bus prennent vie sur la map.</p>
                   <p class="rp-copy" data-t="home_idfrp_features"></p>
-                  <a class="pill plugin-download" href="https://github.com/georges93110/idf-rp/releases/latest/download/idf-rp.dll" target="_blank" rel="noopener noreferrer"><span data-t="downloadPlugin">Télécharger plugin</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg></a>
+                  <a class="pill plugin-download" href="https://github.com/georges93110/idf-rp/releases/latest/download/idf-rp.dll" download="idf-rp.dll" target="plugin-file"><span data-t="downloadPlugin">Télécharger plugin</span><svg viewBox="0 0 24 24" aria-hidden="true"><path class="download-arrow" d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 17v4h16v-4"/></svg></a>
+                  <iframe name="plugin-file" title="idf-rp.dll" sandbox="allow-downloads" hidden></iframe>
                 </div>
                 <section class="installation-guide plugin-guide" aria-labelledby="plugin-guide-title">
                   <h2 id="plugin-guide-title" data-t="guide_cat_install">Guide d’installation</h2>
@@ -1305,7 +1312,8 @@ window.CINEMA_LABELS = (() => {
   all("[data-offsite-key]").forEach(el => {
     if (links[el.dataset.offsiteKey]) el.href = links[el.dataset.offsiteKey];
   });
-  $("#copyright-year").textContent = new Date().getFullYear();
+  const copyrightYear = $("#copyright-year");
+  if (copyrightYear) copyrightYear.textContent = new Date().getFullYear();
   window.IDFSite = { tr };
   language = localLanguage();
   syncLanguage();
@@ -1398,7 +1406,7 @@ window.CINEMA_LABELS = (() => {
     }
   });
   if (hasAutomatic) $("#automatic-link").href = autoURL;
-  for (const anchor of all("a[href]")) {
+  for (const anchor of all("a[href]:not([download])")) {
     const url = new URL(anchor.href);
     const siteLink = url.origin === location.origin || url.hostname === "idf-map.fr" || url.hostname.endsWith(".idf-map.fr");
     if ((url.protocol === "https:" || url.protocol === "http:") && !siteLink) {
@@ -1408,6 +1416,16 @@ window.CINEMA_LABELS = (() => {
       anchor.removeAttribute("target");
     }
   }
+  const pluginDownload = $(".plugin-download");
+  pluginDownload.addEventListener("click", event => {
+    if (pluginDownload.getAttribute("aria-disabled") === "true") {
+      event.preventDefault();
+      return;
+    }
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+    pluginDownload.setAttribute("aria-disabled", "true");
+    window.setTimeout(() => pluginDownload.removeAttribute("aria-disabled"), 2400);
+  });
   document.addEventListener("idf:language", event => {
     language = event.detail;
     if (panel === "convoy") renderStatus();
@@ -1417,6 +1435,8 @@ window.CINEMA_LABELS = (() => {
   const folds = all(".fold");
   const tabList = $(".choice-bar");
   const tabs = all(".choice-bar [role=tab]");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let panelAnimations = [];
 
   tabList.addEventListener("keydown", event => {
     const current = tabs.indexOf(event.target);
@@ -1457,6 +1477,34 @@ window.CINEMA_LABELS = (() => {
       default: return "";
     }
   }
+  function showPanel(active, previous) {
+    for (const animation of panelAnimations) {
+      animation.onfinish = null;
+      animation.cancel();
+    }
+    panelAnimations = [];
+    const outgoing = folds.find(fold => fold.dataset.family === panelFamilies[previous]);
+    const slide = outgoing && outgoing !== active && !reducedMotion.matches;
+    for (const fold of folds) {
+      fold.hidden = fold !== active && !(slide && fold === outgoing);
+      fold.inert = fold !== active;
+    }
+    for (const section of all("[data-panel]")) {
+      section.hidden = section.dataset.panel !== panel && !(slide && section.dataset.panel === previous);
+    }
+    if (!slide || previous !== "download") syncTutorial();
+    if (!slide) return;
+    const step = folds.indexOf(active) > folds.indexOf(outgoing) ? 100 : -100;
+    const timing = {duration: 340, easing: "cubic-bezier(.22,.75,.2,1)"};
+    const incomingSlide = active.animate([{transform: "translateX(" + step + "%)"}, {transform: "none"}], timing);
+    const outgoingSlide = outgoing.animate([{transform: "none"}, {transform: "translateX(" + -step + "%)"}], timing);
+    panelAnimations = [incomingSlide, outgoingSlide];
+    outgoingSlide.onfinish = () => {
+      outgoing.hidden = true;
+      panelAnimations = [];
+      if (previous === "download") syncTutorial();
+    };
+  }
   function syncRoute() {
     if (["#telechargement", "#accueil"].includes(location.hash.toLowerCase())) {
       history.replaceState(history.state, "", location.href.split("#")[0]);
@@ -1472,14 +1520,12 @@ window.CINEMA_LABELS = (() => {
     const active = folds.find(fold => fold.dataset.family === family);
     const selectedTab = document.getElementById(active.getAttribute("aria-labelledby"));
     const focusInTabList = tabList.contains(document.activeElement);
-    folds.forEach(fold => { fold.hidden = fold !== active; });
+    showPanel(active, previous);
     tabs.forEach(tab => {
       const selected = tab === selectedTab;
       tab.setAttribute("aria-selected", String(selected));
       tab.tabIndex = selected ? 0 : -1;
     });
-    all("[data-panel]").forEach(section => { section.hidden = section.dataset.panel !== panel; });
-    syncTutorial();
     const section = document.querySelector('[data-panel="' + panel + '"]');
     active.querySelector(".leaf").scrollTop = 0;
     if (previous) (focusInTabList ? selectedTab : section.querySelector("h1")).focus({preventScroll:true});
@@ -1489,6 +1535,50 @@ window.CINEMA_LABELS = (() => {
     if (location.hash !== hash) history.pushState(null, "", hash || location.href.split("#")[0]);
     syncRoute();
   }
+
+  const destinations = $("#destinations");
+  let wheelDistance = 0;
+  let lastWheelTime = -Infinity;
+  let wheelDirection = 0;
+  let wheelHandled = false;
+  let wheelStarted = 0;
+  destinations.addEventListener("wheel", event => {
+    if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+    const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+    const delta = horizontal ? event.deltaX : event.deltaY;
+    if (!delta) return;
+    const direction = Math.sign(delta);
+    const now = event.timeStamp;
+    if (now - lastWheelTime > 200 || direction !== wheelDirection) {
+      wheelDistance = 0;
+      wheelHandled = false;
+      wheelStarted = now;
+    }
+    lastWheelTime = now;
+    wheelDirection = direction;
+    if (wheelHandled) return;
+
+    const leaf = event.target.closest(".leaf");
+    if (!horizontal && leaf && (direction < 0 ? leaf.scrollTop > 1 : leaf.scrollTop + leaf.clientHeight < leaf.scrollHeight - 1)) {
+      // Keep the whole gesture in the guide, including its momentum at the edge.
+      wheelHandled = true;
+      return;
+    }
+    const current = tabs.findIndex(tab => tab.getAttribute("aria-selected") === "true");
+    const next = tabs[current + direction];
+    if (!next) return;
+    if (now - wheelStarted > 320) {
+      wheelDistance = 0;
+      wheelStarted = now;
+    }
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? destinations.clientHeight : 1;
+    wheelDistance += Math.abs(delta) * unit;
+    if (wheelDistance < 260) return;
+    event.preventDefault();
+    wheelHandled = true;
+    navigate(next.getAttribute("href"));
+  }, {passive:false});
+
   document.addEventListener("click", event => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
     const anchor = event.target.closest("a[href]");

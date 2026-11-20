@@ -7,6 +7,7 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
 const root = fs.realpathSync(path.join(__dirname, '..'));
+const mapVersions = require('./map-versions.cjs');
 const identity = crypto.createHash('sha256').update(root.toLowerCase()).digest('hex').slice(0, 20);
 const stateFile = path.join(os.tmpdir(), `idf-map-live-${identity}.json`);
 const action = process.argv[2] || 'start';
@@ -96,6 +97,13 @@ async function serve() {
       return finish(res, 404);
     }
     if (!['GET', 'HEAD'].includes(req.method)) return finish(res, 405);
+    if (url.pathname === '/map_files/versions.json') {
+      try {
+        const versions = mapVersions(path.join(root, 'map_files'));
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        return finish(res, 200, req.method === 'HEAD' ? '' : JSON.stringify(versions));
+      } catch { return finish(res, 503); }
+    }
     let name;
     try { name = decodeURIComponent(url.pathname); } catch { return finish(res, 400); }
     if (name.includes('\\') || name.includes('\0') || name.includes(':') ||

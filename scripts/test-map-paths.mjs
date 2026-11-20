@@ -44,14 +44,16 @@ console.log('PASS website tools, scripts and map-specific bus catalogues, includ
 const publicMap=read('map.html');
 assert(!publicMap.includes('config/map-context.js'),'public map never remaps XML to IDFRP');
 const publicPaths=publicMap.slice(publicMap.indexOf('    const DBUS_BASE ='),publicMap.indexOf('    async function fetchMapFile('));
-for(const selected of ['website','IDF-RP','grandutopia']){
- const ctx=vm.createContext({MAP_FILES_ROOT:'./map_files',DEV_DATA_BASE:'./map_files/IDF-RP',DATA_BASE:'./map_files/'+selected,
-  OVERLAY_BASE:'./map_files/website/Overlays',NEXT_VERSION_MODE:selected==='IDF-RP',SELECTED_VERSION:selected});
+const folders = JSON.parse(read('map_files/versions.json'));
+assert(folders.length > 0);
+for(const selected of folders){
+ const base='./map_files/'+selected;
+ const ctx=vm.createContext({MAP_FILES_ROOT:'./map_files',DATA_BASE:base,OVERLAY_BASE:base+'/Overlays'});
  vm.runInContext(publicPaths,ctx);
  for(const file of ['lines.xml','stops.xml','city.xml']){
   const urls=ctx.mapFileCandidatePaths('Mode%20Bus/'+file);
   assert.equal(urls.length,1);
-  assert.equal(urls[0],'./map_files/website/Dbus%20World%20Lines/'+file);
+  assert.equal(urls[0],base+'/Dbus%20World%20Lines/'+file);
   assert(fs.existsSync(path.join(root,decodeURIComponent(urls[0]))));
  }
  assert.equal(ctx.mapFileCandidatePaths('nav_graph.json')[0],'./map_files/nav_graph.json');
