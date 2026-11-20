@@ -6,23 +6,19 @@
   </url>
 
   <url>
-    <loc>https://idf-map.fr/index.html</loc>
+    <loc>https://idf-map.fr/map</loc>
   </url>
 
   <url>
-    <loc>https://idf-map.fr/map.html</loc>
+    <loc>https://idf-map.fr/faq</loc>
   </url>
 
   <url>
-    <loc>https://idf-map.fr/faq.html</loc>
+    <loc>https://idf-map.fr/actualites</loc>
   </url>
 
   <url>
-    <loc>https://idf-map.fr/actualites.html</loc>
-  </url>
-
-  <url>
-    <loc>https://idf-map.fr/credits.html</loc>
+    <loc>https://idf-map.fr/credits</loc>
   </url>
 
 </urlset>

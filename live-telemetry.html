@@ -645,13 +645,13 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
 </head>
 <body class="interior page-live-telemetry">
   <header class="mast">
-        <a class="monogram" href="./" data-page="index" aria-label="Île-de-France Map — Accueil"><img src="images/idf_logo.png" width="500" height="202" alt="Île-de-France Map"></a>
+        <a class="monogram" href="/" data-page="index" aria-label="Île-de-France Map — Accueil"><img src="images/idf_logo.png" width="500" height="202" alt="Île-de-France Map"></a>
         <nav class="site-nav" data-label="nav_label" aria-label="Navigation du site">
-          <a href="./" data-page="index" data-t="nav_accueil">Accueil</a>
-          <a href="actualites.html" data-page="actualites" data-t="nav_actualites">Actualités</a>
-          <a href="map.html" data-page="map" data-t="nav_carte_interactive">Carte interactive</a>
-          <a href="faq.html" data-page="faq" data-t="nav_faq">FAQ</a>
-          <a href="credits.html" data-page="credits" data-t="nav_credits">Crédits</a>
+          <a href="/" data-page="index" data-t="nav_accueil">Accueil</a>
+          <a href="/actualites" data-page="actualites" data-t="nav_actualites">Actualités</a>
+          <a href="/map" data-page="map" data-t="nav_carte_interactive">Carte interactive</a>
+          <a href="/faq" data-page="faq" data-t="nav_faq">FAQ</a>
+          <a href="/credits" data-page="credits" data-t="nav_credits">Crédits</a>
           <a href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" target="_blank" rel="external noopener noreferrer">Discord<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
           <a href="https://www.youtube.com/@idfmap93" data-offsite-key="youtube" target="_blank" rel="external noopener noreferrer">YouTube<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
         </nav>
@@ -868,7 +868,7 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
         <small>
           <span><span data-t="footer_copyright">Copyright</span> © <span id="copyright-year"></span> Île-de-France Map</span>
           <span aria-hidden="true">·</span>
-          <a href="mentions_legales.html" data-page="mentions_legales" data-t="nav_mentions_legales">Mentions légales</a>
+          <a href="/mentions_legales" data-page="mentions_legales" data-t="nav_mentions_legales">Mentions légales</a>
         </small>
       </footer>
 <script src="config/translations.js"></script>
@@ -1186,6 +1186,17 @@ window.CINEMA_LABELS = (() => {
   "use strict";
   const $ = (selector) => document.querySelector(selector);
   const all = (selector) => [...document.querySelectorAll(selector)];
+  if (/^https?:$/.test(location.protocol)) {
+    const legacy = /^\/(index|actualites|map|faq|credits|mentions_legales|live-telemetry|404)\.html$/.exec(location.pathname);
+    if (legacy || location.pathname === "/index") {
+      const path = legacy && legacy[1] !== "index" ? "/" + legacy[1] : "/";
+      history.replaceState(history.state, "", path + location.search + location.hash);
+    }
+  } else if (location.protocol === "file:") {
+    for (const link of all("a[data-page]")) {
+      link.href = new URL(link.dataset.page + ".html", location.href).href;
+    }
+  }
   const config = window.SITE_LINKS || {};
   const links = window.SITE_OFFSITE_LINKS || config.offsite || {};
   const labels = window.CINEMA_LABELS;

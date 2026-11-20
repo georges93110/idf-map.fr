@@ -8,12 +8,12 @@
       {
         labelKey: "nav_group_maps",
         items: [
-          { href: "./", labelKey: "nav_accueil" },
-          { href: "map.html", labelKey: "nav_carte_interactive" },
-          { href: "actualites.html", labelKey: "nav_actualites" },
-          { href: "faq.html", labelKey: "nav_faq" },
-          { href: "credits.html", labelKey: "nav_credits" },
-          { href: "mentions_legales.html", labelKey: "nav_mentions_legales", hidden: true },
+          { href: "/", labelKey: "nav_accueil" },
+          { href: "/map", labelKey: "nav_carte_interactive" },
+          { href: "/actualites", labelKey: "nav_actualites" },
+          { href: "/faq", labelKey: "nav_faq" },
+          { href: "/credits", labelKey: "nav_credits" },
+          { href: "/mentions_legales", labelKey: "nav_mentions_legales", hidden: true },
           { labelKey: "", items: [] }
         ]
       }
