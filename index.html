@@ -511,7 +511,7 @@ h1[tabindex]:focus { outline: none }
 #written-guide ol { margin: .35em 0 0 }
 #written-guide li + li { margin-top: .3em }
 .leaf iframe { display: block; width: 100%; aspect-ratio: 16/9; min-height: 200px; border: 0 }
-#tutorial-embed { position: relative; aspect-ratio: 16/9; min-height: 200px; background: #101012 }
+.video-embed { position: relative; aspect-ratio: 16/9; min-height: 200px; background: #101012 }
 .video-loading {
   position: absolute; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: .7em;
   background: #101012; color: #d6d6da; font-size: .82rem; pointer-events: none;
@@ -528,6 +528,18 @@ h1[tabindex]:focus { outline: none }
 .leaf > [data-panel=idfrp] { flex: 1 0 auto; margin-top: 0 }
 .rp-overview { grid-area: overview }
 .plugin-guide { grid-area: guide; align-self: start }
+.plugin-guide .guide-formats { display: flex; width: 100%; margin-bottom: .9rem }
+.plugin-guide .guide-formats label { flex: 1; min-width: 0; align-content: center; text-align: center }
+.plugin-guide .guide-formats span { padding: 8px; line-height: 1.35 }
+.plugin-guide .video-embed, .plugin-guide .video-embed iframe { min-height: 0 }
+.plugin-guide.is-highlighted { border-color: #ff7178 }
+@media (prefers-reduced-motion: no-preference) {
+  .plugin-guide.is-highlighted { animation: highlight-installation 1.6s ease-out both }
+  @keyframes highlight-installation {
+    0%, 40% { border-color: #ff7178; box-shadow: 0 0 0 2px #ff656c80 }
+    100% { border-color: #3e3e40; box-shadow: 0 0 0 2px transparent }
+  }
+}
 [data-panel=idfrp] {
   grid-template-areas: "overview guide";
   display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
@@ -540,7 +552,6 @@ h1[tabindex]:focus { outline: none }
   font-size: clamp(.84rem,.95vw,.98rem); line-height: 1.48;
 }
 .installation-guide h2 { margin: 0; color: #fafafa; font: 700 clamp(1.5rem,2vw,2.1rem)/1.1 "Barlow Condensed",Inter,sans-serif }
-.plugin-guide h2 { margin-bottom: .3em }
 .installation-guide p { font-size: inherit; line-height: inherit }
 .guide-notice { margin-top: .85em; padding-left: .8em; border-left: 2px solid #deac68; color: #eeeef0 }
 .installation-guide ol { margin: 1em 0; padding-left: 1.55em }
@@ -736,8 +747,8 @@ h1[tabindex]:focus { outline: none }
                     <h2 data-t="guide_cat_install">Guide d’installation</h2>
                     <fieldset class="guide-formats" hidden>
                       <legend class="sr-only" data-t="guide_cat_install">Guide d’installation</legend>
-                      <label><input type="radio" name="guide-format" value="video" checked><span data-t="videoGuide">Guide vidéo</span></label>
-                      <label><input type="radio" name="guide-format" value="text"><span data-t="writtenGuide">Guide écrit</span></label>
+                      <label><input type="radio" name="guide-format" value="video" aria-controls="video-guide" checked><span data-t="videoGuide">Guide vidéo</span></label>
+                      <label><input type="radio" name="guide-format" value="text" aria-controls="written-guide"><span data-t="writtenGuide">Guide écrit</span></label>
                     </fieldset>
                   </div>
                   <div class="guide-content">
@@ -766,7 +777,7 @@ h1[tabindex]:focus { outline: none }
                       </section>
                     </div>
                     <div id="video-guide" hidden>
-                      <div id="tutorial-embed">
+                      <div class="video-embed" id="tutorial-embed">
                         <div class="video-loading" role="status" hidden><span data-t="loading">Chargement…</span></div>
                         <template><iframe title="Guide vidéo" src="https://www.youtube.com/embed/EEOM9HpaIV4?autoplay=0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay 'none'; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></template>
                       </div>
@@ -796,21 +807,33 @@ h1[tabindex]:focus { outline: none }
                   <a class="pill plugin-download" href="https://github.com/georges93110/idf-rp/releases/latest/download/idf-rp.dll" download="idf-rp.dll" target="plugin-file"><span data-t="downloadPlugin">Télécharger plugin</span><svg viewBox="0 0 24 24" aria-hidden="true"><path class="download-arrow" d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 17v4h16v-4"/></svg></a>
                   <iframe name="plugin-file" title="idf-rp.dll" sandbox="allow-downloads" hidden></iframe>
                 </div>
-                <section class="installation-guide plugin-guide" aria-labelledby="plugin-guide-title">
-                  <h2 id="plugin-guide-title" data-t="guide_cat_install">Guide d’installation</h2>
-                  <p data-t="pluginGuideIntro">Le DLC Coaches est facultatif.</p>
-                  <p class="guide-notice" data-t="pluginGuideCompatibility">IDF-RP nécessite la dernière version d’Euro Truck Simulator 2. Après une mise à jour du jeu, attendez le correctif avant de réutiliser le plugin. IDF-RP l’installe automatiquement dès sa sortie.</p>
-                  <ol>
-                    <li data-t-code="pluginGuideDownload">Téléchargez le fichier <code>idf-rp.dll</code>.</li>
-                    <li data-t-code="pluginGuideSteam">Dans votre bibliothèque Steam, faites un clic droit sur Euro Truck Simulator 2, puis choisissez <code>Gérer</code> → <code>Parcourir les fichiers locaux</code>.</li>
-                    <li>
-                      <span data-t="pluginGuideFolder">Ouvrez le dossier suivant.</span>
-                      <code class="plugin-path" dir="ltr">bin\win_x64\plugins</code>
-                      <span data-t-code="pluginGuideCreateFolder">Si le sous-dossier <code>plugins</code> manque, créez-le dans <code>win_x64</code>.</span>
-                    </li>
-                    <li data-t="pluginGuideCopy">Placez le fichier DLL téléchargé dans ce dossier.</li>
-                  </ol>
-                  <p class="plugin-support"><span data-t-code="pluginGuideSupport">Un problème ? Signalez-le dans le salon <code>#support</code></span> <a class="text-link" href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" target="_blank" rel="noopener noreferrer" data-t="pluginGuideDiscord">sur le discord</a>.</p>
+                <section class="installation-guide plugin-guide" aria-labelledby="choix-idfrp">
+                  <fieldset class="guide-formats">
+                    <legend class="sr-only" data-t="pluginTab">Plugin IDF-RP</legend>
+                    <label><input type="radio" name="plugin-format" value="video" aria-controls="plugin-preview" checked><span id="plugin-preview-label">Aperçu vidéo</span></label>
+                    <label><input type="radio" name="plugin-format" value="text" aria-controls="plugin-installation"><span id="plugin-guide-title" data-t="guide_cat_install">Guide d’installation</span></label>
+                  </fieldset>
+                  <div class="guide-content">
+                    <div id="plugin-preview" class="video-embed">
+                      <div class="video-loading" role="status" hidden><span data-t="loading">Chargement…</span></div>
+                      <template><iframe title="Aperçu vidéo" src="https://www.youtube.com/embed/MhADJ0gNQqI?autoplay=0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay 'none'; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></template>
+                    </div>
+                    <div id="plugin-installation" hidden>
+                      <p data-t="pluginGuideIntro">Le DLC Coaches est facultatif.</p>
+                      <p class="guide-notice" data-t="pluginGuideCompatibility">IDF-RP nécessite la dernière version d’Euro Truck Simulator 2. Après une mise à jour du jeu, attendez le correctif avant de réutiliser le plugin. IDF-RP l’installe automatiquement dès sa sortie.</p>
+                      <ol>
+                        <li data-t-code="pluginGuideDownload">Téléchargez le fichier <code>idf-rp.dll</code>.</li>
+                        <li data-t-code="pluginGuideSteam">Dans votre bibliothèque Steam, faites un clic droit sur Euro Truck Simulator 2, puis choisissez <code>Gérer</code> → <code>Parcourir les fichiers locaux</code>.</li>
+                        <li>
+                          <span data-t="pluginGuideFolder">Ouvrez le dossier suivant.</span>
+                          <code class="plugin-path" dir="ltr">bin\win_x64\plugins</code>
+                          <span data-t-code="pluginGuideCreateFolder">Si le sous-dossier <code>plugins</code> manque, créez-le dans <code>win_x64</code>.</span>
+                        </li>
+                        <li data-t="pluginGuideCopy">Placez le fichier DLL téléchargé dans ce dossier.</li>
+                      </ol>
+                      <p class="plugin-support"><span data-t-code="pluginGuideSupport">Un problème ? Signalez-le dans le salon <code>#support</code></span> <a class="text-link" href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" target="_blank" rel="noopener noreferrer" data-t="pluginGuideDiscord">sur le discord</a>.</p>
+                    </div>
+                  </div>
                 </section>
               </section>
             </div>
@@ -1328,10 +1351,7 @@ window.CINEMA_LABELS = (() => {
   const config = window.SITE_LINKS || {};
   const links = window.SITE_OFFSITE_LINKS || config.offsite || {};
   const { tr } = window.IDFSite;
-  const guideFormats = $(".guide-formats");
-  const guideContent = $(".guide-content");
-  let guideResize;
-  const videoFormat = guideFormats.querySelector('[value="video"]');
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let panel = "";
   let language = document.documentElement.lang;
   const maxServerAgeSeconds = 60 * 60;
@@ -1343,69 +1363,86 @@ window.CINEMA_LABELS = (() => {
   const autoURL = String(links.download_home_fr || "").trim();
   const hasAutomatic = Boolean(autoURL && autoURL !== "#");
   if (config.guide?.steam_dlc) $("#homeSteamDlcLink").href = config.guide.steam_dlc;
-  const tutorialEmbed = $("#tutorial-embed");
-  const playerTemplate = tutorialEmbed.querySelector("template").content.querySelector("iframe");
-  const videoLoading = tutorialEmbed.querySelector(".video-loading");
-  let loadingFade;
-  const tutorialURL = new URL(config.guide?.manual_video_embed || playerTemplate.src, document.baseURI);
-  tutorialURL.searchParams.set("autoplay", "0");
-  if (location.protocol === "https:" || location.protocol === "http:") tutorialURL.searchParams.set("origin", location.origin);
-  function syncTutorial() {
-    guideResize?.cancel();
-    const hasVideoGuide = language === "fr";
-    guideFormats.hidden = !hasVideoGuide;
-    if (panel !== "download") videoFormat.checked = true;
-    const videoSelected = hasVideoGuide && videoFormat.checked;
-    const showVideo = videoSelected && panel === "download";
-    $("#written-guide").hidden = videoSelected;
-    $("#video-guide").hidden = !videoSelected;
-    const currentPlayer = tutorialEmbed.querySelector("iframe");
-    if (!showVideo) {
-      loadingFade?.cancel();
-      currentPlayer?.remove();
-      videoLoading.hidden = !videoSelected;
-      return;
-    }
-    if (currentPlayer) {
-      currentPlayer.title = tr("videoGuide");
-      return;
-    }
-    const player = playerTemplate.cloneNode(false);
-    player.title = tr("videoGuide");
-    player.src = tutorialURL.href;
-    player.inert = true;
-    videoLoading.hidden = false;
-    function finishLoading() {
-      if (!player.isConnected || !player.inert) return;
-      player.inert = false;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        videoLoading.hidden = true;
+  function setupGuide(card, owner, videoSource) {
+    const formats = card.querySelector(".guide-formats");
+    const content = card.querySelector(".guide-content");
+    const videoRadio = formats.querySelector('[value="video"]');
+    const textRadio = formats.querySelector('[value="text"]');
+    const video = document.getElementById(videoRadio.getAttribute("aria-controls"));
+    const written = document.getElementById(textRadio.getAttribute("aria-controls"));
+    const embed = card.querySelector(".video-embed");
+    const template = embed.querySelector("template").content.querySelector("iframe");
+    const loading = embed.querySelector(".video-loading");
+    const url = new URL(videoSource || template.src, document.baseURI);
+    url.searchParams.set("autoplay", "0");
+    if (/^https?:$/.test(location.protocol)) url.searchParams.set("origin", location.origin);
+    let fade;
+    let resize;
+
+    function sync() {
+      resize?.cancel();
+      formats.hidden = owner === "download" && language !== "fr";
+      if (panel !== owner) videoRadio.checked = true;
+      const showVideo = !formats.hidden && videoRadio.checked;
+      written.hidden = showVideo;
+      video.hidden = !showVideo;
+      const current = embed.querySelector("iframe");
+      if (!showVideo || panel !== owner) {
+        fade?.cancel();
+        current?.remove();
+        loading.hidden = !showVideo;
         return;
       }
-      loadingFade = videoLoading.animate(
-        [{ opacity: 1 }, { opacity: 0 }],
-        { duration: 380, easing: "ease-out", fill: "forwards" }
-      );
-      loadingFade.onfinish = () => {
-        if (player.isConnected) videoLoading.hidden = true;
-      };
+      const title = videoRadio.labels[0].textContent.trim();
+      if (current) {
+        current.title = title;
+        return;
+      }
+      const player = template.cloneNode(false);
+      player.title = title;
+      player.src = url.href;
+      player.inert = true;
+      loading.hidden = false;
+      function finishLoading() {
+        if (!player.isConnected || !player.inert) return;
+        player.inert = false;
+        if (reducedMotion.matches) {
+          loading.hidden = true;
+          return;
+        }
+        fade = loading.animate([{opacity: 1}, {opacity: 0}], {duration: 380, easing: "ease-out", fill: "forwards"});
+        fade.onfinish = () => { if (player.isConnected) loading.hidden = true; };
+      }
+      player.addEventListener("load", finishLoading, {once: true});
+      player.addEventListener("error", finishLoading, {once: true});
+      embed.append(player);
     }
-    player.addEventListener("load", finishLoading, {once: true});
-    player.addEventListener("error", finishLoading, {once: true});
-    tutorialEmbed.append(player);
+    function changeFormat() {
+      const from = content.getBoundingClientRect().height;
+      sync();
+      const to = content.getBoundingClientRect().height;
+      if (from !== to && !reducedMotion.matches) {
+        resize = content.animate([{height: from + "px"}, {height: to + "px"}],
+          {duration: 320, easing: "cubic-bezier(.22,.75,.2,1)"});
+      }
+    }
+    formats.addEventListener("change", changeFormat);
+    return {sync, showWritten() {
+      if (textRadio.checked) return;
+      textRadio.checked = true;
+      changeFormat();
+    }};
   }
-  guideFormats.addEventListener("change", () => {
-    const from = guideContent.getBoundingClientRect().height;
-    syncTutorial();
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const to = guideContent.getBoundingClientRect().height;
-    if (from !== to) {
-      guideResize = guideContent.animate(
-        [{ height: from + "px" }, { height: to + "px" }],
-        { duration: 320, easing: "cubic-bezier(.22,.75,.2,1)" }
-      );
-    }
-  });
+  const mapGuide = setupGuide($("#install-guide"), "download", config.guide?.manual_video_embed);
+  const pluginCard = $(".plugin-guide");
+  const pluginGuide = setupGuide(pluginCard, "idfrp");
+  const previewLabels = {
+    fr: "Aperçu vidéo", en: "Video preview", es: "Vista previa en vídeo", de: "Videovorschau",
+    pl: "Podgląd wideo", pt: "Prévia em vídeo", nl: "Videovoorbeeld", it: "Anteprima video",
+    ru: "Видеообзор", zh: "视频预览", ko: "동영상 미리보기", ja: "動画プレビュー"
+  };
+  const previewLabel = $("#plugin-preview-label");
+  previewLabel.textContent = previewLabels[language] || previewLabels.fr;
   if (hasAutomatic) $("#automatic-link").href = autoURL;
   for (const anchor of all("a[href]:not([download])")) {
     const url = new URL(anchor.href);
@@ -1418,6 +1455,7 @@ window.CINEMA_LABELS = (() => {
     }
   }
   const pluginDownload = $(".plugin-download");
+  let highlightTimer;
   pluginDownload.addEventListener("click", event => {
     if (pluginDownload.getAttribute("aria-disabled") === "true") {
       event.preventDefault();
@@ -1426,17 +1464,26 @@ window.CINEMA_LABELS = (() => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
     pluginDownload.setAttribute("aria-disabled", "true");
     window.setTimeout(() => pluginDownload.removeAttribute("aria-disabled"), 2400);
+    pluginGuide.showWritten();
+    pluginCard.classList.add("is-highlighted");
+    clearTimeout(highlightTimer);
+    highlightTimer = setTimeout(() => pluginCard.classList.remove("is-highlighted"), 1600);
+    if (event.detail === 0) pluginCard.querySelector("input:checked").focus({preventScroll:true});
+    const leaf = $("#leaf-rp");
+    if (pluginCard.getBoundingClientRect().top < leaf.getBoundingClientRect().top) {
+      leaf.scrollTo({top: 0, behavior: reducedMotion.matches ? "instant" : "smooth"});
+    }
   });
   document.addEventListener("idf:language", event => {
     language = event.detail;
+    previewLabel.textContent = previewLabels[language] || previewLabels.fr;
     if (panel === "convoy") renderStatus();
-    if (panel) syncTutorial();
+    if (panel) { mapGuide.sync(); pluginGuide.sync(); }
   });
 
   const folds = all(".fold");
   const tabList = $(".choice-bar");
   const tabs = all(".choice-bar [role=tab]");
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let slide = null;
   let slideFrame = 0;
 
@@ -1518,7 +1565,7 @@ window.CINEMA_LABELS = (() => {
     const leavingDownload = slide.from === "download" && slide.to === panel;
     clearSlide();
     displayPanels();
-    if (leavingDownload) syncTutorial();
+    if (leavingDownload) mapGuide.sync();
   }
   function settleSlide(end) {
     cancelAnimationFrame(slideFrame);
@@ -1540,11 +1587,11 @@ window.CINEMA_LABELS = (() => {
     if (!previous || panelFamilies[previous] === panelFamilies[panel] || reducedMotion.matches) {
       clearSlide();
       displayPanels();
-      syncTutorial();
+      mapGuide.sync();
       return;
     }
     prepareSlide(previous, panel);
-    if (previous !== "download") syncTutorial();
+    if (previous !== "download") mapGuide.sync();
     if (fromWheel) glideWheelTo(slide.direction, true);
     else settleSlide(1);
   }
@@ -1562,6 +1609,8 @@ window.CINEMA_LABELS = (() => {
     if (wheelMode === "pan") wheelMode = "committed";
     if (previous === "convoy") stopStatus();
     panel = next;
+    pluginGuide.sync();
+    if (previous === "idfrp") pluginCard.classList.remove("is-highlighted");
     const family = panelFamilies[panel];
     const active = folds.find(fold => fold.dataset.family === family);
     const selectedTab = document.getElementById(active.getAttribute("aria-labelledby"));
