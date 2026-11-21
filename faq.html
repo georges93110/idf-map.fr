@@ -1278,6 +1278,8 @@ window.CINEMA_LABELS = (() => {
     Object.assign(dictionary[lang], {nav_team, nav_social});
   }
   dictionary.en.home_idfrp_intro = "Bring your bus missions to life on the map.";
+  const modsNavLabels = {"fr": "Configuration map", "en": "Map setup", "es": "Configuración del mapa", "de": "Karteneinstellungen", "pl": "Ustawienia mapy", "pt": "Configuração do mapa", "nl": "Kaartinstellingen", "it": "Configurazione mappa", "ru": "Настройка карты", "zh": "地图设置", "ko": "맵 설정", "ja": "マップ設定"};
+  for (const [lang, label] of Object.entries(modsNavLabels)) dictionary[lang].nav_mods = label;
   return dictionary;
 })();
 
@@ -1288,7 +1290,7 @@ window.CINEMA_LABELS = (() => {
   const $ = (selector) => document.querySelector(selector);
   const all = (selector) => [...document.querySelectorAll(selector)];
   if (/^https?:$/.test(location.protocol)) {
-    const legacy = /^\/(index|actualites|map|faq|contribuer|credits|mentions_legales|live-telemetry|404)\.html$/.exec(location.pathname);
+    const legacy = /^\/(index|actualites|map|mods|faq|contribuer|credits|mentions_legales|live-telemetry|404)\.html$/.exec(location.pathname);
     if (legacy || location.pathname === "/index") {
       const path = legacy && legacy[1] !== "index" ? "/" + legacy[1] : "/";
       history.replaceState(history.state, "", path + location.search + location.hash);
