@@ -57,7 +57,7 @@ html.idf-entering.idf-revealing::before, html.idf-entering.idf-revealing::after 
     <meta property="og:description" content="La région parisienne au volant dans Euro Truck Simulator 2.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://idf-map.fr/images/idf_logo_new.png">
-    <title>Île-de-France Map</title>
+    <title data-page-label="nav_accueil">Île-de-France Map | Accueil</title>
     <link rel="icon" href="images/idf_logo_new.png">
     <link rel="preload" as="image" href="images/background.webp" fetchpriority="high">
     <style>
@@ -78,7 +78,7 @@ html { scrollbar-gutter: stable }
 html.maps-app-mode { scrollbar-gutter: auto }
 .mast,.site-footer { width: min(100%,2150px); margin-inline: auto; padding-inline: var(--edge) }
 .mast {
-  display: grid; grid-template-columns: var(--tab-columns); align-items: center;
+  display: grid; grid-template-columns: minmax(max-content,1fr) auto minmax(max-content,1fr); align-items: center;
   min-height: clamp(56px,8.6svh,96px); position: sticky; top: 0; z-index: 4;
   background: #171719;
 }
@@ -87,10 +87,40 @@ html.maps-app-mode { scrollbar-gutter: auto }
 .monogram img { width: clamp(80px,8vw,142px); height: auto }
 .site-nav,.site-footer,.language-picker { display: flex; align-items: center }
 .site-nav { justify-self: center; width: max-content; justify-content: center; gap: 0 clamp(10px,1.45vw,24px) }
-.mast nav a { display: inline-flex; align-items: center; min-height: 40px; font-size: clamp(.73rem,.89vw,.99rem); font-weight: 560 }
-.mast nav a { gap: 4px; white-space: nowrap; color: #d5d5da }
+.mast nav :is(a,.nav-trigger) {
+  display: inline-flex; align-items: center; min-height: 40px; gap: 4px;
+  font-size: clamp(.73rem,.89vw,.99rem); font-weight: 560; white-space: nowrap; color: #d5d5da;
+}
+.nav-dropdown { position: relative }
+.mast .nav-trigger { border: 0; padding: 0; background: none; font-family: inherit; line-height: inherit }
+.site-nav .nav-chevron { width: .85em; height: .85em; margin-left: .12em; color: #aaaab1 }
+.nav-chevron,.language-chevron { transition: transform .2s ease }
+.nav-trigger[aria-expanded=true] .nav-chevron { transform: rotate(180deg) }
+.mast .nav-trigger:hover,.mast .nav-trigger[aria-expanded=true] { color: #fff }
+.mast .nav-dropdown:has(a[aria-current=page]) .nav-trigger { color: #fff }
+.site-nav > a,.site-nav .nav-trigger { position: relative }
+.site-nav > a::after,.site-nav .nav-trigger::after {
+  content: ""; position: absolute; inset-inline: 0; bottom: calc(50% - .85em); height: 1px;
+  background: currentColor; pointer-events: none; transform: scaleX(0); transform-origin: left;
+}
+.site-nav > a:is([aria-current=page],:focus-visible)::after,
+.site-nav .nav-trigger:is([aria-expanded=true],:focus-visible)::after,
+.site-nav .nav-dropdown:has(a[aria-current=page]) .nav-trigger::after { transform: scaleX(1) }
+.nav-popup {
+  position: absolute; z-index: 3; top: calc(100% + 4px); left: var(--menu-offset,0px);
+  display: grid; width: max-content; min-width: min(10rem,calc(100vw - 24px)); max-width: calc(100vw - 24px);
+  padding: 4px; background: #19191c; border: 1px solid #3e3e40; border-radius: 7px;
+  box-shadow: 0 12px 36px #0007; transform-origin: top left;
+}
+.mast .nav-popup a { justify-content: space-between; gap: 1em; min-height: 36px; padding: 0 10px; border-radius: 4px; }
+.mast .nav-popup a:is(:hover,:focus-visible) { background: #323236; text-decoration: none }
+.mast #nav-social a { display: grid; grid-template-columns: 20px 1fr auto; gap: 9px }
+#nav-social a::before { content: ""; width: 20px; height: 15px; background: center / contain no-repeat }
+#nav-social [data-offsite-key=discord]::before { background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2720%27%20height%3D%2715%27%20viewBox%3D%272.5%204.66%2019.02%2014.67%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20fill%3D%27white%27%20fill-rule%3D%27evenodd%27%20d%3D%27M18.59%205.88997C17.36%205.31997%2016.05%204.89997%2014.67%204.65997C14.5%204.95997%2014.3%205.36997%2014.17%205.69997C12.71%205.47997%2011.26%205.47997%209.83001%205.69997C9.69001%205.36997%209.49001%204.95997%209.32001%204.65997C7.94001%204.89997%206.63001%205.31997%205.40001%205.88997C2.92001%209.62997%202.25001%2013.28%202.58001%2016.87C4.23001%2018.1%205.82001%2018.84%207.39001%2019.33C7.78001%2018.8%208.12001%2018.23%208.42001%2017.64C7.85001%2017.43%207.31001%2017.16%206.80001%2016.85C6.94001%2016.75%207.07001%2016.64%207.20001%2016.54C10.33%2018%2013.72%2018%2016.81%2016.54C16.94%2016.65%2017.07%2016.75%2017.21%2016.85C16.7%2017.16%2016.15%2017.42%2015.59%2017.64C15.89%2018.23%2016.23%2018.8%2016.62%2019.33C18.19%2018.84%2019.79%2018.1%2021.43%2016.87C21.82%2012.7%2020.76%209.08997%2018.61%205.88997H18.59ZM8.84001%2014.67C7.90001%2014.67%207.13001%2013.8%207.13001%2012.73C7.13001%2011.66%207.88001%2010.79%208.84001%2010.79C9.80001%2010.79%2010.56%2011.66%2010.55%2012.73C10.55%2013.79%209.80001%2014.67%208.84001%2014.67ZM15.15%2014.67C14.21%2014.67%2013.44%2013.8%2013.44%2012.73C13.44%2011.66%2014.19%2010.79%2015.15%2010.79C16.11%2010.79%2016.87%2011.66%2016.86%2012.73C16.86%2013.79%2016.11%2014.67%2015.15%2014.67Z%27%2F%3E%3C%2Fsvg%3E) }
+#nav-social [data-offsite-key=youtube]::before { background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2720%27%20height%3D%2715%27%20viewBox%3D%270%203.5%2024%2017%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20fill%3D%27white%27%20fill-rule%3D%27evenodd%27%20d%3D%27M23.5%206.2a3%203%200%200%200-2.1-2.1C19.5%203.5%2012%203.5%2012%203.5s-7.5%200-9.4.6A3%203%200%200%200%20.5%206.2%2031%2031%200%200%200%200%2012a31%2031%200%200%200%20.5%205.8%203%203%200%200%200%202.1%202.1c1.9.6%209.4.6%209.4.6s7.5%200%209.4-.6a3%203%200%200%200%202.1-2.1A31%2031%200%200%200%2024%2012a31%2031%200%200%200-.5-5.8zM9.6%2015.6V8.4l6.2%203.6-6.2%203.6z%27%2F%3E%3C%2Fsvg%3E) }
 .site-nav a svg { width: .85em; height: .85em; flex: none; color: #acacb2 }
-.mast nav a:hover,.site-footer a:hover { color: #fff; text-decoration: underline; text-underline-offset: .35em }
+.mast nav a:hover { color: #fff }
+.site-footer a:hover { color: #fff; text-decoration: underline; text-underline-offset: .35em }
 
 
 .site-footer {
@@ -112,10 +142,38 @@ html.maps-app-mode { scrollbar-gutter: auto }
 .language-flag { display: block; width: 20px; height: 14px; object-fit: cover; border-radius: 2px; flex: none; box-shadow: 0 0 0 1px #ffffff21 }
 .language-trigger .language-chevron { width: 12px; height: 12px; margin-left: 3px; color: #b2b2b9; transition: transform .18s ease }
 .language-trigger[aria-expanded=true] .language-chevron { transform: rotate(180deg) }
+@media (hover: hover) {
+  .site-nav > a:hover::after,.site-nav .nav-trigger:hover::after { transform: scaleX(1) }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .site-nav > a::after,.site-nav .nav-trigger::after { transition: transform .2s cubic-bezier(.22,.75,.2,1) }
+  .mast nav :is(a,.nav-trigger),.mast .language-trigger,#language-menu button {
+    transition: color .18s ease, background-color .18s ease, border-color .18s ease;
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .mast :is(.nav-trigger,.language-trigger)[aria-expanded=false]:hover :is(.nav-chevron,.language-chevron) { transform: translateY(2px) }
+}
 .language-popup {
   position: absolute; top: calc(100% + 8px); right: 0; width: min(314px,calc(100vw - 2 * var(--edge)));
   max-height: calc(100svh - 66px); overflow-y: auto; overscroll-behavior: contain;
-  padding: 10px; box-shadow: 0 14px 42px #0008; animation: slide-panel .18s var(--ease);
+  padding: 10px; box-shadow: 0 14px 42px #0008; transform-origin: top right;
+}
+.mast :is(.nav-popup,.language-popup) {
+  display: none; pointer-events: none; opacity: 0; transform: translateY(-5px) scale(.98);
+  transition: opacity .14s ease-in, transform .18s ease-in, display .18s;
+  transition-behavior: allow-discrete;
+}
+.mast [aria-expanded=true] + :is(.nav-popup,.language-popup) {
+  display: block; pointer-events: auto; opacity: 1; transform: none;
+  transition-timing-function: ease-out, cubic-bezier(.2,.8,.25,1), linear;
+}
+.mast [aria-expanded=true] + .nav-popup { display: grid }
+@starting-style {
+  .mast [aria-expanded=true] + :is(.nav-popup,.language-popup) { opacity: 0; transform: translateY(-5px) scale(.98) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mast :is(.nav-popup,.language-popup,.nav-chevron,.language-chevron) { transition: none !important }
 }
 #language-title { margin: 0 5px 7px; padding: 2px 0 9px; border-bottom: 1px solid #ffffff1a; color: #b9b9c1; font-size: .7rem; font-weight: 600 }
 #language-menu { display: grid; grid-template-rows: repeat(6,auto); grid-auto-flow: column; grid-auto-columns: minmax(0,1fr); gap: 2px 5px }
@@ -128,11 +186,11 @@ html.maps-app-mode { scrollbar-gutter: auto }
 #language-menu button:focus-visible { outline: 1px solid #b7b7bf; outline-offset: -2px }
 #language-menu button[aria-checked=true] { background: #3c3c41; color: #fff }
 #language-menu button[aria-checked=true]::after { content: ""; margin-left: auto; flex: none; width: 5px; height: 9px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: translateY(-1px) rotate(45deg) }
-@media (max-width: 940px) {
+@media (max-width: 1060px) {
   .mast { grid-template-columns: 1fr auto; row-gap: 0; padding-top: 4px }
   .site-nav { grid-column: 1 / -1; grid-row: 2; width: 100%; flex-wrap: wrap; gap: 0 clamp(10px,2.4vw,22px); padding-bottom: 4px }
   .language-picker { grid-column: 2; grid-row: 1 }
-  .mast nav a { min-height: 32px }
+  .mast nav :is(a,.nav-trigger) { min-height: 32px }
 }
 @media (max-width: 460px) {
   .site-nav { column-gap: clamp(10px,3vw,14px) }
@@ -150,7 +208,8 @@ html.maps-app-mode { scrollbar-gutter: auto }
 .mast .language-popup { background: #19191c; border: 1px solid #3e3e40; border-radius: 7px }
 .mast :focus-visible, .site-footer :focus-visible { outline: 2px solid #ddd; outline-offset: 2px }
 .mast [hidden] { display: none !important }
-.mast .site-nav a[aria-current=page] { color: white; text-decoration: underline; text-underline-offset: .35em }
+.mast .site-nav a[aria-current=page] { color: white }
+.mast .nav-popup a[aria-current=page] { text-decoration: underline; text-underline-offset: .35em }
 @media (max-width: 740px) {
   .mast { min-height: 52px }
   .monogram img { width: 82px }
@@ -159,7 +218,7 @@ html.maps-app-mode { scrollbar-gutter: auto }
 @media (max-height: 460px) and (orientation: landscape) {
   .mast, .site-footer { min-height: 34px }
   .monogram img { width: 66px }
-  .mast nav a { min-height: 30px }
+  .mast nav :is(a,.nav-trigger) { min-height: 30px }
 }
 
 /*
@@ -433,6 +492,11 @@ h1,.choice-title,.server-players strong { font-family: "Barlow Condensed",Inter,
 .choice[aria-selected=true],.choice:hover { color: #fff }
 .choice:hover { background: #ffffff06 }
 .choice:focus-visible { outline: 2px solid #eee; outline-offset: -4px }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .choice { transition: color .18s ease, background-color .18s ease }
+  .choice-title { transition: transform .2s var(--ease) }
+  .choice:hover .choice-title { transform: translateY(-2px) }
+}
 .choice-title {
   font-size: clamp(1.08rem,1.8vw,1.7rem); text-transform: uppercase; line-height: 1.07;
   text-wrap: balance; overflow-wrap: anywhere;
@@ -457,13 +521,15 @@ h1,.choice-title,.server-players strong { font-family: "Barlow Condensed",Inter,
   }
 }
 .leaf {
+  --action-size: 64px;
   --inset: clamp(18px,2.5vw,44px);
   position: absolute; inset: 0; display: flex; flex-direction: column;
-  padding: var(--inset); overflow: auto; overscroll-behavior: contain; touch-action: pan-y pinch-zoom;
+  padding: clamp(18px,2.6svh,30px) var(--inset) var(--inset); overflow: auto; overscroll-behavior: contain; touch-action: pan-y pinch-zoom;
   scrollbar-color: #68686d #1b1b1d;
   background: linear-gradient(0deg,#0b0b0dfc 0%,#0c0c0eeb 18%,#0c0c0ea6 48%,#0c0c0e1f 78%,transparent);
 }
-.leaf > section { flex: none; margin-top: auto; min-width: 0 }
+.leaf > section { flex: none; min-width: 0 }
+.guide-heading,.rp-overview,.convoy-actions,[data-panel=automatic] { padding-block-start: clamp(8px,1.35svh,16px) }
 .leaf h1 { font-size: clamp(2.25rem,4.8vw,5.5rem); line-height: .98; margin-bottom: .27em }
 h1[tabindex]:focus { outline: none }
 .leaf p { font-size: clamp(.86rem,1vw,1rem); line-height: 1.5 }
@@ -477,21 +543,40 @@ h1[tabindex]:focus { outline: none }
 .leaf .text-link { text-decoration: underline; text-underline-offset: .16em }
 [data-panel=download] {
   display: grid; grid-template-columns: minmax(0,1fr) minmax(280px,.94fr);
-  align-items: end; column-gap: clamp(14px,3vw,54px);
+  column-gap: clamp(14px,3vw,54px);
 }
-#manual-map {
-  min-height: 54px; min-width: min(190px,100%); justify-content: space-between;
-  margin-top: .6em; gap: 18px; padding: 12px 22px; border-radius: 6px;
-  font-size: clamp(.98rem,1.18vw,1.2rem);
+:is([data-panel=download],[data-panel=idfrp]) {
+  grid-template-areas: "overview guide" "actions actions";
+  grid-template-rows: 1fr auto; row-gap: 12px;
 }
-#manual-map svg { width: 1.15em; height: 1.15em; flex: none }
+.guide-heading { grid-area: overview }
+.download-actions { grid-area: actions; justify-self: start }
+.action-symbols { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none }
+.download-actions,.primary-actions {
+  display: inline-grid; grid-template-columns: minmax(0,auto) var(--action-size);
+  align-items: center; gap: 8px; max-width: 100%;
+}
+:is(.download-actions,.primary-actions) > a { transition: background-color .18s ease, box-shadow .18s ease }
+.action-discord {
+  display: grid; place-items: center; width: var(--action-size); aspect-ratio: 1;
+  border-radius: 6px; background: #5865f2; color: white;
+}
+.action-discord:is(:hover,:focus-visible) { background-color: #4752c4 }
+.action-discord svg { width: 56%; height: 56%; fill: currentColor; stroke: none }
+#manual-map,.leaf .plugin-download {
+  min-height: var(--action-size); min-width: min(232px,100%); justify-content: space-between;
+  gap: 18px; padding: 15px 26px; border-radius: 6px;
+  font-size: clamp(1.125rem,1.4vw,1.375rem); text-align: start;
+}
+#manual-map svg,.plugin-download svg { width: 1.15em; height: 1.15em; flex: none }
 .project-description { max-width: 58ch; margin-block: .55rem; color: #eeeef0; text-shadow: 0 1px 4px #0009 }
 .project-description p + p { margin-top: .65em }
 @media (min-width: 741px) {
   #leaf-map { background: linear-gradient(90deg,#0c0c0ed4,#0c0c0e78 52%,transparent 80%),linear-gradient(0deg,#0b0b0def,transparent 78%) }
+  .guide-heading,.rp-overview { display: flex; flex-direction: column; align-items: flex-start }
 }
 .leaf > [data-panel=download] { flex: 1 0 auto }
-#install-guide { align-self: start; min-width: 0 }
+#install-guide { grid-area: guide; align-self: start; min-width: 0 }
 .install-actions { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap }
 .map-guide-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5em 1em; margin-bottom: .55em }
 .guide-content { overflow: clip }
@@ -501,7 +586,10 @@ h1[tabindex]:focus { outline: none }
 }
 .guide-formats label { position: relative; cursor: pointer }
 .guide-formats input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer }
-.guide-formats span { display: block; padding: 7px 12px; border-radius: 4px; color: #bdbdc4; font-size: .77rem; font-weight: 600 }
+.guide-formats span {
+  position: relative; display: block; pointer-events: none; padding: 7px 12px; border-radius: 4px;
+  color: #bdbdc4; font-size: .77rem; font-weight: 600; transition: background-color .18s ease, color .18s ease;
+}
 .guide-formats input:checked + span { color: #fff; background: #3b3b40 }
 .guide-formats input:focus-visible + span { outline: 2px solid #fff; outline-offset: -2px }
 .installation-guide h3 { margin: 0 0 .35em; font-size: .78rem; letter-spacing: .045em; color: #fafafa }
@@ -525,10 +613,12 @@ h1[tabindex]:focus { outline: none }
 .fold[data-family=rp] .leaf,.fold[data-family=server] .leaf {
   background: linear-gradient(90deg,#101012dd,transparent 78%),linear-gradient(0deg,#101012f5,transparent 75%);
 }
-.leaf > [data-panel=idfrp] { flex: 1 0 auto; margin-top: 0 }
+.leaf > [data-panel=idfrp] { flex: 1 0 auto }
 .rp-overview { grid-area: overview }
 .plugin-guide { grid-area: guide; align-self: start }
 .plugin-guide .guide-formats { display: flex; width: 100%; margin-bottom: .9rem }
+.plugin-guide .guide-formats:not([hidden]) + h2 { display: none }
+.installation-guide h2.plugin-written-title { margin-bottom: .5em }
 .plugin-guide .guide-formats label { flex: 1; min-width: 0; align-content: center; text-align: center }
 .plugin-guide .guide-formats span { padding: 8px; line-height: 1.35 }
 .plugin-guide .video-embed, .plugin-guide .video-embed iframe { min-height: 0 }
@@ -541,9 +631,8 @@ h1[tabindex]:focus { outline: none }
   }
 }
 [data-panel=idfrp] {
-  grid-template-areas: "overview guide";
   display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-  align-items: end; gap: clamp(20px,4vw,76px);
+  column-gap: clamp(20px,4vw,76px);
 }
 .rp-overview { max-width: 52ch }
 .installation-guide {
@@ -573,40 +662,78 @@ h1[tabindex]:focus { outline: none }
 .rp-label .new-badge { font-size: clamp(.65rem,.85vw,.75rem) }
 .leaf .rp-intro { font-size: clamp(1rem,1.4vw,1.5rem); font-weight: 560; line-height: 1.3; text-wrap: balance }
 .rp-copy { margin-block: .7em 1.2em; color: #dadade }
-.leaf .plugin-download {
-  min-height: 54px; padding: 13px 22px; border-radius: 6px; gap: 16px;
-  font-size: clamp(.98rem,1.18vw,1.2rem); text-align: start;
-}
-.plugin-download svg { width: 1.1em; height: 1.1em; flex: none }
-.leaf .plugin-download[aria-disabled=true] { background: #57575c; color: #f1f1f3; cursor: wait }
-@keyframes plugin-download-arrow {
+.leaf [data-file-download][aria-disabled=true] { background: #57575c; color: #f1f1f3; cursor: wait }
+@keyframes download-arrow {
   0%, 100% { transform: translateY(-2px) }
   55% { transform: translateY(2px) }
 }
-.leaf > [data-panel=convoy] { flex: 1 0 auto; margin-top: 0 }
+.leaf > [data-panel=convoy] { flex: 1 0 auto }
 [data-panel=convoy] {
   display: grid; grid-template-columns: minmax(0,1fr) min(48%,34rem);
-  grid-template-areas: ". guide" "actions status"; grid-template-rows: 1fr auto;
+  grid-template-areas: "actions guide" "actions status"; grid-template-rows: 1fr auto;
   align-items: end; gap: .65rem clamp(20px,4vw,76px);
 }
-.convoy-actions { grid-area: actions; display: grid; justify-items: start; gap: clamp(8px,1.2vw,18px) }
+.convoy-actions { grid-area: actions; display: grid; align-self: stretch; align-content: space-between; justify-items: start; gap: clamp(8px,1.2vw,18px) }
 .convoy-actions h1 { margin: 0 }
+.convoy-actions .primary-actions { --action-size: 50px }
+.convoy-collection,.convoy-actions .action-discord { border: 1px solid #3e3e40; border-radius: 7px }
 .convoy-guide { grid-area: guide; align-self: start; max-width: none }
 .convoy-collection {
-  display: inline-flex; align-items: center; gap: .65em; max-width: 100%; min-height: 50px;
-  padding: .75rem 1.1rem; border: 1px solid #ffffff38; border-radius: 6px;
-  background: #dce6ed; color: #17232b; font-weight: 670; font-size: clamp(.9rem,1.12vw,1.1rem); line-height: 1.3;
-  transition: background-color .18s ease;
+  display: inline-flex; align-items: center; gap: .65em; max-width: 100%; min-height: var(--action-size);
+  padding: .75rem 1.1rem; background-color: #19191c; color: #fff; font-weight: 670; font-size: clamp(.9rem,1.12vw,1.1rem); line-height: 1.3;
 }
-.convoy-collection:hover,.convoy-collection:focus-visible { background: #f5f8fa }
+.convoy-collection:hover,.convoy-collection:focus-visible { background-color: #29292d }
 .convoy-collection svg { flex: none }
 .convoy-collection .external-arrow { width: .95em; height: .95em; margin-left: .3em }
+@media (hover: hover) {
+  :is(.download-actions,.primary-actions) > a:not([aria-disabled=true]):hover { box-shadow: 0 3px 12px #0005 }
+  .guide-formats label:hover input:not(:checked) + span { color: #fff; background-color: #26262b }
+  .guide-formats label:hover input:checked + span { background-color: #48484f }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .download-arrow,.action-discord svg,.convoy-collection .external-arrow { transition: transform .22s var(--ease) }
+  [data-file-download]:not([aria-disabled=true]):hover .download-arrow { transform: translateY(3px) }
+  .action-discord:hover svg { transform: rotate(-7deg) scale(1.08) }
+  .convoy-collection:hover .external-arrow { transform: translate(2px,-2px) }
+  .guide-formats span::after {
+    content: ""; position: absolute; left: 50%; bottom: 3px; width: 18px; height: 2px; border-radius: 1px;
+    background: currentColor; opacity: 0; transform: translateX(-50%) scaleX(.25);
+    transition: transform .2s var(--ease), opacity .2s ease;
+  }
+  .guide-formats label:hover span::after { opacity: .8; transform: translateX(-50%) scaleX(1) }
+}
 .server-readout { grid-area: status; min-width: 0; padding: clamp(16px,1.85vw,28px) }
 .status { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #ffffff26 }
-#status-value { min-width: 0; color: #fafafa; font: 650 clamp(1.125rem,1.5vw,1.25rem)/1.3 Inter,sans-serif; overflow-wrap: anywhere }
-.status-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #a5a5ae }
-.status[data-state=online] .status-dot { background: #9cdbb4; box-shadow: 0 0 0 3px #9cdbb41c }
-.status[data-state=offline] .status-dot { background: #e5a190 }
+#status-value { min-width: 0; font: 650 clamp(1.125rem,1.5vw,1.25rem)/1.3 Inter,sans-serif; overflow-wrap: anywhere }
+.status[data-state=loading] { color: #92c9fa }
+.status[data-state=online] { color: #93da88 }
+.status[data-state=offline] { color: #ff8989 }
+.status[data-state=unknown] { color: #f4cc63 }
+.status-icon { width: 1.35rem; height: 1.35rem; flex: none; stroke-width: 1.9 }
+.status-icon > g { display: none }
+.status[data-state=loading] .status-loading,
+.status[data-state=online] .status-online,
+.status[data-state=offline] .status-offline,
+.status[data-state=unknown] .status-unknown { display: inline }
+.status-arc,.status-online,.status-offline,.status-halo { transform-box: view-box; transform-origin: center }
+.status-online,.status-offline { stroke-width: 2.8 }
+.status-halo { fill: url(#status-glow); stroke: none; opacity: .55 }
+@media (prefers-reduced-motion: no-preference) {
+  .status-arc { animation: status-turn 1s linear infinite }
+  .status-online,.status-offline { animation: status-settle .32s cubic-bezier(.2,.8,.3,1) }
+  .status-halo { animation: status-breathe 2s ease-in-out infinite alternate }
+  .status-mark { animation: status-alert 2.8s ease-in-out infinite }
+  @keyframes status-turn { to { transform: rotate(1turn) } }
+  @keyframes status-settle {
+    from { transform: translateY(1px) scale(.9); opacity: .65 }
+    to { transform: none; opacity: 1 }
+  }
+  @keyframes status-breathe {
+    from { transform: scale(.78); opacity: .35 }
+    to { transform: scale(1); opacity: .85 }
+  }
+  @keyframes status-alert { 0%, 65%, 100% { opacity: 1 } 82% { opacity: .45 } }
+}
 .session-facts { display: flex; flex-wrap: wrap; gap: 14px 28px; margin-top: 16px }
 .session-facts > div { flex: 1 1 62px; display: grid; align-content: start; gap: 4px }
 .session-facts span { color: #c1c1c8; text-transform: uppercase; font-size: .75rem; font-weight: 620; letter-spacing: .06em }
@@ -628,7 +755,7 @@ h1[tabindex]:focus { outline: none }
 }
 @media (prefers-reduced-motion: no-preference) {
   .fold-image { animation: reveal-picture .45s var(--ease) both }
-  .plugin-download[aria-disabled=true] .download-arrow { animation: plugin-download-arrow .65s ease-in-out infinite }
+  [data-file-download][aria-busy=true] .download-arrow { animation: download-arrow .65s ease-in-out infinite }
   .guide-content > :not([hidden]) { animation: reveal-detail .25s var(--ease) both }
 }
 @keyframes reveal-picture {
@@ -649,27 +776,26 @@ h1[tabindex]:focus { outline: none }
   .rp-label .new-badge { font-size: .625rem; padding-inline: .5em }
   .fold-image { height: calc(var(--photo-height) + 2px) }
   .leaf,.fold[data-family=rp] .leaf,.fold[data-family=server] .leaf {
-    inset: var(--photo-height) 0 0; padding: 14px clamp(10px,3vw,20px);
-    background: #202023; border-top: 1px solid #ffffff20;
+    padding: clamp(14px,2.5svh,20px) clamp(10px,3vw,20px);
+    background: linear-gradient(180deg,transparent,#202023 var(--photo-height)),linear-gradient(90deg,#101012dc,transparent 95%);
   }
-  .leaf > section { margin-top: 0; max-width: none }
-  [data-panel=idfrp] { grid-template-columns: minmax(0,1fr); grid-template-areas: "guide" "overview"; align-content: start; gap: 1rem }
+  :is([data-panel=download],[data-panel=idfrp]) {
+    grid-template-columns: minmax(0,1fr); grid-template-areas: "overview" "guide" "actions";
+    grid-template-rows: auto 1fr auto;
+  }
   .rp-overview { display: flex; flex-direction: column; align-items: start; max-width: none }
   .installation-guide { max-width: none; padding: 13px }
-  [data-panel=idfrp] .pill { margin-top: .75rem }
-  [data-panel=idfrp] .rp-copy { order: 1; margin: .85rem 0 0 }
   [data-panel=convoy] { grid-template-columns: minmax(0,1fr); grid-template-rows: auto; grid-template-areas: "actions" "guide" "status"; align-content: start; align-items: start; gap: 10px }
   .server-readout { padding: 10px 12px }
   .server-readout .status { padding-bottom: 7px }
   .session-facts { margin-top: 8px }
   #status-age { margin-top: 7px }
-  .convoy-collection { min-height: 46px }
+  .leaf { --action-size: 58px }
+  .convoy-actions .primary-actions { --action-size: 46px }
   .leaf h1 { font-size: clamp(1.65rem,6.4vw,2.8rem) }
   .leaf .eyebrow { font-size: .58rem; margin-bottom: .55em }
   .leaf .pill { min-height: 35px; font-size: .76rem; overflow-wrap: anywhere }
-  .leaf .plugin-download { min-height: 52px; font-size: 1rem; padding-inline: 17px }
-  [data-panel=download] { display: block }
-  #install-guide { margin-top: 12px }
+  #manual-map,.leaf .plugin-download { min-width: min(220px,100%); font-size: 1.1rem; padding: 13px 20px }
   footer { min-height: 40px }
 }
 @media (max-height: 460px) and (orientation: landscape) {
@@ -691,6 +817,9 @@ h1[tabindex]:focus { outline: none }
     
   </head>
   <body>
+    <svg class="action-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <symbol id="discord-mark" viewBox="0 0 24 24"><path d="M18.59 5.88997C17.36 5.31997 16.05 4.89997 14.67 4.65997C14.5 4.95997 14.3 5.36997 14.17 5.69997C12.71 5.47997 11.26 5.47997 9.83001 5.69997C9.69001 5.36997 9.49001 4.95997 9.32001 4.65997C7.94001 4.89997 6.63001 5.31997 5.40001 5.88997C2.92001 9.62997 2.25001 13.28 2.58001 16.87C4.23001 18.1 5.82001 18.84 7.39001 19.33C7.78001 18.8 8.12001 18.23 8.42001 17.64C7.85001 17.43 7.31001 17.16 6.80001 16.85C6.94001 16.75 7.07001 16.64 7.20001 16.54C10.33 18 13.72 18 16.81 16.54C16.94 16.65 17.07 16.75 17.21 16.85C16.7 17.16 16.15 17.42 15.59 17.64C15.89 18.23 16.23 18.8 16.62 19.33C18.19 18.84 19.79 18.1 21.43 16.87C21.82 12.7 20.76 9.08997 18.61 5.88997H18.59ZM8.84001 14.67C7.90001 14.67 7.13001 13.8 7.13001 12.73C7.13001 11.66 7.88001 10.79 8.84001 10.79C9.80001 10.79 10.56 11.66 10.55 12.73C10.55 13.79 9.80001 14.67 8.84001 14.67ZM15.15 14.67C14.21 14.67 13.44 13.8 13.44 12.73C13.44 11.66 14.19 10.79 15.15 10.79C16.11 10.79 16.87 11.66 16.86 12.73C16.86 13.79 16.11 14.67 15.15 14.67Z"/></symbol>
+    </svg>
     <a class="skip" href="#destinations" data-t="nav_label">Navigation du site</a>
     <div class="landing">
       <header class="mast">
@@ -700,9 +829,20 @@ h1[tabindex]:focus { outline: none }
           <a href="/actualites" data-page="actualites" data-t="nav_actualites">Actualités</a>
           <a href="/map" data-page="map" data-t="nav_carte_interactive">Carte interactive</a>
           <a href="/faq" data-page="faq" data-t="nav_faq">FAQ</a>
-          <a href="/credits" data-page="credits" data-t="nav_credits">Crédits</a>
-          <a href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" target="_blank" rel="external noopener noreferrer">Discord<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
-          <a href="https://www.youtube.com/@idfmap93" data-offsite-key="youtube" target="_blank" rel="external noopener noreferrer">YouTube<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
+          <div class="nav-dropdown">
+            <button type="button" class="nav-trigger" aria-expanded="false" aria-controls="nav-team"><span data-t="nav_team">L’équipe</span><svg class="nav-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+            <div class="nav-popup" id="nav-team" inert>
+              <a href="/contribuer" data-page="contribuer" data-t="nav_contribute">Contribuer</a>
+              <a href="/credits" data-page="credits" data-t="nav_credits">Crédits</a>
+            </div>
+          </div>
+          <div class="nav-dropdown">
+            <button type="button" class="nav-trigger" aria-expanded="false" aria-controls="nav-social"><span data-t="nav_social">Nos réseaux</span><svg class="nav-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+            <div class="nav-popup" id="nav-social" inert>
+              <a href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" target="_blank" rel="external noopener noreferrer">Discord<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
+              <a href="https://www.youtube.com/@idfmap93" data-offsite-key="youtube" target="_blank" rel="external noopener noreferrer">YouTube<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
+            </div>
+          </div>
         </nav>
         <div class="language-picker">
           <button class="language-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="language-menu">
@@ -710,7 +850,7 @@ h1[tabindex]:focus { outline: none }
             <span id="current-language">Français</span>
             <svg class="language-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
           </button>
-          <div class="language-popup" hidden>
+          <div class="language-popup" inert>
             <p id="language-title" data-t="language_label">Langue</p>
             <div id="language-menu" role="menu" aria-labelledby="language-title"></div>
           </div>
@@ -720,7 +860,7 @@ h1[tabindex]:focus { outline: none }
         <div id="destinations" class="folds">
           <div class="choice-bar" role="tablist" data-label="nav_label" aria-label="Navigation du site">
             <a class="choice" id="tab-map" href="" role="tab" aria-controls="panel-map" aria-selected="true">
-              <span class="choice-title" data-t="downloadMapTab">Télécharger map</span>
+              <span class="choice-title" data-t="getMap">Télécharger la map</span>
             </a>
             <a class="choice" id="tab-rp" href="#idfrp" role="tab" aria-controls="panel-rp" aria-selected="false" tabindex="-1" aria-labelledby="choix-idfrp" aria-describedby="rp-new">
               <span class="choice-title rp-label"><span id="choix-idfrp" data-t="pluginTab">Plugin IDF-RP</span><span class="new-badge" id="rp-new" data-t="newBadge">Nouveau</span></span>
@@ -740,7 +880,6 @@ h1[tabindex]:focus { outline: none }
                     <p data-t="home_intro_p2">La map est conçue à une échelle 1:1, avec l'objectif d’offrir une expérience de conduite réaliste et immersive. Certains ajustements ont été réalisés pour améliorer la jouabilité, la fluidité et l’adaptation aux contraintes du jeu.</p>
                     <p data-t="home_intro_p3">Ce projet s’adresse aux joueurs souhaitant explorer une version réaliste de la région parisienne dans ETS 2, que ce soit pour le transport de marchandises ou de passagers, la découverte ou l’immersion.</p>
                   </div>
-                  <a class="pill" id="manual-map" href="https://truckymods.io/euro-truck-simulator-2/maps/ile-de-france-map" data-offsite-key="download" target="_blank" rel="noopener noreferrer"><span data-t="downloadMapTab">Télécharger map</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg></a>
                 </div>
                 <div id="install-guide" class="installation-guide">
                   <div class="map-guide-heading">
@@ -784,6 +923,10 @@ h1[tabindex]:focus { outline: none }
                     </div>
                   </div>
                 </div>
+                <div class="download-actions">
+                  <a class="pill" id="manual-map" data-file-download href="https://truckymods.io/euro-truck-simulator-2/maps/ile-de-france-map" data-offsite-key="download" target="_blank" rel="noopener noreferrer"><span data-t="getMap">Télécharger la map</span><svg viewBox="0 0 24 24" aria-hidden="true"><path class="download-arrow" d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 17v4h16v-4"/></svg></a>
+                  <a class="action-discord" href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" data-label="faq_join_discord_link" aria-label="Rejoindre le Discord" target="_blank" rel="external noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#discord-mark"/></svg></a>
+                </div>
               </section>
               <section data-panel="automatic" hidden>
                 <h1 tabindex="-1" data-t="getMap">Télécharger la map</h1>
@@ -803,22 +946,22 @@ h1[tabindex]:focus { outline: none }
                     <h1 tabindex="-1" data-system>IDF-RP</h1>
                   </div>
                   <p class="rp-intro" data-t="home_idfrp_intro">Vos missions de bus prennent vie sur la map.</p>
-                  <p class="rp-copy" data-t="home_idfrp_features"></p>
-                  <a class="pill plugin-download" href="https://github.com/georges93110/idf-rp/releases/latest/download/idf-rp.dll" download="idf-rp.dll" target="plugin-file"><span data-t="downloadPlugin">Télécharger plugin</span><svg viewBox="0 0 24 24" aria-hidden="true"><path class="download-arrow" d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 17v4h16v-4"/></svg></a>
+                  <p class="rp-copy"><span data-t="home_idfrp_features">Choisissez votre ligne, prenez votre service et transportez vos passagers. Gestion de l'horaire, passagers animés, girouettes et bien d'autres vous accompagnent au fil des arrêts, en solo comme en mode convoi.</span> <span data-t="home_idfrp_planned_modes">Au-delà de la conduite de bus, d’autres modes de jeu sont prévus.</span></p>
                   <iframe name="plugin-file" title="idf-rp.dll" sandbox="allow-downloads" hidden></iframe>
                 </div>
                 <section class="installation-guide plugin-guide" aria-labelledby="choix-idfrp">
-                  <fieldset class="guide-formats">
+                  <fieldset class="guide-formats" hidden>
                     <legend class="sr-only" data-t="pluginTab">Plugin IDF-RP</legend>
-                    <label><input type="radio" name="plugin-format" value="video" aria-controls="plugin-preview" checked><span id="plugin-preview-label">Aperçu vidéo</span></label>
+                    <label><input type="radio" name="plugin-format" value="video" aria-controls="plugin-preview" checked><span>Aperçu vidéo</span></label>
                     <label><input type="radio" name="plugin-format" value="text" aria-controls="plugin-installation"><span id="plugin-guide-title" data-t="guide_cat_install">Guide d’installation</span></label>
                   </fieldset>
+                  <h2 class="plugin-written-title" tabindex="-1" data-t="guide_cat_install">Guide d’installation</h2>
                   <div class="guide-content">
-                    <div id="plugin-preview" class="video-embed">
+                    <div id="plugin-preview" class="video-embed" hidden>
                       <div class="video-loading" role="status" hidden><span data-t="loading">Chargement…</span></div>
                       <template><iframe title="Aperçu vidéo" src="https://www.youtube.com/embed/MhADJ0gNQqI?autoplay=0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay 'none'; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></template>
                     </div>
-                    <div id="plugin-installation" hidden>
+                    <div id="plugin-installation">
                       <p data-t="pluginGuideIntro">Le DLC Coaches est facultatif.</p>
                       <p class="guide-notice" data-t="pluginGuideCompatibility">IDF-RP nécessite la dernière version d’Euro Truck Simulator 2. Après une mise à jour du jeu, attendez le correctif avant de réutiliser le plugin. IDF-RP l’installe automatiquement dès sa sortie.</p>
                       <ol>
@@ -835,6 +978,10 @@ h1[tabindex]:focus { outline: none }
                     </div>
                   </div>
                 </section>
+                <div class="download-actions">
+                  <a class="pill plugin-download" data-file-download href="https://github.com/georges93110/idf-rp/releases/latest/download/idf-rp.dll" download="idf-rp.dll" target="plugin-file"><span data-t="downloadPlugin">Télécharger le plugin</span><svg viewBox="0 0 24 24" aria-hidden="true"><path class="download-arrow" d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 17v4h16v-4"/></svg></a>
+                  <a class="action-discord" href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" data-label="faq_join_discord_link" aria-label="Rejoindre le Discord" target="_blank" rel="external noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#discord-mark"/></svg></a>
+                </div>
               </section>
             </div>
           </article>
@@ -844,11 +991,14 @@ h1[tabindex]:focus { outline: none }
               <section data-panel="convoy" hidden>
                 <div class="convoy-actions">
                   <h1 tabindex="-1" data-t="home_convoy_title">Serveur Convoi</h1>
-                  <a class="convoy-collection" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3512827114" target="_blank" rel="noopener noreferrer">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>
-                    <span data-t="openSteamCollection">Ouvrir la collection Steam</span>
-                    <svg class="external-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12"/></svg>
-                  </a>
+                  <div class="primary-actions">
+                    <a class="convoy-collection" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3512827114" target="_blank" rel="noopener noreferrer">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>
+                      <span data-t="openSteamCollection">Ouvrir la collection Steam</span>
+                      <svg class="external-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12"/></svg>
+                    </a>
+                    <a class="action-discord" href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" data-label="faq_join_discord_link" aria-label="Rejoindre le Discord" target="_blank" rel="external noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#discord-mark"/></svg></a>
+                  </div>
                 </div>
                 <section class="installation-guide convoy-guide" aria-labelledby="convoy-guide-title">
                   <h2 id="convoy-guide-title" data-t="home_convoy_manual_panel_title">Guide Serveur Convoi</h2>
@@ -858,7 +1008,33 @@ h1[tabindex]:focus { outline: none }
                   </div>
                 </section>
                 <div class="server-readout">
-                  <div class="status"><span class="status-dot" aria-hidden="true"></span><strong id="status-value" role="status"></strong></div>
+                  <div class="status" data-state="loading">
+                    <svg class="status-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <defs>
+                        <radialGradient id="status-glow">
+                          <stop stop-color="currentColor" stop-opacity=".48"/>
+                          <stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+                        </radialGradient>
+                      </defs>
+                      <g class="status-loading">
+                        <circle cx="12" cy="12" r="8.5" opacity=".25"/>
+                        <path class="status-arc" d="M12 3.5a8.5 8.5 0 0 1 8.5 8.5"/>
+                      </g>
+                      <g class="status-online">
+                        <circle class="status-halo" cx="12" cy="12" r="12"/>
+                        <path d="m4 12 5.5 5.5L20 7"/>
+                      </g>
+                      <g class="status-offline">
+                        <circle class="status-halo" cx="12" cy="12" r="12"/>
+                        <path d="m6 6 12 12m0-12L6 18"/>
+                      </g>
+                      <g class="status-unknown">
+                        <path d="M10.3 4.8a2 2 0 0 1 3.4 0l7 12.6a2 2 0 0 1-1.7 3H5a2 2 0 0 1-1.7-3Z"/>
+                        <g class="status-mark"><path d="M12 9v4"/><circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none"/></g>
+                      </g>
+                    </svg>
+                    <strong id="status-value" role="status"></strong>
+                  </div>
                   <div class="session-facts">
                     <div class="session-name"><span data-t="home_manual_convoy_name_title">Nom convoi</span><strong>IDF Map</strong></div>
                     <div class="server-players" id="status-players" hidden><span data-t="onlinePlayers">Joueurs en ligne</span><strong id="player-count"></strong></div>
@@ -918,6 +1094,23 @@ window.CINEMA_LABELS = (() => {
   };
   for (const [lang, lines] of Object.entries(filmCopy)) {
     filmKeys.forEach((key, i) => { dictionary[lang][key] = lines[i]; });
+  }
+  const plannedModes = {
+    fr: "Au-delà de la conduite de bus, d’autres modes de jeu sont prévus.",
+    en: "More game modes are planned beyond bus driving.",
+    es: "Además de la conducción de autobuses, están previstos otros modos de juego.",
+    de: "Neben dem Busfahren sind weitere Spielmodi geplant.",
+    pl: "Oprócz prowadzenia autobusów planowane są też inne tryby gry.",
+    pt: "Além da condução de ônibus, estão previstos outros modos de jogo.",
+    nl: "Naast het rijden met de bus zijn er ook andere spelmodi gepland.",
+    it: "Oltre alla guida degli autobus, sono previste altre modalità di gioco.",
+    ru: "Помимо вождения автобусов, планируются и другие игровые режимы.",
+    zh: "除了公交驾驶，未来还计划推出其他玩法。",
+    ko: "앞으로 버스 운전 외에 다른 게임 모드도 추가할 예정입니다.",
+    ja: "今後はバスの運転以外のゲームモードも追加する予定です。"
+  };
+  for (const [lang, sentence] of Object.entries(plannedModes)) {
+    dictionary[lang].home_idfrp_planned_modes = sentence;
   }
   const release = {
   "fr": [
@@ -1004,11 +1197,10 @@ window.CINEMA_LABELS = (() => {
     ko: ["설치 안내", "동영상 가이드", "신규"], ja: ["テキストガイド", "動画ガイド", "新着"]
   };
   for (const [lang, [writtenGuide, videoGuide, newBadge]] of Object.entries(guideLabels)) {
-    const downloadMapTab = lang === "fr" ? "Télécharger map" : dictionary[lang].getMap;
-    Object.assign(dictionary[lang], {writtenGuide, videoGuide, newBadge, downloadMapTab});
+    Object.assign(dictionary[lang], {writtenGuide, videoGuide, newBadge});
   }
   const installLabels = {
-    fr: ["Télécharger plugin", "Ouvrir la collection Steam", "Dans config.cfg, faites passer g_max_convoy_size de 8 à 128."],
+    fr: ["Télécharger le plugin", "Ouvrir la collection Steam", "Dans config.cfg, faites passer g_max_convoy_size de 8 à 128."],
     en: ["Download plugin", "Open Steam collection", "In config.cfg, change g_max_convoy_size from 8 to 128."],
     es: ["Descargar plugin", "Abrir la colección de Steam", "En config.cfg, cambia g_max_convoy_size de 8 a 128."],
     de: ["Plugin herunterladen", "Steam-Kollektion öffnen", "Ändere in config.cfg den Wert von g_max_convoy_size von 8 auf 128."],
@@ -1184,7 +1376,41 @@ window.CINEMA_LABELS = (() => {
     const note = window.I18N?.[lang]?.guide_install_prereq_3_note;
     if (note) dictionary[lang].guide_install_prereq_3_note = note.replace(/["“„«「]Dependencies["”»」]/g, "Dependencies");
   }
+  const contribution = {
+    fr: ["Contribuer","Présentez-vous dans le salon #support de notre Discord et dites-nous ce que vous aimeriez faire."],
+    en: ["Contribute","Introduce yourself in the #support channel on our Discord and tell us how you’d like to help."],
+    es: ["Colaborar","Preséntate en el canal #support de nuestro Discord y cuéntanos cómo te gustaría ayudar."],
+    de: ["Mitmachen","Stell dich im Kanal #support auf unserem Discord vor und erzähl uns, wobei du helfen möchtest."],
+    pl: ["Dołącz do nas","Przedstaw się na kanale #support na naszym Discordzie i napisz, czym chcesz się zająć."],
+    pt: ["Contribuir","Apresente-se no canal #support do nosso Discord e conte como gostaria de ajudar."],
+    nl: ["Meehelpen","Stel jezelf voor in het kanaal #support op onze Discord en vertel waar je aan wilt meewerken."],
+    it: ["Collabora","Presentati nel canale #support del nostro Discord e raccontaci come vorresti dare una mano."],
+    ru: ["Помочь проекту","Представьтесь в канале #support нашего Discord-сервера и расскажите, чем хотите помочь."],
+    zh: ["参与项目","请在我们 Discord 的 #support 频道介绍一下自己，并告诉我们你想参与哪方面的工作。"],
+    ko: ["프로젝트 참여","Discord의 #support 채널에서 자기소개와 함께 어떤 일을 돕고 싶은지 알려 주세요."],
+    ja: ["制作に参加","Discord の #support チャンネルで自己紹介をして、どんな形で参加したいか教えてください。"]
+  };
+  for (const [lang, [nav_contribute, contribute_apply_info]] of Object.entries(contribution)) {
+    Object.assign(dictionary[lang], {nav_contribute, contribute_apply_info});
+  }
   dictionary.fr.home_idfrp_intro = "Vos missions de bus prennent vie sur la map.";
+  const liveTelemetryTitles = {
+    fr: "Télémétrie en direct", en: "Live telemetry", es: "Telemetría en directo", de: "Live-Telemetrie",
+    pl: "Telemetria na żywo", pt: "Telemetria ao vivo", nl: "Live telemetrie", it: "Telemetria in diretta",
+    ru: "Телеметрия в реальном времени", zh: "实时遥测", ko: "실시간 텔레메트리", ja: "リアルタイムテレメトリー"
+  };
+  for (const [lang, title] of Object.entries(liveTelemetryTitles)) dictionary[lang].liveTelemetryTitle = title;
+  const navGroups = {
+    fr: ["L’équipe", "Nos réseaux"], en: ["The team", "Socials"],
+    es: ["El equipo", "Nuestras redes"], de: ["Das Team", "Soziale Medien"],
+    pl: ["Zespół", "Nasze media"], pt: ["A equipe", "Redes sociais"],
+    nl: ["Het team", "Sociale media"], it: ["Il team", "I nostri social"],
+    ru: ["Команда", "Наши соцсети"], zh: ["团队", "社交平台"],
+    ko: ["팀 소개", "소셜 미디어"], ja: ["チーム", "公式SNS"]
+  };
+  for (const [lang, [nav_team, nav_social]] of Object.entries(navGroups)) {
+    Object.assign(dictionary[lang], {nav_team, nav_social});
+  }
   dictionary.en.home_idfrp_intro = "Bring your bus missions to life on the map.";
   return dictionary;
 })();
@@ -1196,7 +1422,7 @@ window.CINEMA_LABELS = (() => {
   const $ = (selector) => document.querySelector(selector);
   const all = (selector) => [...document.querySelectorAll(selector)];
   if (/^https?:$/.test(location.protocol)) {
-    const legacy = /^\/(index|actualites|map|faq|credits|mentions_legales|live-telemetry|404)\.html$/.exec(location.pathname);
+    const legacy = /^\/(index|actualites|map|faq|contribuer|credits|mentions_legales|live-telemetry|404)\.html$/.exec(location.pathname);
     if (legacy || location.pathname === "/index") {
       const path = legacy && legacy[1] !== "index" ? "/" + legacy[1] : "/";
       history.replaceState(history.state, "", path + location.search + location.hash);
@@ -1209,9 +1435,9 @@ window.CINEMA_LABELS = (() => {
   const config = window.SITE_LINKS || {};
   const links = window.SITE_OFFSITE_LINKS || config.offsite || {};
   const labels = window.CINEMA_LABELS;
+  const pageTitle = $("title[data-page-label]");
   const languagePicker = $(".language-picker");
   const languageTrigger = $(".language-trigger");
-  const languagePopup = $(".language-popup");
   const languageMenu = $("#language-menu");
   let language = "fr";
   const languageNames = {fr:"Français",en:"English",es:"Español",de:"Deutsch",pl:"Polski",pt:"Português",nl:"Nederlands",it:"Italiano",ru:"Русский",zh:"中文",ko:"한국어",ja:"日本語"};
@@ -1234,6 +1460,11 @@ window.CINEMA_LABELS = (() => {
   }
   function syncLanguage(persist = false) {
     document.documentElement.lang = language;
+    if (pageTitle) {
+      const key = pageTitle.dataset.pageLabel;
+      const name = tr(key);
+      if (name !== key) document.title = `Île-de-France Map | ${name}`;
+    }
     $("#current-language").textContent = languageNames[language];
     $("#current-flag").src = flagPath(language);
     languageTrigger.setAttribute("aria-label", tr("language_label") + " · " + languageNames[language]);
@@ -1284,38 +1515,73 @@ window.CINEMA_LABELS = (() => {
     option.append(flag, name);
     languageMenu.append(option);
   }
-  function openLanguages() {
-    languagePopup.hidden = false;
-    languageTrigger.setAttribute("aria-expanded", "true");
-    languageMenu.querySelector('[aria-checked="true"]').focus({preventScroll:true});
+  let openGroup = null;
+  function positionNavPopup() {
+    if (!openGroup?.classList.contains("nav-dropdown")) return;
+    const popup = openGroup.querySelector(".nav-popup");
+    const left = openGroup.getBoundingClientRect().left;
+    const space = document.documentElement.clientWidth - left - popup.offsetWidth - 12;
+    popup.style.setProperty("--menu-offset", Math.max(12 - left, Math.min(0, space)) + "px");
   }
-  function closeLanguages(restoreFocus = false) {
-    languagePopup.hidden = true;
-    languageTrigger.setAttribute("aria-expanded", "false");
-    if (restoreFocus) languageTrigger.focus({preventScroll:true});
+  function closeGroup(restoreFocus = false) {
+    if (!openGroup) return;
+    const trigger = openGroup.querySelector("button[aria-expanded]");
+    openGroup = null;
+    trigger.setAttribute("aria-expanded", "false");
+    if (restoreFocus) trigger.focus({preventScroll:true});
+    trigger.nextElementSibling.inert = true;
   }
-  languageTrigger.addEventListener("click", () => {
-    if (languagePopup.hidden) openLanguages();
-    else closeLanguages(true);
-  });
-  languageTrigger.addEventListener("keydown", event => {
-    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-      event.preventDefault();
-      openLanguages();
+  for (const group of all(".mast .nav-dropdown, .mast .language-picker")) {
+    const trigger = group.querySelector("button[aria-expanded]");
+    const popup = trigger.nextElementSibling;
+    function open() {
+      if (openGroup !== group) closeGroup();
+      openGroup = group;
+      popup.inert = false;
+      trigger.setAttribute("aria-expanded", "true");
+      positionNavPopup();
+      if (group === languagePicker) languageMenu.querySelector('[aria-checked="true"]').focus({preventScroll:true});
     }
-  });
+    trigger.addEventListener("click", () => {
+      if (openGroup === group) closeGroup(true);
+      else open();
+    });
+    group.addEventListener("keydown", event => {
+      if (event.key === "Escape" && openGroup === group) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeGroup(true);
+        return;
+      }
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+      if (group === languagePicker && event.target !== trigger) return;
+      event.preventDefault();
+      open();
+      if (group === languagePicker) return;
+      const items = [...popup.querySelectorAll("a")];
+      const index = items.indexOf(document.activeElement);
+      const delta = event.key === "ArrowDown" ? 1 : -1;
+      const start = index < 0 && delta < 0 ? 0 : index;
+      items[(start + delta + items.length) % items.length].focus({preventScroll:true});
+    });
+    group.addEventListener("focusout", event => {
+      if (openGroup === group && !group.contains(event.relatedTarget)) closeGroup();
+    });
+    if (group !== languagePicker) popup.addEventListener("click", event => {
+      if (event.target.closest("a")) closeGroup(true);
+    });
+  }
   languageMenu.addEventListener("click", event => {
     const option = event.target.closest("[data-language]");
     if (!option) return;
     language = option.dataset.language;
     syncLanguage(true);
-    closeLanguages(true);
+    closeGroup(true);
   });
   languageMenu.addEventListener("keydown", event => {
-    if (event.key === "Escape" || event.key === "Tab") {
-      if (event.key === "Escape") event.preventDefault();
+    if (event.key === "Tab") {
       event.stopPropagation();
-      closeLanguages(true);
+      closeGroup(true);
       return;
     }
     const options = [...languageMenu.children];
@@ -1338,11 +1604,9 @@ window.CINEMA_LABELS = (() => {
     options[(next + options.length) % options.length].focus();
   });
   document.addEventListener("pointerdown", event => {
-    if (!languagePopup.hidden && !languagePicker.contains(event.target)) closeLanguages();
+    if (openGroup && !openGroup.contains(event.target)) closeGroup();
   });
-  languagePicker.addEventListener("focusout", event => {
-    if (!languagePopup.hidden && !languagePicker.contains(event.relatedTarget)) closeLanguages();
-  });
+  window.addEventListener("resize", positionNavPopup);
   all("[data-offsite-key]").forEach(el => {
     if (links[el.dataset.offsiteKey]) el.href = links[el.dataset.offsiteKey];
   });
@@ -1392,7 +1656,7 @@ window.CINEMA_LABELS = (() => {
 
     function sync() {
       resize?.cancel();
-      formats.hidden = owner === "download" && language !== "fr";
+      formats.hidden = language !== "fr";
       if (panel !== owner) videoRadio.checked = true;
       const showVideo = !formats.hidden && videoRadio.checked;
       written.hidden = showVideo;
@@ -1439,7 +1703,7 @@ window.CINEMA_LABELS = (() => {
     }
     formats.addEventListener("change", changeFormat);
     return {sync, showWritten() {
-      if (textRadio.checked) return;
+      if (formats.hidden || textRadio.checked) return;
       textRadio.checked = true;
       changeFormat();
     }};
@@ -1447,13 +1711,6 @@ window.CINEMA_LABELS = (() => {
   const mapGuide = setupGuide($("#install-guide"), "download", config.guide?.manual_video_embed);
   const pluginCard = $(".plugin-guide");
   const pluginGuide = setupGuide(pluginCard, "idfrp");
-  const previewLabels = {
-    fr: "Aperçu vidéo", en: "Video preview", es: "Vista previa en vídeo", de: "Videovorschau",
-    pl: "Podgląd wideo", pt: "Prévia em vídeo", nl: "Videovoorbeeld", it: "Anteprima video",
-    ru: "Видеообзор", zh: "视频预览", ko: "동영상 미리보기", ja: "動画プレビュー"
-  };
-  const previewLabel = $("#plugin-preview-label");
-  previewLabel.textContent = previewLabels[language] || previewLabels.fr;
   if (hasAutomatic) $("#automatic-link").href = autoURL;
   for (const anchor of all("a[href]:not([download])")) {
     const url = new URL(anchor.href);
@@ -1467,27 +1724,41 @@ window.CINEMA_LABELS = (() => {
   }
   const pluginDownload = $(".plugin-download");
   let highlightTimer;
-  pluginDownload.addEventListener("click", event => {
-    if (pluginDownload.getAttribute("aria-disabled") === "true") {
-      event.preventDefault();
-      return;
-    }
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
-    pluginDownload.setAttribute("aria-disabled", "true");
-    window.setTimeout(() => pluginDownload.removeAttribute("aria-disabled"), 2400);
+  for (const button of all("[data-file-download]")) {
+    button.addEventListener("click", event => {
+      if (button.getAttribute("aria-disabled") === "true") {
+        event.preventDefault();
+        return;
+      }
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      button.setAttribute("aria-disabled", "true");
+      button.setAttribute("aria-busy", "true");
+      window.setTimeout(() => {
+        button.removeAttribute("aria-disabled");
+        button.removeAttribute("aria-busy");
+      }, 2400);
+      if (button === pluginDownload) revealPluginGuide(event);
+    });
+  }
+  function revealPluginGuide(event) {
     pluginGuide.showWritten();
     pluginCard.classList.add("is-highlighted");
     clearTimeout(highlightTimer);
     highlightTimer = setTimeout(() => pluginCard.classList.remove("is-highlighted"), 1600);
-    if (event.detail === 0) pluginCard.querySelector("input:checked").focus({preventScroll:true});
-    const leaf = $("#leaf-rp");
-    if (pluginCard.getBoundingClientRect().top < leaf.getBoundingClientRect().top) {
-      leaf.scrollTo({top: 0, behavior: reducedMotion.matches ? "instant" : "smooth"});
+    if (event.detail === 0) {
+      const guideFocus = pluginCard.querySelector(".guide-formats:not([hidden]) input:checked") || pluginCard.querySelector(".plugin-written-title");
+      guideFocus.focus({preventScroll:true});
     }
-  });
+    const leaf = $("#leaf-rp");
+    const viewport = leaf.getBoundingClientRect();
+    const guide = pluginCard.getBoundingClientRect();
+    if (guide.top < viewport.top || guide.bottom > viewport.bottom) {
+      const inset = parseFloat(getComputedStyle(leaf).paddingTop);
+      leaf.scrollTo({top: leaf.scrollTop + guide.top - viewport.top - inset, behavior: reducedMotion.matches ? "instant" : "smooth"});
+    }
+  }
   document.addEventListener("idf:language", event => {
     language = event.detail;
-    previewLabel.textContent = previewLabels[language] || previewLabels.fr;
     if (panel === "convoy") renderStatus();
     if (panel) { mapGuide.sync(); pluginGuide.sync(); }
   });

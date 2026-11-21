@@ -65,7 +65,7 @@ html.idf-entering.idf-revealing::before, html.idf-entering.idf-revealing::after 
   <meta name="twitter:image" content="https://idf-map.fr/images/idf_logo_new.png"/>
   <base href="/">
   
-  <title>404 - Page introuvable</title>
+  <title data-page-label="not_found_code">Île-de-France Map | Erreur 404</title>
   <link rel="icon" type="image/png" href="images/idf_logo_new.png"/>
   <style>
     .not-found-wrap{
@@ -155,7 +155,7 @@ html { scrollbar-gutter: stable }
 html.maps-app-mode { scrollbar-gutter: auto }
 .mast,.site-footer { width: min(100%,2150px); margin-inline: auto; padding-inline: var(--edge) }
 .mast {
-  display: grid; grid-template-columns: var(--tab-columns); align-items: center;
+  display: grid; grid-template-columns: minmax(max-content,1fr) auto minmax(max-content,1fr); align-items: center;
   min-height: clamp(56px,8.6svh,96px); position: sticky; top: 0; z-index: 4;
   background: #171719;
 }
@@ -164,10 +164,40 @@ html.maps-app-mode { scrollbar-gutter: auto }
 .monogram img { width: clamp(80px,8vw,142px); height: auto }
 .site-nav,.site-footer,.language-picker { display: flex; align-items: center }
 .site-nav { justify-self: center; width: max-content; justify-content: center; gap: 0 clamp(10px,1.45vw,24px) }
-.mast nav a { display: inline-flex; align-items: center; min-height: 40px; font-size: clamp(.73rem,.89vw,.99rem); font-weight: 560 }
-.mast nav a { gap: 4px; white-space: nowrap; color: #d5d5da }
+.mast nav :is(a,.nav-trigger) {
+  display: inline-flex; align-items: center; min-height: 40px; gap: 4px;
+  font-size: clamp(.73rem,.89vw,.99rem); font-weight: 560; white-space: nowrap; color: #d5d5da;
+}
+.nav-dropdown { position: relative }
+.mast .nav-trigger { border: 0; padding: 0; background: none; font-family: inherit; line-height: inherit }
+.site-nav .nav-chevron { width: .85em; height: .85em; margin-left: .12em; color: #aaaab1 }
+.nav-chevron,.language-chevron { transition: transform .2s ease }
+.nav-trigger[aria-expanded=true] .nav-chevron { transform: rotate(180deg) }
+.mast .nav-trigger:hover,.mast .nav-trigger[aria-expanded=true] { color: #fff }
+.mast .nav-dropdown:has(a[aria-current=page]) .nav-trigger { color: #fff }
+.site-nav > a,.site-nav .nav-trigger { position: relative }
+.site-nav > a::after,.site-nav .nav-trigger::after {
+  content: ""; position: absolute; inset-inline: 0; bottom: calc(50% - .85em); height: 1px;
+  background: currentColor; pointer-events: none; transform: scaleX(0); transform-origin: left;
+}
+.site-nav > a:is([aria-current=page],:focus-visible)::after,
+.site-nav .nav-trigger:is([aria-expanded=true],:focus-visible)::after,
+.site-nav .nav-dropdown:has(a[aria-current=page]) .nav-trigger::after { transform: scaleX(1) }
+.nav-popup {
+  position: absolute; z-index: 3; top: calc(100% + 4px); left: var(--menu-offset,0px);
+  display: grid; width: max-content; min-width: min(10rem,calc(100vw - 24px)); max-width: calc(100vw - 24px);
+  padding: 4px; background: #19191c; border: 1px solid #3e3e40; border-radius: 7px;
+  box-shadow: 0 12px 36px #0007; transform-origin: top left;
+}
+.mast .nav-popup a { justify-content: space-between; gap: 1em; min-height: 36px; padding: 0 10px; border-radius: 4px; }
+.mast .nav-popup a:is(:hover,:focus-visible) { background: #323236; text-decoration: none }
+.mast #nav-social a { display: grid; grid-template-columns: 20px 1fr auto; gap: 9px }
+#nav-social a::before { content: ""; width: 20px; height: 15px; background: center / contain no-repeat }
+#nav-social [data-offsite-key=discord]::before { background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2720%27%20height%3D%2715%27%20viewBox%3D%272.5%204.66%2019.02%2014.67%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20fill%3D%27white%27%20fill-rule%3D%27evenodd%27%20d%3D%27M18.59%205.88997C17.36%205.31997%2016.05%204.89997%2014.67%204.65997C14.5%204.95997%2014.3%205.36997%2014.17%205.69997C12.71%205.47997%2011.26%205.47997%209.83001%205.69997C9.69001%205.36997%209.49001%204.95997%209.32001%204.65997C7.94001%204.89997%206.63001%205.31997%205.40001%205.88997C2.92001%209.62997%202.25001%2013.28%202.58001%2016.87C4.23001%2018.1%205.82001%2018.84%207.39001%2019.33C7.78001%2018.8%208.12001%2018.23%208.42001%2017.64C7.85001%2017.43%207.31001%2017.16%206.80001%2016.85C6.94001%2016.75%207.07001%2016.64%207.20001%2016.54C10.33%2018%2013.72%2018%2016.81%2016.54C16.94%2016.65%2017.07%2016.75%2017.21%2016.85C16.7%2017.16%2016.15%2017.42%2015.59%2017.64C15.89%2018.23%2016.23%2018.8%2016.62%2019.33C18.19%2018.84%2019.79%2018.1%2021.43%2016.87C21.82%2012.7%2020.76%209.08997%2018.61%205.88997H18.59ZM8.84001%2014.67C7.90001%2014.67%207.13001%2013.8%207.13001%2012.73C7.13001%2011.66%207.88001%2010.79%208.84001%2010.79C9.80001%2010.79%2010.56%2011.66%2010.55%2012.73C10.55%2013.79%209.80001%2014.67%208.84001%2014.67ZM15.15%2014.67C14.21%2014.67%2013.44%2013.8%2013.44%2012.73C13.44%2011.66%2014.19%2010.79%2015.15%2010.79C16.11%2010.79%2016.87%2011.66%2016.86%2012.73C16.86%2013.79%2016.11%2014.67%2015.15%2014.67Z%27%2F%3E%3C%2Fsvg%3E) }
+#nav-social [data-offsite-key=youtube]::before { background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2720%27%20height%3D%2715%27%20viewBox%3D%270%203.5%2024%2017%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20fill%3D%27white%27%20fill-rule%3D%27evenodd%27%20d%3D%27M23.5%206.2a3%203%200%200%200-2.1-2.1C19.5%203.5%2012%203.5%2012%203.5s-7.5%200-9.4.6A3%203%200%200%200%20.5%206.2%2031%2031%200%200%200%200%2012a31%2031%200%200%200%20.5%205.8%203%203%200%200%200%202.1%202.1c1.9.6%209.4.6%209.4.6s7.5%200%209.4-.6a3%203%200%200%200%202.1-2.1A31%2031%200%200%200%2024%2012a31%2031%200%200%200-.5-5.8zM9.6%2015.6V8.4l6.2%203.6-6.2%203.6z%27%2F%3E%3C%2Fsvg%3E) }
 .site-nav a svg { width: .85em; height: .85em; flex: none; color: #acacb2 }
-.mast nav a:hover,.site-footer a:hover { color: #fff; text-decoration: underline; text-underline-offset: .35em }
+.mast nav a:hover { color: #fff }
+.site-footer a:hover { color: #fff; text-decoration: underline; text-underline-offset: .35em }
 
 
 .site-footer {
@@ -189,10 +219,38 @@ html.maps-app-mode { scrollbar-gutter: auto }
 .language-flag { display: block; width: 20px; height: 14px; object-fit: cover; border-radius: 2px; flex: none; box-shadow: 0 0 0 1px #ffffff21 }
 .language-trigger .language-chevron { width: 12px; height: 12px; margin-left: 3px; color: #b2b2b9; transition: transform .18s ease }
 .language-trigger[aria-expanded=true] .language-chevron { transform: rotate(180deg) }
+@media (hover: hover) {
+  .site-nav > a:hover::after,.site-nav .nav-trigger:hover::after { transform: scaleX(1) }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .site-nav > a::after,.site-nav .nav-trigger::after { transition: transform .2s cubic-bezier(.22,.75,.2,1) }
+  .mast nav :is(a,.nav-trigger),.mast .language-trigger,#language-menu button {
+    transition: color .18s ease, background-color .18s ease, border-color .18s ease;
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .mast :is(.nav-trigger,.language-trigger)[aria-expanded=false]:hover :is(.nav-chevron,.language-chevron) { transform: translateY(2px) }
+}
 .language-popup {
   position: absolute; top: calc(100% + 8px); right: 0; width: min(314px,calc(100vw - 2 * var(--edge)));
   max-height: calc(100svh - 66px); overflow-y: auto; overscroll-behavior: contain;
-  padding: 10px; box-shadow: 0 14px 42px #0008; animation: slide-panel .18s var(--ease);
+  padding: 10px; box-shadow: 0 14px 42px #0008; transform-origin: top right;
+}
+.mast :is(.nav-popup,.language-popup) {
+  display: none; pointer-events: none; opacity: 0; transform: translateY(-5px) scale(.98);
+  transition: opacity .14s ease-in, transform .18s ease-in, display .18s;
+  transition-behavior: allow-discrete;
+}
+.mast [aria-expanded=true] + :is(.nav-popup,.language-popup) {
+  display: block; pointer-events: auto; opacity: 1; transform: none;
+  transition-timing-function: ease-out, cubic-bezier(.2,.8,.25,1), linear;
+}
+.mast [aria-expanded=true] + .nav-popup { display: grid }
+@starting-style {
+  .mast [aria-expanded=true] + :is(.nav-popup,.language-popup) { opacity: 0; transform: translateY(-5px) scale(.98) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mast :is(.nav-popup,.language-popup,.nav-chevron,.language-chevron) { transition: none !important }
 }
 #language-title { margin: 0 5px 7px; padding: 2px 0 9px; border-bottom: 1px solid #ffffff1a; color: #b9b9c1; font-size: .7rem; font-weight: 600 }
 #language-menu { display: grid; grid-template-rows: repeat(6,auto); grid-auto-flow: column; grid-auto-columns: minmax(0,1fr); gap: 2px 5px }
@@ -205,11 +263,11 @@ html.maps-app-mode { scrollbar-gutter: auto }
 #language-menu button:focus-visible { outline: 1px solid #b7b7bf; outline-offset: -2px }
 #language-menu button[aria-checked=true] { background: #3c3c41; color: #fff }
 #language-menu button[aria-checked=true]::after { content: ""; margin-left: auto; flex: none; width: 5px; height: 9px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: translateY(-1px) rotate(45deg) }
-@media (max-width: 940px) {
+@media (max-width: 1060px) {
   .mast { grid-template-columns: 1fr auto; row-gap: 0; padding-top: 4px }
   .site-nav { grid-column: 1 / -1; grid-row: 2; width: 100%; flex-wrap: wrap; gap: 0 clamp(10px,2.4vw,22px); padding-bottom: 4px }
   .language-picker { grid-column: 2; grid-row: 1 }
-  .mast nav a { min-height: 32px }
+  .mast nav :is(a,.nav-trigger) { min-height: 32px }
 }
 @media (max-width: 460px) {
   .site-nav { column-gap: clamp(10px,3vw,14px) }
@@ -227,7 +285,8 @@ html.maps-app-mode { scrollbar-gutter: auto }
 .mast .language-popup { background: #19191c; border: 1px solid #3e3e40; border-radius: 7px }
 .mast :focus-visible, .site-footer :focus-visible { outline: 2px solid #ddd; outline-offset: 2px }
 .mast [hidden] { display: none !important }
-.mast .site-nav a[aria-current=page] { color: white; text-decoration: underline; text-underline-offset: .35em }
+.mast .site-nav a[aria-current=page] { color: white }
+.mast .nav-popup a[aria-current=page] { text-decoration: underline; text-underline-offset: .35em }
 @media (max-width: 740px) {
   .mast { min-height: 52px }
   .monogram img { width: 82px }
@@ -236,7 +295,7 @@ html.maps-app-mode { scrollbar-gutter: auto }
 @media (max-height: 460px) and (orientation: landscape) {
   .mast, .site-footer { min-height: 34px }
   .monogram img { width: 66px }
-  .mast nav a { min-height: 30px }
+  .mast nav :is(a,.nav-trigger) { min-height: 30px }
 }
 
 /*
@@ -578,9 +637,20 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
           <a href="/actualites" data-page="actualites" data-t="nav_actualites">Actualités</a>
           <a href="/map" data-page="map" data-t="nav_carte_interactive">Carte interactive</a>
           <a href="/faq" data-page="faq" data-t="nav_faq">FAQ</a>
-          <a href="/credits" data-page="credits" data-t="nav_credits">Crédits</a>
-          <a href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" target="_blank" rel="external noopener noreferrer">Discord<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
-          <a href="https://www.youtube.com/@idfmap93" data-offsite-key="youtube" target="_blank" rel="external noopener noreferrer">YouTube<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
+          <div class="nav-dropdown">
+            <button type="button" class="nav-trigger" aria-expanded="false" aria-controls="nav-team"><span data-t="nav_team">L’équipe</span><svg class="nav-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+            <div class="nav-popup" id="nav-team" inert>
+              <a href="/contribuer" data-page="contribuer" data-t="nav_contribute">Contribuer</a>
+              <a href="/credits" data-page="credits" data-t="nav_credits">Crédits</a>
+            </div>
+          </div>
+          <div class="nav-dropdown">
+            <button type="button" class="nav-trigger" aria-expanded="false" aria-controls="nav-social"><span data-t="nav_social">Nos réseaux</span><svg class="nav-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+            <div class="nav-popup" id="nav-social" inert>
+              <a href="https://discord.gg/5xDM99G67s" data-offsite-key="discord" target="_blank" rel="external noopener noreferrer">Discord<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
+              <a href="https://www.youtube.com/@idfmap93" data-offsite-key="youtube" target="_blank" rel="external noopener noreferrer">YouTube<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13 3 7 9M6 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V10"/></svg></a>
+            </div>
+          </div>
         </nav>
         <div class="language-picker">
           <button class="language-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="language-menu">
@@ -588,7 +658,7 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
             <span id="current-language">Français</span>
             <svg class="language-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
           </button>
-          <div class="language-popup" hidden>
+          <div class="language-popup" inert>
             <p id="language-title" data-t="language_label">Langue</p>
             <div id="language-menu" role="menu" aria-labelledby="language-title"></div>
           </div>
@@ -634,7 +704,6 @@ html:has(body.interior) { height: auto; min-height: 100%; background: #101012 }
         if (homeBtn) {
           homeBtn.textContent = t("not_found_home", "Retour a l'accueil");
         }
-        document.title = "IDF Map | " + t("not_found_code", "404")
       }
       render();
       new MutationObserver(render).observe(document.documentElement, {
@@ -686,6 +755,23 @@ window.CINEMA_LABELS = (() => {
   };
   for (const [lang, lines] of Object.entries(filmCopy)) {
     filmKeys.forEach((key, i) => { dictionary[lang][key] = lines[i]; });
+  }
+  const plannedModes = {
+    fr: "Au-delà de la conduite de bus, d’autres modes de jeu sont prévus.",
+    en: "More game modes are planned beyond bus driving.",
+    es: "Además de la conducción de autobuses, están previstos otros modos de juego.",
+    de: "Neben dem Busfahren sind weitere Spielmodi geplant.",
+    pl: "Oprócz prowadzenia autobusów planowane są też inne tryby gry.",
+    pt: "Além da condução de ônibus, estão previstos outros modos de jogo.",
+    nl: "Naast het rijden met de bus zijn er ook andere spelmodi gepland.",
+    it: "Oltre alla guida degli autobus, sono previste altre modalità di gioco.",
+    ru: "Помимо вождения автобусов, планируются и другие игровые режимы.",
+    zh: "除了公交驾驶，未来还计划推出其他玩法。",
+    ko: "앞으로 버스 운전 외에 다른 게임 모드도 추가할 예정입니다.",
+    ja: "今後はバスの運転以外のゲームモードも追加する予定です。"
+  };
+  for (const [lang, sentence] of Object.entries(plannedModes)) {
+    dictionary[lang].home_idfrp_planned_modes = sentence;
   }
   const release = {
   "fr": [
@@ -772,11 +858,10 @@ window.CINEMA_LABELS = (() => {
     ko: ["설치 안내", "동영상 가이드", "신규"], ja: ["テキストガイド", "動画ガイド", "新着"]
   };
   for (const [lang, [writtenGuide, videoGuide, newBadge]] of Object.entries(guideLabels)) {
-    const downloadMapTab = lang === "fr" ? "Télécharger map" : dictionary[lang].getMap;
-    Object.assign(dictionary[lang], {writtenGuide, videoGuide, newBadge, downloadMapTab});
+    Object.assign(dictionary[lang], {writtenGuide, videoGuide, newBadge});
   }
   const installLabels = {
-    fr: ["Télécharger plugin", "Ouvrir la collection Steam", "Dans config.cfg, faites passer g_max_convoy_size de 8 à 128."],
+    fr: ["Télécharger le plugin", "Ouvrir la collection Steam", "Dans config.cfg, faites passer g_max_convoy_size de 8 à 128."],
     en: ["Download plugin", "Open Steam collection", "In config.cfg, change g_max_convoy_size from 8 to 128."],
     es: ["Descargar plugin", "Abrir la colección de Steam", "En config.cfg, cambia g_max_convoy_size de 8 a 128."],
     de: ["Plugin herunterladen", "Steam-Kollektion öffnen", "Ändere in config.cfg den Wert von g_max_convoy_size von 8 auf 128."],
@@ -952,7 +1037,41 @@ window.CINEMA_LABELS = (() => {
     const note = window.I18N?.[lang]?.guide_install_prereq_3_note;
     if (note) dictionary[lang].guide_install_prereq_3_note = note.replace(/["“„«「]Dependencies["”»」]/g, "Dependencies");
   }
+  const contribution = {
+    fr: ["Contribuer","Présentez-vous dans le salon #support de notre Discord et dites-nous ce que vous aimeriez faire."],
+    en: ["Contribute","Introduce yourself in the #support channel on our Discord and tell us how you’d like to help."],
+    es: ["Colaborar","Preséntate en el canal #support de nuestro Discord y cuéntanos cómo te gustaría ayudar."],
+    de: ["Mitmachen","Stell dich im Kanal #support auf unserem Discord vor und erzähl uns, wobei du helfen möchtest."],
+    pl: ["Dołącz do nas","Przedstaw się na kanale #support na naszym Discordzie i napisz, czym chcesz się zająć."],
+    pt: ["Contribuir","Apresente-se no canal #support do nosso Discord e conte como gostaria de ajudar."],
+    nl: ["Meehelpen","Stel jezelf voor in het kanaal #support op onze Discord en vertel waar je aan wilt meewerken."],
+    it: ["Collabora","Presentati nel canale #support del nostro Discord e raccontaci come vorresti dare una mano."],
+    ru: ["Помочь проекту","Представьтесь в канале #support нашего Discord-сервера и расскажите, чем хотите помочь."],
+    zh: ["参与项目","请在我们 Discord 的 #support 频道介绍一下自己，并告诉我们你想参与哪方面的工作。"],
+    ko: ["프로젝트 참여","Discord의 #support 채널에서 자기소개와 함께 어떤 일을 돕고 싶은지 알려 주세요."],
+    ja: ["制作に参加","Discord の #support チャンネルで自己紹介をして、どんな形で参加したいか教えてください。"]
+  };
+  for (const [lang, [nav_contribute, contribute_apply_info]] of Object.entries(contribution)) {
+    Object.assign(dictionary[lang], {nav_contribute, contribute_apply_info});
+  }
   dictionary.fr.home_idfrp_intro = "Vos missions de bus prennent vie sur la map.";
+  const liveTelemetryTitles = {
+    fr: "Télémétrie en direct", en: "Live telemetry", es: "Telemetría en directo", de: "Live-Telemetrie",
+    pl: "Telemetria na żywo", pt: "Telemetria ao vivo", nl: "Live telemetrie", it: "Telemetria in diretta",
+    ru: "Телеметрия в реальном времени", zh: "实时遥测", ko: "실시간 텔레메트리", ja: "リアルタイムテレメトリー"
+  };
+  for (const [lang, title] of Object.entries(liveTelemetryTitles)) dictionary[lang].liveTelemetryTitle = title;
+  const navGroups = {
+    fr: ["L’équipe", "Nos réseaux"], en: ["The team", "Socials"],
+    es: ["El equipo", "Nuestras redes"], de: ["Das Team", "Soziale Medien"],
+    pl: ["Zespół", "Nasze media"], pt: ["A equipe", "Redes sociais"],
+    nl: ["Het team", "Sociale media"], it: ["Il team", "I nostri social"],
+    ru: ["Команда", "Наши соцсети"], zh: ["团队", "社交平台"],
+    ko: ["팀 소개", "소셜 미디어"], ja: ["チーム", "公式SNS"]
+  };
+  for (const [lang, [nav_team, nav_social]] of Object.entries(navGroups)) {
+    Object.assign(dictionary[lang], {nav_team, nav_social});
+  }
   dictionary.en.home_idfrp_intro = "Bring your bus missions to life on the map.";
   return dictionary;
 })();
@@ -964,7 +1083,7 @@ window.CINEMA_LABELS = (() => {
   const $ = (selector) => document.querySelector(selector);
   const all = (selector) => [...document.querySelectorAll(selector)];
   if (/^https?:$/.test(location.protocol)) {
-    const legacy = /^\/(index|actualites|map|faq|credits|mentions_legales|live-telemetry|404)\.html$/.exec(location.pathname);
+    const legacy = /^\/(index|actualites|map|faq|contribuer|credits|mentions_legales|live-telemetry|404)\.html$/.exec(location.pathname);
     if (legacy || location.pathname === "/index") {
       const path = legacy && legacy[1] !== "index" ? "/" + legacy[1] : "/";
       history.replaceState(history.state, "", path + location.search + location.hash);
@@ -977,9 +1096,9 @@ window.CINEMA_LABELS = (() => {
   const config = window.SITE_LINKS || {};
   const links = window.SITE_OFFSITE_LINKS || config.offsite || {};
   const labels = window.CINEMA_LABELS;
+  const pageTitle = $("title[data-page-label]");
   const languagePicker = $(".language-picker");
   const languageTrigger = $(".language-trigger");
-  const languagePopup = $(".language-popup");
   const languageMenu = $("#language-menu");
   let language = "fr";
   const languageNames = {fr:"Français",en:"English",es:"Español",de:"Deutsch",pl:"Polski",pt:"Português",nl:"Nederlands",it:"Italiano",ru:"Русский",zh:"中文",ko:"한국어",ja:"日本語"};
@@ -1002,6 +1121,11 @@ window.CINEMA_LABELS = (() => {
   }
   function syncLanguage(persist = false) {
     document.documentElement.lang = language;
+    if (pageTitle) {
+      const key = pageTitle.dataset.pageLabel;
+      const name = tr(key);
+      if (name !== key) document.title = `Île-de-France Map | ${name}`;
+    }
     $("#current-language").textContent = languageNames[language];
     $("#current-flag").src = flagPath(language);
     languageTrigger.setAttribute("aria-label", tr("language_label") + " · " + languageNames[language]);
@@ -1052,38 +1176,73 @@ window.CINEMA_LABELS = (() => {
     option.append(flag, name);
     languageMenu.append(option);
   }
-  function openLanguages() {
-    languagePopup.hidden = false;
-    languageTrigger.setAttribute("aria-expanded", "true");
-    languageMenu.querySelector('[aria-checked="true"]').focus({preventScroll:true});
+  let openGroup = null;
+  function positionNavPopup() {
+    if (!openGroup?.classList.contains("nav-dropdown")) return;
+    const popup = openGroup.querySelector(".nav-popup");
+    const left = openGroup.getBoundingClientRect().left;
+    const space = document.documentElement.clientWidth - left - popup.offsetWidth - 12;
+    popup.style.setProperty("--menu-offset", Math.max(12 - left, Math.min(0, space)) + "px");
   }
-  function closeLanguages(restoreFocus = false) {
-    languagePopup.hidden = true;
-    languageTrigger.setAttribute("aria-expanded", "false");
-    if (restoreFocus) languageTrigger.focus({preventScroll:true});
+  function closeGroup(restoreFocus = false) {
+    if (!openGroup) return;
+    const trigger = openGroup.querySelector("button[aria-expanded]");
+    openGroup = null;
+    trigger.setAttribute("aria-expanded", "false");
+    if (restoreFocus) trigger.focus({preventScroll:true});
+    trigger.nextElementSibling.inert = true;
   }
-  languageTrigger.addEventListener("click", () => {
-    if (languagePopup.hidden) openLanguages();
-    else closeLanguages(true);
-  });
-  languageTrigger.addEventListener("keydown", event => {
-    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-      event.preventDefault();
-      openLanguages();
+  for (const group of all(".mast .nav-dropdown, .mast .language-picker")) {
+    const trigger = group.querySelector("button[aria-expanded]");
+    const popup = trigger.nextElementSibling;
+    function open() {
+      if (openGroup !== group) closeGroup();
+      openGroup = group;
+      popup.inert = false;
+      trigger.setAttribute("aria-expanded", "true");
+      positionNavPopup();
+      if (group === languagePicker) languageMenu.querySelector('[aria-checked="true"]').focus({preventScroll:true});
     }
-  });
+    trigger.addEventListener("click", () => {
+      if (openGroup === group) closeGroup(true);
+      else open();
+    });
+    group.addEventListener("keydown", event => {
+      if (event.key === "Escape" && openGroup === group) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeGroup(true);
+        return;
+      }
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+      if (group === languagePicker && event.target !== trigger) return;
+      event.preventDefault();
+      open();
+      if (group === languagePicker) return;
+      const items = [...popup.querySelectorAll("a")];
+      const index = items.indexOf(document.activeElement);
+      const delta = event.key === "ArrowDown" ? 1 : -1;
+      const start = index < 0 && delta < 0 ? 0 : index;
+      items[(start + delta + items.length) % items.length].focus({preventScroll:true});
+    });
+    group.addEventListener("focusout", event => {
+      if (openGroup === group && !group.contains(event.relatedTarget)) closeGroup();
+    });
+    if (group !== languagePicker) popup.addEventListener("click", event => {
+      if (event.target.closest("a")) closeGroup(true);
+    });
+  }
   languageMenu.addEventListener("click", event => {
     const option = event.target.closest("[data-language]");
     if (!option) return;
     language = option.dataset.language;
     syncLanguage(true);
-    closeLanguages(true);
+    closeGroup(true);
   });
   languageMenu.addEventListener("keydown", event => {
-    if (event.key === "Escape" || event.key === "Tab") {
-      if (event.key === "Escape") event.preventDefault();
+    if (event.key === "Tab") {
       event.stopPropagation();
-      closeLanguages(true);
+      closeGroup(true);
       return;
     }
     const options = [...languageMenu.children];
@@ -1106,11 +1265,9 @@ window.CINEMA_LABELS = (() => {
     options[(next + options.length) % options.length].focus();
   });
   document.addEventListener("pointerdown", event => {
-    if (!languagePopup.hidden && !languagePicker.contains(event.target)) closeLanguages();
+    if (openGroup && !openGroup.contains(event.target)) closeGroup();
   });
-  languagePicker.addEventListener("focusout", event => {
-    if (!languagePopup.hidden && !languagePicker.contains(event.relatedTarget)) closeLanguages();
-  });
+  window.addEventListener("resize", positionNavPopup);
   all("[data-offsite-key]").forEach(el => {
     if (links[el.dataset.offsiteKey]) el.href = links[el.dataset.offsiteKey];
   });
