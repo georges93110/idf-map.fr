@@ -1069,7 +1069,7 @@ html:has(#console-guide[open]) { overflow: hidden }
 }
 
 /* Keep the mobile configuration panel at its content height. */
-@media (max-width: 740px) and (orientation: portrait) {
+@media (max-width: 740px) {
   .landing:has(#configuration-map:not([hidden])) main { justify-content: flex-start }
   .folds:has(#configuration-map:not([hidden])) { height: auto; min-height: 0 }
   .fold:has(#configuration-map:not([hidden])) { container-type: inline-size }
@@ -1108,7 +1108,99 @@ html:has(#console-guide[open]) { overflow: hidden }
     
     
     
-  </head>
+  <style id="mobile-layout">
+
+/* Compact mobile navigation, shared by the public pages. */
+.mobile-nav-toggle { display: none }
+@media (max-width: 740px) {
+  html:not(.maps-app-mode) { scrollbar-gutter: auto }
+  .mast.mobile-nav-ready { grid-template-columns: minmax(0,1fr) auto 44px; min-height: 64px; gap: 8px; padding-block: 8px }
+  .mast.mobile-nav-ready .monogram { grid-area: 1 / 1; min-width: 0; max-width: 100% }
+  .mast.mobile-nav-ready .monogram img { width: 96px }
+  .mast.mobile-nav-ready .language-picker { grid-area: 1 / 2 }
+  .mast.mobile-nav-ready .language-trigger { min-height: 44px; max-width: 160px; padding-inline: 10px; gap: 7px; font-size: .8rem }
+  .mast.mobile-nav-ready #current-language { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  .mast.mobile-nav-ready .language-popup { width: min(314px,calc(100vw - 24px)); right: -52px }
+  .mast.mobile-nav-ready .mobile-nav-toggle { display: grid; place-items: center; grid-area: 1 / 3; width: 44px; height: 44px; padding: 0; border: 1px solid #3e3e40; border-radius: 8px; background: #202023; color: #f4f4f5 }
+  .mobile-nav-toggle svg { width: 22px; height: 22px }
+  .mobile-nav-toggle .menu-close { display: none }
+  .mobile-nav-toggle[aria-expanded=true] .menu-lines { display: none }
+  .mobile-nav-toggle[aria-expanded=true] .menu-close { display: inline }
+  .mast.mobile-nav-ready .site-nav { display: none; grid-area: auto; justify-self: stretch; position: absolute; top: calc(100% + 6px); inset-inline: 12px; width: auto; max-height: calc(100dvh - 88px); overflow: auto; overscroll-behavior: contain; padding: 8px; border: 1px solid #3e3e40; border-radius: 10px; background: #19191c; box-shadow: 0 12px 30px #0006; opacity: 0; transform: translateY(-6px); transition: opacity .18s ease,transform .18s ease,display .18s allow-discrete }
+  .mast.mobile-nav-ready.mobile-nav-open .site-nav { display: grid; grid-template-columns: minmax(0,1fr); gap: 2px; opacity: 1; transform: none }
+  .mast.mobile-nav-ready nav :is(a,.nav-trigger) { width: 100%; min-height: 44px; padding: 11px 12px; justify-content: space-between; border-radius: 6px; font-size: .95rem; line-height: 1.4; white-space: normal; text-align: start }
+  .mast.mobile-nav-ready .site-nav > a[aria-current=page] { background: #303035 }
+  .mast.mobile-nav-ready .site-nav > a::after,.mast.mobile-nav-ready .nav-trigger::after { display: none }
+  .mast.mobile-nav-ready .nav-popup { position: static; width: auto; min-width: 0; max-width: none; margin: 0 8px 6px; border: 0; border-left: 1px solid #4b4b53; border-radius: 0; background: transparent; box-shadow: none }
+  .mast.mobile-nav-ready .nav-popup a { font-size: .88rem }
+  @starting-style { .mast.mobile-nav-ready.mobile-nav-open .site-nav { opacity: 0; transform: translateY(-6px) } }
+}
+@media (prefers-reduced-motion: reduce) { .mast.mobile-nav-ready .site-nav { transition: none } }
+
+/* On phones, the photo and the content occupy separate rows. */
+@media (max-width: 740px) {
+  .landing { --edge: 12px; grid-template-rows: auto 1fr auto }
+  .landing main { justify-content: flex-start; padding-block: 10px }
+  .landing .folds { height: auto; min-height: 0; grid-template-rows: 64px auto }
+  .landing .fold { container-type: inline-size; align-self: start; display: flex; flex-direction: column }
+  .landing .fold > .fold-image { position: static; inset: auto; translate: none; flex: none; width: 100%; height: auto; min-width: 0; max-width: 100%; aspect-ratio: 16 / 7; object-fit: cover; filter: none }
+  .landing #destinations .leaf { flex: none; width: 100%; padding: 20px 16px; --leaf-top: 20px; background: #202023 }
+  .landing #leaf-map { --map-slide-travel: 12px }
+  .landing .leaf > [data-panel] { flex: none }
+  .readers-ready .landing :is([data-panel=download],[data-panel=idfrp]) { display: grid; grid-template-columns: minmax(0,1fr); grid-template-rows: auto auto; grid-template-areas: "overview" "actions"; align-items: start; align-content: start; gap: 20px }
+  .landing .guide-heading,.landing .rp-overview,.landing .convoy-actions { padding-top: 0; max-width: none }
+  .landing .panel-heading { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 12px }
+  .landing .leaf h1 { font-size: clamp(1.9rem,7.5vw,2.6rem); line-height: 1.05 }
+  .landing .leaf p { font-size: .94rem; line-height: 1.5 }
+  .landing .project-description { margin-block: 0 }
+  .readers-ready .landing .leaf [data-reader-content] { display: none }
+  .readers-ready .landing .compact-actions { display: flex; flex-wrap: wrap; gap: 0 16px; margin-top: 8px }
+  .readers-ready .landing .reader-link { display: inline-flex; align-items: center; justify-self: start; align-self: start; min-height: 40px; padding: 6px 0; border: 0; background: transparent; color: #eee; font-size: .9rem; font-weight: 600; line-height: 1.3; text-decoration: underline; text-underline-offset: .18em }
+  .landing .download-actions,.landing .primary-actions { --action-size: 52px; width: 100%; display: grid; grid-template-columns: minmax(0,1fr) var(--action-size); align-items: stretch; gap: 10px }
+  .landing #manual-map,.landing .leaf .plugin-download { min-width: 0; width: 100%; min-height: 52px; padding: 12px 14px; font-size: 1rem }
+  .landing .download-actions .action-discord { width: var(--action-size) }
+  .landing .map-configuration { grid-column: 1 / -1; justify-self: stretch; min-height: 48px; padding: 10px 14px; font-size: .88rem; line-height: 1.4 }
+  .landing [data-panel=convoy] { display: grid; grid-template-columns: minmax(0,1fr); grid-template-rows: auto auto auto; grid-template-areas: "actions" "guide" "status"; gap: 16px; align-content: start; align-items: start }
+  .landing .convoy-actions { display: flex; flex-direction: column; align-items: stretch; gap: 8px }
+  .landing .convoy-collection { min-height: 52px; padding: 10px 12px; font-size: .9rem }
+  .landing .server-readout { padding: 16px }
+  .landing .server-readout .status { padding-bottom: 12px }
+  .landing .session-facts { margin-top: 12px }
+  .landing #status-age { margin-top: 12px }
+  .landing .choice { min-height: 64px; padding: 8px 4px; grid-template-rows: minmax(0,1fr) 14px }
+  .landing .choice-title { font-size: clamp(.9rem,3.4vw,1.18rem) }
+  .landing .site-footer { padding-block: 12px 4px }
+}
+
+
+/* Short, lightweight transitions on mobile. */
+@media (max-width: 740px) {
+  .mast.mobile-nav-ready .site-nav,.mast .nav-popup,.mast .language-popup { transform: none }
+  @starting-style {
+    .mast.mobile-nav-ready.mobile-nav-open .site-nav,
+    .mast [aria-expanded=true] + :is(.nav-popup,.language-popup) { transform: none }
+  }
+}
+@media (max-width: 740px) and (prefers-reduced-motion: no-preference) {
+  .mast.mobile-nav-ready .site-nav,.mast .nav-popup,.mast .language-popup { transition: opacity .12s ease-out,display .12s allow-discrete }
+  .mast .nav-chevron,.mast .language-chevron { transition-duration: .12s }
+  html.idf-entering::before,html.idf-entering::after { transition-duration: .1s }
+  .interior :is(.faq-card,.credits-card,.news-card,.legal-card,.not-found-card) { animation-duration: .14s }
+  .page-faq .faq-item::details-content,.page-faq .faq-question::after { transition-duration: .16s }
+}
+
+@media (max-width: 740px) {
+  .landing .rp-overview .panel-heading { flex-direction: row; align-items: center; gap: 10px }
+  .landing .rp-overview .panel-heading .new-badge { order: 1; flex: none }
+  .landing .fold-image,.landing .setup-back svg,.landing .status-halo { animation: none }
+}
+@media (max-width: 740px) and (prefers-reduced-motion: no-preference) {
+  .landing .choice-bar::before { transition-duration: .2s }
+  .landing .guide-content > :not([hidden]) { animation-duration: .15s }
+  .landing .status-online,.landing .status-offline { animation-duration: .18s }
+}
+</style>
+</head>
   <body>
     <svg class="action-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
       <symbol id="discord-mark" viewBox="0 0 24 24"><path d="M18.59 5.88997C17.36 5.31997 16.05 4.89997 14.67 4.65997C14.5 4.95997 14.3 5.36997 14.17 5.69997C12.71 5.47997 11.26 5.47997 9.83001 5.69997C9.69001 5.36997 9.49001 4.95997 9.32001 4.65997C7.94001 4.89997 6.63001 5.31997 5.40001 5.88997C2.92001 9.62997 2.25001 13.28 2.58001 16.87C4.23001 18.1 5.82001 18.84 7.39001 19.33C7.78001 18.8 8.12001 18.23 8.42001 17.64C7.85001 17.43 7.31001 17.16 6.80001 16.85C6.94001 16.75 7.07001 16.64 7.20001 16.54C10.33 18 13.72 18 16.81 16.54C16.94 16.65 17.07 16.75 17.21 16.85C16.7 17.16 16.15 17.42 15.59 17.64C15.89 18.23 16.23 18.8 16.62 19.33C18.19 18.84 19.79 18.1 21.43 16.87C21.82 12.7 20.76 9.08997 18.61 5.88997H18.59ZM8.84001 14.67C7.90001 14.67 7.13001 13.8 7.13001 12.73C7.13001 11.66 7.88001 10.79 8.84001 10.79C9.80001 10.79 10.56 11.66 10.55 12.73C10.55 13.79 9.80001 14.67 8.84001 14.67ZM15.15 14.67C14.21 14.67 13.44 13.8 13.44 12.73C13.44 11.66 14.19 10.79 15.15 10.79C16.11 10.79 16.87 11.66 16.86 12.73C16.86 13.79 16.11 14.67 15.15 14.67Z"/></symbol>
@@ -1117,7 +1209,8 @@ html:has(#console-guide[open]) { overflow: hidden }
     <div class="landing">
       <header class="mast">
         <a class="monogram" href="" aria-label="Île-de-France Map — Accueil"><img src="images/idf_logo.png" width="500" height="202" alt="Île-de-France Map"></a>
-        <nav class="site-nav" data-label="nav_label" aria-label="Navigation du site">
+        <button type="button" class="mobile-nav-toggle" aria-controls="mobile-site-nav" aria-expanded="false" aria-label="Navigation du site" data-label="nav_label"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="menu-lines" d="M4 6h16M4 12h16M4 18h16"/><path class="menu-close" d="m6 6 12 12M6 18 18 6"/></svg></button>
+        <nav class="site-nav" id="mobile-site-nav" data-label="nav_label" aria-label="Navigation du site">
           <a href="" data-t="nav_accueil" aria-current="page">Accueil</a>
           <a href="/actualites" data-page="actualites" data-t="nav_actualites">Actualités</a>
           <a href="/map" data-page="map" data-t="nav_carte_interactive">Carte interactive</a>
@@ -2270,6 +2363,7 @@ window.CINEMA_LABELS = (() => {
   const links = window.SITE_OFFSITE_LINKS || config.offsite || {};
   const { tr } = window.IDFSite;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobileViewport = window.matchMedia("(max-width: 740px)");
   let panel = "";
   let language = document.documentElement.lang;
   const maxServerAgeSeconds = 60 * 60;
@@ -2328,7 +2422,7 @@ window.CINEMA_LABELS = (() => {
           loading.hidden = true;
           return;
         }
-        fade = loading.animate([{opacity: 1}, {opacity: 0}], {duration: 380, easing: "ease-out", fill: "forwards"});
+        fade = loading.animate([{opacity: 1}, {opacity: 0}], {duration: mobileViewport.matches ? 160 : 380, easing: "ease-out", fill: "forwards"});
         fade.onfinish = () => { if (player.isConnected) loading.hidden = true; };
       }
       player.addEventListener("load", finishLoading, {once: true});
@@ -2341,7 +2435,7 @@ window.CINEMA_LABELS = (() => {
       const to = content.getBoundingClientRect().height;
       if (from !== to && !reducedMotion.matches) {
         resize = content.animate([{height: from + "px"}, {height: to + "px"}],
-          {duration: 320, easing: "cubic-bezier(.22,.75,.2,1)"});
+          {duration: mobileViewport.matches ? 180 : 320, easing: "cubic-bezier(.22,.75,.2,1)"});
       }
     }
     formats.addEventListener("change", changeFormat);
@@ -2388,7 +2482,11 @@ window.CINEMA_LABELS = (() => {
     if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) reader.close();
   });
   document.documentElement.classList.add("readers-ready");
-  new ResizeObserver(() => {
+  let observedGuideWidth = 0;
+  new ResizeObserver(entries => {
+    const width = entries[0].contentRect.width;
+    if (mobileViewport.matches && width === observedGuideWidth) return;
+    observedGuideWidth = width;
     if (reader.open && !readerTrigger.getClientRects().length) reader.close();
     mapGuide.sync();
     pluginGuide.sync();
@@ -2502,7 +2600,13 @@ window.CINEMA_LABELS = (() => {
   }
   function clearSlide() {
     cancelAnimationFrame(slideFrame);
+    for (const animation of destinations.getAnimations()) {
+      if (animation.id === "mobile-frame") animation.cancel();
+    }
+    destinations.style.removeProperty("height");
     if (!slide) return;
+    slide.outgoing.style.removeProperty("will-change");
+    slide.incoming.style.removeProperty("will-change");
     slide.outgoing.style.removeProperty("transform");
     slide.incoming.style.removeProperty("transform");
     slide = null;
@@ -2512,8 +2616,17 @@ window.CINEMA_LABELS = (() => {
     const step = slide.direction * 100;
     slide.outgoing.style.transform = "translateX(" + (-step * progress) + "%)";
     slide.incoming.style.transform = "translateX(" + (step * (1 - progress)) + "%)";
+    if (mobileViewport.matches && slide.heights) {
+      const [from, to] = slide.heights;
+      destinations.style.height = (from + (to - from) * progress) + "px";
+    }
+  }
+  function mobileFrameHeight(fold) {
+    return tabList.getBoundingClientRect().height + fold.getBoundingClientRect().height +
+      destinations.offsetHeight - destinations.clientHeight;
   }
   function prepareSlide(from, to) {
+    const currentHeight = mobileViewport.matches ? destinations.getBoundingClientRect().height : 0;
     cancelAnimationFrame(slideFrame);
     if (slide?.from !== from || slide.to !== to) {
       const start = slide?.to === from && slide.from === to ? 1 - slide.progress : 0;
@@ -2524,6 +2637,17 @@ window.CINEMA_LABELS = (() => {
       positionSlide(start);
     }
     displayPanels(panel === from ? to : from);
+    if (mobileViewport.matches) {
+      const toHeight = mobileFrameHeight(slide.incoming);
+      const progress = slide.progress;
+      const fromHeight = progress < 1
+        ? (currentHeight - toHeight * progress) / (1 - progress)
+        : mobileFrameHeight(slide.outgoing);
+      slide.heights = [fromHeight, toHeight];
+      slide.outgoing.style.willChange = "transform";
+      slide.incoming.style.willChange = "transform";
+      positionSlide(progress);
+    }
   }
   function finishSlide() {
     const leavingDownload = slide.from === "download" && slide.to === panel;
@@ -2531,7 +2655,7 @@ window.CINEMA_LABELS = (() => {
     displayPanels();
     if (leavingDownload) mapGuide.sync();
   }
-  const tabSlideDuration = progress => 140 + 200 * progress;
+  const tabSlideDuration = progress => mobileViewport.matches ? 120 + 80 * progress : 140 + 200 * progress;
   function settleSlide(end) {
     cancelAnimationFrame(slideFrame);
     const start = slide.progress;
@@ -2549,7 +2673,7 @@ window.CINEMA_LABELS = (() => {
     slideFrame = requestAnimationFrame(tick);
   }
   let finishMapSlide;
-  function slideMapViews(from, to) {
+  function slideMapViews(from, to, previousHeight) {
     const outgoing = $('#leaf-map > [data-panel="' + from + '"]');
     const incoming = $('#leaf-map > [data-panel="' + to + '"]');
     const up = "translateY(calc(0px - var(--map-motion-offset)))";
@@ -2557,6 +2681,10 @@ window.CINEMA_LABELS = (() => {
     const exitPosition = to === "setup" ? up : down;
     const entryPosition = to === "setup" ? down : up;
     const timing = {duration:tabSlideDuration(1), easing:"ease-out", fill:"both"};
+    const frameResize = mobileViewport.matches ? destinations.animate([
+      {height: previousHeight + "px"},
+      {height: mobileFrameHeight(folds.find(fold => fold.dataset.family === "map")) + "px"}
+    ], {...timing, id: "mobile-frame"}) : null;
     outgoing.classList.add("map-leaving");
     outgoing.inert = true;
     outgoing.hidden = false;
@@ -2577,18 +2705,20 @@ window.CINEMA_LABELS = (() => {
       outgoing.classList.remove("map-leaving");
       exit.cancel();
       entry.cancel();
+      frameResize?.cancel();
       finishMapSlide = null;
     };
     entry.onfinish = finishMapSlide;
   }
   function showPanel(previous, fromWheel) {
+    const previousHeight = mobileViewport.matches ? destinations.getBoundingClientRect().height : 0;
     finishMapSlide?.();
     if (!previous || panelFamilies[previous] === panelFamilies[panel] || reducedMotion.matches) {
       clearSlide();
       const betweenMapViews = (previous === "download" && panel === "setup") || (previous === "setup" && panel === "download");
       displayPanels();
       mapGuide.sync();
-      if (betweenMapViews && !reducedMotion.matches) slideMapViews(previous, panel);
+      if (betweenMapViews && !reducedMotion.matches) slideMapViews(previous, panel, previousHeight);
       return;
     }
     prepareSlide(previous, panel);
@@ -2596,6 +2726,12 @@ window.CINEMA_LABELS = (() => {
     if (fromWheel) glideWheelTo(slide.direction, true);
     else settleSlide(1);
   }
+  for (const media of [mobileViewport, reducedMotion]) media.addEventListener("change", () => {
+    stopWheelGlide();
+    clearSlide();
+    finishMapSlide?.();
+    displayPanels();
+  });
   function syncRoute(fromWheel = false) {
     const hash = location.hash.toLowerCase();
     if (["#telechargement/manuel", "#telechargement", "#accueil", "#region"].includes(hash) || (hash === "#installation" && !hasAutomatic)) {
@@ -2688,7 +2824,7 @@ window.CINEMA_LABELS = (() => {
     const dt = Math.max(0, now - motion.time);
     motion.time += dt;
     // A critically damped spring preserves speed between notches and when returning to rest.
-    const rate = .021;
+    const rate = mobileViewport.matches ? .032 : .021;
     const offset = motion.position - motion.target;
     const slope = motion.velocity + rate * offset;
     const decay = Math.exp(-rate * dt);
@@ -2897,8 +3033,20 @@ window.CINEMA_LABELS = (() => {
   const page = document.getElementById('configuration-map');
   const sections = [...page.querySelectorAll('.mods-sections button')];
   function selectSection(active) {
+    const frame = document.getElementById('destinations');
+    const animate = !page.hidden && matchMedia('(max-width: 740px) and (prefers-reduced-motion: no-preference)').matches;
+    const from = animate ? frame.getBoundingClientRect().height : 0;
+    for (const animation of frame.getAnimations()) {
+      if (animation.id === 'mobile-frame') animation.cancel();
+    }
     page.dataset.modsPanel = active.getAttribute('aria-controls').slice('mods-'.length);
     for (const button of sections) button.setAttribute('aria-pressed', String(button === active));
+    const to = animate ? frame.getBoundingClientRect().height : 0;
+    if (animate && Math.abs(from - to) > 1) {
+      frame.animate([{height: from + 'px'}, {height: to + 'px'}], {
+        id: 'mobile-frame', duration: 200, easing: 'cubic-bezier(.22,.75,.2,1)'
+      });
+    }
   }
   for (const button of sections) button.addEventListener('click', () => selectSection(button));
   selectSection(sections[0]);
@@ -2972,6 +3120,53 @@ window.CINEMA_LABELS = (() => {
   });
   document.addEventListener('idf:language', updateGuide);
   updateGuide();
+})();
+
+</script>
+<script id="mobile-navigation">
+
+(() => {
+  const header = document.querySelector('.mast');
+  const nav = header?.querySelector('.site-nav');
+  const toggle = header?.querySelector('.mobile-nav-toggle');
+  if (!nav || !toggle) return;
+  const mobile = matchMedia('(max-width: 740px)');
+  function closeSubmenus() {
+    for (const button of nav.querySelectorAll('.nav-trigger[aria-expanded="true"]')) button.click();
+  }
+  function setOpen(open, focus = false) {
+    closeSubmenus();
+    header.classList.toggle('mobile-nav-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    nav.inert = mobile.matches && !open;
+    if (focus) (open ? nav.querySelector('a,button') : toggle)?.focus({preventScroll: true});
+  }
+  toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  document.addEventListener('click', event => {
+    if (mobile.matches && !header.contains(event.target)) setOpen(false);
+  });
+  nav.addEventListener('click', event => {
+    if (mobile.matches && event.target.closest('a')) setOpen(false, true);
+  });
+  header.querySelector('.language-trigger')?.addEventListener('click', () => {
+    if (mobile.matches) setOpen(false);
+  });
+  header.addEventListener('keydown', event => {
+    if (event.defaultPrevented || !mobile.matches) return;
+    if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+      event.preventDefault();
+      setOpen(false, true);
+    } else if (event.key === 'ArrowDown' && event.target === toggle) {
+      event.preventDefault();
+      setOpen(true, true);
+    }
+  });
+  header.addEventListener('focusout', event => {
+    if (mobile.matches && !header.contains(event.relatedTarget)) setOpen(false);
+  });
+  mobile.addEventListener('change', () => setOpen(false));
+  header.classList.add('mobile-nav-ready');
+  setOpen(false);
 })();
 
 </script>
