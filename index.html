@@ -1067,6 +1067,39 @@ html:has(#console-guide[open]) { overflow: hidden }
   .rp-label { display: contents }
   .rp-label .new-badge { justify-self: center; align-self: center; padding-block: 0; line-height: 1 }
 }
+
+/* Keep the mobile configuration panel at its content height. */
+@media (max-width: 740px) and (orientation: portrait) {
+  .landing:has(#configuration-map:not([hidden])) main { justify-content: flex-start }
+  .folds:has(#configuration-map:not([hidden])) { height: auto; min-height: 0 }
+  .fold:has(#configuration-map:not([hidden])) { container-type: inline-size }
+  #leaf-map:has(#configuration-map:not([hidden])) { padding-block: 14px }
+  .map-setup[data-mods-panel] { align-self: start; gap: 0 }
+  .map-setup .setup-back { margin-bottom: 12px }
+  .map-setup[data-mods-panel] .mods-layout { display: block; flex: none; max-width: none }
+  .map-setup[data-mods-panel=order] :is(#mods-traffic,#mods-vehicles), .map-setup[data-mods-panel=traffic] :is(#mods-order,#mods-vehicles), .map-setup[data-mods-panel=vehicles] .mods-settings { display: none }
+  .map-setup[data-mods-panel] .mods-settings { height: auto; align-content: start }
+  .map-setup .mods-settings .mods-card { justify-content: flex-start; gap: 14px; padding: 14px }
+  .map-setup[data-mods-panel=vehicles] #mods-vehicles { height: auto; padding: 14px; gap: 12px }
+  .map-setup .vehicle-gallery { flex: none; container-type: inline-size; display: block }
+  .map-setup .vehicle-grid { grid-template-columns: minmax(0,1fr); width: 100% }
+  .readers-ready .map-setup .vehicle-card:not(.current-vehicle) { display: none }
+  .readers-ready .map-setup .vehicle-step { display: grid; place-items: center; position: absolute; z-index: 1; top: calc(50% - 30px); width: 36px; height: 36px; border: 1px solid #ffffff75; border-radius: 50%; padding: 0; background: #161619df; color: white }
+  .map-setup .vehicle-step[data-step="-1"] { left: 5px }
+  .map-setup .vehicle-step[data-step="1"] { right: 5px }
+  .map-setup .mods-card p { line-height: 1.45 }
+  .map-setup .traffic-options { grid-template-columns: minmax(0,1fr); gap: 7px; margin-block: 12px 8px }
+  .map-setup .traffic-options > div { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 10px; padding: 10px 12px }
+  .map-setup .traffic-options dd { margin: 0; text-align: end }
+  .map-setup .traffic-options dt { overflow-wrap: anywhere }
+  .map-setup .traffic-options small { max-width: 8rem; margin-top: 4px; font-size: .75rem }
+  .map-setup .mod-caption { padding: 8px 10px }
+  .map-setup[data-mods-panel] .mods-sections { display: flex; gap: 3px; margin-bottom: 8px; padding: 3px; border-radius: 6px; background: #212125 }
+  .map-setup .mods-sections button { flex: 1; min-width: 0; min-height: 40px; overflow-wrap: anywhere; padding: 6px 4px; border: 1px solid transparent; border-radius: 4px; background: transparent; font-size: .85rem; line-height: 1.2 }
+  .map-setup .mods-sections button[aria-pressed="true"] { border-color: #64646c; background: #393940; font-weight: 650 }
+  .map-setup .mods-card h2 { font-size: 1.35rem }
+}
+
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important } }
 
 </style>
