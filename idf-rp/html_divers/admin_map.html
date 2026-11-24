@@ -1116,7 +1116,7 @@
       const MAP_FILES_ROOT = "../../map_files";
       const WIDGET_BRIDGE_SCOPE = "idf_game_widget_bridge_v1";
       const WIDGET_BRIDGE_CHANNEL_SAEIV = "saeiv";
-      const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z])$/i;
+      const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)([a-z]?)$/i;
       const WS_RECONNECT_MS = 2000;
       const PLAYER_WARNING_MS = 3500;
       const PLAYER_STALE_MS = 16000;
@@ -1388,9 +1388,6 @@
       }
 
       function parseVersion(value) {
-        var mapName = String(value || "").trim();
-        if (/^(website|0\.1\.6a)$/i.test(mapName)) return {raw:"website",major:0,minor:1,patch:6,suffix:"a"};
-        if (/^(IDF-RP|Dev)$/i.test(mapName)) return {raw:"IDF-RP",major:1,minor:0,patch:0,suffix:""};
         const match = VERSION_PATTERN.exec(String(value || "").trim());
         if (!match) return null;
         return {
@@ -1413,13 +1410,16 @@
         const response = await fetch(`${MAP_FILES_ROOT}/versions.json`, { cache: "no-store" });
         if (!response.ok) throw new Error("versions.json introuvable");
         const list = await response.json();
-        const versions = (Array.isArray(list) ? list : list && list.versions || [])
+        const versions = (Array.isArray(list) ? list : Array.isArray(list && list.versions) ? list.versions : [])
           .map(parseVersion)
           .filter(Boolean)
           .sort(compareVersions);
         if (!versions.length) throw new Error("Aucune version de map disponible");
         const forced = parseVersion(new URLSearchParams(location.search).get("version"));
-        return forced ? forced.raw : versions[versions.length - 1].raw;
+        // Old links can still request website, IDF-RP or a removed version.
+        // Only select a directory advertised by the current version manifest.
+        const available = forced && versions.find(version => version.raw === forced.raw);
+        return (available || versions[versions.length - 1]).raw;
       }
 
       function innerBounds(margin) {
@@ -5886,7 +5886,7 @@
         try {
           selectedVersion = await selectMapVersion();
           dataBase = `${MAP_FILES_ROOT}/${selectedVersion}`;
-          tileBase = `${MAP_FILES_ROOT}/website/Tiles`;
+          tileBase = `${dataBase}/Tiles`;
 
           const tileInfoResponse = await fetch(`${dataBase}/TileMapInfo.json`, { cache: "no-store" });
           if (!tileInfoResponse.ok) throw new Error("TileMapInfo introuvable");

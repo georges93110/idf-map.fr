@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
-const pages=['map.html','ressources/test/index.html','idf-rp/widgets/gps_mini.html',
+const pages=['map.html','ressources/French-Aero-Simulator.html','ressources/test/index.html','idf-rp/widgets/gps_mini.html',
  'idf-rp/widgets/apps/waze/index.html','idf-rp/html_divers/admin_map.html','idf-rp/html_divers/id_lignes_saeiv.html'];
 for(const file of pages){
  for(const [,attrs,script] of read(file).matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi))
@@ -43,12 +43,12 @@ console.log('PASS website tools, scripts and map-specific bus catalogues, includ
 
 const publicMap=read('map.html');
 assert(!publicMap.includes('config/map-context.js'),'public map never remaps XML to IDFRP');
-const publicPaths=publicMap.slice(publicMap.indexOf('    const DBUS_BASE ='),publicMap.indexOf('    async function fetchMapFile('));
+const publicPaths=publicMap.slice(publicMap.indexOf('    const dataPath ='),publicMap.indexOf('    async function fetchMapFile('));
 const folders = JSON.parse(read('map_files/versions.json'));
 assert(folders.length > 0);
 for(const selected of folders){
  const base='./map_files/'+selected;
- const ctx=vm.createContext({MAP_FILES_ROOT:'./map_files',DATA_BASE:base,OVERLAY_BASE:base+'/Overlays'});
+ const ctx=vm.createContext({MAP_FILES_ROOT:'./map_files',selectedVersion:selected});
  vm.runInContext(publicPaths,ctx);
  for(const file of ['lines.xml','stops.xml','city.xml']){
   const urls=ctx.mapFileCandidatePaths('Mode%20Bus/'+file);
@@ -61,11 +61,11 @@ for(const selected of folders){
 console.log('PASS public DBus catalogue and nav graph stay independent of plugin maps/versions.');
 
 const mapUrlSource=publicMap.slice(publicMap.indexOf('    function buildWazeModeUrl(){'),publicMap.indexOf('    function openDevWazeWindow(){'));
-const mapUrls=vm.createContext({URL,location:new URL('https://idf-map.fr/map.html'),SELECTED_VERSION:'IDF-RP'});
+const mapUrls=vm.createContext({URL,location:new URL('https://idf-map.fr/map.html'),selectedVersion:'0.1.6'});
 vm.runInContext(mapUrlSource,mapUrls);
 const wazeUrl=new URL(mapUrls.buildWazeModeUrl());
 assert(fs.existsSync(path.join(root,wazeUrl.pathname)),'public map opens an existing Waze page');
-const waze=read(wazeUrl.pathname.slice(1));
+const waze=read(wazeUrl.pathname.slice(1) + (wazeUrl.pathname.endsWith('/') ? 'index.html' : ''));
 const frameUrlSource=waze.slice(waze.indexOf('    function buildWazeUrl() {'),waze.indexOf('    frame.src = buildWazeUrl();'));
 wazeUrl.searchParams.set('map','grandutopia');
 const frameUrls=vm.createContext({URL,location:wazeUrl,isHostDevMapMode:()=>true});
@@ -75,3 +75,35 @@ assert(fs.existsSync(path.join(root,gpsUrl.pathname)),'Waze GPS iframe exists');
 for(const key of ['version','bridge','map'])assert.equal(gpsUrl.searchParams.get(key),wazeUrl.searchParams.get(key),'Waze forwards '+key);
 assert(gpsUrl.searchParams.has('waze_app'));assert.equal(gpsUrl.searchParams.get('devmap'),'1');
 console.log('PASS public-map Waze link and GPS iframe preserve the selected map and bridge context.');
+
+// Admin Map must select a published directory, including versions without a suffix.
+const adminMap = read('idf-rp/html_divers/admin_map.html');
+const versionPattern = adminMap.match(/const VERSION_PATTERN = ([^;]+);/)[0];
+const versionFunctions = adminMap.slice(adminMap.indexOf('      function parseVersion('), adminMap.indexOf('      function innerBounds('));
+async function adminVersion(manifest, requested = '', ok = true) {
+ const ctx = vm.createContext({URLSearchParams, location: {search: '?version=' + encodeURIComponent(requested)},
+  MAP_FILES_ROOT: '../../map_files', fetch: async url => {
+   assert.equal(url, '../../map_files/versions.json');
+   return {ok, json: async () => manifest};
+  }});
+ vm.runInContext(versionPattern + versionFunctions, ctx);
+ return ctx.selectMapVersion();
+}
+assert.equal(await adminVersion(['0.1.6']), '0.1.6');
+assert.equal(await adminVersion(['0.9.9', '0.10.2', '0.10.10', '0.10.3']), '0.10.10');
+assert.equal(await adminVersion({versions: ['0.1.6b', '0.1.6', '0.1.6a']}), '0.1.6b');
+assert.equal(await adminVersion(['0.1.6', '0.1.7'], '0.1.6'), '0.1.6');
+assert.equal(await adminVersion(['0.1.6a', '0.1.7'], '0.1.6a'), '0.1.6a');
+for (const legacy of ['website', 'IDF-RP', 'Dev', '0.1.6a', '9.9.9', '../website'])
+ assert.equal(await adminVersion(['0.1.6'], legacy), '0.1.6');
+await assert.rejects(adminVersion([], '', false), /versions.json introuvable/);
+await assert.rejects(adminVersion(['website', '../outside']), /Aucune version de map disponible/);
+await assert.rejects(adminVersion({versions: '0.1.6'}), /Aucune version de map disponible/);
+const adminBootPaths = adminMap.slice(adminMap.indexOf('          dataBase ='), adminMap.indexOf('          const tileInfoResponse ='));
+for (const selectedVersion of folders) {
+ const ctx = vm.createContext({MAP_FILES_ROOT: '../../map_files', selectedVersion});
+ vm.runInContext(adminBootPaths, ctx);
+ for (const asset of [ctx.dataBase + '/TileMapInfo.json', ctx.tileBase + '/0/0/0.png'])
+  assert(fs.existsSync(path.resolve(root, 'idf-rp/html_divers', asset)), asset);
+}
+console.log('PASS Admin Map: numeric versions, suffixes, obsolete links, manifest errors and matching tile paths.');
