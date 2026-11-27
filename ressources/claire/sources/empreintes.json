@@ -1,0 +1,22 @@
+{
+  "moteur/boxedwine.js": {
+    "bytes": 235553,
+    "sha256": "d9fd38e0fe7b02fbf97ae5465d4b12bd9e8394827357730b4942ebdf9f3e171f"
+  },
+  "moteur/boxedwine.wasm": {
+    "bytes": 1427522,
+    "sha256": "9151c1b4c9a7867feec456418b3a7a63005ed0fa5fd60746af2d55557e5fa4c2"
+  },
+  "moteur/browserfs.boxedwine.js": {
+    "bytes": 845392,
+    "sha256": "edfbf347e357e70ce4cbf22020c8df09a75375fda0b9204e860b87414b1f6995"
+  },
+  "moteur/claire.zip": {
+    "bytes": 18907726,
+    "sha256": "53b364dc5a4af828dc8ef27c8a1c8ddcd1deaedd5e37b559efd915aa9f1334e7"
+  },
+  "moteur/wine.zip": {
+    "bytes": 11467345,
+    "sha256": "be81260a380fcff84737e572f0df4c0a955a7683c95a10164c02255ce910d0b0"
+  }
+}
