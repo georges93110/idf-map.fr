@@ -1,6 +1,6 @@
 // x86 adapter for the installed ELAN mtsyc32.dll 5.1 (2004).
-// The UI runs every render in its own disposable process. No server, COM
-// registration, installed binary, registry value or system clock is changed.
+// Browser session: the native channel stays open inside WebAssembly.
+// No system installation, registry or clock is changed.
 #include <windows.h>
 #include <cstdio>
 #include <cstdint>
@@ -92,18 +92,23 @@ extern "C" __declspec(dllexport) int __cdecl RenderElanV2(
     const wchar_t* text, const wchar_t* output, int codepage, int speedPercent, int pitchPercent, int volume,
     char* error, int errorCapacity) {
     SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
-    // Keep callbacks and objects alive until the dedicated render process exits.
-    // This also contains any failure of the legacy engine to release a thread.
-    auto sink = new Sink();
-    auto paths = new VoicePaths();
-    auto object = new char[0x2000]();
+    // One channel per WebAssembly instance; discarded together on cancel/error.
+    static auto sink = new Sink();
+    static auto paths = new VoicePaths();
+    static auto object = new char[0x2000]();
+    static bool initialized = false;
+    static unsigned hz = 0;
+    static HMODULE module = nullptr;
     try {
         paths->data = narrow(data, CP_ACP);
         if (paths->data.size() > 450) throw std::runtime_error("Chemin des donnees vocales trop long pour ELAN.");
         std::string name = narrow(voice, CP_ACP), input = narrow(text, codepage);
-        if (name.size() >= 255 || input.empty()) throw std::runtime_error("Voix ou texte invalide.");
+        if (name.size() >= 255) throw std::runtime_error("Voix ou texte invalide.");
+        using Get = int(__thiscall*)(void*,unsigned);
+        using Say = int(__thiscall*)(void*,unsigned,char*,int);
+        if (!initialized) {
         SetDllDirectoryW(bin);
-        HMODULE module = LoadLibraryW((std::wstring(bin)+L"\\mtsyc32.dll").c_str());
+        module = LoadLibraryW((std::wstring(bin)+L"\\mtsyc32.dll").c_str());
         if (!module) throw std::runtime_error("Impossible de charger mtsyc32.dll et ses dependances.");
         using MetaCtor = void*(__thiscall*)(void*);
         using MetaLoad = int(__thiscall*)(void*,const char*);
@@ -113,12 +118,9 @@ extern "C" __declspec(dllexport) int __cdecl RenderElanV2(
         if (symbol<MetaLoad>(module,"?LoadStad@CStadModeInfo@@QAEHPBD@Z")(metadataObject,paths->data.c_str()) < 1)
             throw std::runtime_error("Les donnees de cette voix ne peuvent pas etre chargees.");
         auto metadata = *reinterpret_cast<unsigned char**>(metadataObject+8);
-        unsigned hz = *reinterpret_cast<unsigned*>(metadata+0xafc);
+        hz = *reinterpret_cast<unsigned*>(metadata+0xafc);
         symbol<Dispose>(module,"?UnloadStad@CStadModeInfo@@QAEXXZ")(metadataObject);
         if (hz < 8000 || hz > 48000) throw std::runtime_error("Frequence audio ELAN non reconnue.");
-        if (_wfopen_s(&sink->file,output,L"wb") || !sink->file) throw std::runtime_error("Impossible de creer le fichier audio.");
-        header(sink->file,hz,0);
-        sink->volume = volume < 0 ? 0 : (volume > 100 ? 100 : volume);
         using Ctor = void*(__thiscall*)(void*,void*,void**,unsigned,void*);
         using Register = int(__thiscall*)(void*,void*);
         using Open = int(__thiscall*)(void*,void*,void*,unsigned,void*);
@@ -137,7 +139,7 @@ extern "C" __declspec(dllexport) int __cdecl RenderElanV2(
         ULONGLONG start=GetTickCount64();
         while (!sink->ready && !sink->failed && GetTickCount64()-start<10000) Sleep(10);
         if (!sink->ready || sink->failed) throw std::runtime_error("Le moteur ELAN n'a pas charge cette voix.");
-        auto status=symbol<Get>(module,"?wpsolaGetStatus@CWpsolaThread@@QAEHK@Z");
+
         speedPercent = speedPercent < 30 ? 30 : (speedPercent > 200 ? 200 : speedPercent);
         pitchPercent = pitchPercent < 30 ? 30 : (pitchPercent > 200 ? 200 : pitchPercent);
         // The SAPI absolute-value setters require caches filled by the old host.
@@ -148,18 +150,23 @@ extern "C" __declspec(dllexport) int __cdecl RenderElanV2(
             throw std::runtime_error("Le moteur ELAN n'a pas accepte la vitesse.");
         if (pitchPercent != 100 && request(object,0,'p',pitchPercent) != 1)
             throw std::runtime_error("Le moteur ELAN n'a pas accepte le pitch.");
+        initialized=true;
+        }
+        if(input.empty())return 0; // Prewarm the actual voice before the first request.
+        sink->bytes=0; sink->failed=false;
+        if (_wfopen_s(&sink->file,output,L"wb") || !sink->file) throw std::runtime_error("Impossible de creer le fichier audio.");
+        header(sink->file,hz,0);
+        sink->volume = volume < 0 ? 0 : (volume > 100 ? 100 : volume);
+        auto status=symbol<Get>(module,"?wpsolaGetStatus@CWpsolaThread@@QAEHK@Z");
         sink->idle=false;
         if (symbol<Say>(module,"?wpsolaSayText@CWpsolaThread@@QAEHKPADH@Z")(object,0,&input[0],static_cast<int>(input.size())) != 1)
             throw std::runtime_error("Le moteur n'a pas accepte le texte.");
-        start=GetTickCount64(); bool done=false;
+        ULONGLONG start=GetTickCount64(); bool done=false;
         while (GetTickCount64()-start<80000 && !sink->failed) {
             Sleep(10);
             if (sink->idle && sink->bytes>0 && !(status(object,0)&4)) { done=true; break; }
         }
         if (sink->failed || !done) throw std::runtime_error("La synthese ELAN n'a pas abouti ou a depasse son delai.");
-        symbol<Get>(module,"?wpsolaClose@CWpsolaThread@@QAEHK@Z")(object,0);
-        // Wait for the native synthesis thread before finalizing its output.
-        symbol<Dispose>(module,"??1CWpsolaThread@@QAE@XZ")(object);
         header(sink->file,hz,sink->bytes);
         if (ferror(sink->file) || fflush(sink->file)) throw std::runtime_error("Echec d'ecriture du fichier WAV.");
         fclose(sink->file); sink->file=nullptr;

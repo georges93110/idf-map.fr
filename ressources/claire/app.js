@@ -1,7 +1,10 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const text=$('text'),audio=$('audio'),status=$('status');
-let active=null, audioURL=null, unlockingURL=null;
+let active=null, engine=null, audioURL=null, unlockingURL=null, warmTimer=null;
+let cacheBytes=0;
+const cache=new Map(),MAX_CACHE_BYTES=12*1024*1024;
+const defaultText="Ligne, 114, cet autobus a pour terminus, Le Raincy - Villemomble - Monfermeil RER.";
 const extra1252=new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ');
 function validate(value){
   if(!value.trim())throw Error('Saisis un texte à lire.');
@@ -9,8 +12,51 @@ function validate(value){
   for(const c of value){const n=c.codePointAt(0);if(c==='\\'||(n<32&&!['\n','\r','\t'].includes(c)))throw Error('Ce texte contient une commande ou un caractère de contrôle non accepté.');if(n>127&&!(n>=160&&n<=255)&&!extra1252.has(c))throw Error('Cette ancienne voix accepte le français, mais pas les emojis ni certains caractères.');}
 }
 function update(){ $('generate').disabled=!!active;$('cancel').hidden=!active; }
-function stop(){if(active){clearTimeout(active.timeout);active.frame.remove();active=null;}update();}
-function fail(message){stop();audio.pause();status.textContent=message;if(audioURL){audio.src=audioURL;$('result').hidden=false;}}
+function dropEngine(){if(engine){clearTimeout(engine.timeout);engine.frame.remove();engine=null;}}
+function stop(reset=false){if(active){clearTimeout(active.timeout);active=null;}if(reset)dropEngine();update();}
+function fail(message){stop(true);audio.pause();status.textContent=message;if(audioURL){audio.src=audioURL;$('result').hidden=false;}}
+function checkAudio(raw){
+  if(!(raw instanceof ArrayBuffer)||raw.byteLength<46||raw.byteLength>32*1024*1024)throw Error('Le moteur a produit un fichier audio invalide.');
+  const bytes=new Uint8Array(raw),v=new DataView(raw),ascii=(p,n)=>String.fromCharCode(...bytes.slice(p,p+n));
+  if(ascii(0,4)!=='RIFF'||ascii(8,4)!=='WAVE'||ascii(12,4)!=='fmt '||ascii(36,4)!=='data'||v.getUint32(40,true)+44!==raw.byteLength||v.getUint32(24,true)!==22050||v.getUint16(22,true)!==1||v.getUint16(34,true)!==16)throw Error('Le moteur a produit un WAV incorrect.');
+}
+function remember(input,raw){
+  if(raw.byteLength>MAX_CACHE_BYTES)return;
+  if(cache.has(input)){cacheBytes-=cache.get(input).byteLength;cache.delete(input);}
+  cache.set(input,raw);cacheBytes+=raw.byteLength;
+  while(cacheBytes>MAX_CACHE_BYTES){const key=cache.keys().next().value;cacheBytes-=cache.get(key).byteLength;cache.delete(key);}
+}
+function dispatch(){
+  if(!active||active.mode!=='engine'||active.sent||!engine?.loaded)return;
+  active.sent=true;
+  engine.frame.contentWindow.postMessage({kind:'generate',session:engine.id,id:active.id,text:active.text},location.origin);
+  status.textContent=engine.ready?'Génération de la voix…':'Préparation de la voix…';
+}
+function ensureEngine(){
+  if(engine)return;
+  const id=crypto.randomUUID(),frame=document.createElement('iframe');frame.hidden=true;frame.title='Moteur vocal Claire';
+  engine={id,frame,loaded:false,ready:false,timeout:setTimeout(()=>{
+    if(engine?.id!==id)return;
+    if(active?.mode==='engine')fail('Le chargement du moteur a dépassé cinq minutes. Réessaie.');else dropEngine();
+  },300000)};
+  frame.addEventListener('load',()=>{
+    if(engine?.id!==id)return;
+    engine.loaded=true;frame.contentWindow.postMessage({kind:'boot',session:id},location.origin);dispatch();
+  },{once:true});
+  frame.src='moteur.html?v=2';document.body.appendChild(frame);
+}
+async function playResult(raw,id){
+  if(active?.id!==id)return;
+  try{
+    checkAudio(raw);remember(active.text,raw);stop();
+    if(audioURL)URL.revokeObjectURL(audioURL);
+    const url=audioURL=URL.createObjectURL(new Blob([raw],{type:'audio/wav'}));
+    audio.src=url;audio.playbackRate=1;$('download').href=url;$('result').hidden=false;
+    status.textContent='Son prêt.';
+    try{await audio.play();if(audioURL===url&&!active)status.textContent='Lecture du son.';}
+    catch{if(audioURL===url&&!active)status.textContent='Son prêt. Clique sur Lecture si ton navigateur bloque le démarrage automatique.';}
+  }catch(e){if(active?.id===id)fail(e.message);}
+}
 function unlock(){
   const raw=new ArrayBuffer(204),v=new DataView(raw),b=new Uint8Array(raw);
   for(const [p,s] of [[0,'RIFF'],[8,'WAVEfmt '],[36,'data']])for(let i=0;i<s.length;i++)b[p+i]=s.charCodeAt(i);
@@ -19,34 +65,32 @@ function unlock(){
   const url=unlockingURL=URL.createObjectURL(new Blob([raw],{type:'audio/wav'}));audio.src=url;
   audio.play().catch(()=>{}).finally(()=>{URL.revokeObjectURL(url);if(unlockingURL===url)unlockingURL=null;});
 }
-function generate(){
+async function generate(){
   if(active)return;
   try{validate(text.value);if(location.protocol==='file:')throw Error('Publie ce dossier sur ton hébergement web puis ouvre index.html via son adresse HTTPS. Le navigateur ne peut pas charger ce moteur depuis une adresse file://.');if(typeof WebAssembly!=='object')throw Error('Ce navigateur ne prend pas en charge WebAssembly.');}catch(e){status.textContent=e.message;return;}
   audio.pause();$('result').hidden=true;unlock();
-  const id=crypto.randomUUID(),frame=document.createElement('iframe');frame.hidden=true;frame.title='Moteur vocal Claire';
-  active={id,frame,timeout:setTimeout(()=>fail('La génération a dépassé cinq minutes. Essaie un texte plus court.'),300000)};
   const input=text.value;
-  frame.addEventListener('load',()=>{if(active?.id===id)frame.contentWindow.postMessage({kind:'start',id,text:input},location.origin);},{once:true});
-  frame.src='moteur.html';document.body.appendChild(frame);update();status.textContent='Chargement du moteur dans le navigateur…';
+  const id=crypto.randomUUID();
+  active={id,text:input,mode:'cache',sent:false,timeout:setTimeout(()=>fail('La génération a dépassé cinq minutes. Essaie un texte plus court.'),300000)};
+  update();
+  if(cache.has(input)){const raw=cache.get(input);cache.delete(input);cache.set(input,raw);await playResult(raw,id);return;}
+  if(input===defaultText){status.textContent='Chargement de l’annonce…';const raw=await defaultAudio;if(active?.id!==id)return;if(raw){await playResult(raw,id);return;}}
+  active.mode='engine';status.textContent=engine?.ready?'Génération de la voix…':'Préparation de la voix…';ensureEngine();dispatch();
 }
 window.addEventListener('message',async event=>{
-  const job=active, data=event.data;
-  if(!job||event.source!==job.frame.contentWindow||event.origin!==location.origin||data?.id!==job.id)return;
-  if(data.kind==='progress'){status.textContent=data.message;return;}
-  if(data.kind==='error'){fail(data.message);return;}
-  if(data.kind!=='audio')return;
-  try{
-    const raw=data.audio;
-    if(!(raw instanceof ArrayBuffer)||raw.byteLength<46||raw.byteLength>32*1024*1024)throw Error('Le moteur a produit un fichier audio invalide.');
-    const bytes=new Uint8Array(raw),v=new DataView(raw),ascii=(p,n)=>String.fromCharCode(...bytes.slice(p,p+n));
-    if(ascii(0,4)!=='RIFF'||ascii(8,4)!=='WAVE'||ascii(12,4)!=='fmt '||ascii(36,4)!=='data'||v.getUint32(40,true)+44!==raw.byteLength||v.getUint32(24,true)!==22050||v.getUint16(22,true)!==1||v.getUint16(34,true)!==16)throw Error('Le moteur a produit un WAV incorrect.');
-    stop();if(audioURL)URL.revokeObjectURL(audioURL);audioURL=URL.createObjectURL(new Blob([raw],{type:'audio/wav'}));
-    audio.src=audioURL;audio.playbackRate=1;$('download').href=audioURL;$('result').hidden=false;
-    status.textContent='Son généré.';
-    try{await audio.play();if(audio.src===audioURL)status.textContent='Lecture du son généré.';}catch{status.textContent='Son prêt. Clique sur Lecture si ton navigateur bloque le démarrage automatique.';}
-  }catch(e){fail(e.message);}
+  const data=event.data;
+  if(!engine||event.source!==engine.frame.contentWindow||event.origin!==location.origin||data?.session!==engine.id)return;
+  if(data.kind==='ready'){engine.ready=true;clearTimeout(engine.timeout);dispatch();return;}
+  if(data.kind==='progress'){if(active?.mode==='engine')status.textContent=data.message;return;}
+  if(data.kind==='error'){if(active?.mode==='engine')fail(data.message);else dropEngine();return;}
+  if(data.kind==='audio'&&active?.id===data.id)await playResult(data.audio,data.id);
 });
 $('generate').addEventListener('click',generate);
-$('cancel').addEventListener('click',()=>fail('Génération annulée.'));
+$('cancel').addEventListener('click',()=>{clearTimeout(warmTimer);fail('Génération annulée.');});
 text.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();generate();}});
-window.addEventListener('pagehide',()=>{stop();if(audioURL)URL.revokeObjectURL(audioURL);if(unlockingURL)URL.revokeObjectURL(unlockingURL);});
+const defaultAudio=location.protocol==='file:'?Promise.resolve(null):fetch('annonce-defaut.wav',{credentials:'same-origin'})
+  .then(r=>{if(!r.ok)throw Error('Annonce absente');return r.arrayBuffer();}).then(raw=>{checkAudio(raw);remember(defaultText,raw);return raw;}).catch(()=>null);
+function prewarm(){if(location.protocol!=='file:'&&typeof WebAssembly==='object')warmTimer=setTimeout(ensureEngine,200);}
+prewarm();
+window.addEventListener('pagehide',()=>{clearTimeout(warmTimer);stop(true);if(audioURL)URL.revokeObjectURL(audioURL);audioURL=null;if(unlockingURL)URL.revokeObjectURL(unlockingURL);});
+window.addEventListener('pageshow',event=>{if(event.persisted){$('result').hidden=true;status.textContent='Claire 22 kHz — Vitesse 90 % — Pitch 90 %';prewarm();}});

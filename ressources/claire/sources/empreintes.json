@@ -12,11 +12,15 @@
     "sha256": "edfbf347e357e70ce4cbf22020c8df09a75375fda0b9204e860b87414b1f6995"
   },
   "moteur/claire.zip": {
-    "bytes": 18907726,
-    "sha256": "53b364dc5a4af828dc8ef27c8a1c8ddcd1deaedd5e37b559efd915aa9f1334e7"
+    "bytes": 18927266,
+    "sha256": "2e4ce320beeea5bfb55b2a8dc951daf39dd0af921112a4907e2d989d899b742b"
   },
   "moteur/wine.zip": {
     "bytes": 11467345,
     "sha256": "be81260a380fcff84737e572f0df4c0a955a7683c95a10164c02255ce910d0b0"
+  },
+  "annonce-defaut.wav": {
+    "bytes": 363334,
+    "sha256": "be33efd5ce05400a524bc2bd3fc335d0103615e59d2d26c7c18427c581154be8"
   }
 }
