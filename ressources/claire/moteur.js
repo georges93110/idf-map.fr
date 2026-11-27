@@ -9,25 +9,59 @@ function output(...args){const line=args.join(' ');lastLogs.push(line);if(lastLo
 window.addEventListener('error',e=>failure('Erreur du moteur web : '+e.message));
 window.addEventListener('unhandledrejection',e=>failure('Erreur du moteur web : '+String(e.reason?.message||e.reason)));
 function createFS(type,options){return new Promise((resolve,reject)=>type.Create(options,(err,fs)=>err?reject(err):resolve(fs)));}
-async function download(name){const r=await fetch('moteur/'+name+(name==='claire.zip'?'?v=2':''),{credentials:'same-origin'});if(!r.ok)throw Error('Fichier absent ou inaccessible : moteur/'+name);return new Uint8Array(await r.arrayBuffer());}
+const downloaded={'wine.zip':0,'claire.zip':0};
+const downloadSizes={'wine.zip':11467345,'claire.zip':18927266};
+function downloadProgress(){
+  const total=Object.values(downloadSizes).reduce((a,b)=>a+b,0),bytes=Object.values(downloaded).reduce((a,b)=>a+b,0),percent=Math.min(100,Math.floor(bytes*100/total));
+  notify('progress',{message:'Chargement du moteur…',percent});
+}
+async function download(name){
+  const r=await fetch('moteur/'+name+(name==='claire.zip'?'?v=2':''),{credentials:'same-origin'});
+  if(!r.ok)throw Error('Fichier absent ou inaccessible : moteur/'+name);
+  const length=Number(r.headers?.get('content-length'));
+  if(length>0&&!r.headers?.get('content-encoding'))downloadSizes[name]=length;
+  if(!r.body?.getReader){const data=new Uint8Array(await r.arrayBuffer());downloaded[name]=data.length;downloadProgress();return data;}
+  const reader=r.body.getReader(),chunks=[];let size=0,lastPercent=-1;
+  while(true){const {done,value}=await reader.read();if(done)break;chunks.push(value);size+=value.length;downloaded[name]=size;
+    const percent=Math.floor(size*100/downloadSizes[name]);if(percent!==lastPercent){lastPercent=percent;downloadProgress();}}
+  const data=new Uint8Array(size);let offset=0;for(const chunk of chunks){data.set(chunk,offset);offset+=chunk.length;}
+  downloaded[name]=downloadSizes[name]=size;downloadProgress();return data;
+}
 async function prepare(){
+  notify('progress',{message:'Chargement du moteur…',percent:0});
   const B=BrowserFS.BFSRequire('buffer').Buffer;
   const [wineData,claireData]=await Promise.all([download('wine.zip'),download('claire.zip')]);
   const [wine,claire]=await Promise.all([createFS(BrowserFS.FileSystem.ZipFS,{zipData:B.from(wineData)}),createFS(BrowserFS.FileSystem.ZipFS,{zipData:B.from(claireData)})]);
-  const [root,files]=await Promise.all([createFS(BrowserFS.FileSystem.OverlayFS,{readable:wine,writable:new BrowserFS.FileSystem.InMemory()}),createFS(BrowserFS.FileSystem.OverlayFS,{readable:claire,writable:new BrowserFS.FileSystem.InMemory()})]);
-  const mounts=new BrowserFS.FileSystem.MountableFileSystem();mounts.mount('/root/base',root);mounts.mount('/root/files',files);
-  BrowserFS.initialize(mounts);FS.mkdir('/root');FS.mount(new BrowserFS.EmscriptenFS(),{root:'/root'},'/root');
+  // Expand the small, already-trimmed bundles once into Emscripten's native
+  // in-memory filesystem. Synthesis avoids the BrowserFS/OverlayFS bridge.
+  function populate(zip,dest){
+    BrowserFS.initialize(zip);const source=BrowserFS.BFSRequire('fs');FS.mkdirTree(dest);
+    function walk(dir){for(const name of source.readdirSync(dir)){
+      const path=(dir==='/'?'':dir)+'/'+name,target=dest+path;
+      if(source.statSync(path).isDirectory()){FS.mkdirTree(target);walk(path);}
+      else FS.writeFile(target,source.readFileSync(path));
+    }}
+    walk('/');
+  }
+  populate(wine,'/root/base');populate(claire,'/root/files');
+  BrowserFS.initialize(new BrowserFS.FileSystem.InMemory());
   // Create the inbox before Wine starts: the emulator caches missing paths.
   FS.writeFile(resultPath+'text.txt','');FS.writeFile(resultPath+'request.id','');
-  notify('progress',{message:'Préparation de la voix…'});
+  notify('progress',{message:'Initialisation de la voix…',percent:null});
   poll=setInterval(checkResult,75);
   Module.removeRunDependency('claire-files');
 }
 function submit(){
   if(!ready||!request||request.sent||failed)return;
+  // Clear the previous result before polling the number of bytes produced.
+  FS.writeFile(resultPath+'audio.wav',new Uint8Array());
   FS.writeFile(resultPath+'text.txt',new TextEncoder().encode(request.text));
   FS.writeFile(resultPath+'request.id',request.id);
-  request.sent=true;notify('progress',{message:'Génération de la voix…'});
+  request.sent=true;request.percent=0;
+  // ELAN provides PCM blocks but no exact total. Estimate duration from text
+  // length, and advance only when audio bytes have actually been produced.
+  request.expectedBytes=Math.max(22050,request.text.trim().length*4800);
+  notify('progress',{message:'Génération de la voix…',percent:0,estimated:true});
 }
 function checkResult(){
   if(failed)return;
@@ -40,6 +74,11 @@ function checkResult(){
     return;
   }
   if(!request?.sent)return;
+  try{
+    const bytes=Math.max(0,FS.stat(resultPath+'audio.wav').size-44);
+    const percent=Math.min(95,Math.floor(bytes*100/request.expectedBytes));
+    if(percent>request.percent){request.percent=percent;notify('progress',{message:'Génération de la voix…',percent,estimated:true});}
+  }catch{}
   try{
     if(FS.readFile(resultPath+'result.id',{encoding:'utf8'})!==request.id)return;
     try{const err=FS.readFile(resultPath+'error.txt',{encoding:'utf8'});if(err){failure(err);return;}}catch{}
