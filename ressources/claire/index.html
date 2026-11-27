@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Claire ELAN</title>
+  <link rel="icon" href="data:,">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <label for="text">Texte :</label><br>
+  <textarea id="text" rows="5" cols="70" maxlength="5000">Ligne, 114, cet autobus a pour terminus, Le Raincy - Villemomble - Monfermeil RER.</textarea>
+  <p><button id="generate" type="button">Générer et lire</button> <button id="cancel" type="button" hidden>Annuler</button></p>
+  <p id="status" role="status" aria-live="polite">Claire 22 kHz — Vitesse 90 % — Pitch 90 %</p>
+  <div id="result" hidden>
+    <audio id="audio" controls controlslist="noplaybackrate nodownload"></audio><br>
+    <a id="download" download="claire.wav">Télécharger le WAV</a>
+  </div>
+  <noscript>JavaScript est nécessaire pour générer la voix.</noscript>
+</body>
+</html>
